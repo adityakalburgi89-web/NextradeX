@@ -1,12 +1,17 @@
 package com.NexTradeX.market;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.NexTradeX.common.ApiResponse;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -35,9 +40,9 @@ public class MarketController {
         try {
             CryptoPrice price = marketService.getPrice(symbol);
             return ResponseEntity.ok()
-                    .body(new ApiResponse<>(200, "Price retrieved", price));
+                    .body(new ApiResponse<>(200, "Live price retrieved", price));
         } catch (Exception e) {
-            log.error("Error retrieving price for {}: {}", symbol, e.getMessage());
+            log.error("Error retrieving live price for {}: {}", symbol, e.getMessage());
             return ResponseEntity.badRequest()
                     .body(new ApiResponse<>(400, e.getMessage(), null));
         }

@@ -28,12 +28,44 @@ public class MarketService {
     private static final String COINMARKETCAP_API = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest";
     
     public CryptoPrice getPrice(String symbol) {
-        return cryptoPriceRepository.findBySymbol(symbol)
-                .orElseThrow(() -> new RuntimeException("Price not found for symbol: " + symbol));
+        // Fetch live price from CoinMarketCap
+        String json = fetchCoinMarketCapPrice(symbol);
+        try {
+            // Parse JSON response
+            com.fasterxml.jackson.databind.JsonNode root = new com.fasterxml.jackson.databind.ObjectMapper().readTree(json);
+            com.fasterxml.jackson.databind.JsonNode data = root.get("data").get(symbol);
+            BigDecimal currentPrice = new BigDecimal(data.get("quote").get("USD").get("price").asText());
+            BigDecimal highPrice = new BigDecimal(data.get("quote").get("USD").get("high_24h").asText());
+            BigDecimal lowPrice = new BigDecimal(data.get("quote").get("USD").get("low_24h").asText());
+            BigDecimal openPrice = new BigDecimal(data.get("quote").get("USD").get("open_24h").asText());
+            BigDecimal priceChange24h = new BigDecimal(data.get("quote").get("USD").get("volume_change_24h").asText());
+            BigDecimal percentChange24h = new BigDecimal(data.get("quote").get("USD").get("percent_change_24h").asText());
+            BigDecimal volume24h = new BigDecimal(data.get("quote").get("USD").get("volume_24h").asText());
+            BigDecimal marketCap = new BigDecimal(data.get("quote").get("USD").get("market_cap").asText());
+            java.time.LocalDateTime updatedAt = java.time.LocalDateTime.now();
+            return CryptoPrice.builder()
+                .symbol(symbol)
+                .currentPrice(currentPrice)
+                .highPrice(highPrice)
+                .lowPrice(lowPrice)
+                .openPrice(openPrice)
+                .priceChange24h(priceChange24h)
+                .percentChange24h(percentChange24h)
+                .volume24h(volume24h)
+                .marketCap(marketCap)
+                .updatedAt(updatedAt)
+                .build();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch live price for symbol: " + symbol, e);
+        }
     }
     
     public Optional<CryptoPrice> getPriceOptional(String symbol) {
-        return cryptoPriceRepository.findBySymbol(symbol);
+        try {
+            return Optional.of(getPrice(symbol));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
     
     public List<CryptoPrice> getAllPrices() {
