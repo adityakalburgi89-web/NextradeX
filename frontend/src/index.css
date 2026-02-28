@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-primary/30 selection:text-primary font-body;
+  }
+}
+
+@layer utilities {
+  .bg-grid-pattern {
+    background-size: 50px 50px;
+    background-image: linear-gradient(
+        to right,
+        rgba(30, 41, 59, 0.5) 1px,
+        transparent 1px
+      ),
+      linear-gradient(to bottom, rgba(30, 41, 59, 0.5) 1px, transparent 1px);
+    mask-image: radial-gradient(
+      circle at center,
+      black 40%,
+      transparent 100%
+    );
+  }
+
+  .holographic-gradient {
+    @apply backdrop-blur-lg bg-white/5 border border-white/10;
+  }
+}
+
+/* Custom Scrollbar for True Void aesthetic */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #030304; 
+}
+::-webkit-scrollbar-thumb {
+  background: #1E293B; 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #F7931A; 
+}
