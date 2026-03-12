@@ -15,34 +15,34 @@ import jakarta.validation.Valid;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    
+
     private final AuthService authService;
     private final JwtService jwtService;
-    
+
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(
             @Valid @RequestBody RegisterRequest request) {
         try {
             String token = authService.registerUser(
-                request.getUsername(),
-                request.getEmail(),
-                request.getPassword(),
-                request.getFirstName(),
-                request.getLastName()
+                    request.getUsername(),
+                    request.getEmail(),
+                    request.getPassword(),
+                    request.getFirstName(),
+                    request.getLastName()
             );
-            
+
             User user = authService.getUserByUsername(request.getUsername());
-            
+
             AuthResponse authResponse = AuthResponse.builder()
                     .token(token)
                     .username(user.getUsername())
                     .email(user.getEmail())
                     .expiresIn(jwtService.getJwtExpiration())
                     .build();
-            
+
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse<>(201, "User registered successfully", authResponse));
         } catch (Exception e) {
@@ -51,21 +51,21 @@ public class AuthController {
                     .body(new ApiResponse<>(400, e.getMessage(), null));
         }
     }
-    
+
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(
             @Valid @RequestBody LoginRequest request) {
         try {
             String token = authService.loginUser(request.getUsername(), request.getPassword());
             User user = authService.getUserByUsername(request.getUsername());
-            
+
             AuthResponse authResponse = AuthResponse.builder()
                     .token(token)
                     .username(user.getUsername())
                     .email(user.getEmail())
                     .expiresIn(jwtService.getJwtExpiration())
                     .build();
-            
+
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Login successful", authResponse));
         } catch (Exception e) {
@@ -74,7 +74,7 @@ public class AuthController {
                     .body(new ApiResponse<>(401, e.getMessage(), null));
         }
     }
-    
+
     @GetMapping("/validate")
     public ResponseEntity<ApiResponse<Boolean>> validateToken(
             @RequestHeader(value = "Authorization", required = false) String bearerToken) {
@@ -83,11 +83,11 @@ public class AuthController {
                 return ResponseEntity.ok()
                         .body(new ApiResponse<>(200, "Token is invalid", false));
             }
-            
+
             String token = bearerToken.substring(7);
             String username = jwtService.extractUsername(token);
             boolean isValid = jwtService.isTokenValid(token, username);
-            
+
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Token validation result", isValid));
         } catch (Exception e) {
