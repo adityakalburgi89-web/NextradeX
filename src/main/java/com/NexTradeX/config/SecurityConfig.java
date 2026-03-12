@@ -59,7 +59,8 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/auth/**").permitAll()
+                // both variants are accepted so preflight to /auth/register succeeds
+                .requestMatchers("/api/auth/**", "/auth/**").permitAll()
                 .requestMatchers("/api/health/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/market/**").permitAll()
                 .anyRequest().authenticated()
