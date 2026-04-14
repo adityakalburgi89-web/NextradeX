@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createSpotOrder, fetchPrice, fetchCandlestickData } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
 import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
+import { TradingChartPanel } from "../components/ui/TradingChartPanel";
 import { useWebSocket } from "../hooks/useWebSocket";
-import CandlestickChart from "../components/ui/CandlestickChart";
+import { formatCurrency, formatPercent } from "../lib/utils";
 
 const initialForm = {
   symbol: "BTCUSDT",
@@ -22,17 +23,21 @@ export default function SpotTradingPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [currentPrice, setCurrentPrice] = useState(null);
+  const [priceSnapshot, setPriceSnapshot] = useState(null);
   const [candleData, setCandleData] = useState([]);
   const [chartLoading, setChartLoading] = useState(false);
+  const [interval, setInterval] = useState("1h");
 
   const handlePriceUpdate = (data) => {
     if (Array.isArray(data)) {
       const symbolPrice = data.find((p) => p.symbol === form.symbol);
       if (symbolPrice) {
         setCurrentPrice(symbolPrice.currentPrice);
+        setPriceSnapshot(symbolPrice);
       }
     } else if (data && data.symbol === form.symbol) {
       setCurrentPrice(data.currentPrice);
+      setPriceSnapshot(data);
     }
   };
 
@@ -43,6 +48,7 @@ export default function SpotTradingPage() {
       const res = await fetchPrice(form.symbol);
       if (res?.data) {
         setCurrentPrice(res.data.currentPrice);
+        setPriceSnapshot(res.data);
       }
     } catch {
       // ignore
@@ -57,16 +63,16 @@ export default function SpotTradingPage() {
     const loadCandles = async () => {
       setChartLoading(true);
       try {
-        const data = await fetchCandlestickData(form.symbol);
+        const data = await fetchCandlestickData(form.symbol, interval, 120);
         setCandleData(data);
       } catch {
-        // ignore
+        setCandleData([]);
       } finally {
         setChartLoading(false);
       }
     };
     loadCandles();
-  }, [form.symbol]);
+  }, [form.symbol, interval]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -95,29 +101,62 @@ export default function SpotTradingPage() {
     }
   };
 
+  const estimatedNotional = useMemo(() => {
+    const quantity = Number(form.quantity || 0);
+    const price = form.orderType === "LIMIT" ? Number(form.price || 0) : Number(currentPrice || 0);
+    return quantity * price;
+  }, [currentPrice, form.orderType, form.price, form.quantity]);
+
+  const chartStats = [
+    {
+      label: "Last price",
+      value: currentPrice || priceSnapshot?.currentPrice || 0,
+      kind: "currency",
+      icon: "price",
+      hint: connected ? "Live websocket updates" : "Latest REST snapshot",
+    },
+    {
+      label: "24H change",
+      value: priceSnapshot?.percentChange24h || 0,
+      kind: "percent",
+      icon: "change",
+      hint: `${formatCurrency(priceSnapshot?.priceChange24h || 0)} session move`,
+    },
+    {
+      label: "Session high",
+      value: priceSnapshot?.highPrice || currentPrice || 0,
+      kind: "currency",
+      icon: "volume",
+      hint: `Low ${formatCurrency(priceSnapshot?.lowPrice || currentPrice || 0)}`,
+    },
+    {
+      label: "Order notional",
+      value: estimatedNotional,
+      kind: "currency",
+      icon: "momentum",
+      hint: `${form.side} ${form.quantity || 0} ${form.symbol}`,
+    },
+  ];
+
   return (
     <PageTransition>
-      <div className="py-12 max-w-4xl mx-auto">
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Chart</CardTitle>
-            <CardDescription>BTC/USDT Price</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {chartLoading ? (
-              <div className="h-[400px] flex items-center justify-center text-muted font-mono text-sm">
-                Loading chart...
-              </div>
-            ) : (
-              <CandlestickChart data={candleData} />
-            )}
-          </CardContent>
-        </Card>
+      <div className="mx-auto max-w-5xl space-y-8 py-12">
+        <TradingChartPanel
+          title="Spot Workspace"
+          description="Execute clean spot orders with backend candles, live pricing, and a calmer SaaS-grade order entry flow."
+          symbol={form.symbol}
+          interval={interval}
+          onIntervalChange={setInterval}
+          loading={chartLoading}
+          data={candleData}
+          status={{ label: connected ? "Live market" : "Snapshot", tone: connected ? "active" : "neutral" }}
+          stats={chartStats}
+        />
 
         <Card>
           <CardHeader>
             <CardTitle>Spot Trading</CardTitle>
-            <CardDescription>Place a basic spot buy/sell order using your spot wallet.</CardDescription>
+            <CardDescription>Place a spot buy or sell order using the currently selected symbol and execution style.</CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-5">
@@ -128,14 +167,28 @@ export default function SpotTradingPage() {
                 <Input name="symbol" value={form.symbol} onChange={handleChange} required />
               </div>
               {currentPrice && (
-                <div className="text-center py-4 rounded-xl border border-white/[0.06] bg-white/[0.02] animate-fade-in">
-                  <span className="font-mono text-[10px] text-muted uppercase tracking-wider">Current Price</span>
-                  <p className="font-heading text-2xl text-primary mt-1 font-semibold">
-                    {currentPrice}
-                    {connected && (
-                      <span className="ml-2 status-badge status-badge--active text-[8px]">LIVE</span>
-                    )}
-                  </p>
+                <div className="interactive-surface rounded-[24px] border border-white/[0.06] bg-white/[0.02] px-5 py-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-muted">Current Price</span>
+                      <p className="mt-1 font-heading text-2xl font-semibold text-white">
+                        {formatCurrency(currentPrice)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className={`status-badge ${Number(priceSnapshot?.percentChange24h) >= 0 ? "status-badge--active" : "status-badge--error"}`}>
+                        {formatPercent(priceSnapshot?.percentChange24h || 0)}
+                      </div>
+                      {connected && (
+                        <div className="mt-2 text-[11px] uppercase tracking-[0.24em] text-muted">streaming</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 gap-3 text-sm text-muted sm:grid-cols-3">
+                    <div>High {formatCurrency(priceSnapshot?.highPrice || currentPrice)}</div>
+                    <div>Low {formatCurrency(priceSnapshot?.lowPrice || currentPrice)}</div>
+                    <div>Notional {formatCurrency(estimatedNotional)}</div>
+                  </div>
                 </div>
               )}
               <div className="grid grid-cols-2 gap-4">
