@@ -479,16 +479,16 @@ function Footer() {
             <h4 className="font-heading text-sm font-semibold text-white mb-4">Socials</h4>
             <nav className="space-y-4">
               <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-muted hover:text-primary transition-colors duration-200">
-                <img src={xIcon} alt="X" className="w-5 h-5 object-contain filter grayscale hover:grayscale-0 transition-all" /> <span>X (Twitter)</span>
+                <img src={xIcon} alt="X" className="w-5 h-5 object-contain" /> <span>X (Twitter)</span>
               </a>
               <a href="https://www.linkedin.com/in/aditya-kalburgi-080b5b267/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-muted hover:text-primary transition-colors duration-200">
-                <img src={linkedInIcon} alt="LinkedIn" className="w-5 h-5 object-contain filter grayscale hover:grayscale-0 transition-all" /> <span>LinkedIn</span>
+                <img src={linkedInIcon} alt="LinkedIn" className="w-5 h-5 object-contain" /> <span>LinkedIn</span>
               </a>
               <a href="mailto:contact@nextradex.sim" className="flex items-center gap-3 text-sm text-muted hover:text-primary transition-colors duration-200">
-                <img src={gmailIcon} alt="Email" className="w-5 h-5 object-contain filter grayscale hover:grayscale-0 transition-all" /> <span>Email</span>
+                <img src={gmailIcon} alt="Email" className="w-5 h-5 object-contain" /> <span>Email</span>
               </a>
               <a href="https://github.com/aditykalburgi" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-muted hover:text-primary transition-colors duration-200">
-                <img src={githubIcon} alt="GitHub" className="w-5 h-5 object-contain filter grayscale hover:grayscale-0 transition-all" /> <span>GitHub</span>
+                <img src={githubIcon} alt="GitHub" className="w-5 h-5 object-contain brightness-0 invert" /> <span>GitHub</span>
               </a>
             </nav>
           </div>
