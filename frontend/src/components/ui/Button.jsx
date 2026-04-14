@@ -39,16 +39,30 @@ const Spinner = () => (
 )
 
 const Button = React.forwardRef(({ className, variant, size, asChild = false, loading = false, children, ...props }, ref) => {
-    const Comp = asChild ? "div" : "button"
+    const classes = cn(buttonVariants({ variant, size, className }))
+
+    if (asChild && React.isValidElement(children)) {
+        return React.cloneElement(children, {
+            ...props,
+            className: cn(classes, children.props.className),
+            "aria-disabled": loading || props.disabled,
+        }, (
+            <>
+                {loading && <Spinner />}
+                {children.props.children}
+            </>
+        ))
+    }
+
     return (
-        (<Comp
-            className={cn(buttonVariants({ variant, size, className }))}
+        <button
+            className={classes}
             ref={ref}
             disabled={loading || props.disabled}
             {...props}>
             {loading && <Spinner />}
             {children}
-        </Comp>)
+        </button>
     );
 })
 Button.displayName = "Button"
