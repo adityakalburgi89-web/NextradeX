@@ -12,7 +12,7 @@ export default function CandlestickChart({ data = [], options = EMPTY_OPTIONS, h
     if (!containerRef.current) return;
 
     const chart = createChart(containerRef.current, {
-      width: containerRef.current.clientWidth,
+      width: containerRef.current.clientWidth || 800,
       height,
       layout: {
         background: { type: "solid", color: "transparent" },
@@ -51,21 +51,15 @@ export default function CandlestickChart({ data = [], options = EMPTY_OPTIONS, h
       wickDownColor: "#ef4444",
     });
 
-    if (data && data.length > 0) {
-      candlestickSeries.setData(data);
-      chart.timeScale().fitContent();
-    }
-
     chartRef.current = chart;
     seriesRef.current = candlestickSeries;
 
     const resizeObserver = new ResizeObserver(() => {
-      if (containerRef.current) {
-        chart.applyOptions({
+      if (containerRef.current && chartRef.current) {
+        chartRef.current.applyOptions({
           width: containerRef.current.clientWidth,
           height,
         });
-        chart.timeScale().fitContent();
       }
     });
 
@@ -73,18 +67,21 @@ export default function CandlestickChart({ data = [], options = EMPTY_OPTIONS, h
 
     return () => {
       resizeObserver.disconnect();
-      chart.remove();
+      if (chartRef.current) {
+        chartRef.current.remove();
+        chartRef.current = null;
+      }
     };
-  }, [height, options]);
+  }, [height]);
 
   useEffect(() => {
-    if (seriesRef.current && data && data.length > 0) {
+    if (seriesRef.current && chartRef.current && data && data.length > 0) {
       seriesRef.current.setData(data);
-      chartRef.current?.timeScale().fitContent();
+      chartRef.current.timeScale().fitContent();
     }
   }, [data]);
 
-  if (!data.length) {
+  if (!data || data.length === 0) {
     return (
       <div
         className="chart-shell flex items-center justify-center rounded-[28px] border border-white/10 bg-slate-950/50 text-sm text-muted"

@@ -38,7 +38,7 @@ export default function AuthPage() {
           lastName: form.lastName,
         });
       }
-      navigate("/dashboard");
+      window.location.href = "/";
     } catch (err) {
       setError(err.message || "Authentication failed");
     } finally {

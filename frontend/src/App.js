@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { Button } from "./components/ui/Button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./components/ui/Card";
@@ -488,10 +488,49 @@ function TradeDropdown() {
 }
 
 /* ═══════════════════════════════════════════
-   APP SHELL
-   ═══════════════════════════════════════════ */
+    APP SHELL
+    ═══════════════════════════════════════════ */
 function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = hasAuthToken();
+      if (token) {
+        try {
+          const res = await fetchUserProfile();
+          if (res?.data) {
+            setUser(res.data);
+            setIsLoggedIn(true);
+          }
+        } catch {
+          clearAuthToken();
+        }
+      }
+    };
+    checkAuth();
+  }, []);
+
+  const handleLogout = () => {
+    clearAuthToken();
+    setIsLoggedIn(false);
+    setUser(null);
+    setUserMenuOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden font-body">
@@ -518,12 +557,59 @@ function App() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Button variant="ghost" className="hidden sm:inline-flex font-mono text-xs" asChild>
-              <Link to="/auth">Log In</Link>
-            </Button>
-            <Button className="hidden sm:inline-flex text-xs" asChild>
-              <Link to="/wallets">Connect Wallet</Link>
-            </Button>
+            {isLoggedIn ? (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                    <User size={16} className="text-white" />
+                  </div>
+                  <span className="font-mono text-xs text-white hidden sm:inline">{user?.username}</span>
+                  <ChevronDown size={14} className={`text-muted transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 top-full pt-2 z-50 animate-fade-in-fast">
+                    <div className="glass-panel rounded-xl shadow-elevation-lg py-2 min-w-[180px] animate-slide-down">
+                      <Link
+                        to="/profile"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-white/[0.04] hover:text-primary transition-colors"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <User size={16} />
+                        Profile
+                      </Link>
+                      <Link
+                        to="/wallets"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-white/[0.04] hover:text-primary transition-colors"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <Layers size={16} />
+                        Wallets
+                      </Link>
+                      <div className="border-t border-white/[0.06] my-1" />
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm w-full text-left hover:bg-white/[0.04] hover:text-accent-red transition-colors"
+                      >
+                        <LogOut size={16} />
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Button variant="ghost" className="hidden sm:inline-flex font-mono text-xs" asChild>
+                  <Link to="/auth">Log In</Link>
+                </Button>
+                <Button className="hidden sm:inline-flex text-xs" asChild>
+                  <Link to="/auth">Connect Wallet</Link>
+                </Button>
+              </>
+            )}
 
             {/* Mobile hamburger */}
             <button
@@ -546,8 +632,18 @@ function App() {
               <Link to="/markets" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Markets</Link>
               <Link to="/wallets" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Wallets</Link>
               <Link to="/orders" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Orders</Link>
-              <div className="glow-line my-3" />
-              <Link to="/auth" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
+              {isLoggedIn ? (
+                <>
+                  <div className="glow-line my-3" />
+                  <Link to="/profile" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Profile</Link>
+                  <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-accent-red transition-colors w-full text-left">Logout</button>
+                </>
+              ) : (
+                <>
+                  <div className="glow-line my-3" />
+                  <Link to="/auth" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -564,6 +660,7 @@ function App() {
           <Route path="/trade/options" element={<OptionsTradingPage />} />
           <Route path="/wallets" element={<WalletsPage />} />
           <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </div>
 
