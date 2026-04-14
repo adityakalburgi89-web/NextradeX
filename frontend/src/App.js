@@ -226,7 +226,7 @@ function HomePage() {
             <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight mb-4">List of cryptocurrencies</h2>
             <p className="text-muted text-sm md:text-base">Discover which cryptocurrencies, trade and tick sizes are available through our partner, Paxos.</p>
           </div>
-          
+
           <div className="max-w-4xl mx-auto stagger-children">
             <Card variant="glass" className="overflow-hidden border border-white/[0.06] !p-0">
               <div className="overflow-x-auto">
@@ -317,7 +317,7 @@ function HomePage() {
                 </div>
                 <CardContent className="p-8 relative z-10 space-y-8">
                   <h3 className="font-heading text-2xl md:text-3xl font-bold leading-tight">24x7 Customer<br />Support</h3>
-                  
+
                   <div className="space-y-6">
                     <div>
                       <p className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5">Have a question?</p>
@@ -409,9 +409,8 @@ function FAQItem({ question, answer }) {
         </div>
       </button>
       <div
-        className={`overflow-hidden transition-all duration-300 ease-spring ${
-          open ? 'max-h-60 opacity-100' : 'max-h-0 opacity-0'
-        }`}
+        className={`overflow-hidden transition-all duration-300 ease-spring ${open ? 'max-h-60 opacity-100' : 'max-h-0 opacity-0'
+          }`}
       >
         <div className="px-6 pb-5 text-sm text-muted leading-relaxed border-t border-white/[0.04] pt-4">
           {answer}
@@ -514,9 +513,8 @@ function NavLink({ to, children }) {
   return (
     <Link
       to={to}
-      className={`nav-link hover:text-primary transition-colors duration-200 ${
-        isActive ? "text-primary active" : ""
-      }`}
+      className={`nav-link hover:text-primary transition-colors duration-200 ${isActive ? "text-primary active" : ""
+        }`}
     >
       {children}
     </Link>
