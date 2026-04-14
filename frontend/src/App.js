@@ -4,7 +4,7 @@ import { Button } from "./components/ui/Button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./components/ui/Card";
 import { Input } from "./components/ui/Input";
 import { PageTransition } from "./components/ui/PageTransition";
-import { Zap, Shield, Layers, TrendingUp, Globe, Activity, Menu, X } from "lucide-react";
+import { Zap, Shield, Layers, TrendingUp, Globe, Activity, Menu, X, BarChart3, Package, Target, Headphones, ChevronDown, Mail } from "lucide-react";
 import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
 import MarketsPage from "./pages/MarketsPage";
@@ -182,8 +182,240 @@ function HomePage() {
             </PageTransition>
           </div>
         </section>
+
+        {/* PRO TRADING FEATURES */}
+        <section className="py-28 relative z-20">
+          <div className="text-center mb-16 stagger-children">
+            <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block">Best in Class</span>
+            <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight">Pro Trading Features For Everyone</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 stagger-children">
+            <FeatureRow
+              icon={<Package size={22} />}
+              title="Basket Orders With Margin Benefits"
+              description="Place multiple orders together as a basket to enjoy margin offsetting"
+            />
+            <FeatureRow
+              icon={<Target size={22} />}
+              title="Strategy Builder"
+              description="Build and analyse trading strategies comprising of group of futures and options"
+            />
+            <FeatureRow
+              icon={<Layers size={22} />}
+              title="Deep OTM/ITM Strikes"
+              description="Trade deep OTM/ITM options strikes with daily and weekly expiry"
+            />
+            <FeatureRow
+              icon={<BarChart3 size={22} />}
+              title="PnL Analytics"
+              description="Conveniently track and analyse your trading performance"
+            />
+          </div>
+        </section>
+
+        {/* SUPPORT + FAQ */}
+        <section className="py-28 border-t border-white/[0.04]">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
+            {/* Support Card */}
+            <div className="lg:col-span-2">
+              <Card variant="glass" className="h-full relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-full h-1/2 opacity-10 pointer-events-none">
+                  <svg viewBox="0 0 400 200" className="w-full h-full">
+                    <circle cx="80" cy="180" r="120" stroke="currentColor" strokeWidth="0.5" fill="none" className="text-primary" />
+                    <circle cx="120" cy="200" r="160" stroke="currentColor" strokeWidth="0.5" fill="none" className="text-primary" />
+                    <circle cx="60" cy="220" r="200" stroke="currentColor" strokeWidth="0.3" fill="none" className="text-primary" />
+                  </svg>
+                </div>
+                <CardContent className="p-8 relative z-10 space-y-8">
+                  <h3 className="font-heading text-2xl md:text-3xl font-bold leading-tight">24x7 Customer<br />Support</h3>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <p className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5">Have a question?</p>
+                      <p className="text-sm text-white/80">Visit our <Link to="/" className="text-primary hover:underline underline-offset-2">Support Centre</Link> for quick answers</p>
+                    </div>
+                    <div>
+                      <p className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5">Need help?</p>
+                      <p className="text-sm text-white/80">Raise a <Link to="/" className="text-primary hover:underline underline-offset-2">support ticket</Link><br />We are here to help</p>
+                    </div>
+                    <div>
+                      <p className="font-mono text-[10px] text-muted uppercase tracking-widest mb-3">Connect with us</p>
+                      <div className="flex items-center gap-3">
+                        <a href="#" className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 transition-all duration-300">
+                          <X size={14} className="text-muted" />
+                        </a>
+                        <a href="#" className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 transition-all duration-300">
+                          <Mail size={14} className="text-muted" />
+                        </a>
+                        <a href="#" className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 transition-all duration-300">
+                          <Globe size={14} className="text-muted" />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* FAQ */}
+            <div className="lg:col-span-3">
+              <h3 className="font-heading text-2xl md:text-3xl font-bold mb-8 tracking-tight">Frequently Asked Questions</h3>
+              <div className="space-y-3 stagger-children">
+                <FAQItem
+                  question="Is NexTradeX a regulated platform?"
+                  answer="NexTradeX operates as a paper trading simulation platform for educational purposes. All trades are simulated and no real assets are involved."
+                />
+                <FAQItem
+                  question="Do I need crypto to trade on NexTradeX?"
+                  answer="No. NexTradeX provides simulated wallets with virtual balances. You can start trading immediately after creating an account without any deposits."
+                />
+                <FAQItem
+                  question="What trading instruments are available?"
+                  answer="NexTradeX supports spot trading, leveraged futures with customizable leverage, and options contracts (calls and puts) with configurable strike prices and expiry dates."
+                />
+                <FAQItem
+                  question="How does the real-time pricing work?"
+                  answer="Our backend price engine generates realistic market data streamed via WebSocket connections, providing live price updates across all supported trading pairs."
+                />
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </PageTransition>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   PRO FEATURE ROW
+   ═══════════════════════════════════════════ */
+function FeatureRow({ icon, title, description }) {
+  return (
+    <div className="flex items-start gap-5 p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/20 transition-all duration-300 group">
+      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0 shadow-glow-primary group-hover:shadow-glow-primary-hover transition-shadow duration-500">
+        <span className="text-white">{icon}</span>
+      </div>
+      <div>
+        <h4 className="font-heading text-base font-semibold text-white mb-1.5">{title}</h4>
+        <p className="text-sm text-muted leading-relaxed">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   FAQ ACCORDION ITEM
+   ═══════════════════════════════════════════ */
+function FAQItem({ question, answer }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-xl border border-white/[0.06] overflow-hidden transition-all duration-300 hover:border-white/[0.1]">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-6 py-4 text-left group"
+      >
+        <span className="font-body text-sm font-medium text-white pr-4">{question}</span>
+        <div className={`w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>
+          <ChevronDown size={16} className="text-white" />
+        </div>
+      </button>
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-spring ${
+          open ? 'max-h-60 opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div className="px-6 pb-5 text-sm text-muted leading-relaxed border-t border-white/[0.04] pt-4">
+          {answer}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════ */
+function Footer() {
+  const linkClass = "text-sm text-muted hover:text-primary transition-colors duration-200 block py-1";
+  return (
+    <footer className="relative z-10 border-t border-white/[0.06] mt-12">
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
+          {/* Brand */}
+          <div className="lg:col-span-1">
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-glow-primary">
+                <TrendingUp size={17} className="text-white" />
+              </div>
+              <span className="font-heading font-bold text-lg tracking-tight">
+                NexTrade<span className="text-primary">X</span>
+              </span>
+            </div>
+            <p className="text-xs text-muted leading-relaxed max-w-[220px]">
+              NexTradeX is a paper trading simulation platform for educational purposes. No real assets are traded.
+            </p>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h4 className="font-heading text-sm font-semibold text-white mb-4">Company</h4>
+            <nav className="space-y-0.5">
+              <Link to="/" className={linkClass}>About Us</Link>
+              <Link to="/" className={linkClass}>Terms of Service</Link>
+              <Link to="/" className={linkClass}>Privacy Policy</Link>
+              <Link to="/" className={linkClass}>Careers</Link>
+            </nav>
+          </div>
+
+          {/* Information */}
+          <div>
+            <h4 className="font-heading text-sm font-semibold text-white mb-4">Information</h4>
+            <nav className="space-y-0.5">
+              <Link to="/" className={linkClass}>Contract Specifications</Link>
+              <Link to="/" className={linkClass}>Trading Fees</Link>
+              <Link to="/" className={linkClass}>Settlement Prices</Link>
+              <Link to="/" className={linkClass}>Bug Bounty</Link>
+            </nav>
+          </div>
+
+          {/* Resources */}
+          <div>
+            <h4 className="font-heading text-sm font-semibold text-white mb-4">Resources & Support</h4>
+            <nav className="space-y-0.5">
+              <Link to="/" className={linkClass}>API Docs</Link>
+              <Link to="/" className={linkClass}>Support Center</Link>
+              <Link to="/" className={linkClass}>User Guide</Link>
+              <Link to="/" className={linkClass}>Referral Program</Link>
+              <Link to="/" className={linkClass}>Demo Trading</Link>
+            </nav>
+          </div>
+
+          {/* Socials */}
+          <div>
+            <h4 className="font-heading text-sm font-semibold text-white mb-4">Socials</h4>
+            <nav className="space-y-2">
+              <a href="#" className="flex items-center gap-2.5 text-sm text-muted hover:text-primary transition-colors duration-200 py-1">
+                <X size={14} /> <span>X</span>
+              </a>
+              <a href="#" className="flex items-center gap-2.5 text-sm text-muted hover:text-primary transition-colors duration-200 py-1">
+                <Mail size={14} /> <span>Email</span>
+              </a>
+              <a href="#" className="flex items-center gap-2.5 text-sm text-muted hover:text-primary transition-colors duration-200 py-1">
+                <Globe size={14} /> <span>Website</span>
+              </a>
+            </nav>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="glow-line mt-12 mb-8" />
+        <p className="text-center text-xs text-muted">
+          NexTradeX &copy; {new Date().getFullYear()}. All Rights Reserved.
+        </p>
+      </div>
+    </footer>
   );
 }
 
@@ -332,6 +564,9 @@ function App() {
           <Route path="/orders" element={<OrdersPage />} />
         </Routes>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
