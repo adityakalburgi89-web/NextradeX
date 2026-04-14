@@ -72,4 +72,24 @@ public class UserService {
     public boolean validatePassword(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);
     }
+    
+    public User updateUser(Long userId, String firstName, String lastName, String email) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        if (firstName != null && !firstName.isBlank()) {
+            user.setFirstName(firstName);
+        }
+        if (lastName != null && !lastName.isBlank()) {
+            user.setLastName(lastName);
+        }
+        if (email != null && !email.isBlank()) {
+            if (userRepository.existsByEmail(email) && !user.getEmail().equals(email)) {
+                throw new IllegalArgumentException("Email already exists");
+            }
+            user.setEmail(email);
+        }
+        
+        return userRepository.save(user);
+    }
 }

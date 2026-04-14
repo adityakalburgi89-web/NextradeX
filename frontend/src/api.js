@@ -87,6 +87,22 @@ export async function validateToken() {
   return handleResponse(res);
 }
 
+export async function fetchUserProfile() {
+  const res = await fetch(`${API_BASE_URL}/user/profile`, {
+    headers: authHeaders(),
+  });
+  return handleResponse(res);
+}
+
+export async function updateUserProfile(payload) {
+  const res = await fetch(`${API_BASE_URL}/user/profile`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return handleResponse(res);
+}
+
 // MARKET
 export async function fetchAllPrices() {
   const res = await fetch(`${API_BASE_URL}/market/prices`);
