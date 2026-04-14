@@ -26,7 +26,15 @@ function authHeaders() {
 
 async function handleResponse(res) {
   const text = await res.text();
-  const data = text ? JSON.parse(text) : null;
+  let data = null;
+
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { message: text };
+    }
+  }
 
   if (!res.ok) {
     const message = data?.message || data?.error || "Request failed";
