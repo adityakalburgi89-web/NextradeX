@@ -1,12 +1,20 @@
-export const API_BASE_URL = "http://localhost:8080/api";
+const DEFAULT_API_BASE_URL = "http://localhost:8080/api";
+export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || DEFAULT_API_BASE_URL;
 
-// Simple token storage helpers
 export function setAuthToken(token) {
   localStorage.setItem("nextradex_token", token);
 }
 
 export function getAuthToken() {
   return localStorage.getItem("nextradex_token");
+}
+
+export function clearAuthToken() {
+  localStorage.removeItem("nextradex_token");
+}
+
+export function hasAuthToken() {
+  return Boolean(getAuthToken());
 }
 
 function authHeaders() {
@@ -17,12 +25,28 @@ function authHeaders() {
 }
 
 async function handleResponse(res) {
-  const data = await res.json().catch(() => null);
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+
   if (!res.ok) {
     const message = data?.message || data?.error || "Request failed";
     throw new Error(message);
   }
+
   return data;
+}
+
+function toQueryString(params) {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      searchParams.set(key, value);
+    }
+  });
+
+  const query = searchParams.toString();
+  return query ? `?${query}` : "";
 }
 
 // AUTH
@@ -172,17 +196,21 @@ export async function fetchOptionsHistory() {
   return handleResponse(res);
 }
 
-// CANDLESTICK DATA (uses Binance public API)
+// CANDLESTICK DATA
 export async function fetchCandlestickData(symbol, interval = "1h", limit = 100) {
   const res = await fetch(
-    `https://api.binance.com/api/v3/klines?symbol=${symbol.toUpperCase()}&interval=${interval}&limit=${limit}`
+    `${API_BASE_URL}/market/candles/${encodeURIComponent(symbol.toUpperCase())}${toQueryString({
+      interval,
+      limit,
+    })}`
   );
-  const data = await handleResponse(res);
-  return data.map((k) => ({
-    time: Math.floor(k[0] / 1000),
-    open: parseFloat(k[1]),
-    high: parseFloat(k[2]),
-    low: parseFloat(k[3]),
-    close: parseFloat(k[4]),
+  const payload = await handleResponse(res);
+  return (payload?.data || []).map((candle) => ({
+    time: candle.time,
+    open: Number(candle.open),
+    high: Number(candle.high),
+    low: Number(candle.low),
+    close: Number(candle.close),
+    volume: Number(candle.volume),
   }));
 }
