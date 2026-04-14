@@ -171,3 +171,18 @@ export async function fetchOptionsHistory() {
   });
   return handleResponse(res);
 }
+
+// CANDLESTICK DATA (uses Binance public API)
+export async function fetchCandlestickData(symbol, interval = "1h", limit = 100) {
+  const res = await fetch(
+    `https://api.binance.com/api/v3/klines?symbol=${symbol.toUpperCase()}&interval=${interval}&limit=${limit}`
+  );
+  const data = await handleResponse(res);
+  return data.map((k) => ({
+    time: Math.floor(k[0] / 1000),
+    open: parseFloat(k[1]),
+    high: parseFloat(k[2]),
+    low: parseFloat(k[3]),
+    close: parseFloat(k[4]),
+  }));
+}

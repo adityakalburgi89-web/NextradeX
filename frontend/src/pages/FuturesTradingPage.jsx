@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { openFuturesPosition, fetchOpenFuturesPositions } from "../api";
+import { openFuturesPosition, fetchOpenFuturesPositions, fetchCandlestickData } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
 import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
 import { SkeletonRow } from "../components/ui/Skeleton";
+import CandlestickChart from "../components/ui/CandlestickChart";
 
 const initialForm = {
   symbol: "BTCUSDT",
@@ -21,6 +22,8 @@ export default function FuturesTradingPage() {
   const [error, setError] = useState("");
   const [positions, setPositions] = useState([]);
   const [loadingPositions, setLoadingPositions] = useState(true);
+  const [candleData, setCandleData] = useState([]);
+  const [chartLoading, setChartLoading] = useState(false);
 
   const loadPositions = async () => {
     try {
@@ -36,6 +39,21 @@ export default function FuturesTradingPage() {
   useEffect(() => {
     loadPositions();
   }, []);
+
+  useEffect(() => {
+    const loadCandles = async () => {
+      setChartLoading(true);
+      try {
+        const data = await fetchCandlestickData(form.symbol);
+        setCandleData(data);
+      } catch {
+        // ignore
+      } finally {
+        setChartLoading(false);
+      }
+    };
+    loadCandles();
+  }, [form.symbol]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,6 +85,22 @@ export default function FuturesTradingPage() {
   return (
     <PageTransition>
       <div className="py-12 space-y-8 max-w-4xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle>Chart</CardTitle>
+            <CardDescription>{form.symbol} Price</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {chartLoading ? (
+              <div className="h-[400px] flex items-center justify-center text-muted font-mono text-sm">
+                Loading chart...
+              </div>
+            ) : (
+              <CandlestickChart data={candleData} />
+            )}
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Futures Trading</CardTitle>

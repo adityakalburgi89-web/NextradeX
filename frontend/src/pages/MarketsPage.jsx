@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { fetchAllPrices } from "../api";
+import { fetchAllPrices, fetchCandlestickData } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { PageTransition } from "../components/ui/PageTransition";
 import { Skeleton } from "../components/ui/Skeleton";
 import { useWebSocket } from "../hooks/useWebSocket";
+import CandlestickChart from "../components/ui/CandlestickChart";
 
 export default function MarketsPage() {
   const [prices, setPrices] = useState([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedSymbol, setSelectedSymbol] = useState(null);
+  const [candleData, setCandleData] = useState([]);
+  const [chartLoading, setChartLoading] = useState(false);
 
   const handlePriceUpdate = (data) => {
     if (Array.isArray(data)) {
@@ -49,9 +53,47 @@ export default function MarketsPage() {
     !query ? true : p.symbol?.toLowerCase().includes(query.toLowerCase())
   );
 
+  const loadCandles = async (symbol) => {
+    setChartLoading(true);
+    try {
+      const data = await fetchCandlestickData(symbol);
+      setCandleData(data);
+    } catch {
+      // ignore
+    } finally {
+      setChartLoading(false);
+    }
+  };
+
+  const handleSymbolClick = (symbol) => {
+    if (selectedSymbol === symbol) {
+      setSelectedSymbol(null);
+    } else {
+      setSelectedSymbol(symbol);
+      loadCandles(symbol);
+    }
+  };
+
   return (
     <PageTransition>
       <div className="py-12 space-y-8">
+        {selectedSymbol && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{selectedSymbol} Chart</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {chartLoading ? (
+                <div className="h-[400px] flex items-center justify-center text-muted font-mono text-sm">
+                  Loading chart...
+                </div>
+              ) : (
+                <CandlestickChart data={candleData} />
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         <div className="flex items-center justify-between gap-6 flex-wrap">
           <div className="stagger-children">
             <h1 className="font-heading text-3xl font-bold mb-2 tracking-tight">Markets</h1>
@@ -101,6 +143,7 @@ export default function MarketsPage() {
                 {filtered.map((p) => (
                   <div
                     key={p.id || p.symbol}
+                    onClick={() => handleSymbolClick(p.symbol)}
                     className="rounded-xl border border-white/[0.06] px-4 py-3.5 bg-white/[0.02] flex flex-col gap-1.5 hover:border-primary/30 hover:bg-white/[0.04] hover:shadow-glow-soft transition-all duration-300 gpu-accelerated cursor-default"
                   >
                     <span className="font-mono text-[10px] text-muted uppercase tracking-wider">{p.symbol}</span>

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { createSpotOrder, fetchPrice } from "../api";
+import { createSpotOrder, fetchPrice, fetchCandlestickData } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
 import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
 import { useWebSocket } from "../hooks/useWebSocket";
+import CandlestickChart from "../components/ui/CandlestickChart";
 
 const initialForm = {
   symbol: "BTCUSDT",
@@ -21,6 +22,8 @@ export default function SpotTradingPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [currentPrice, setCurrentPrice] = useState(null);
+  const [candleData, setCandleData] = useState([]);
+  const [chartLoading, setChartLoading] = useState(false);
 
   const handlePriceUpdate = (data) => {
     if (Array.isArray(data)) {
@@ -48,6 +51,21 @@ export default function SpotTradingPage() {
 
   useEffect(() => {
     loadPrice();
+  }, [form.symbol]);
+
+  useEffect(() => {
+    const loadCandles = async () => {
+      setChartLoading(true);
+      try {
+        const data = await fetchCandlestickData(form.symbol);
+        setCandleData(data);
+      } catch {
+        // ignore
+      } finally {
+        setChartLoading(false);
+      }
+    };
+    loadCandles();
   }, [form.symbol]);
 
   const handleChange = (e) => {
@@ -79,7 +97,23 @@ export default function SpotTradingPage() {
 
   return (
     <PageTransition>
-      <div className="py-12 max-w-2xl mx-auto">
+      <div className="py-12 max-w-4xl mx-auto">
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Chart</CardTitle>
+            <CardDescription>BTC/USDT Price</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {chartLoading ? (
+              <div className="h-[400px] flex items-center justify-center text-muted font-mono text-sm">
+                Loading chart...
+              </div>
+            ) : (
+              <CandlestickChart data={candleData} />
+            )}
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Spot Trading</CardTitle>
