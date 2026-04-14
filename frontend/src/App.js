@@ -15,6 +15,7 @@ import WalletsPage from "./pages/WalletsPage";
 import OrdersPage from "./pages/OrdersPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
+import CareersPage from "./pages/CareersPage";
 import { hasAuthToken, clearAuthToken, fetchUserProfile } from "./api";
 import xIcon from "./assets/x.com_icon.png";
 import linkedInIcon from "./assets/LinkedIn_icon.svg.png";
@@ -455,7 +456,7 @@ function Footer() {
               <Link to="/" className={linkClass}>About Us</Link>
               <Link to="/" className={linkClass}>Terms of Service</Link>
               <Link to="/" className={linkClass}>Privacy Policy</Link>
-              <Link to="/" className={linkClass}>Careers</Link>
+              <Link to="/careers" className={linkClass}>Careers</Link>
             </nav>
           </div>
 
@@ -747,6 +748,7 @@ function App() {
           <Route path="/wallets" element={<WalletsPage />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/careers" element={<CareersPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>
