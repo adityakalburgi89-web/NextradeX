@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { createChart } from "lightweight-charts";
 
-export default function CandlestickChart({ data, options = {} }) {
+export default function CandlestickChart({ data = [], options = {}, height = 420 }) {
   const containerRef = useRef(null);
   const chartRef = useRef(null);
   const seriesRef = useRef(null);
@@ -11,20 +11,20 @@ export default function CandlestickChart({ data, options = {} }) {
 
     const chart = createChart(containerRef.current, {
       width: containerRef.current.clientWidth,
-      height: 400,
+      height,
       layout: {
         background: { type: "solid", color: "transparent" },
         textColor: "#9ca3af",
-        fontFamily: "monospace",
+        fontFamily: '"JetBrains Mono", monospace',
       },
       grid: {
-        vertLines: { color: "rgba(255, 255, 255, 0.06)" },
-        horzLines: { color: "rgba(255, 255, 255, 0.06)" },
+        vertLines: { color: "rgba(148, 163, 184, 0.08)" },
+        horzLines: { color: "rgba(148, 163, 184, 0.08)" },
       },
       crosshair: {
         mode: 1,
-        vertLine: { color: "rgba(255, 255, 255, 0.3)", width: 1, style: 2 },
-        horzLine: { color: "rgba(255, 255, 255, 0.3)", width: 1, style: 2 },
+        vertLine: { color: "rgba(247, 147, 26, 0.35)", width: 1, style: 2 },
+        horzLine: { color: "rgba(247, 147, 26, 0.35)", width: 1, style: 2 },
       },
       rightPriceScale: {
         borderColor: "rgba(255, 255, 255, 0.1)",
@@ -35,8 +35,8 @@ export default function CandlestickChart({ data, options = {} }) {
         timeVisible: true,
         secondsVisible: false,
       },
-      handleScale: { axisPressedMouseMove: true },
-      handleScroll: { vertTouchDrag: false },
+      handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true },
+      handleScroll: { vertTouchDrag: false, mouseWheel: true, pressedMouseMove: true },
       ...options,
     });
 
@@ -51,36 +51,53 @@ export default function CandlestickChart({ data, options = {} }) {
 
     if (data && data.length > 0) {
       candlestickSeries.setData(data);
+      chart.timeScale().fitContent();
     }
 
     chartRef.current = chart;
     seriesRef.current = candlestickSeries;
 
-    const handleResize = () => {
+    const resizeObserver = new ResizeObserver(() => {
       if (containerRef.current) {
-        chart.applyOptions({ width: containerRef.current.clientWidth });
+        chart.applyOptions({
+          width: containerRef.current.clientWidth,
+          height,
+        });
+        chart.timeScale().fitContent();
       }
-    };
+    });
 
-    window.addEventListener("resize", handleResize);
+    resizeObserver.observe(containerRef.current);
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      resizeObserver.disconnect();
       chart.remove();
     };
-  }, []);
+  }, [height, options]);
 
   useEffect(() => {
     if (seriesRef.current && data && data.length > 0) {
       seriesRef.current.setData(data);
+      chartRef.current?.timeScale().fitContent();
     }
   }, [data]);
+
+  if (!data.length) {
+    return (
+      <div
+        className="chart-shell flex items-center justify-center rounded-[28px] border border-white/10 bg-slate-950/50 text-sm text-muted"
+        style={{ height }}
+      >
+        Waiting for candle data...
+      </div>
+    );
+  }
 
   return (
     <div
       ref={containerRef}
-      className="w-full rounded-xl overflow-hidden bg-black/20"
-      style={{ height: 400 }}
+      className="chart-shell w-full overflow-hidden rounded-[28px] bg-black/20"
+      style={{ height }}
     />
   );
 }
