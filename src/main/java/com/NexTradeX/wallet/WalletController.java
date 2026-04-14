@@ -1,5 +1,6 @@
 package com.NexTradeX.wallet;
 
+import com.NexTradeX.auth.JwtService;
 import com.NexTradeX.common.ApiResponse;
 import com.NexTradeX.dto.WalletResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +19,12 @@ import java.util.stream.Collectors;
 public class WalletController {
     
     private final WalletService walletService;
+    private final JwtService jwtService;
     
     @GetMapping
     public ResponseEntity<ApiResponse<List<WalletResponse>>> getUserWallets(
             Authentication authentication) {
         try {
-            String username = authentication.getName();
             Long userId = extractUserIdFromAuth(authentication);
             
             List<Wallet> wallets = walletService.getUserWallets(userId);
@@ -71,8 +72,6 @@ public class WalletController {
     }
     
     private Long extractUserIdFromAuth(Authentication authentication) {
-        // This would be implemented to extract user ID from the security context
-        // For now, return 1 as placeholder
-        return 1L;
+        return jwtService.extractUserIdFromAuthentication(authentication);
     }
 }

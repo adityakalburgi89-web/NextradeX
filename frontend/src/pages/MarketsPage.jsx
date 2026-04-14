@@ -2,16 +2,37 @@ import React, { useEffect, useState } from "react";
 import { fetchAllPrices } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
+import { useWebSocket } from "../hooks/useWebSocket";
 
 export default function MarketsPage() {
   const [prices, setPrices] = useState([]);
   const [query, setQuery] = useState("");
 
+  const handlePriceUpdate = (data) => {
+    if (Array.isArray(data)) {
+      setPrices(data);
+    } else if (data && data.symbol) {
+      setPrices((prev) => {
+        const existing = prev.findIndex((p) => p.symbol === data.symbol);
+        if (existing >= 0) {
+          const updated = [...prev];
+          updated[existing] = data;
+          return updated;
+        }
+        return [...prev, data];
+      });
+    }
+  };
+
+  const { connected } = useWebSocket("/topic/prices", handlePriceUpdate, true);
+
   useEffect(() => {
     const load = async () => {
       try {
         const res = await fetchAllPrices();
-        setPrices(res?.data || []);
+        if (prices.length === 0) {
+          setPrices(res?.data || []);
+        }
       } catch {
         // ignore simple errors
       }
@@ -40,9 +61,12 @@ export default function MarketsPage() {
       </div>
 
       <Card>
-        <CardHeader>
+          <CardHeader>
           <CardTitle>Price Board</CardTitle>
-          <CardDescription>Streaming-like snapshot from the backend price service.</CardDescription>
+          <CardDescription>
+            Streaming-like snapshot from the backend price service. 
+            {connected && <span className="text-emerald-400 ml-2">Live</span>}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">

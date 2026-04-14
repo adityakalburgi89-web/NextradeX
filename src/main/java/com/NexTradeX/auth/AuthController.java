@@ -26,7 +26,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> register(
             @Valid @RequestBody RegisterRequest request) {
         try {
-            String token = authService.registerUser(
+            authService.registerUser(
                     request.getUsername(),
                     request.getEmail(),
                     request.getPassword(),
@@ -35,6 +35,7 @@ public class AuthController {
             );
 
             User user = authService.getUserByUsername(request.getUsername());
+            String token = jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
 
             AuthResponse authResponse = AuthResponse.builder()
                     .token(token)
@@ -56,8 +57,9 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> login(
             @Valid @RequestBody LoginRequest request) {
         try {
-            String token = authService.loginUser(request.getUsername(), request.getPassword());
+            authService.loginUser(request.getUsername(), request.getPassword());
             User user = authService.getUserByUsername(request.getUsername());
+            String token = jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
 
             AuthResponse authResponse = AuthResponse.builder()
                     .token(token)

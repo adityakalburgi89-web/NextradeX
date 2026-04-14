@@ -9,6 +9,7 @@ import DashboardPage from "./pages/DashboardPage";
 import MarketsPage from "./pages/MarketsPage";
 import SpotTradingPage from "./pages/SpotTradingPage";
 import FuturesTradingPage from "./pages/FuturesTradingPage";
+import OptionsTradingPage from "./pages/OptionsTradingPage";
 import WalletsPage from "./pages/WalletsPage";
 import OrdersPage from "./pages/OrdersPage";
 
@@ -195,9 +196,18 @@ function App() {
         </div>
 
         <div className="hidden md:flex items-center gap-8 font-mono text-sm text-muted">
-          <Link to="/trade/spot" className="hover:text-primary transition-colors">
-            Trade
-          </Link>
+          <div className="relative group">
+            <Link to="/trade/spot" className="hover:text-primary transition-colors">
+              Trade
+            </Link>
+            <div className="absolute left-0 top-full pt-2 hidden group-hover:block">
+              <div className="bg-background border border-white/10 rounded shadow-lg py-2 min-w-[140px]">
+                <Link to="/trade/spot" className="block px-4 py-2 hover:bg-white/5 hover:text-primary">Spot</Link>
+                <Link to="/trade/futures" className="block px-4 py-2 hover:bg-white/5 hover:text-primary">Futures</Link>
+                <Link to="/trade/options" className="block px-4 py-2 hover:bg-white/5 hover:text-primary">Options</Link>
+              </div>
+            </div>
+          </div>
           <Link to="/markets" className="hover:text-primary transition-colors">
             Markets
           </Link>
@@ -227,6 +237,7 @@ function App() {
           <Route path="/markets" element={<MarketsPage />} />
           <Route path="/trade/spot" element={<SpotTradingPage />} />
           <Route path="/trade/futures" element={<FuturesTradingPage />} />
+          <Route path="/trade/options" element={<OptionsTradingPage />} />
           <Route path="/wallets" element={<WalletsPage />} />
           <Route path="/orders" element={<OrdersPage />} />
         </Routes>

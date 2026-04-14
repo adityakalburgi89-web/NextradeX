@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@stomp/stompjs": "^7.3.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.575.0",
@@ -10,6 +11,7 @@
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.30.3",
     "react-scripts": "^5.0.0",
+    "sockjs-client": "^1.6.1",
     "tailwind-merge": "^3.5.0"
   },
   "scripts": {

@@ -139,3 +139,35 @@ export async function openMarginPosition(payload) {
   });
   return handleResponse(res);
 }
+
+// OPTIONS
+export async function buyOption(payload) {
+  const res = await fetch(`${API_BASE_URL}/options/buy`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return handleResponse(res);
+}
+
+export async function settleOption(contractId) {
+  const res = await fetch(`${API_BASE_URL}/options/settle/${contractId}`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  return handleResponse(res);
+}
+
+export async function fetchOptionsPositions() {
+  const res = await fetch(`${API_BASE_URL}/options/positions`, {
+    headers: authHeaders(),
+  });
+  return handleResponse(res);
+}
+
+export async function fetchOptionsHistory() {
+  const res = await fetch(`${API_BASE_URL}/options/positions/history`, {
+    headers: authHeaders(),
+  });
+  return handleResponse(res);
+}

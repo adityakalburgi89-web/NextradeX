@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.NexTradeX.auth.JwtService;
 import com.NexTradeX.common.ApiResponse;
 import com.NexTradeX.dto.FuturesOrderRequest;
 import com.NexTradeX.dto.OrderResponse;
@@ -28,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class FuturesController {
     
     private final FuturesTradingService futuresTradingService;
+    private final JwtService jwtService;
     
     @PostMapping("/open")
     public ResponseEntity<ApiResponse<OrderResponse>> openPosition(
@@ -96,6 +98,6 @@ public class FuturesController {
     }
     
     private Long extractUserIdFromAuth(Authentication authentication) {
-        return 1L;
+        return jwtService.extractUserIdFromAuthentication(authentication);
     }
 }

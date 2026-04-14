@@ -1,5 +1,6 @@
 package com.NexTradeX.order;
 
+import com.NexTradeX.auth.JwtService;
 import com.NexTradeX.common.ApiResponse;
 import com.NexTradeX.dto.OrderResponse;
 import com.NexTradeX.dto.SpotOrderRequest;
@@ -23,6 +24,7 @@ public class OrderController {
     
     private final OrderService orderService;
     private final SpotTradingService spotTradingService;
+    private final JwtService jwtService;
     
     @PostMapping("/spot")
     public ResponseEntity<ApiResponse<OrderResponse>> createSpotOrder(
@@ -120,6 +122,6 @@ public class OrderController {
     }
     
     private Long extractUserIdFromAuth(Authentication authentication) {
-        return 1L; // Placeholder
+        return jwtService.extractUserIdFromAuthentication(authentication);
     }
 }

@@ -1,5 +1,4 @@
 package com.NexTradeX.config;
-//hosting
 
 import java.io.IOException;
 
@@ -13,6 +12,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.NexTradeX.auth.JwtAuthenticationToken;
 import com.NexTradeX.auth.JwtService;
 
 import jakarta.servlet.FilterChain;
@@ -40,16 +40,17 @@ public class JwtFilter extends OncePerRequestFilter {
             
             if (jwt != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 String username = jwtService.extractUsername(jwt);
+                Long userId = jwtService.extractUserId(jwt);
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
                 
                 if (jwtService.isTokenValid(jwt, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken = 
-                        new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
+                    JwtAuthenticationToken authToken = 
+                        new JwtAuthenticationToken(
+                            username, userId, jwt, userDetails.getAuthorities());
                     authToken.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-                    log.debug("JWT Token valid for user: {}", username);
+                    log.debug("JWT Token valid for user: {} (ID: {})", username, userId);
                 }
             }
         } catch (Exception e) {

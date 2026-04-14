@@ -7,6 +7,8 @@ import java.util.Map;
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +43,12 @@ public class JwtService {
         return createToken(claims, username);
     }
     
+    public String generateTokenWithUserId(String username, Long userId) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
+        return createToken(claims, username);
+    }
+    
     private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
                 .claims(claims)
@@ -53,6 +61,18 @@ public class JwtService {
     
     public String extractUsername(String token) {
         return extractClaims(token).getSubject();
+    }
+    
+    public Long extractUserId(String token) {
+        Claims claims = extractClaims(token);
+        Object userId = claims.get("userId");
+        if (userId == null) {
+            return null;
+        }
+        if (userId instanceof Integer) {
+            return ((Integer) userId).longValue();
+        }
+        return (Long) userId;
     }
     
     public boolean isTokenValid(String token, UserDetails userDetails) {
@@ -87,5 +107,27 @@ public class JwtService {
     
     public long getJwtExpiration() {
         return jwtExpiration;
+    }
+    
+    public Long extractUserIdFromAuthentication(Authentication authentication) {
+        if (authentication == null) {
+            return null;
+        }
+        if (authentication instanceof JwtAuthenticationToken) {
+            return ((JwtAuthenticationToken) authentication).getUserId();
+        }
+        Object credentials = authentication.getCredentials();
+        if (credentials instanceof String) {
+            return extractUserId((String) credentials);
+        }
+        return null;
+    }
+    
+    public Long extractUserIdFromRequest(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            return extractUserId(token);
+        }
+        return null;
     }
 }

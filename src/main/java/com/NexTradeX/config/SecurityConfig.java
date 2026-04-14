@@ -1,5 +1,6 @@
 package com.NexTradeX.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -27,6 +28,9 @@ public class SecurityConfig {
     private final AuthService authService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    
+    @Value("${cors.allowed.origins}")
+    private String corsAllowedOrigins;
     
     public SecurityConfig(@Lazy AuthService authService, JwtService jwtService, PasswordEncoder passwordEncoder) {
         this.authService = authService;
@@ -59,9 +63,9 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                // both variants are accepted so preflight to /auth/register succeeds
                 .requestMatchers("/api/auth/**", "/auth/**").permitAll()
                 .requestMatchers("/api/health/**").permitAll()
+                .requestMatchers("/ws/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/market/**").permitAll()
                 .anyRequest().authenticated()
             )
@@ -74,7 +78,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3000");
+        configuration.addAllowedOrigin(corsAllowedOrigins);
         configuration.addAllowedHeader(CorsConfiguration.ALL);
         configuration.addAllowedMethod(CorsConfiguration.ALL);
         configuration.setAllowCredentials(true);
