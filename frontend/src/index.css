@@ -14,6 +14,10 @@
 
   body {
     @apply bg-background text-foreground antialiased selection:bg-primary/30 selection:text-primary font-body;
+    background-image:
+      radial-gradient(circle at top, rgba(247, 147, 26, 0.12), transparent 28%),
+      radial-gradient(circle at 85% 15%, rgba(234, 88, 12, 0.1), transparent 22%),
+      linear-gradient(180deg, rgba(15, 17, 21, 0.98), rgba(3, 3, 4, 1));
   }
 
   /* CSS Custom Properties for animation timing */
@@ -34,6 +38,38 @@
   /* Glassmorphism Panel */
   .glass-panel {
     @apply bg-surface-glass backdrop-blur-2xl border border-white/[0.06] shadow-inner-glow;
+  }
+
+  .interactive-surface {
+    @apply transition-all duration-300 ease-spring;
+    transform: translateY(0) scale(1);
+    will-change: transform, box-shadow, border-color;
+  }
+  .interactive-surface:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 24px 80px -36px rgba(247, 147, 26, 0.45);
+  }
+
+  .interactive-chip {
+    @apply border transition-all duration-300 ease-spring;
+    backdrop-filter: blur(12px);
+  }
+
+  .panel-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .panel-shine::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.08) 18%, transparent 36%);
+    transform: translateX(-120%);
+    transition: transform 0.9s var(--ease-spring);
+    pointer-events: none;
+  }
+  .panel-shine:hover::before {
+    transform: translateX(120%);
   }
 
   /* Gradient Border Card (animated) */
@@ -200,6 +236,20 @@
     @apply bg-white/[0.015];
   }
 
+  .market-card {
+    @apply interactive-surface rounded-[24px] border px-4 py-4;
+  }
+
+  .chart-shell {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
+      radial-gradient(circle at top, rgba(247, 147, 26, 0.08), transparent 36%),
+      rgba(2, 6, 23, 0.88);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 24px 90px -48px rgba(2, 6, 23, 0.9);
+  }
+
   /* Smooth will-change helper */
   .gpu-accelerated {
     will-change: transform;
@@ -253,4 +303,15 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 input[type="number"] {
   -moz-appearance: textfield;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
