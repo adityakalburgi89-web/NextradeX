@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
@@ -13,6 +14,7 @@ export default function AuthPage() {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -105,7 +107,19 @@ export default function AuthPage() {
               )}
               <div>
                 <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">Password</label>
-                <Input type="password" name="password" value={form.password} onChange={handleChange} required placeholder="Enter password" />
+                <Input 
+                  type={showPassword ? "text" : "password"} 
+                  name="password" 
+                  value={form.password} 
+                  onChange={handleChange} 
+                  required 
+                  placeholder="Enter password"
+                  rightIcon={
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="focus:outline-none">
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  }
+                />
               </div>
               {error && (
                 <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-accent-red/10 border border-accent-red/20 animate-slide-down">
