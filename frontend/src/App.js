@@ -345,10 +345,7 @@ function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-glow-primary">
-                <TrendingUp size={17} className="text-white" />
-              </div>
+            <div className="flex items-center mb-4">
               <span className="font-heading font-bold text-lg tracking-tight">
                 NexTrade<span className="text-primary">X</span>
               </span>
@@ -498,10 +495,7 @@ function App() {
       {/* Navigation */}
       <nav className="sticky top-0 z-50 backdrop-blur-2xl bg-background/80 border-b border-white/[0.06]">
         <div className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-glow-primary hover:shadow-glow-primary-hover transition-shadow duration-500">
-              <TrendingUp size={17} className="text-white" />
-            </div>
+          <div className="flex items-center">
             <Link to="/" className="font-heading font-bold text-xl tracking-tight hover:opacity-90 transition-opacity">
               NexTrade<span className="text-primary">X</span>
             </Link>
