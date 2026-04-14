@@ -65,6 +65,7 @@ public class MarketWebSocketController {
     @Scheduled(fixedRate = 5000)
     public void broadcastPrices() {
         try {
+            marketService.simulateMarketMovement();
             List<CryptoPrice> prices = marketService.getAllPrices();
             messagingTemplate.convertAndSend("/topic/prices", prices);
             for (CryptoPrice price : prices) {
