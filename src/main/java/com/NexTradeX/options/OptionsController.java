@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/options")
+@RequestMapping("/options")
 @RequiredArgsConstructor
 public class OptionsController {
     
