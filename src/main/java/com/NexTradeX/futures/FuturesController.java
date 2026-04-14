@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/futures")
+@RequestMapping("/futures")
 @RequiredArgsConstructor
 public class FuturesController {
     
