@@ -8,9 +8,8 @@ class WebSocketService {
     this.client = null;
     this.connected = false;
     this.subscriptions = new Map();
-    this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 5;
     this.reconnectDelay = 3000;
+    this.subscriptionSequence = 0;
   }
 
   connect(onConnect, onError) {
@@ -26,10 +25,9 @@ class WebSocketService {
       heartbeatOutgoing: 4000,
       onConnect: () => {
         this.connected = true;
-        this.reconnectAttempts = 0;
         console.log("WebSocket connected");
-        if (onConnect) onConnect();
         this.resubscribeAll();
+        if (onConnect) onConnect();
       },
       onDisconnect: () => {
         this.connected = false;
@@ -53,44 +51,56 @@ class WebSocketService {
       this.client.deactivate();
       this.client = null;
       this.connected = false;
-      this.subscriptions.clear();
+      this.subscriptions.forEach((entry) => {
+        entry.stompSubscription = null;
+      });
     }
   }
 
   subscribe(destination, callback) {
-    if (!this.client || !this.connected) {
+    const id = `sub-${this.subscriptionSequence++}`;
+    const entry = {
+      destination,
+      callback,
+      stompSubscription: null,
+    };
+
+    this.subscriptions.set(id, entry);
+
+    if (this.client && this.connected) {
+      this.attachSubscription(entry);
+    } else {
       console.warn("WebSocket not connected. Subscription queued.");
-      return null;
     }
 
-    const id = this.subscriptions.size.toString();
-    const subscription = this.client.subscribe(destination, (message) => {
-      try {
-        const data = JSON.parse(message.body);
-        callback(data);
-      } catch (e) {
-        console.error("Error parsing WebSocket message:", e);
-      }
-    });
-
-    this.subscriptions.set(id, subscription);
     return id;
   }
 
   unsubscribe(id) {
-    const subscription = this.subscriptions.get(id);
-    if (subscription) {
-      subscription.unsubscribe();
-      this.subscriptions.delete(id);
+    const entry = this.subscriptions.get(id);
+    if (entry?.stompSubscription) {
+      entry.stompSubscription.unsubscribe();
     }
+    this.subscriptions.delete(id);
+  }
+
+  attachSubscription(entry) {
+    entry.stompSubscription = this.client.subscribe(entry.destination, (message) => {
+      try {
+        const data = JSON.parse(message.body);
+        entry.callback(data);
+      } catch (error) {
+        console.error("Error parsing WebSocket message:", error);
+      }
+    });
   }
 
   resubscribeAll() {
-    const callbacks = [];
-    this.subscriptions.forEach((sub, id) => {
-      callbacks.push({ id, destination: sub.destination });
+    this.subscriptions.forEach((entry) => {
+      if (!entry.stompSubscription && this.client && this.connected) {
+        this.attachSubscription(entry);
+      }
     });
-    this.subscriptions.clear();
   }
 
   send(destination, body) {
