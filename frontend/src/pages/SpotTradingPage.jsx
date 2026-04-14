@@ -2,7 +2,9 @@ import React, { useState, useEffect } from "react";
 import { createSpotOrder, fetchPrice } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
+import { Select } from "../components/ui/Select";
 import { Button } from "../components/ui/Button";
+import { PageTransition } from "../components/ui/PageTransition";
 import { useWebSocket } from "../hooks/useWebSocket";
 
 const initialForm = {
@@ -76,98 +78,101 @@ export default function SpotTradingPage() {
   };
 
   return (
-    <div className="py-10 max-w-2xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle>Spot Trading</CardTitle>
-          <CardDescription>Place a basic spot buy/sell order using your spot wallet.</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="font-mono text-xs text-muted uppercase tracking-widest mb-2 block">
-                Symbol
-              </label>
-              <Input name="symbol" value={form.symbol} onChange={handleChange} required />
-            </div>
-            {currentPrice && (
-              <div className="text-center py-2 border border-white/5 rounded bg-black/20">
-                <span className="font-mono text-xs text-muted uppercase">Current Price</span>
-                <p className="font-heading text-xl text-primary">
-                  {currentPrice} {connected && <span className="text-[10px] text-emerald-400 align-top">LIVE</span>}
-                </p>
-              </div>
-            )}
-            <div className="grid grid-cols-2 gap-3">
+    <PageTransition>
+      <div className="py-12 max-w-2xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle>Spot Trading</CardTitle>
+            <CardDescription>Place a basic spot buy/sell order using your spot wallet.</CardDescription>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-5">
               <div>
-                <label className="font-mono text-xs text-muted uppercase tracking-widest mb-2 block">
-                  Side
+                <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">
+                  Symbol
                 </label>
-                <select
-                  name="side"
-                  value={form.side}
-                  onChange={handleChange}
-                  className="w-full bg-transparent border border-white/10 rounded px-3 py-2 text-sm"
-                >
-                  <option value="BUY">Buy</option>
-                  <option value="SELL">Sell</option>
-                </select>
+                <Input name="symbol" value={form.symbol} onChange={handleChange} required />
               </div>
-              <div>
-                <label className="font-mono text-xs text-muted uppercase tracking-widest mb-2 block">
-                  Order Type
-                </label>
-                <select
-                  name="orderType"
-                  value={form.orderType}
-                  onChange={handleChange}
-                  className="w-full bg-transparent border border-white/10 rounded px-3 py-2 text-sm"
-                >
-                  <option value="MARKET">Market</option>
-                  <option value="LIMIT">Limit</option>
-                </select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="font-mono text-xs text-muted uppercase tracking-widest mb-2 block">
-                  Quantity
-                </label>
-                <Input
-                  type="number"
-                  step="0.0001"
-                  name="quantity"
-                  value={form.quantity}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              {form.orderType === "LIMIT" && (
+              {currentPrice && (
+                <div className="text-center py-4 rounded-xl border border-white/[0.06] bg-white/[0.02] animate-fade-in">
+                  <span className="font-mono text-[10px] text-muted uppercase tracking-wider">Current Price</span>
+                  <p className="font-heading text-2xl text-primary mt-1 font-semibold">
+                    {currentPrice}
+                    {connected && (
+                      <span className="ml-2 status-badge status-badge--active text-[8px]">LIVE</span>
+                    )}
+                  </p>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="font-mono text-xs text-muted uppercase tracking-widest mb-2 block">
-                    Limit Price
+                  <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">
+                    Side
+                  </label>
+                  <Select name="side" value={form.side} onChange={handleChange}>
+                    <option value="BUY">Buy</option>
+                    <option value="SELL">Sell</option>
+                  </Select>
+                </div>
+                <div>
+                  <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">
+                    Order Type
+                  </label>
+                  <Select name="orderType" value={form.orderType} onChange={handleChange}>
+                    <option value="MARKET">Market</option>
+                    <option value="LIMIT">Limit</option>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">
+                    Quantity
                   </label>
                   <Input
                     type="number"
-                    step="0.01"
-                    name="price"
-                    value={form.price}
+                    step="0.0001"
+                    name="quantity"
+                    value={form.quantity}
                     onChange={handleChange}
-                    required={form.orderType === "LIMIT"}
+                    required
                   />
                 </div>
+                {form.orderType === "LIMIT" && (
+                  <div className="animate-slide-down">
+                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">
+                      Limit Price
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      name="price"
+                      value={form.price}
+                      onChange={handleChange}
+                      required={form.orderType === "LIMIT"}
+                    />
+                  </div>
+                )}
+              </div>
+              {message && (
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-accent-green/10 border border-accent-green/20 animate-slide-down">
+                  <p className="text-accent-green text-sm font-mono">{message}</p>
+                </div>
               )}
-            </div>
-            {message && <p className="text-emerald-400 text-sm font-mono">{message}</p>}
-            {error && <p className="text-red-400 text-sm font-mono">{error}</p>}
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full font-mono" disabled={loading}>
-              {loading ? "Placing..." : "Place Spot Order"}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
-    </div>
+              {error && (
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-accent-red/10 border border-accent-red/20 animate-slide-down">
+                  <p className="text-accent-red text-sm font-mono">{error}</p>
+                </div>
+              )}
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" className="w-full font-mono" loading={loading}>
+                Place Spot Order
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      </div>
+    </PageTransition>
   );
 }

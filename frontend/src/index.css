@@ -2,13 +2,161 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════
+   BASE LAYER
+   ═══════════════════════════════════════════ */
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
     @apply bg-background text-foreground antialiased selection:bg-primary/30 selection:text-primary font-body;
   }
+
+  /* CSS Custom Properties for animation timing */
+  :root {
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --duration-fast: 150ms;
+    --duration-base: 300ms;
+    --duration-slow: 500ms;
+  }
 }
 
+/* ═══════════════════════════════════════════
+   COMPONENTS LAYER
+   ═══════════════════════════════════════════ */
+@layer components {
+  /* Glassmorphism Panel */
+  .glass-panel {
+    @apply bg-surface-glass backdrop-blur-2xl border border-white/[0.06] shadow-inner-glow;
+  }
+
+  /* Gradient Border Card (animated) */
+  .gradient-border {
+    position: relative;
+    background: #0F1115;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+  }
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      rgba(247, 147, 26, 0.3),
+      rgba(234, 88, 12, 0.1),
+      rgba(255, 214, 0, 0.2),
+      rgba(247, 147, 26, 0.1)
+    );
+    background-size: 300% 300%;
+    animation: gradientShift 6s ease-in-out infinite;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s var(--ease-smooth);
+  }
+  .gradient-border:hover::before {
+    opacity: 1;
+  }
+
+  /* Ambient Glow */
+  .ambient-glow {
+    position: relative;
+  }
+  .ambient-glow::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(247, 147, 26, 0.06) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s var(--ease-smooth);
+  }
+  .ambient-glow:hover::after {
+    opacity: 1;
+  }
+
+  /* Stagger Children Animation */
+  .stagger-children > * {
+    opacity: 0;
+    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+  .stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+  .stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+  .stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+  .stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+  .stagger-children > *:nth-child(7) { animation-delay: 360ms; }
+  .stagger-children > *:nth-child(8) { animation-delay: 420ms; }
+  .stagger-children > *:nth-child(9) { animation-delay: 480ms; }
+  .stagger-children > *:nth-child(10) { animation-delay: 540ms; }
+  .stagger-children > *:nth-child(n+11) { animation-delay: 600ms; }
+
+  /* Status Badge */
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider font-medium;
+  }
+  .status-badge--active {
+    @apply bg-accent-green/15 text-accent-green border border-accent-green/20;
+  }
+  .status-badge--pending {
+    @apply bg-tertiary/15 text-tertiary border border-tertiary/20;
+  }
+  .status-badge--error {
+    @apply bg-accent-red/15 text-accent-red border border-accent-red/20;
+  }
+  .status-badge--neutral {
+    @apply bg-white/10 text-muted border border-white/10;
+  }
+
+  /* Nav Active Indicator */
+  .nav-link {
+    @apply relative py-1;
+  }
+  .nav-link::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-0 h-[2px] bg-gradient-to-r from-primary to-secondary rounded-full;
+    transition: width 0.3s var(--ease-spring);
+  }
+  .nav-link:hover::after,
+  .nav-link.active::after {
+    @apply w-full;
+  }
+
+  /* Keyframe for slideUp used by stagger */
+  @keyframes slideUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+}
+
+/* ═══════════════════════════════════════════
+   UTILITIES LAYER
+   ═══════════════════════════════════════════ */
 @layer utilities {
+  /* Grid Pattern Background */
   .bg-grid-pattern {
     background-size: 50px 50px;
     background-image: linear-gradient(
@@ -24,23 +172,85 @@
     );
   }
 
+  /* Holographic Gradient */
   .holographic-gradient {
     @apply backdrop-blur-lg bg-white/5 border border-white/10;
   }
+
+  /* Gradient Text */
+  .text-gradient {
+    @apply bg-gradient-to-r from-secondary via-primary to-tertiary bg-clip-text text-transparent;
+  }
+
+  /* Glow Line Accent */
+  .glow-line {
+    @apply h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent;
+  }
+
+  /* Focus Ring */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  /* Data Row */
+  .data-row {
+    @apply flex items-center justify-between px-4 py-3 rounded-lg transition-colors duration-200 hover:bg-white/[0.03];
+  }
+  .data-row:nth-child(even) {
+    @apply bg-white/[0.015];
+  }
+
+  /* Smooth will-change helper */
+  .gpu-accelerated {
+    will-change: transform;
+    transform: translateZ(0);
+  }
 }
 
-/* Custom Scrollbar for True Void aesthetic */
+/* ═══════════════════════════════════════════
+   GLOBAL STYLES
+   ═══════════════════════════════════════════ */
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #030304; 
+  background: #030304;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1E293B; 
-  border-radius: 4px;
+  background: #1E293B;
+  border-radius: 3px;
+  transition: background 0.2s ease;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #F7931A; 
+  background: #F7931A;
+}
+
+/* Select dropdown options (dark background) */
+select option {
+  background: #0F1115;
+  color: #FFFFFF;
+  padding: 8px;
+}
+
+/* Remove autofill blue background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #0F1115 inset;
+  -webkit-text-fill-color: #FFFFFF;
+  caret-color: #FFFFFF;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Number input spinner removal */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
 }
