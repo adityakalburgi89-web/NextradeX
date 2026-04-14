@@ -4,7 +4,7 @@ import { Button } from "./components/ui/Button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./components/ui/Card";
 import { Input } from "./components/ui/Input";
 import { PageTransition } from "./components/ui/PageTransition";
-import { Zap, Shield, Layers, TrendingUp, Globe, Activity, Menu, X, BarChart3, Package, Target, Headphones, ChevronDown, Mail, User, LogOut } from "lucide-react";
+import { Zap, Shield, Layers, TrendingUp, Globe, Activity, Menu, BarChart3, Package, Target, Headphones, ChevronDown, Mail, User, LogOut } from "lucide-react";
 import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
 import MarketsPage from "./pages/MarketsPage";
@@ -330,14 +330,20 @@ function HomePage() {
                     <div>
                       <p className="font-mono text-[10px] text-muted uppercase tracking-widest mb-3">Connect with us</p>
                       <div className="flex items-center gap-3">
-                        <a href="#" className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 transition-all duration-300">
-                          <X size={14} className="text-muted" />
+                        <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 transition-all duration-300">
+                          <img src={xIcon} alt="X" className="w-4 h-4 object-contain" />
                         </a>
-                        <a href="#" className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 transition-all duration-300">
-                          <Mail size={14} className="text-muted" />
+                        <a href="mailto:contact@nextradex.sim" className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 transition-all duration-300">
+                          <img src={gmailIcon} alt="Gmail" className="w-4 h-4 object-contain" />
                         </a>
-                        <a href="#" className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 transition-all duration-300">
-                          <Globe size={14} className="text-muted" />
+                        <a href="https://portfolio-zeta-two-0s3z3wko1s.vercel.app" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 transition-all duration-300">
+                          <Globe size={16} className="text-muted" />
+                        </a>
+                        <a href="https://www.linkedin.com/in/aditya-kalburgi-080b5b267/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 transition-all duration-300">
+                          <img src={linkedInIcon} alt="LinkedIn" className="w-4 h-4 object-contain" />
+                        </a>
+                        <a href="https://github.com/aditykalburgi" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 transition-all duration-300">
+                          <img src={githubIcon} alt="GitHub" className="w-4 h-4 object-contain brightness-0 invert" />
                         </a>
                       </div>
                     </div>
