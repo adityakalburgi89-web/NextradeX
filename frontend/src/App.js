@@ -220,6 +220,87 @@ function HomePage() {
           </div>
         </section>
 
+        {/* CRYPTOCURRENCIES LIST */}
+        <section className="py-28 border-t border-white/[0.04] relative z-20">
+          <div className="text-center mb-16 stagger-children">
+            <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight mb-4">List of cryptocurrencies</h2>
+            <p className="text-muted text-sm md:text-base">Discover which cryptocurrencies, trade and tick sizes are available through our partner, Paxos.</p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto stagger-children">
+            <Card variant="glass" className="overflow-hidden border border-white/[0.06] !p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-white/[0.04] border-b border-white/[0.08] font-heading text-white">
+                    <tr>
+                      <th className="px-6 py-4 font-semibold">Token</th>
+                      <th className="px-6 py-4 font-semibold text-center">Min Trade Size</th>
+                      <th className="px-6 py-4 font-semibold text-center">Max Trade Size</th>
+                      <th className="px-6 py-4 font-semibold text-center">Tick Size</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/[0.04] font-mono text-muted">
+                    <tr className="hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-4 text-white font-medium flex items-center gap-2">Bitcoin</td>
+                      <td className="px-6 py-4 text-center">0.0001</td>
+                      <td className="px-6 py-4 text-center">10</td>
+                      <td className="px-6 py-4 text-center">0.25</td>
+                    </tr>
+                    <tr className="hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-4 text-white font-medium">Ethereum</td>
+                      <td className="px-6 py-4 text-center">0.002</td>
+                      <td className="px-6 py-4 text-center">135</td>
+                      <td className="px-6 py-4 text-center">0.05</td>
+                    </tr>
+                    <tr className="hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-4 text-white font-medium">Litecoin</td>
+                      <td className="px-6 py-4 text-center">0.05</td>
+                      <td className="px-6 py-4 text-center">3759</td>
+                      <td className="px-6 py-4 text-center">0.01</td>
+                    </tr>
+                    <tr className="hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-4 text-white font-medium">Bitcoin Cash</td>
+                      <td className="px-6 py-4 text-center">0.02</td>
+                      <td className="px-6 py-4 text-center">1342</td>
+                      <td className="px-6 py-4 text-center">0.05</td>
+                    </tr>
+                    <tr className="hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-4 text-white font-medium">PAX Gold</td>
+                      <td className="px-6 py-4 text-center">0.002</td>
+                      <td className="px-6 py-4 text-center">211</td>
+                      <td className="px-6 py-4 text-center">0.01</td>
+                    </tr>
+                    <tr className="hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-4 text-white font-medium">Chainlink</td>
+                      <td className="px-6 py-4 text-center">0.4</td>
+                      <td className="px-6 py-4 text-center">33277</td>
+                      <td className="px-6 py-4 text-center">0.01</td>
+                    </tr>
+                    <tr className="hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-4 text-white font-medium">Uniswap</td>
+                      <td className="px-6 py-4 text-center">0.6</td>
+                      <td className="px-6 py-4 text-center">51480</td>
+                      <td className="px-6 py-4 text-center">0.01</td>
+                    </tr>
+                    <tr className="hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-4 text-white font-medium">Aave</td>
+                      <td className="px-6 py-4 text-center">0.04</td>
+                      <td className="px-6 py-4 text-center">2577</td>
+                      <td className="px-6 py-4 text-center">0.01</td>
+                    </tr>
+                    <tr className="hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-4 text-white font-medium">Solana</td>
+                      <td className="px-6 py-4 text-center">0.00000001</td>
+                      <td className="px-6 py-4 text-center">1800</td>
+                      <td className="px-6 py-4 text-center">0.01</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
+        </section>
+
         {/* SUPPORT + FAQ */}
         <section className="py-28 border-t border-white/[0.04]">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
