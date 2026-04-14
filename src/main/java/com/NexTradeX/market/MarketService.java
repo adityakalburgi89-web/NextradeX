@@ -59,13 +59,7 @@ public class MarketService {
     }
 
     public List<CryptoPrice> getAllPrices() {
-        List<CryptoPrice> prices = cryptoPriceRepository.findAll();
-        if (prices.isEmpty()) {
-            initializeDefaultPrices();
-            prices = cryptoPriceRepository.findAll();
-        }
-
-        return prices.stream()
+        return cryptoPriceRepository.findAll().stream()
                 .sorted(Comparator.comparing(CryptoPrice::getSymbol))
                 .toList();
     }
@@ -142,11 +136,10 @@ public class MarketService {
         return candles;
     }
 
-    public void simulateMarketMovement() {
+    public synchronized void simulateMarketMovement() {
         List<CryptoPrice> prices = cryptoPriceRepository.findAll();
         if (prices.isEmpty()) {
-            initializeDefaultPrices();
-            prices = cryptoPriceRepository.findAll();
+            return;
         }
 
         for (CryptoPrice price : prices) {
@@ -223,7 +216,7 @@ public class MarketService {
         return saved;
     }
 
-    public void initializeDefaultPrices() {
+    public synchronized void initializeDefaultPrices() {
         if (!cryptoPriceRepository.existsBySymbol("BTCUSDT")) {
             updateOrCreatePrice("BTCUSDT",
                     BigDecimal.valueOf(43250.50),
