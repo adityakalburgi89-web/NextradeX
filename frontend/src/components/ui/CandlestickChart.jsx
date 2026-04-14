@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import { createChart } from "lightweight-charts";
 
-export default function CandlestickChart({ data = [], options = {}, height = 420 }) {
+const EMPTY_OPTIONS = {};
+
+export default function CandlestickChart({ data = [], options = EMPTY_OPTIONS, height = 420 }) {
   const containerRef = useRef(null);
   const chartRef = useRef(null);
   const seriesRef = useRef(null);
