@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "margin_positions", indexes = {
-        @Index(name = "idx_user_symbol", columnList = "user_id,symbol", unique = true),
-        @Index(name = "idx_user_status", columnList = "user_id,status")
+        @Index(name = "idx_margin_user_symbol", columnList = "user_id,symbol", unique = true),
+        @Index(name = "idx_margin_user_status", columnList = "user_id,status")
 })
 @Data
 @NoArgsConstructor

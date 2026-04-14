@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "options_contracts", indexes = {
-        @Index(name = "idx_user_symbol", columnList = "user_id,symbol"),
+        @Index(name = "idx_options_user_symbol", columnList = "user_id,symbol"),
         @Index(name = "idx_expiry", columnList = "expiry_date")
 })
 @Data
