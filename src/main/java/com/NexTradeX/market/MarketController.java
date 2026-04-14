@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/market")
+@RequestMapping("/market")
 @RequiredArgsConstructor
 public class MarketController {
     
@@ -43,6 +44,22 @@ public class MarketController {
                     .body(new ApiResponse<>(200, "Live price retrieved", price));
         } catch (Exception e) {
             log.error("Error retrieving live price for {}: {}", symbol, e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/candles/{symbol}")
+    public ResponseEntity<ApiResponse<List<CandlestickDataPoint>>> getCandlestickData(
+            @PathVariable String symbol,
+            @RequestParam(defaultValue = "1h") String interval,
+            @RequestParam(defaultValue = "120") int limit) {
+        try {
+            List<CandlestickDataPoint> candles = marketService.getCandlestickData(symbol, interval, limit);
+            return ResponseEntity.ok()
+                    .body(new ApiResponse<>(200, "Candlestick data retrieved", candles));
+        } catch (Exception e) {
+            log.error("Error retrieving candlestick data for {}: {}", symbol, e.getMessage());
             return ResponseEntity.badRequest()
                     .body(new ApiResponse<>(400, e.getMessage(), null));
         }
