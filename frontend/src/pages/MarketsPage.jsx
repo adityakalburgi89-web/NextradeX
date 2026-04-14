@@ -1,32 +1,38 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { fetchAllPrices, fetchCandlestickData } from "../api";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/Card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { PageTransition } from "../components/ui/PageTransition";
 import { Skeleton } from "../components/ui/Skeleton";
+import { TradingChartPanel } from "../components/ui/TradingChartPanel";
 import { useWebSocket } from "../hooks/useWebSocket";
-import CandlestickChart from "../components/ui/CandlestickChart";
+import { formatCompactNumber, formatCurrency, formatPercent } from "../lib/utils";
 
 export default function MarketsPage() {
   const [prices, setPrices] = useState([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
-  const [selectedSymbol, setSelectedSymbol] = useState(null);
+  const [selectedSymbol, setSelectedSymbol] = useState("BTCUSDT");
   const [candleData, setCandleData] = useState([]);
   const [chartLoading, setChartLoading] = useState(false);
+  const [interval, setInterval] = useState("1h");
 
-  const handlePriceUpdate = (data) => {
-    if (Array.isArray(data)) {
-      setPrices(data);
-    } else if (data && data.symbol) {
-      setPrices((prev) => {
-        const existing = prev.findIndex((p) => p.symbol === data.symbol);
-        if (existing >= 0) {
-          const updated = [...prev];
-          updated[existing] = data;
-          return updated;
+  const handlePriceUpdate = (payload) => {
+    if (Array.isArray(payload)) {
+      setPrices(payload);
+      return;
+    }
+
+    if (payload?.symbol) {
+      setPrices((previousPrices) => {
+        const existingIndex = previousPrices.findIndex((price) => price.symbol === payload.symbol);
+        if (existingIndex >= 0) {
+          const nextPrices = [...previousPrices];
+          nextPrices[existingIndex] = payload;
+          return nextPrices;
         }
-        return [...prev, data];
+
+        return [...previousPrices, payload];
       });
     }
   };
@@ -36,123 +42,185 @@ export default function MarketsPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetchAllPrices();
-        if (prices.length === 0) {
-          setPrices(res?.data || []);
+        const response = await fetchAllPrices();
+        const nextPrices = response?.data || [];
+        setPrices(nextPrices);
+
+        if (nextPrices.length) {
+          setSelectedSymbol((currentSymbol) => currentSymbol || nextPrices[0].symbol);
         }
       } catch {
-        // ignore simple errors
+        setPrices([]);
       } finally {
         setLoading(false);
       }
     };
+
     load();
   }, []);
 
-  const filtered = prices.filter((p) =>
-    !query ? true : p.symbol?.toLowerCase().includes(query.toLowerCase())
-  );
+  const filteredPrices = useMemo(() => prices.filter((price) =>
+    !query ? true : price.symbol?.toLowerCase().includes(query.toLowerCase())
+  ), [prices, query]);
 
-  const loadCandles = async (symbol) => {
-    setChartLoading(true);
-    try {
-      const data = await fetchCandlestickData(symbol);
-      setCandleData(data);
-    } catch {
-      // ignore
-    } finally {
-      setChartLoading(false);
+  useEffect(() => {
+    if (!filteredPrices.length) {
+      return;
     }
-  };
 
-  const handleSymbolClick = (symbol) => {
-    if (selectedSymbol === symbol) {
-      setSelectedSymbol(null);
-    } else {
-      setSelectedSymbol(symbol);
-      loadCandles(symbol);
+    const selectedStillVisible = filteredPrices.some((price) => price.symbol === selectedSymbol);
+    if (!selectedStillVisible) {
+      setSelectedSymbol(filteredPrices[0].symbol);
     }
-  };
+  }, [filteredPrices, selectedSymbol]);
+
+  useEffect(() => {
+    const loadCandles = async () => {
+      if (!selectedSymbol) {
+        return;
+      }
+
+      setChartLoading(true);
+      try {
+        const nextCandles = await fetchCandlestickData(selectedSymbol, interval, 120);
+        setCandleData(nextCandles);
+      } catch {
+        setCandleData([]);
+      } finally {
+        setChartLoading(false);
+      }
+    };
+
+    loadCandles();
+  }, [interval, selectedSymbol]);
+
+  const selectedMarket = prices.find((price) => price.symbol === selectedSymbol);
+  const marketStats = selectedMarket ? [
+    {
+      label: "Last price",
+      value: selectedMarket.currentPrice,
+      kind: "currency",
+      icon: "price",
+      hint: "Realtime paper-market mark",
+    },
+    {
+      label: "24H change",
+      value: selectedMarket.percentChange24h,
+      kind: "percent",
+      icon: "change",
+      hint: `${formatCurrency(selectedMarket.priceChange24h || 0)} net move`,
+    },
+    {
+      label: "24H volume",
+      value: selectedMarket.volume24h,
+      kind: "compact",
+      icon: "volume",
+      hint: "Liquidity simulation",
+    },
+    {
+      label: "Session range",
+      value: `${formatCurrency(selectedMarket.lowPrice || selectedMarket.currentPrice)} - ${formatCurrency(selectedMarket.highPrice || selectedMarket.currentPrice)}`,
+      icon: "momentum",
+      hint: "Intraday envelope",
+    },
+  ] : [];
 
   return (
     <PageTransition>
-      <div className="py-12 space-y-8">
-        {selectedSymbol && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{selectedSymbol} Chart</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {chartLoading ? (
-                <div className="h-[400px] flex items-center justify-center text-muted font-mono text-sm">
-                  Loading chart...
-                </div>
-              ) : (
-                <CandlestickChart data={candleData} />
-              )}
-            </CardContent>
-          </Card>
-        )}
+      <div className="space-y-8 py-12">
+        <TradingChartPanel
+          title="Market Pulse"
+          description="Live charting powered by the NexTradeX backend, tuned for paper trading flows and ready for a production-grade trading shell."
+          symbol={selectedSymbol}
+          interval={interval}
+          onIntervalChange={setInterval}
+          loading={chartLoading}
+          data={candleData}
+          status={{ label: connected ? "Live feed" : "Snapshot", tone: connected ? "active" : "neutral" }}
+          stats={marketStats}
+        />
 
-        <div className="flex items-center justify-between gap-6 flex-wrap">
+        <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="stagger-children">
-            <h1 className="font-heading text-3xl font-bold mb-2 tracking-tight">Markets</h1>
-            <p className="text-muted text-sm leading-relaxed">Browse available trading pairs and live prices.</p>
+            <h1 className="mb-2 font-heading text-3xl font-bold tracking-tight">Markets</h1>
+            <p className="text-sm leading-relaxed text-muted">
+              Browse supported pairs, inspect simulated depth, and choose the market you want to route into the trading workspace.
+            </p>
           </div>
+
           <div className="w-full sm:w-72">
             <Input
               placeholder="Filter by symbol (e.g. BTC)"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(event) => setQuery(event.target.value)}
             />
           </div>
         </div>
 
-        <Card>
+        <Card className="panel-shine">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
               <div>
                 <CardTitle>Price Board</CardTitle>
                 <CardDescription className="mt-1.5">
-                  Streaming snapshot from the backend price service.
+                  Streaming symbol cards with instant selection, smoother hover states, and backend-driven pricing.
                 </CardDescription>
               </div>
-              {connected && (
-                <div className="flex items-center gap-2 status-badge status-badge--active">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-green opacity-75" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent-green" />
-                  </span>
-                  Live
-                </div>
-              )}
+
+              <div className={`status-badge ${connected ? "status-badge--active" : "status-badge--neutral"}`}>
+                {connected ? "Live" : "Paused"}
+              </div>
             </div>
           </CardHeader>
+
           <CardContent>
             {loading ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[...Array(8)].map((_, i) => (
-                  <div key={i} className="rounded-xl border border-white/[0.06] p-4 space-y-3">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {[...Array(8)].map((_, index) => (
+                  <div key={index} className="rounded-[24px] border border-white/[0.06] p-4 space-y-3">
                     <Skeleton className="h-3 w-16" />
-                    <Skeleton className="h-6 w-24" />
+                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-3 w-24" />
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stagger-children">
-                {filtered.map((p) => (
-                  <div
-                    key={p.id || p.symbol}
-                    onClick={() => handleSymbolClick(p.symbol)}
-                    className="rounded-xl border border-white/[0.06] px-4 py-3.5 bg-white/[0.02] flex flex-col gap-1.5 hover:border-primary/30 hover:bg-white/[0.04] hover:shadow-glow-soft transition-all duration-300 gpu-accelerated cursor-default"
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {filteredPrices.map((price) => (
+                  <button
+                    key={price.id || price.symbol}
+                    type="button"
+                    onClick={() => setSelectedSymbol(price.symbol)}
+                    className={`market-card text-left ${
+                      selectedSymbol === price.symbol
+                        ? "border-primary/40 bg-primary/[0.08] shadow-glow-soft"
+                        : "border-white/[0.06] bg-white/[0.02] hover:border-primary/25 hover:bg-white/[0.04]"
+                    }`}
                   >
-                    <span className="font-mono text-[10px] text-muted uppercase tracking-wider">{p.symbol}</span>
-                    <span className="font-heading text-lg text-primary font-semibold">{p.currentPrice}</span>
-                  </div>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-muted">{price.symbol}</div>
+                        <div className="mt-2 font-heading text-2xl font-semibold text-white">
+                          {formatCurrency(price.currentPrice)}
+                        </div>
+                      </div>
+                      <span className={`status-badge ${Number(price.percentChange24h) >= 0 ? "status-badge--active" : "status-badge--error"}`}>
+                        {formatPercent(price.percentChange24h)}
+                      </span>
+                    </div>
+
+                    <div className="mt-5 flex items-center justify-between text-xs text-muted">
+                      <span>Vol {formatCompactNumber(price.volume24h)}</span>
+                      <span>High {formatCurrency(price.highPrice || price.currentPrice)}</span>
+                    </div>
+                  </button>
                 ))}
-                {filtered.length === 0 && (
-                  <p className="text-muted text-sm col-span-full py-8 text-center">No markets match this filter.</p>
-                )}
+
+                {filteredPrices.length === 0 ? (
+                  <p className="col-span-full py-8 text-center text-sm text-muted">
+                    No markets match this filter.
+                  </p>
+                ) : null}
               </div>
             )}
           </CardContent>
