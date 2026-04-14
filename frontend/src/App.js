@@ -13,6 +13,10 @@ import FuturesTradingPage from "./pages/FuturesTradingPage";
 import OptionsTradingPage from "./pages/OptionsTradingPage";
 import WalletsPage from "./pages/WalletsPage";
 import OrdersPage from "./pages/OrdersPage";
+import xIcon from "./assets/x.com_icon.png";
+import linkedInIcon from "./assets/LinkedIn_icon.svg.png";
+import githubIcon from "./assets/github_icon.png";
+import gmailIcon from "./assets/Gmail_icon_svg.webp";
 
 /* ═══════════════════════════════════════════
    HOME PAGE
@@ -389,18 +393,20 @@ function Footer() {
             </nav>
           </div>
 
-          {/* Socials */}
           <div>
             <h4 className="font-heading text-sm font-semibold text-white mb-4">Socials</h4>
-            <nav className="space-y-2">
-              <a href="#" className="flex items-center gap-2.5 text-sm text-muted hover:text-primary transition-colors duration-200 py-1">
-                <X size={14} /> <span>X</span>
+            <nav className="space-y-4">
+              <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-muted hover:text-primary transition-colors duration-200">
+                <img src={xIcon} alt="X" className="w-5 h-5 object-contain filter grayscale hover:grayscale-0 transition-all" /> <span>X (Twitter)</span>
               </a>
-              <a href="#" className="flex items-center gap-2.5 text-sm text-muted hover:text-primary transition-colors duration-200 py-1">
-                <Mail size={14} /> <span>Email</span>
+              <a href="https://www.linkedin.com/in/aditya-kalburgi-080b5b267/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-muted hover:text-primary transition-colors duration-200">
+                <img src={linkedInIcon} alt="LinkedIn" className="w-5 h-5 object-contain filter grayscale hover:grayscale-0 transition-all" /> <span>LinkedIn</span>
               </a>
-              <a href="#" className="flex items-center gap-2.5 text-sm text-muted hover:text-primary transition-colors duration-200 py-1">
-                <Globe size={14} /> <span>Website</span>
+              <a href="mailto:contact@nextradex.sim" className="flex items-center gap-3 text-sm text-muted hover:text-primary transition-colors duration-200">
+                <img src={gmailIcon} alt="Email" className="w-5 h-5 object-contain filter grayscale hover:grayscale-0 transition-all" /> <span>Email</span>
+              </a>
+              <a href="https://github.com/aditykalburgi" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-muted hover:text-primary transition-colors duration-200">
+                <img src={githubIcon} alt="GitHub" className="w-5 h-5 object-contain filter grayscale hover:grayscale-0 transition-all" /> <span>GitHub</span>
               </a>
             </nav>
           </div>
