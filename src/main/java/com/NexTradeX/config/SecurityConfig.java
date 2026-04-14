@@ -63,10 +63,10 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/auth/**", "/auth/**").permitAll()
-                .requestMatchers("/api/health/**").permitAll()
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/health/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/market/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/market/**").permitAll()
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())

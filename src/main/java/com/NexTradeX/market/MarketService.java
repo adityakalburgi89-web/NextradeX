@@ -1,14 +1,22 @@
 package com.NexTradeX.market;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,68 +26,164 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Transactional
 public class MarketService {
-    
+
+    private static final String COINMARKETCAP_API = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest";
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
+
     private final CryptoPriceRepository cryptoPriceRepository;
     private final RestTemplate restTemplate;
-    
+
     @Value("${coinmarketcap.api.key}")
     private String coinMarketCapApiKey;
-    
-    private static final String COINMARKETCAP_API = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest";
-    
+
     public CryptoPrice getPrice(String symbol) {
-        // Fetch live price from CoinMarketCap
-        String json = fetchCoinMarketCapPrice(symbol);
+        String normalizedSymbol = normalizeSymbol(symbol);
+
         try {
-            // Parse JSON response
-            com.fasterxml.jackson.databind.JsonNode root = new com.fasterxml.jackson.databind.ObjectMapper().readTree(json);
-            com.fasterxml.jackson.databind.JsonNode data = root.get("data").get(symbol);
-            BigDecimal currentPrice = new BigDecimal(data.get("quote").get("USD").get("price").asText());
-            BigDecimal highPrice = new BigDecimal(data.get("quote").get("USD").get("high_24h").asText());
-            BigDecimal lowPrice = new BigDecimal(data.get("quote").get("USD").get("low_24h").asText());
-            BigDecimal openPrice = new BigDecimal(data.get("quote").get("USD").get("open_24h").asText());
-            BigDecimal priceChange24h = new BigDecimal(data.get("quote").get("USD").get("volume_change_24h").asText());
-            BigDecimal percentChange24h = new BigDecimal(data.get("quote").get("USD").get("percent_change_24h").asText());
-            BigDecimal volume24h = new BigDecimal(data.get("quote").get("USD").get("volume_24h").asText());
-            BigDecimal marketCap = new BigDecimal(data.get("quote").get("USD").get("market_cap").asText());
-            java.time.LocalDateTime updatedAt = java.time.LocalDateTime.now();
-            return CryptoPrice.builder()
-                .symbol(symbol)
-                .currentPrice(currentPrice)
-                .highPrice(highPrice)
-                .lowPrice(lowPrice)
-                .openPrice(openPrice)
-                .priceChange24h(priceChange24h)
-                .percentChange24h(percentChange24h)
-                .volume24h(volume24h)
-                .marketCap(marketCap)
-                .updatedAt(updatedAt)
-                .build();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch live price for symbol: " + symbol, e);
+            CryptoPrice livePrice = fetchLivePrice(normalizedSymbol);
+            return persistPrice(livePrice);
+        } catch (Exception exception) {
+            log.warn("Falling back to cached market price for {}: {}", normalizedSymbol, exception.getMessage());
+            return cryptoPriceRepository.findBySymbol(normalizedSymbol)
+                    .orElseGet(() -> createFallbackPrice(normalizedSymbol));
         }
     }
-    
+
     public Optional<CryptoPrice> getPriceOptional(String symbol) {
         try {
             return Optional.of(getPrice(symbol));
-        } catch (Exception e) {
+        } catch (Exception exception) {
             return Optional.empty();
         }
     }
-    
+
     public List<CryptoPrice> getAllPrices() {
-        return cryptoPriceRepository.findAll();
+        List<CryptoPrice> prices = cryptoPriceRepository.findAll();
+        if (prices.isEmpty()) {
+            initializeDefaultPrices();
+            prices = cryptoPriceRepository.findAll();
+        }
+
+        return prices.stream()
+                .sorted(Comparator.comparing(CryptoPrice::getSymbol))
+                .toList();
     }
-    
+
+    public List<CandlestickDataPoint> getCandlestickData(String symbol, String interval, int limit) {
+        String normalizedSymbol = normalizeSymbol(symbol);
+        int sanitizedLimit = Math.min(Math.max(limit, 24), 240);
+        int minutesPerCandle = resolveIntervalMinutes(interval);
+        CryptoPrice snapshot = cryptoPriceRepository.findBySymbol(normalizedSymbol)
+                .orElseGet(() -> getPrice(normalizedSymbol));
+
+        BigDecimal currentClose = safe(snapshot.getCurrentPrice(), BigDecimal.valueOf(100));
+        BigDecimal dailyMove = safe(snapshot.getPercentChange24h(), BigDecimal.ZERO)
+                .divide(HUNDRED, 8, RoundingMode.HALF_UP);
+        BigDecimal volatility = dailyMove.abs().max(new BigDecimal("0.004"));
+
+        List<CandlestickDataPoint> candles = new ArrayList<>(sanitizedLimit);
+        long closeTime = LocalDateTime.now()
+                .withSecond(0)
+                .withNano(0)
+                .toEpochSecond(ZoneOffset.UTC);
+
+        BigDecimal previousClose = currentClose
+                .multiply(BigDecimal.ONE.subtract(dailyMove.multiply(BigDecimal.valueOf(sanitizedLimit / 3.0))))
+                .max(new BigDecimal("0.0001"));
+
+        for (int index = sanitizedLimit - 1; index >= 0; index--) {
+            long candleTime = closeTime - ((long) minutesPerCandle * 60 * index);
+            double oscillation = Math.sin((sanitizedLimit - index) * 0.65D + normalizedSymbol.hashCode() * 0.0001D);
+            double drift = index == 0 ? 0.0D : (double) index / sanitizedLimit;
+
+            BigDecimal open = previousClose;
+            BigDecimal directionalMove = volatility
+                    .multiply(BigDecimal.valueOf(0.85D - (drift * 0.35D)))
+                    .multiply(BigDecimal.valueOf(oscillation * 0.8D));
+            BigDecimal noiseMove = volatility
+                    .multiply(BigDecimal.valueOf(randomRange(-0.45D, 0.45D)));
+            BigDecimal close = open
+                    .multiply(BigDecimal.ONE.add(directionalMove.add(noiseMove)))
+                    .max(new BigDecimal("0.0001"));
+
+            BigDecimal wickFactor = volatility.max(new BigDecimal("0.006"));
+            BigDecimal wickUp = close.max(open)
+                    .multiply(wickFactor.multiply(BigDecimal.valueOf(randomRange(0.35D, 1.1D))));
+            BigDecimal wickDown = close.min(open)
+                    .multiply(wickFactor.multiply(BigDecimal.valueOf(randomRange(0.25D, 0.9D))));
+
+            BigDecimal high = close.max(open).add(wickUp).setScale(4, RoundingMode.HALF_UP);
+            BigDecimal low = close.min(open).subtract(wickDown).max(new BigDecimal("0.0001")).setScale(4, RoundingMode.HALF_UP);
+            BigDecimal volumeBase = safe(snapshot.getVolume24h(), BigDecimal.valueOf(1_000_000))
+                    .divide(BigDecimal.valueOf(24), 2, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(randomRange(0.55D, 1.45D)));
+
+            CandlestickDataPoint candle = CandlestickDataPoint.builder()
+                    .time(candleTime)
+                    .open(open.setScale(4, RoundingMode.HALF_UP))
+                    .high(high)
+                    .low(low)
+                    .close(close.setScale(4, RoundingMode.HALF_UP))
+                    .volume(volumeBase.setScale(2, RoundingMode.HALF_UP))
+                    .build();
+
+            candles.add(candle);
+            previousClose = close;
+        }
+
+        if (!candles.isEmpty()) {
+            CandlestickDataPoint last = candles.get(candles.size() - 1);
+            last.setClose(currentClose.setScale(4, RoundingMode.HALF_UP));
+            last.setHigh(last.getHigh().max(last.getClose()).setScale(4, RoundingMode.HALF_UP));
+            last.setLow(last.getLow().min(last.getClose()).setScale(4, RoundingMode.HALF_UP));
+        }
+
+        return candles;
+    }
+
+    public void simulateMarketMovement() {
+        List<CryptoPrice> prices = cryptoPriceRepository.findAll();
+        if (prices.isEmpty()) {
+            initializeDefaultPrices();
+            prices = cryptoPriceRepository.findAll();
+        }
+
+        for (CryptoPrice price : prices) {
+            BigDecimal current = safe(price.getCurrentPrice(), BigDecimal.ONE);
+            BigDecimal open = safe(price.getOpenPrice(), current);
+            BigDecimal movement = BigDecimal.valueOf(randomRange(-0.008D, 0.008D));
+            BigDecimal next = current.multiply(BigDecimal.ONE.add(movement)).max(new BigDecimal("0.0001"));
+
+            price.setCurrentPrice(next.setScale(4, RoundingMode.HALF_UP));
+            price.setHighPrice(safe(price.getHighPrice(), next).max(next).setScale(4, RoundingMode.HALF_UP));
+            price.setLowPrice(safe(price.getLowPrice(), next).min(next).setScale(4, RoundingMode.HALF_UP));
+            price.setOpenPrice(open.setScale(4, RoundingMode.HALF_UP));
+
+            BigDecimal priceChange = next.subtract(open);
+            BigDecimal percentChange = open.compareTo(BigDecimal.ZERO) == 0
+                    ? BigDecimal.ZERO
+                    : priceChange.divide(open, 4, RoundingMode.HALF_UP).multiply(HUNDRED);
+
+            price.setPriceChange24h(priceChange.setScale(2, RoundingMode.HALF_UP));
+            price.setPercentChange24h(percentChange.setScale(2, RoundingMode.HALF_UP));
+            price.setVolume24h(safe(price.getVolume24h(), BigDecimal.valueOf(100_000))
+                    .multiply(BigDecimal.valueOf(randomRange(0.995D, 1.006D)))
+                    .setScale(0, RoundingMode.HALF_UP));
+            price.setUpdatedAt(LocalDateTime.now());
+        }
+
+        cryptoPriceRepository.saveAll(prices);
+    }
+
     @Transactional
     public CryptoPrice updateOrCreatePrice(String symbol, BigDecimal currentPrice,
-                                          BigDecimal highPrice, BigDecimal lowPrice,
-                                          BigDecimal openPrice, BigDecimal priceChange24h,
-                                          BigDecimal percentChange24h, BigDecimal volume24h,
-                                          BigDecimal marketCap) {
+                                           BigDecimal highPrice, BigDecimal lowPrice,
+                                           BigDecimal openPrice, BigDecimal priceChange24h,
+                                           BigDecimal percentChange24h, BigDecimal volume24h,
+                                           BigDecimal marketCap) {
         Optional<CryptoPrice> existing = cryptoPriceRepository.findBySymbol(symbol);
-        
+
         CryptoPrice price = existing.orElse(new CryptoPrice());
         price.setSymbol(symbol);
         price.setCurrentPrice(currentPrice);
@@ -91,34 +195,37 @@ public class MarketService {
         price.setVolume24h(volume24h);
         price.setMarketCap(marketCap);
         price.setUpdatedAt(LocalDateTime.now());
-        
+
         CryptoPrice saved = cryptoPriceRepository.save(price);
         log.info("Updated price for {}: {}", symbol, currentPrice);
         return saved;
     }
-    
+
     public CryptoPrice updatePrice(String symbol, BigDecimal currentPrice) {
         CryptoPrice price = cryptoPriceRepository.findBySymbol(symbol)
                 .orElseThrow(() -> new RuntimeException("Price not found for symbol: " + symbol));
-        
-        BigDecimal priceChange = currentPrice.subtract(price.getOpenPrice());
-        BigDecimal percentChange = priceChange.divide(price.getOpenPrice(), 4, java.math.RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100));
-        
+
+        BigDecimal openPrice = safe(price.getOpenPrice(), currentPrice);
+        BigDecimal priceChange = currentPrice.subtract(openPrice);
+        BigDecimal percentChange = openPrice.compareTo(BigDecimal.ZERO) == 0
+                ? BigDecimal.ZERO
+                : priceChange.divide(openPrice, 4, RoundingMode.HALF_UP).multiply(HUNDRED);
+
         price.setCurrentPrice(currentPrice);
+        price.setHighPrice(safe(price.getHighPrice(), currentPrice).max(currentPrice));
+        price.setLowPrice(safe(price.getLowPrice(), currentPrice).min(currentPrice));
         price.setPriceChange24h(priceChange);
         price.setPercentChange24h(percentChange);
         price.setUpdatedAt(LocalDateTime.now());
-        
+
         CryptoPrice saved = cryptoPriceRepository.save(price);
         log.debug("Updated price for {}: {}", symbol, currentPrice);
         return saved;
     }
-    
-    // Sample data initialization
+
     public void initializeDefaultPrices() {
         if (!cryptoPriceRepository.existsBySymbol("BTCUSDT")) {
-            updateOrCreatePrice("BTCUSDT", 
+            updateOrCreatePrice("BTCUSDT",
                     BigDecimal.valueOf(43250.50),
                     BigDecimal.valueOf(44000.00),
                     BigDecimal.valueOf(42500.00),
@@ -128,7 +235,7 @@ public class MarketService {
                     BigDecimal.valueOf(28_000_000_000L),
                     BigDecimal.valueOf(850_000_000_000L));
         }
-        
+
         if (!cryptoPriceRepository.existsBySymbol("ETHUSDT")) {
             updateOrCreatePrice("ETHUSDT",
                     BigDecimal.valueOf(2280.75),
@@ -140,7 +247,7 @@ public class MarketService {
                     BigDecimal.valueOf(15_000_000_000L),
                     BigDecimal.valueOf(273_000_000_000L));
         }
-        
+
         if (!cryptoPriceRepository.existsBySymbol("BNBUSDT")) {
             updateOrCreatePrice("BNBUSDT",
                     BigDecimal.valueOf(618.50),
@@ -153,10 +260,7 @@ public class MarketService {
                     BigDecimal.valueOf(94_000_000_000L));
         }
     }
-    
-    /**
-     * Fetch price data from CoinMarketCap for a given symbol (e.g., BTC, ETH).
-     */
+
     public String fetchCoinMarketCapPrice(String symbol) {
         String url = COINMARKETCAP_API + "?symbol=" + symbol;
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
@@ -169,5 +273,109 @@ public class MarketService {
                 String.class
         );
         return response.getBody();
+    }
+
+    private CryptoPrice fetchLivePrice(String symbol) throws Exception {
+        if (coinMarketCapApiKey == null
+                || coinMarketCapApiKey.isBlank()
+                || "demo".equalsIgnoreCase(coinMarketCapApiKey)
+                || coinMarketCapApiKey.contains("your_coinmarketcap_api_key_here")) {
+            throw new IllegalStateException("No market data provider key configured");
+        }
+
+        String providerSymbol = extractProviderSymbol(symbol);
+        String json = fetchCoinMarketCapPrice(providerSymbol);
+        JsonNode root = OBJECT_MAPPER.readTree(json);
+        JsonNode data = root.path("data").path(providerSymbol);
+        JsonNode quote = data.path("quote").path("USD");
+
+        if (quote.isMissingNode()) {
+            throw new IllegalStateException("Unexpected provider response for symbol " + providerSymbol);
+        }
+
+        return CryptoPrice.builder()
+                .symbol(symbol)
+                .currentPrice(new BigDecimal(quote.path("price").asText("0")))
+                .highPrice(new BigDecimal(quote.path("high_24h").asText("0")))
+                .lowPrice(new BigDecimal(quote.path("low_24h").asText("0")))
+                .openPrice(new BigDecimal(quote.path("open_24h").asText("0")))
+                .priceChange24h(new BigDecimal(quote.path("volume_change_24h").asText("0")))
+                .percentChange24h(new BigDecimal(quote.path("percent_change_24h").asText("0")))
+                .volume24h(new BigDecimal(quote.path("volume_24h").asText("0")))
+                .marketCap(new BigDecimal(quote.path("market_cap").asText("0")))
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    private CryptoPrice persistPrice(CryptoPrice nextPrice) {
+        CryptoPrice existing = cryptoPriceRepository.findBySymbol(nextPrice.getSymbol()).orElse(new CryptoPrice());
+        existing.setSymbol(nextPrice.getSymbol());
+        existing.setCurrentPrice(nextPrice.getCurrentPrice());
+        existing.setHighPrice(nextPrice.getHighPrice());
+        existing.setLowPrice(nextPrice.getLowPrice());
+        existing.setOpenPrice(nextPrice.getOpenPrice());
+        existing.setPriceChange24h(nextPrice.getPriceChange24h());
+        existing.setPercentChange24h(nextPrice.getPercentChange24h());
+        existing.setVolume24h(nextPrice.getVolume24h());
+        existing.setMarketCap(nextPrice.getMarketCap());
+        existing.setUpdatedAt(LocalDateTime.now());
+        return cryptoPriceRepository.save(existing);
+    }
+
+    private CryptoPrice createFallbackPrice(String symbol) {
+        BigDecimal seeded = switch (symbol) {
+            case "ETHUSDT" -> BigDecimal.valueOf(2280.75);
+            case "BNBUSDT" -> BigDecimal.valueOf(618.50);
+            default -> BigDecimal.valueOf(43250.50);
+        };
+
+        return updateOrCreatePrice(
+                symbol,
+                seeded,
+                seeded.multiply(BigDecimal.valueOf(1.02)),
+                seeded.multiply(BigDecimal.valueOf(0.98)),
+                seeded.multiply(BigDecimal.valueOf(0.99)),
+                seeded.multiply(BigDecimal.valueOf(0.01)),
+                BigDecimal.valueOf(1.10),
+                BigDecimal.valueOf(1_500_000_000L),
+                BigDecimal.valueOf(90_000_000_000L)
+        );
+    }
+
+    private String extractProviderSymbol(String symbol) {
+        String normalized = normalizeSymbol(symbol);
+        for (String suffix : List.of("USDT", "USDC", "BUSD")) {
+            if (normalized.endsWith(suffix) && normalized.length() > suffix.length()) {
+                return normalized.substring(0, normalized.length() - suffix.length());
+            }
+        }
+        return normalized;
+    }
+
+    private String normalizeSymbol(String symbol) {
+        return symbol == null ? "BTCUSDT" : symbol.trim().toUpperCase();
+    }
+
+    private int resolveIntervalMinutes(String interval) {
+        if (interval == null || interval.isBlank()) {
+            return 60;
+        }
+
+        return switch (interval.trim().toLowerCase()) {
+            case "5m" -> 5;
+            case "15m" -> 15;
+            case "30m" -> 30;
+            case "4h" -> 240;
+            case "1d" -> 1440;
+            default -> 60;
+        };
+    }
+
+    private BigDecimal safe(BigDecimal value, BigDecimal fallback) {
+        return value == null ? fallback : value;
+    }
+
+    private double randomRange(double min, double max) {
+        return ThreadLocalRandom.current().nextDouble(min, max);
     }
 }
