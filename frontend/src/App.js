@@ -14,6 +14,7 @@ import OptionsTradingPage from "./pages/OptionsTradingPage";
 import WalletsPage from "./pages/WalletsPage";
 import OrdersPage from "./pages/OrdersPage";
 import ProfilePage from "./pages/ProfilePage";
+import NotFoundPage from "./pages/NotFoundPage";
 import { hasAuthToken, clearAuthToken, fetchUserProfile } from "./api";
 import xIcon from "./assets/x.com_icon.png";
 import linkedInIcon from "./assets/LinkedIn_icon.svg.png";
@@ -746,6 +747,7 @@ function App() {
           <Route path="/wallets" element={<WalletsPage />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>
 
