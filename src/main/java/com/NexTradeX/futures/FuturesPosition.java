@@ -33,7 +33,7 @@ import lombok.NoArgsConstructor;
             unique = true
         ),
         @Index(
-            name = "idx_user_status",
+            name = "idx_futures_user_status",
             columnList = "user_id,status"
         )
     }
