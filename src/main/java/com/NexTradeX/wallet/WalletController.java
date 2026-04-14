@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/wallets")
+@RequestMapping("/wallets")
 @RequiredArgsConstructor
 public class WalletController {
     
