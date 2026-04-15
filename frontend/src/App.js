@@ -16,6 +16,17 @@ import OrdersPage from "./pages/OrdersPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import CareersPage from "./pages/CareersPage";
+import AboutPage from "./pages/Company/AboutPage";
+import TermsPage from "./pages/Company/TermsPage";
+import PrivacyPage from "./pages/Company/PrivacyPage";
+import ContractSpecsPage from "./pages/Information/ContractSpecsPage";
+import TradingFeesPage from "./pages/Information/TradingFeesPage";
+import SettlementPricesPage from "./pages/Information/SettlementPricesPage";
+import BugBountyPage from "./pages/Information/BugBountyPage";
+import APIDocsPage from "./pages/resources/APIDocsPage";
+import SupportPage from "./pages/support/SupportPage";
+import UserGuidePage from "./pages/resources/UserGuidePage";
+import ReferralPage from "./pages/resources/ReferralPage";
 import { hasAuthToken, clearAuthToken, fetchUserProfile } from "./api";
 import xIcon from "./assets/x.com_icon.png";
 import linkedInIcon from "./assets/LinkedIn_icon.svg.png";
@@ -453,9 +464,9 @@ function Footer() {
           <div>
             <h4 className="font-heading text-sm font-semibold text-white mb-4">Company</h4>
             <nav className="space-y-0.5">
-              <Link to="/" className={linkClass}>About Us</Link>
-              <Link to="/" className={linkClass}>Terms of Service</Link>
-              <Link to="/" className={linkClass}>Privacy Policy</Link>
+              <Link to="/about" className={linkClass}>About Us</Link>
+              <Link to="/terms" className={linkClass}>Terms of Service</Link>
+              <Link to="/privacy" className={linkClass}>Privacy Policy</Link>
               <Link to="/careers" className={linkClass}>Careers</Link>
             </nav>
           </div>
@@ -464,10 +475,10 @@ function Footer() {
           <div>
             <h4 className="font-heading text-sm font-semibold text-white mb-4">Information</h4>
             <nav className="space-y-0.5">
-              <Link to="/" className={linkClass}>Contract Specifications</Link>
-              <Link to="/" className={linkClass}>Trading Fees</Link>
-              <Link to="/" className={linkClass}>Settlement Prices</Link>
-              <Link to="/" className={linkClass}>Bug Bounty</Link>
+              <Link to="/contract-specs" className={linkClass}>Contract Specifications</Link>
+              <Link to="/trading-fees" className={linkClass}>Trading Fees</Link>
+              <Link to="/settlement-prices" className={linkClass}>Settlement Prices</Link>
+              <Link to="/bug-bounty" className={linkClass}>Bug Bounty</Link>
             </nav>
           </div>
 
@@ -475,10 +486,10 @@ function Footer() {
           <div>
             <h4 className="font-heading text-sm font-semibold text-white mb-4">Resources & Support</h4>
             <nav className="space-y-0.5">
-              <Link to="/" className={linkClass}>API Docs</Link>
-              <Link to="/" className={linkClass}>Support Center</Link>
-              <Link to="/" className={linkClass}>User Guide</Link>
-              <Link to="/" className={linkClass}>Referral Program</Link>
+              <Link to="/api-docs" className={linkClass}>API Docs</Link>
+              <Link to="/support" className={linkClass}>Support Center</Link>
+              <Link to="/user-guide" className={linkClass}>User Guide</Link>
+              <Link to="/referral" className={linkClass}>Referral Program</Link>
               <Link to="/" className={linkClass}>Demo Trading</Link>
             </nav>
           </div>
@@ -749,6 +760,17 @@ function App() {
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/careers" element={<CareersPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/contract-specs" element={<ContractSpecsPage />} />
+          <Route path="/trading-fees" element={<TradingFeesPage />} />
+          <Route path="/settlement-prices" element={<SettlementPricesPage />} />
+          <Route path="/bug-bounty" element={<BugBountyPage />} />
+          <Route path="/api-docs" element={<APIDocsPage />} />
+          <Route path="/support" element={<SupportPage />} />
+          <Route path="/user-guide" element={<UserGuidePage />} />
+          <Route path="/referral" element={<ReferralPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>
