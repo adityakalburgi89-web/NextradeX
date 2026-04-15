@@ -717,9 +717,9 @@ function App() {
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden font-body">
       {/* Background Ambient Glows */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-primary/[0.07] blur-[150px] rounded-full pointer-events-none animate-drift" />
-      <div className="fixed bottom-0 right-0 w-[600px] h-[600px] bg-secondary/[0.07] blur-[180px] rounded-full pointer-events-none animate-drift" style={{ animationDelay: "-10s" }} />
-      <div className="fixed top-1/2 left-0 w-[400px] h-[400px] bg-tertiary/[0.03] blur-[120px] rounded-full pointer-events-none animate-drift" style={{ animationDelay: "-5s" }} />
+      <div className={`fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] blur-[150px] rounded-full pointer-events-none animate-drift transition-all duration-500 ${theme === 'dark' ? 'bg-primary/[0.07]' : 'bg-primary/[0.03]'}`} />
+      <div className={`fixed bottom-0 right-0 w-[600px] h-[600px] blur-[180px] rounded-full pointer-events-none animate-drift transition-all duration-500 ${theme === 'dark' ? 'bg-secondary/[0.07]' : 'bg-secondary/[0.03]'}`} style={{ animationDelay: "-10s" }} />
+      <div className={`fixed top-1/2 left-0 w-[400px] h-[400px] blur-[120px] rounded-full pointer-events-none animate-drift transition-all duration-500 ${theme === 'dark' ? 'bg-tertiary/[0.03]' : 'bg-tertiary/[0.01]'}`} style={{ animationDelay: "-5s" }} />
 
       {/* Navigation */}
       <nav className="sticky top-0 z-50 backdrop-blur-2xl bg-background/80 border-b border-white/[0.06]">
@@ -751,10 +751,27 @@ function App() {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-white/[0.06] transition-colors text-muted hover:text-primary"
+              className="p-2 rounded-lg hover:bg-white/[0.06] transition-all duration-300 text-muted hover:text-primary group"
               title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+              <div className="relative w-5 h-5">
+                <Sun 
+                  size={20} 
+                  className={`absolute inset-0 transition-all duration-500 ${
+                    theme === 'dark' 
+                      ? 'opacity-100 rotate-0 scale-100 text-primary' 
+                      : 'opacity-0 rotate-180 scale-0'
+                  }`}
+                />
+                <Moon 
+                  size={20} 
+                  className={`absolute inset-0 transition-all duration-500 ${
+                    theme === 'light' 
+                      ? 'opacity-100 rotate-0 scale-100 text-primary' 
+                      : 'opacity-0 -rotate-180 scale-0'
+                  }`}
+                />
+              </div>
             </button>
 
             {isLoggedIn ? (

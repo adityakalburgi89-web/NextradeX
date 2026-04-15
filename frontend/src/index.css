@@ -16,6 +16,7 @@
     --border: #1E293B;
     --input-bg: #0F1115;
     --card-bg: #0F1115;
+    --transition-duration: 400ms;
   }
 
   .light {
@@ -36,19 +37,54 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Smooth theme transitions */
+  html *, html *::before, html *::after {
+    transition: 
+      background-color var(--transition-duration) cubic-bezier(0.4, 0, 0.2, 1),
+      border-color var(--transition-duration) cubic-bezier(0.4, 0, 0.2, 1),
+      color var(--transition-duration) cubic-bezier(0.4, 0, 0.2, 1),
+      fill var(--transition-duration) cubic-bezier(0.4, 0, 0.2, 1),
+      stroke var(--transition-duration) cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow var(--transition-duration) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   body {
     @apply bg-background text-foreground antialiased selection:bg-primary/30 selection:text-primary font-body;
+    position: relative;
+    z-index: 0;
+  }
+
+  body::before, body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    transition: opacity var(--transition-duration) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  body::before {
     background-image:
       radial-gradient(circle at top, rgba(247, 147, 26, 0.12), transparent 28%),
       radial-gradient(circle at 85% 15%, rgba(234, 88, 12, 0.1), transparent 22%),
       linear-gradient(180deg, rgba(15, 17, 21, 0.98), rgba(3, 3, 4, 1));
+    opacity: 1;
   }
 
-  .light body {
+  body::after {
     background-image:
       radial-gradient(circle at top, rgba(247, 147, 26, 0.08), transparent 28%),
       radial-gradient(circle at 85% 15%, rgba(234, 88, 12, 0.05), transparent 22%),
       linear-gradient(180deg, rgba(248, 250, 252, 1), rgba(241, 245, 249, 1));
+    opacity: 0;
+  }
+
+  .light body::before {
+    opacity: 0;
+  }
+
+  .light body::after {
+    opacity: 1;
   }
 
   /* CSS Custom Properties for animation timing */
@@ -359,6 +395,19 @@ input[type="number"] {
 }
 
 /* Light mode overrides */
+.light .text-white {
+  color: #0F172A !important;
+}
+
+.light .text-white\/80,
+.light .text-white\/90 {
+  color: rgba(15, 23, 42, 0.8) !important;
+}
+
+.light .hover\:text-white:hover {
+  color: #0F172A !important;
+}
+
 .light .nav-link.active {
   color: #F7931A;
 }
