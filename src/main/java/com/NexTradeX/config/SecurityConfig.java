@@ -5,19 +5,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.NexTradeX.auth.AuthService;
 import com.NexTradeX.auth.JwtService;
@@ -27,33 +22,21 @@ import com.NexTradeX.auth.JwtService;
 public class SecurityConfig {
     private final AuthService authService;
     private final JwtService jwtService;
-    private final PasswordEncoder passwordEncoder;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     
     @Value("${cors.allowed.origins}")
     private String corsAllowedOrigins;
     
-    public SecurityConfig(@Lazy AuthService authService, JwtService jwtService, PasswordEncoder passwordEncoder) {
+    public SecurityConfig(@Lazy AuthService authService, JwtService jwtService,
+                         OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler) {
         this.authService = authService;
         this.jwtService = jwtService;
-        this.passwordEncoder = passwordEncoder;
+        this.oAuth2AuthenticationSuccessHandler = oAuth2AuthenticationSuccessHandler;
     }
     
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(authService);
-        authProvider.setPasswordEncoder(passwordEncoder);
-        return authProvider;
-    }
-
     @Bean
     public JwtFilter jwtFilter() {
         return new JwtFilter(jwtService, authService);
-    }
-    
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
     }
     
     @Bean
@@ -64,13 +47,15 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                .requestMatchers("/oauth2/**", "/login/oauth2/code/**").permitAll()
                 .requestMatchers("/health/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/market/**").permitAll()
                 .anyRequest().authenticated()
             )
-            .authenticationProvider(authenticationProvider())
+            .oauth2Login(oauth2 -> oauth2
+                .successHandler(oAuth2AuthenticationSuccessHandler)
+            )
             .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
