@@ -11,8 +11,8 @@ const buttonVariants = cva(
                 default:
                     "bg-gradient-to-r from-secondary to-primary text-white font-bold uppercase tracking-wider shadow-glow-primary hover:scale-[1.03] hover:shadow-glow-primary-hover",
                 outline:
-                    "border border-white/20 text-white hover:border-primary/60 hover:bg-white/[0.04] hover:shadow-glow-soft",
-                ghost: "hover:bg-white/[0.06] hover:text-primary text-white",
+                    "border border-[var(--border)] text-[var(--foreground)] hover:border-primary/60 hover:bg-[var(--surface-elevated)] hover:shadow-glow-soft",
+                ghost: "hover:bg-[var(--surface-elevated)] hover:text-primary text-[var(--foreground)]",
                 link: "text-primary hover:underline underline-offset-4",
                 danger:
                     "bg-accent-red/10 text-accent-red border border-accent-red/20 hover:bg-accent-red/20 hover:shadow-[0_0_20px_-5px_rgba(239,68,68,0.4)]",

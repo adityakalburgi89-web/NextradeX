@@ -3,16 +3,17 @@ module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        background: '#030304',
-        surface: '#0F1115',
-        'surface-elevated': '#161920',
-        'surface-glass': 'rgba(15, 17, 21, 0.6)',
-        foreground: '#FFFFFF',
-        muted: '#94A3B8',
-        border: '#1E293B',
+        background: 'var(--background)',
+        surface: 'var(--surface)',
+        'surface-elevated': 'var(--surface-elevated)',
+        'surface-glass': 'var(--surface-glass)',
+        foreground: 'var(--foreground)',
+        muted: 'var(--muted)',
+        border: 'var(--border)',
         primary: '#F7931A',
         secondary: '#EA580C',
         tertiary: '#FFD600',

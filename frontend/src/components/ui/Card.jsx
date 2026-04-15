@@ -9,15 +9,15 @@ const cardVariants = cva(
         variants: {
             variant: {
                 default:
-                    "bg-surface border-white/[0.06] shadow-elevation-sm hover:-translate-y-1 hover:border-primary/30 hover:shadow-card-hover ambient-glow",
+                    "bg-[var(--card-bg)] border-[var(--border)] shadow-elevation-sm hover:-translate-y-1 hover:border-primary/30 hover:shadow-card-hover ambient-glow",
                 glass:
                     "bg-surface-glass backdrop-blur-2xl border-white/[0.06] shadow-inner-glow",
                 elevated:
-                    "bg-surface-elevated border-white/[0.06] shadow-elevation-md hover:-translate-y-1 hover:shadow-elevation-lg",
+                    "bg-[var(--surface-elevated)] border-[var(--border)] shadow-elevation-md hover:-translate-y-1 hover:shadow-elevation-lg",
                 pricing:
-                    "bg-surface border-white/[0.06] opacity-80 hover:opacity-100 hover:scale-[1.03]",
+                    "bg-[var(--card-bg)] border-[var(--border)] opacity-80 hover:opacity-100 hover:scale-[1.03]",
                 pricingActive:
-                    "bg-surface border-primary shadow-card-elevation scale-[1.03] z-10 gradient-border",
+                    "bg-[var(--card-bg)] border-primary shadow-card-elevation scale-[1.03] z-10 gradient-border",
             },
         },
         defaultVariants: {
@@ -48,7 +48,7 @@ const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
     <h3
         ref={ref}
         className={cn(
-            "font-heading font-semibold leading-none tracking-tight text-xl text-white",
+            "font-heading font-semibold leading-none tracking-tight text-xl text-[var(--foreground)]",
             className
         )}
         {...props}
@@ -59,7 +59,7 @@ CardTitle.displayName = "CardTitle"
 const CardDescription = React.forwardRef(({ className, ...props }, ref) => (
     <p
         ref={ref}
-        className={cn("text-sm text-muted font-body leading-relaxed", className)}
+        className={cn("text-sm text-[var(--muted)] font-body leading-relaxed", className)}
         {...props}
     />
 ))

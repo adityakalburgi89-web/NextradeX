@@ -3,9 +3,33 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════
-   BASE LAYER
+   THEME VARIABLES
    ═══════════════════════════════════════════ */
 @layer base {
+  :root {
+    --background: #030304;
+    --surface: #0F1115;
+    --surface-elevated: #161920;
+    --surface-glass: rgba(15, 17, 21, 0.6);
+    --foreground: #FFFFFF;
+    --muted: #94A3B8;
+    --border: #1E293B;
+    --input-bg: #0F1115;
+    --card-bg: #0F1115;
+  }
+
+  .light {
+    --background: #F8FAFC;
+    --surface: #FFFFFF;
+    --surface-elevated: #F1F5F9;
+    --surface-glass: rgba(255, 255, 255, 0.8);
+    --foreground: #0F172A;
+    --muted: #64748B;
+    --border: #E2E8F0;
+    --input-bg: #F8FAFC;
+    --card-bg: #FFFFFF;
+  }
+
   html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
@@ -18,6 +42,13 @@
       radial-gradient(circle at top, rgba(247, 147, 26, 0.12), transparent 28%),
       radial-gradient(circle at 85% 15%, rgba(234, 88, 12, 0.1), transparent 22%),
       linear-gradient(180deg, rgba(15, 17, 21, 0.98), rgba(3, 3, 4, 1));
+  }
+
+  .light body {
+    background-image:
+      radial-gradient(circle at top, rgba(247, 147, 26, 0.08), transparent 28%),
+      radial-gradient(circle at 85% 15%, rgba(234, 88, 12, 0.05), transparent 22%),
+      linear-gradient(180deg, rgba(248, 250, 252, 1), rgba(241, 245, 249, 1));
   }
 
   /* CSS Custom Properties for animation timing */
@@ -38,6 +69,11 @@
   /* Glassmorphism Panel */
   .glass-panel {
     @apply bg-surface-glass backdrop-blur-2xl border border-white/[0.06] shadow-inner-glow;
+  }
+
+  .light .glass-panel {
+    @apply border-black/[0.08];
+    background: rgba(255, 255, 255, 0.8);
   }
 
   .interactive-surface {
@@ -75,7 +111,7 @@
   /* Gradient Border Card (animated) */
   .gradient-border {
     position: relative;
-    background: #0F1115;
+    background: var(--surface);
     border: 1px solid transparent;
     background-clip: padding-box;
   }
@@ -289,10 +325,16 @@ select option {
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px #0F1115 inset;
-  -webkit-text-fill-color: #FFFFFF;
-  caret-color: #FFFFFF;
+  -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset;
+  -webkit-text-fill-color: var(--foreground);
+  caret-color: var(--foreground);
   transition: background-color 5000s ease-in-out 0s;
+}
+
+.light input:-webkit-autofill,
+.light input:-webkit-autofill:hover,
+.light input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset !important;
 }
 
 /* Number input spinner removal */
@@ -314,4 +356,41 @@ input[type="number"] {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Light mode overrides */
+.light .nav-link.active {
+  color: #F7931A;
+}
+
+.light nav.sticky {
+  background: rgba(248, 250, 252, 0.8);
+  border-color: #E2E8F0;
+}
+
+.light footer {
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+}
+
+.light .interactive-surface {
+  background: #FFFFFF;
+  border-color: #E2E8F0;
+}
+
+.light .glass-panel {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: #E2E8F0;
+}
+
+.light thead {
+  background: #F1F5F9;
+}
+
+.light .bg-surface {
+  background: #FFFFFF;
+}
+
+.light .bg-surface-elevated {
+  background: #F1F5F9;
 }

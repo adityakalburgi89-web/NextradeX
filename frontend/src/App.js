@@ -4,7 +4,8 @@ import { Button } from "./components/ui/Button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./components/ui/Card";
 import { Input } from "./components/ui/Input";
 import { PageTransition } from "./components/ui/PageTransition";
-import { Zap, Shield, Layers, TrendingUp, Globe, Activity, Menu, BarChart3, Package, Target, Headphones, ChevronDown, Mail, User, LogOut, Search, X } from "lucide-react";
+import { useTheme } from "./context/ThemeContext";
+import { Zap, Shield, Layers, TrendingUp, Globe, Activity, Menu, BarChart3, Package, Target, Headphones, ChevronDown, Mail, User, LogOut, Search, X, Sun, Moon } from "lucide-react";
 import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
 import MarketsPage from "./pages/MarketsPage";
@@ -669,6 +670,7 @@ function TradeDropdown() {
     APP SHELL
     ═══════════════════════════════════════════ */
 function App() {
+  const { theme, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
@@ -744,6 +746,15 @@ function App() {
               title="Search"
             >
               <Search size={20} />
+            </button>
+
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-white/[0.06] transition-colors text-muted hover:text-primary"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
             </button>
 
             {isLoggedIn ? (
