@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import com.NexTradeX.config.ApiResponse;
+import com.NexTradeX.common.ApiResponse;
 
 import java.util.Map;
 
@@ -31,8 +31,8 @@ public class UserController {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .role(user.getRole().name())
-                .active(user.isActive())
-                .emailVerified(user.isEmailVerified())
+                .active(user.getActive())
+                .emailVerified(user.getEmailVerified())
                 .build();
 
         return ResponseEntity.ok(new ApiResponse<>(200, "Profile retrieved", profile));
@@ -52,8 +52,8 @@ public class UserController {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .role(user.getRole().name())
-                .active(user.isActive())
-                .emailVerified(user.isEmailVerified())
+                .active(user.getActive())
+                .emailVerified(user.getEmailVerified())
                 .build();
 
         return ResponseEntity.ok(new ApiResponse<>(200, "Profile updated", profile));

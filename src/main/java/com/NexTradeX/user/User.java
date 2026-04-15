@@ -21,7 +21,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "users", indexes = {
         @Index(name = "idx_email", columnList = "email", unique = true),
-        @Index(name = "idx_username", columnList = "username", unique = true)
+        @Index(name = "idx_username", columnList = "username", unique = true),
+        @Index(name = "idx_google_id", columnList = "google_id", unique = true)
 })
 @Data
 @NoArgsConstructor
@@ -70,6 +71,15 @@ public class User {
     private LocalDateTime updatedAt = LocalDateTime.now();
     
     private LocalDateTime lastLogin;
+    
+    @Column(unique = true)
+    private String googleId;
+    
+    private String profilePictureUrl;
+    
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean needsProfileSetup = true;
     
     @PrePersist
     protected void onCreate() {

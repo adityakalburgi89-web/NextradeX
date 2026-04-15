@@ -92,4 +92,55 @@ public class UserService {
         
         return userRepository.save(user);
     }
+    
+    public Optional<User> findByGoogleId(String googleId) {
+        return userRepository.findByGoogleId(googleId);
+    }
+    
+    public User createGoogleUser(String googleId, String email, String firstName, String lastName, String profilePictureUrl) {
+        User user = User.builder()
+                .username(generateTempUsername(email))
+                .email(email)
+                .passwordHash(passwordEncoder.encode(java.util.UUID.randomUUID().toString()))
+                .firstName(firstName != null ? firstName : "")
+                .lastName(lastName != null ? lastName : "")
+                .googleId(googleId)
+                .profilePictureUrl(profilePictureUrl)
+                .role(UserRole.USER)
+                .active(true)
+                .emailVerified(true)
+                .needsProfileSetup(true)
+                .build();
+        
+        User savedUser = userRepository.save(user);
+        log.info("Google user created: {} ({})", email, googleId);
+        return savedUser;
+    }
+    
+    public User updateProfileSetup(Long userId, String username, String firstName, String lastName) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        if (userRepository.existsByUsername(username) && !user.getUsername().equals(username)) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+        
+        user.setUsername(username);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setNeedsProfileSetup(false);
+        
+        return userRepository.save(user);
+    }
+    
+    private String generateTempUsername(String email) {
+        String base = email.split("@")[0].replaceAll("[^a-zA-Z0-9]", "");
+        String username = base;
+        int counter = 1;
+        while (userRepository.existsByUsername(username)) {
+            username = base + counter;
+            counter++;
+        }
+        return username;
+    }
 }

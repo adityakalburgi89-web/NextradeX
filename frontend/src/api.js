@@ -87,6 +87,21 @@ export async function validateToken() {
   return handleResponse(res);
 }
 
+export function googleLogin() {
+  window.location.href = `${API_BASE_URL}/oauth2/authorization/google`;
+}
+
+export async function completeProfile(payload) {
+  const res = await fetch(`${API_BASE_URL}/oauth2/complete-profile`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  const data = await handleResponse(res);
+  if (data?.data?.token) setAuthToken(data.data.token);
+  return data;
+}
+
 export async function fetchUserProfile() {
   const res = await fetch(`${API_BASE_URL}/user/profile`, {
     headers: authHeaders(),

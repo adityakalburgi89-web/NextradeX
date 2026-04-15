@@ -15,4 +15,5 @@ public class AuthResponse {
     private String email;
     private Long expiresIn;
     private String tokenType = "Bearer";
+    private Boolean needsProfileSetup = false;
 }
