@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Routes, Route, Link, useLocation } from "react-router-dom";
+import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./components/ui/Button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./components/ui/Card";
 import { Input } from "./components/ui/Input";
 import { PageTransition } from "./components/ui/PageTransition";
-import { Zap, Shield, Layers, TrendingUp, Globe, Activity, Menu, BarChart3, Package, Target, Headphones, ChevronDown, Mail, User, LogOut } from "lucide-react";
+import { Zap, Shield, Layers, TrendingUp, Globe, Activity, Menu, BarChart3, Package, Target, Headphones, ChevronDown, Mail, User, LogOut, Search, X } from "lucide-react";
 import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
 import MarketsPage from "./pages/MarketsPage";
@@ -439,6 +439,86 @@ function FAQItem({ question, answer }) {
   );
 }
 
+function SearchModal({ open, onClose, query, setQuery }) {
+  const navigate = useNavigate();
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (open && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [open]);
+
+  const searchResults = [
+    { label: "Markets", path: "/markets", description: "View all markets" },
+    { label: "Spot Trading", path: "/trade/spot", description: "Trade spot pairs" },
+    { label: "Futures Trading", path: "/trade/futures", description: "Trade futures contracts" },
+    { label: "Options Trading", path: "/trade/options", description: "Trade options" },
+    { label: "Wallets", path: "/wallets", description: "Manage your wallets" },
+    { label: "Orders", path: "/orders", description: "View order history" },
+    { label: "Profile", path: "/profile", description: "Your profile" },
+    { label: "Careers", path: "/careers", description: "Join our team" },
+    { label: "API Docs", path: "/api-docs", description: "API documentation" },
+    { label: "Support", path: "/support", description: "Get help" },
+    { label: "User Guide", path: "/user-guide", description: "Learn how to trade" },
+    { label: "Referral Program", path: "/referral", description: "Earn rewards" },
+  ].filter(item => 
+    item.label.toLowerCase().includes(query.toLowerCase()) ||
+    item.description.toLowerCase().includes(query.toLowerCase())
+  );
+
+  const handleSelect = (path) => {
+    navigate(path);
+    onClose();
+    setQuery("");
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-xl bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
+          <Search size={18} className="text-muted" />
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search pages..."
+            className="flex-1 bg-transparent text-white placeholder-muted outline-none text-sm"
+          />
+          <button onClick={onClose}>
+            <X size={18} className="text-muted hover:text-white" />
+          </button>
+        </div>
+        <div className="max-h-80 overflow-y-auto">
+          {query && searchResults.length === 0 ? (
+            <div className="p-4 text-center text-muted text-sm">No results found</div>
+          ) : (
+            <div className="py-2">
+              {searchResults.map((item, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSelect(item.path)}
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors text-left"
+                >
+                  <div>
+                    <div className="text-white text-sm font-medium">{item.label}</div>
+                    <div className="text-muted text-xs">{item.description}</div>
+                  </div>
+                  <ChevronDown size={16} className="text-muted rotate-[-90deg]" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════
    FOOTER
    ═══════════════════════════════════════════ */
@@ -593,6 +673,8 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const userMenuRef = useRef(null);
 
   useEffect(() => {
@@ -655,6 +737,15 @@ function App() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Search Button */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="p-2 rounded-lg hover:bg-white/[0.06] transition-colors text-muted hover:text-primary"
+              title="Search"
+            >
+              <Search size={20} />
+            </button>
+
             {isLoggedIn ? (
               <div className="relative" ref={userMenuRef}>
                 <button
@@ -772,10 +863,13 @@ function App() {
           <Route path="/user-guide" element={<UserGuidePage />} />
           <Route path="/referral" element={<ReferralPage />} />
           <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </div>
+</Routes>
+        </div>
 
-      {/* Footer */}
+        {/* Search Modal */}
+        <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} query={searchQuery} setQuery={setSearchQuery} />
+
+        {/* Footer */}
       <Footer />
     </div>
   );
