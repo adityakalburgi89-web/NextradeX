@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./Car
 import CandlestickChart from "./CandlestickChart";
 import { cn, formatCompactNumber, formatCurrency, formatPercent } from "../../lib/utils";
 
-export const DEFAULT_INTERVALS = ["15m", "1h", "4h", "1d"];
+export const DEFAULT_INTERVALS = ["1m", "5m", "15m", "1h", "4h", "1d"];
 
 const statIcons = {
   price: CandlestickChartIcon,
