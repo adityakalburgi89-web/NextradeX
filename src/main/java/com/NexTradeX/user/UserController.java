@@ -1,7 +1,10 @@
 package com.NexTradeX.user;
 
+import com.NexTradeX.auth.JwtAuthenticationToken;
 import com.NexTradeX.auth.JwtService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +13,7 @@ import com.NexTradeX.common.ApiResponse;
 
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
@@ -20,11 +24,24 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<UserProfileResponse>> getProfile(Authentication authentication) {
+        // ✅ DEBUG ENDPOINT: Check Authentication object
+        log.info("[DEBUG] /user/profile - Authentication type: {}", 
+            authentication != null ? authentication.getClass().getSimpleName() : "null");
+        log.info("[DEBUG] /user/profile - Is authenticated: {}", 
+            authentication != null ? authentication.isAuthenticated() : false);
+        if (authentication instanceof JwtAuthenticationToken) {
+            JwtAuthenticationToken jwtAuth = (JwtAuthenticationToken) authentication;
+            log.info("[DEBUG] /user/profile - JWT Principal: {}, UserId: {}", 
+                jwtAuth.getPrincipal(), jwtAuth.getUserId());
+        }
+        
         Long userId = jwtService.extractUserIdFromAuthentication(authentication);
         if (userId == null) {
+            log.warn("[WARNING] /user/profile - Could not extract userId from authentication");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse<>(401, "Invalid authentication", null));
+                    .body(new ApiResponse<>(401, "Invalid authentication: userId not found", null));
         }
+        
         User user = userService.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
@@ -47,6 +64,11 @@ public class UserController {
             Authentication authentication,
             @RequestBody UpdateProfileRequest request) {
         Long userId = jwtService.extractUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(401, "Invalid authentication: userId not found", null));
+        }
+        
         User user = userService.updateUser(userId, request.getFirstName(), request.getLastName(), request.getEmail());
 
         UserProfileResponse profile = UserProfileResponse.builder()
