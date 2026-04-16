@@ -69,7 +69,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<String>> handleGlobalException(
             Exception ex, WebRequest request) {
         log.error("Unexpected error: ", ex);
+        String msg = ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiResponse<>(500, "Internal Server Error", null));
+                .body(new ApiResponse<>(500, msg, null));
     }
 }

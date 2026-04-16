@@ -24,18 +24,36 @@ public class OAuthController {
 
     @PostMapping("/complete-profile")
     public ResponseEntity<ApiResponse<AuthResponse>> completeProfile(
-            @RequestHeader("Authorization") String bearerToken,
+            @RequestHeader(value = "Authorization", required = false) String bearerToken,
             @RequestBody Map<String, String> profileData) {
         try {
+            if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>(401, "Missing or invalid Authorization header", null));
+            }
             String token = bearerToken.substring(7);
             String username = jwtService.extractUsername(token);
             Long userId = jwtService.extractUserId(token);
             
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>(401, "Invalid token: missing userId", null));
+            }
+            
+            String usernameVal = profileData.get("username");
+            String firstName = profileData.get("firstName");
+            String lastName = profileData.get("lastName");
+            
+            if (usernameVal == null || usernameVal.isBlank()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse<>(400, "Username is required", null));
+            }
+            
             User user = userService.updateProfileSetup(
                     userId,
-                    profileData.get("username"),
-                    profileData.get("firstName"),
-                    profileData.get("lastName")
+                    usernameVal,
+                    firstName,
+                    lastName
             );
             
             String newToken = jwtService.generateTokenWithUserId(user.getUsername(), user.getId());

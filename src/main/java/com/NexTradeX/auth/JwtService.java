@@ -72,7 +72,15 @@ public class JwtService {
         if (userId instanceof Integer) {
             return ((Integer) userId).longValue();
         }
-        return (Long) userId;
+        if (userId instanceof Number) {
+            return ((Number) userId).longValue();
+        }
+        try {
+            return Long.parseLong(userId.toString());
+        } catch (NumberFormatException e) {
+            log.warn("Failed to parse userId: {}", userId);
+            return null;
+        }
     }
     
     public boolean isTokenValid(String token, UserDetails userDetails) {
