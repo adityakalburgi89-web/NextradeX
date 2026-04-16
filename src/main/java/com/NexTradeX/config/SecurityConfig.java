@@ -17,6 +17,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.NexTradeX.auth.AuthService;
 import com.NexTradeX.auth.JwtService;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -55,6 +58,16 @@ public class SecurityConfig {
             )
             .oauth2Login(oauth2 -> oauth2
                 .successHandler(oAuth2AuthenticationSuccessHandler)
+                .failureHandler((request, response, exception) -> {
+                    response.sendRedirect("http://localhost:3000/auth?error=oauth_failed&message=" + 
+                        java.net.URLEncoder.encode("OAuth login failed: " + exception.getMessage(), 
+                        java.nio.charset.StandardCharsets.UTF_8));
+                })
+            )
+            .logout(logout -> logout
+                .logoutUrl("/auth/logout")
+                .logoutSuccessUrl("http://localhost:3000/auth")
+                .permitAll()
             )
             .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
         
@@ -64,11 +77,43 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOriginPattern("*");
-        configuration.addAllowedHeader(CorsConfiguration.ALL);
-        configuration.addAllowedMethod(CorsConfiguration.ALL);
+        
+        // ✅ FIX #1: Explicitly set allowed origins (not wildcard with credentials)
+        String[] allowedOriginArray = corsAllowedOrigins.split(",");
+        List<String> allowedOrigins = Arrays.stream(allowedOriginArray)
+            .map(String::trim)
+            .toList();
+        configuration.setAllowedOrigins(allowedOrigins);
+        
+        // ✅ FIX #2: Allow Authorization header explicitly for CORS preflight
+        configuration.setAllowedHeaders(Arrays.asList(
+            "Content-Type", 
+            "Authorization", 
+            "Accept",
+            "X-Requested-With"
+        ));
+        
+        // ✅ FIX #3: Allow all HTTP methods
+        configuration.setAllowedMethods(Arrays.asList(
+            HttpMethod.GET.name(),
+            HttpMethod.POST.name(),
+            HttpMethod.PUT.name(),
+            HttpMethod.DELETE.name(),
+            HttpMethod.PATCH.name(),
+            HttpMethod.OPTIONS.name()
+        ));
+        
+        // ✅ FIX #4: Enable credentials for Authorization header
         configuration.setAllowCredentials(true);
+        
+        // ✅ FIX #5: Cache preflight for 1 hour
         configuration.setMaxAge(3600L);
+        
+        // ✅ FIX #6: Expose Authorization and custom headers in response
+        configuration.setExposedHeaders(Arrays.asList(
+            "Authorization",
+            "Content-Type"
+        ));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
