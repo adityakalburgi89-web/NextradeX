@@ -1,5 +1,6 @@
 package com.NexTradeX.oauth;
 
+import com.NexTradeX.auth.JwtAuthenticationToken;
 import com.NexTradeX.auth.JwtService;
 import com.NexTradeX.common.ApiResponse;
 import com.NexTradeX.dto.AuthResponse;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -22,33 +24,61 @@ public class OAuthController {
     private final UserService userService;
     private final JwtService jwtService;
 
+    /**
+     * Complete OAuth profile setup after successful Google OAuth login
+     * 
+     * SECURITY CONTEXT:
+     * - Requires valid JWT token in Authorization header
+     * - Token must contain valid userId
+     * - Session is STATELESS (no cookies required)
+     * 
+     * DEBUG: Check Authentication object in controller:
+     *   if (auth instanceof JwtAuthenticationToken) {
+     *       Long userId = ((JwtAuthenticationToken) auth).getUserId();
+     *       String username = (String) auth.getPrincipal();
+     *   }
+     */
     @PostMapping("/complete-profile")
     public ResponseEntity<ApiResponse<AuthResponse>> completeProfile(
-            @RequestHeader(value = "Authorization", required = false) String bearerToken,
+            Authentication authentication,
             @RequestBody Map<String, String> profileData) {
         try {
-            if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+            // ✅ FIX #1: Use Spring Security Authentication object (JWT filter populates this)
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.warn("complete-profile: Authentication is null or not authenticated");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ApiResponse<>(401, "Missing or invalid Authorization header", null));
+                        .body(new ApiResponse<>(401, "User is not authenticated. JWT token missing or invalid.", null));
             }
-            String token = bearerToken.substring(7);
-            String username = jwtService.extractUsername(token);
-            Long userId = jwtService.extractUserId(token);
+            
+            // ✅ FIX #2: Extract userId from JWT token stored in Authentication
+            Long userId = null;
+            if (authentication instanceof JwtAuthenticationToken) {
+                userId = ((JwtAuthenticationToken) authentication).getUserId();
+            } else {
+                // Fallback: try to extract from principal
+                userId = jwtService.extractUserIdFromAuthentication(authentication);
+            }
             
             if (userId == null) {
+                log.warn("complete-profile: Could not extract userId from authentication");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ApiResponse<>(401, "Invalid token: missing userId", null));
+                        .body(new ApiResponse<>(401, "Invalid token: missing userId. JWT may be expired.", null));
             }
             
+            log.info("complete-profile: Processing profile setup for userId: {}", userId);
+            
+            String username = (String) authentication.getPrincipal();
             String usernameVal = profileData.get("username");
             String firstName = profileData.get("firstName");
             String lastName = profileData.get("lastName");
             
+            // ✅ FIX #3: Validate required fields
             if (usernameVal == null || usernameVal.isBlank()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(new ApiResponse<>(400, "Username is required", null));
             }
             
+            // ✅ FIX #4: Update user profile
             User user = userService.updateProfileSetup(
                     userId,
                     usernameVal,
@@ -56,6 +86,9 @@ public class OAuthController {
                     lastName
             );
             
+            log.info("complete-profile: Profile setup completed for user: {}", user.getUsername());
+            
+            // ✅ FIX #5: Generate new token with updated username
             String newToken = jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
             
             AuthResponse authResponse = AuthResponse.builder()
@@ -69,9 +102,9 @@ public class OAuthController {
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Profile completed successfully", authResponse));
         } catch (Exception e) {
-            log.error("Profile completion failed: {}", e.getMessage());
+            log.error("Profile completion failed: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, "Profile setup failed: " + e.getMessage(), null));
         }
     }
 }
