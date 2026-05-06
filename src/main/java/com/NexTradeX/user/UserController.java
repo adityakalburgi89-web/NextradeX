@@ -25,25 +25,29 @@ public class UserController {
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<UserProfileResponse>> getProfile(Authentication authentication) {
         // ✅ DEBUG ENDPOINT: Check Authentication object
-        log.info("[DEBUG] /user/profile - Authentication type: {}", 
-            authentication != null ? authentication.getClass().getSimpleName() : "null");
-        log.info("[DEBUG] /user/profile - Is authenticated: {}", 
-            authentication != null ? authentication.isAuthenticated() : false);
+        log.info("[DEBUG] /user/profile - Authentication type: {}",
+                authentication != null ? authentication.getClass().getSimpleName() : "null");
+        log.info("[DEBUG] /user/profile - Is authenticated: {}",
+                authentication != null ? authentication.isAuthenticated() : false);
         if (authentication instanceof JwtAuthenticationToken) {
             JwtAuthenticationToken jwtAuth = (JwtAuthenticationToken) authentication;
-            log.info("[DEBUG] /user/profile - JWT Principal: {}, UserId: {}", 
-                jwtAuth.getPrincipal(), jwtAuth.getUserId());
+            log.info("[DEBUG] /user/profile - JWT Principal: {}, UserId: {}",
+                    jwtAuth.getPrincipal(), jwtAuth.getUserId());
         }
-        
+
         Long userId = jwtService.extractUserIdFromAuthentication(authentication);
         if (userId == null) {
             log.warn("[WARNING] /user/profile - Could not extract userId from authentication");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ApiResponse<>(401, "Invalid authentication: userId not found", null));
         }
-        
-        User user = userService.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        User user = userService.findById(userId).orElse(null);
+        if (user == null) {
+            log.warn("[WARNING] /user/profile - User not found for id: {}", userId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(404, "User not found. Please log in again.", null));
+        }
 
         UserProfileResponse profile = UserProfileResponse.builder()
                 .id(user.getId())
@@ -68,8 +72,14 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ApiResponse<>(401, "Invalid authentication: userId not found", null));
         }
-        
-        User user = userService.updateUser(userId, request.getFirstName(), request.getLastName(), request.getEmail());
+
+        User user;
+        try {
+            user = userService.updateUser(userId, request.getFirstName(), request.getLastName(), request.getEmail());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(404, e.getMessage(), null));
+        }
 
         UserProfileResponse profile = UserProfileResponse.builder()
                 .id(user.getId())

@@ -68,7 +68,7 @@ export default function CandlestickChart({ data = [], options = EMPTY_OPTIONS, h
 
     chart.subscribeCrosshairMove((param) => {
       if (param.time) {
-        const candleData = param.seriesData.get(candleSeries);
+        const candleData = param.seriesData.get(candlestickSeries);
         const volumeData = param.seriesData.get(volumeSeries);
         if (candleData) {
           setTooltipData({
