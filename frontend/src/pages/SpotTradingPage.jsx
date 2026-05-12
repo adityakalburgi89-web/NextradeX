@@ -29,15 +29,36 @@ export default function SpotTradingPage() {
   const [interval, setInterval] = useState("1h");
 
   const handlePriceUpdate = (data) => {
+    console.log("[WS] 📡 Price update received:", data);
+    let update = null;
+    const currentSymbol = form.symbol.toUpperCase();
+
     if (Array.isArray(data)) {
-      const symbolPrice = data.find((p) => p.symbol === form.symbol);
-      if (symbolPrice) {
-        setCurrentPrice(symbolPrice.currentPrice);
-        setPriceSnapshot(symbolPrice);
-      }
-    } else if (data && data.symbol === form.symbol) {
-      setCurrentPrice(data.currentPrice);
-      setPriceSnapshot(data);
+      update = data.find((p) => p.symbol.toUpperCase() === currentSymbol);
+    } else if (data && data.symbol.toUpperCase() === currentSymbol) {
+      update = data;
+    }
+
+    if (update) {
+      console.log("[WS] ✅ Match found for", currentSymbol, "Price:", update.currentPrice);
+      const newPrice = Number(update.currentPrice);
+      setCurrentPrice(newPrice);
+      setPriceSnapshot(update);
+
+      // Real-time chart update: modify the last candle
+      setCandleData((prev) => {
+        if (!prev || prev.length === 0) return prev;
+        const lastIndex = prev.length - 1;
+        const lastCandle = { ...prev[lastIndex] };
+        
+        lastCandle.close = newPrice;
+        if (newPrice > lastCandle.high) lastCandle.high = newPrice;
+        if (newPrice < lastCandle.low) lastCandle.low = newPrice;
+        
+        const next = [...prev];
+        next[lastIndex] = lastCandle;
+        return next;
+      });
     }
   };
 

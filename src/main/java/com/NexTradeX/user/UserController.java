@@ -15,7 +15,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/user")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -55,9 +55,10 @@ public class UserController {
                 .email(user.getEmail())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
-                .role(user.getRole().name())
+                .role(user.getRole() != null ? user.getRole().name() : "USER")
                 .active(user.getActive())
                 .emailVerified(user.getEmailVerified())
+                .needsProfileSetup(user.getNeedsProfileSetup())
                 .build();
 
         return ResponseEntity.ok(new ApiResponse<>(200, "Profile retrieved", profile));
@@ -87,9 +88,10 @@ public class UserController {
                 .email(user.getEmail())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
-                .role(user.getRole().name())
+                .role(user.getRole() != null ? user.getRole().name() : "USER")
                 .active(user.getActive())
                 .emailVerified(user.getEmailVerified())
+                .needsProfileSetup(user.getNeedsProfileSetup())
                 .build();
 
         return ResponseEntity.ok(new ApiResponse<>(200, "Profile updated", profile));

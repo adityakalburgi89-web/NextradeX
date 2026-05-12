@@ -61,10 +61,16 @@ public class BinanceService {
     public Map<String, Object> getTicker24h(String symbol) {
         try {
             String url = BASE_URL + "/api/v3/ticker/24hr?symbol=" + symbol.toUpperCase();
-            log.info("Fetching ticker from: {}", url);
-            return restClient.get().uri(url).retrieve().body(Map.class);
+            log.info("[Binance] 🌐 Fetching 24h ticker for {} from: {}", symbol, url);
+            Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
+            if (response != null) {
+                log.info("[Binance] ✅ Successfully fetched ticker for {}. Last Price: {}", symbol, response.get("lastPrice"));
+            } else {
+                log.warn("[Binance] ⚠️ Received empty response for {}", symbol);
+            }
+            return response;
         } catch (Exception e) {
-            log.error("Failed to fetch 24h ticker for {}: {}", symbol, e.getMessage());
+            log.error("[Binance] ❌ Failed to fetch 24h ticker for {}: {}", symbol, e.getMessage());
             return null;
         }
     }
@@ -72,11 +78,15 @@ public class BinanceService {
     public List<List<Object>> getKlines(String symbol, String interval, int limit) {
         try {
             String url = BASE_URL + "/api/v3/klines?symbol=" + symbol.toUpperCase() + "&interval=" + interval + "&limit=" + limit;
+            log.info("[Binance] 📊 Fetching klines for {} from: {}", symbol, url);
             @SuppressWarnings("unchecked")
             List<List<Object>> response = restClient.get().uri(url).retrieve().body(List.class);
+            if (response != null) {
+                log.info("[Binance] ✅ Successfully fetched {} klines for {}", response.size(), symbol);
+            }
             return response;
         } catch (Exception e) {
-            log.error("Failed to fetch klines for {}: {}", symbol, e.getMessage());
+            log.error("[Binance] ❌ Failed to fetch klines for {}: {}", symbol, e.getMessage());
             return null;
         }
     }

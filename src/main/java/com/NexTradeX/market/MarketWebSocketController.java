@@ -20,12 +20,12 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @RequiredArgsConstructor
 public class MarketWebSocketController {
-    
+
     private final MarketService marketService;
     private final SimpMessagingTemplate messagingTemplate;
-    
+
     private final Map<String, CryptoPrice> lastPrices = new ConcurrentHashMap<>();
-    
+
     @MessageMapping("/price.subscribe")
     @SendTo("/topic/prices")
     public CryptoPrice subscribeToPrices(String symbol) {
@@ -46,7 +46,7 @@ public class MarketWebSocketController {
                     .build();
         }
     }
-    
+
     @MessageMapping("/price.subscribe.all")
     @SendTo("/topic/prices")
     public List<CryptoPrice> subscribeToAllPrices() {
@@ -61,18 +61,20 @@ public class MarketWebSocketController {
             return List.of();
         }
     }
-    
-    @Scheduled(fixedRate = 5000)
+
+    @Scheduled(fixedRate = 1000)
     public void broadcastPrices() {
         try {
-            marketService.simulateMarketMovement();
+            marketService.syncMarketPrices();
             List<CryptoPrice> prices = marketService.getAllPrices();
-            messagingTemplate.convertAndSend("/topic/prices", prices);
-            for (CryptoPrice price : prices) {
-                lastPrices.put(price.getSymbol(), price);
+            if (!prices.isEmpty()) {
+                log.debug("[WS] 🚀 Broadcasting prices for {} symbols to /topic/prices", prices.size());
+                messagingTemplate.convertAndSend("/topic/prices", prices);
+            } else {
+                log.warn("[WS] ⚠️ No prices to broadcast");
             }
         } catch (Exception e) {
-            log.debug("Scheduled price broadcast skipped: {}", e.getMessage());
+            log.error("[WS] ❌ Scheduled price broadcast failed: {}", e.getMessage());
         }
     }
 }

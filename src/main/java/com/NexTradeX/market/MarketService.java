@@ -7,6 +7,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import com.NexTradeX.binance.BinanceService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -33,6 +35,7 @@ public class MarketService {
 
     private final CryptoPriceRepository cryptoPriceRepository;
     private final RestTemplate restTemplate;
+    private final BinanceService binanceService;
 
     @Value("${coinmarketcap.api.key}")
     private String coinMarketCapApiKey;
@@ -41,6 +44,13 @@ public class MarketService {
         String normalizedSymbol = normalizeSymbol(symbol);
 
         try {
+            // Try fetching from Binance first
+            Map<String, Object> ticker = binanceService.getTicker24h(normalizedSymbol);
+            if (ticker != null) {
+                return updateOrCreatePriceFromBinance(normalizedSymbol, ticker);
+            }
+
+            // Fallback to existing fetchLivePrice (CMC) if Binance fails
             CryptoPrice livePrice = fetchLivePrice(normalizedSymbol);
             return persistPrice(livePrice);
         } catch (Exception exception) {
@@ -66,115 +76,86 @@ public class MarketService {
 
     public List<CandlestickDataPoint> getCandlestickData(String symbol, String interval, int limit) {
         String normalizedSymbol = normalizeSymbol(symbol);
-        int sanitizedLimit = Math.min(Math.max(limit, 24), 240);
-        int minutesPerCandle = resolveIntervalMinutes(interval);
-        CryptoPrice snapshot = cryptoPriceRepository.findBySymbol(normalizedSymbol)
-                .orElseGet(() -> getPrice(normalizedSymbol));
+        int sanitizedLimit = Math.min(Math.max(limit, 1), 1000);
+        String binanceInterval = mapToBinanceInterval(interval);
 
-        BigDecimal currentClose = safe(snapshot.getCurrentPrice(), BigDecimal.valueOf(100));
-        BigDecimal dailyMove = safe(snapshot.getPercentChange24h(), BigDecimal.ZERO)
-                .divide(HUNDRED, 8, RoundingMode.HALF_UP);
-        BigDecimal volatility = dailyMove.abs().max(new BigDecimal("0.004"));
+        log.info("Fetching real klines from Binance for {} ({} interval, limit {})", normalizedSymbol, binanceInterval,
+                sanitizedLimit);
 
-        List<CandlestickDataPoint> candles = new ArrayList<>(sanitizedLimit);
-        long closeTime = LocalDateTime.now()
-                .withSecond(0)
-                .withNano(0)
-                .toEpochSecond(ZoneOffset.UTC);
+        List<List<Object>> klines = binanceService.getKlines(normalizedSymbol, binanceInterval, sanitizedLimit);
 
-        BigDecimal previousClose = currentClose
-                .multiply(BigDecimal.ONE.subtract(dailyMove.multiply(BigDecimal.valueOf(sanitizedLimit / 3.0))))
-                .max(new BigDecimal("0.0001"));
+        if (klines == null || klines.isEmpty()) {
+            log.warn("Failed to fetch klines from Binance for {}, returning empty list", normalizedSymbol);
+            return List.of();
+        }
 
-        for (int index = sanitizedLimit - 1; index >= 0; index--) {
-            long candleTime = closeTime - ((long) minutesPerCandle * 60 * index);
-            double oscillation = Math.sin((sanitizedLimit - index) * 0.65D + normalizedSymbol.hashCode() * 0.0001D);
-            double drift = index == 0 ? 0.0D : (double) index / sanitizedLimit;
-
-            BigDecimal open = previousClose;
-            BigDecimal directionalMove = volatility
-                    .multiply(BigDecimal.valueOf(0.85D - (drift * 0.35D)))
-                    .multiply(BigDecimal.valueOf(oscillation * 0.8D));
-            BigDecimal noiseMove = volatility
-                    .multiply(BigDecimal.valueOf(randomRange(-0.45D, 0.45D)));
-            BigDecimal close = open
-                    .multiply(BigDecimal.ONE.add(directionalMove.add(noiseMove)))
-                    .max(new BigDecimal("0.0001"));
-
-            BigDecimal wickFactor = volatility.max(new BigDecimal("0.006"));
-            BigDecimal wickUp = close.max(open)
-                    .multiply(wickFactor.multiply(BigDecimal.valueOf(randomRange(0.35D, 1.1D))));
-            BigDecimal wickDown = close.min(open)
-                    .multiply(wickFactor.multiply(BigDecimal.valueOf(randomRange(0.25D, 0.9D))));
-
-            BigDecimal high = close.max(open).add(wickUp).setScale(4, RoundingMode.HALF_UP);
-            BigDecimal low = close.min(open).subtract(wickDown).max(new BigDecimal("0.0001")).setScale(4, RoundingMode.HALF_UP);
-            BigDecimal volumeBase = safe(snapshot.getVolume24h(), BigDecimal.valueOf(1_000_000))
-                    .divide(BigDecimal.valueOf(24), 2, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(randomRange(0.55D, 1.45D)));
-
-            CandlestickDataPoint candle = CandlestickDataPoint.builder()
-                    .time(candleTime)
-                    .open(open.setScale(4, RoundingMode.HALF_UP))
-                    .high(high)
-                    .low(low)
-                    .close(close.setScale(4, RoundingMode.HALF_UP))
-                    .volume(volumeBase.setScale(2, RoundingMode.HALF_UP))
+        return klines.stream().map(kline -> {
+            // Binance Kline format: [Open time, Open, High, Low, Close, Volume, Close time,
+            // ...]
+            return CandlestickDataPoint.builder()
+                    .time(Long.parseLong(kline.get(0).toString()) / 1000) // Convert ms to seconds
+                    .open(new BigDecimal(kline.get(1).toString()))
+                    .high(new BigDecimal(kline.get(2).toString()))
+                    .low(new BigDecimal(kline.get(3).toString()))
+                    .close(new BigDecimal(kline.get(4).toString()))
+                    .volume(new BigDecimal(kline.get(5).toString()))
                     .build();
-
-            candles.add(candle);
-            previousClose = close;
-        }
-
-        if (!candles.isEmpty()) {
-            CandlestickDataPoint last = candles.get(candles.size() - 1);
-            last.setClose(currentClose.setScale(4, RoundingMode.HALF_UP));
-            last.setHigh(last.getHigh().max(last.getClose()).setScale(4, RoundingMode.HALF_UP));
-            last.setLow(last.getLow().min(last.getClose()).setScale(4, RoundingMode.HALF_UP));
-        }
-
-        return candles;
+        }).toList();
     }
 
-    public synchronized void simulateMarketMovement() {
-        List<CryptoPrice> prices = cryptoPriceRepository.findAll();
-        if (prices.isEmpty()) {
-            return;
+    @Transactional
+    public synchronized void syncMarketPrices() {
+        List<CryptoPrice> trackedPrices = cryptoPriceRepository.findAll();
+        if (trackedPrices.isEmpty()) {
+            initializeDefaultPrices();
+            trackedPrices = cryptoPriceRepository.findAll();
         }
 
-        for (CryptoPrice price : prices) {
-            BigDecimal current = safe(price.getCurrentPrice(), BigDecimal.ONE);
-            BigDecimal open = safe(price.getOpenPrice(), current);
-            BigDecimal movement = BigDecimal.valueOf(randomRange(-0.008D, 0.008D));
-            BigDecimal next = current.multiply(BigDecimal.ONE.add(movement)).max(new BigDecimal("0.0001"));
+        log.debug("Syncing market prices from Binance for {} symbols", trackedPrices.size());
 
-            price.setCurrentPrice(next.setScale(4, RoundingMode.HALF_UP));
-            price.setHighPrice(safe(price.getHighPrice(), next).max(next).setScale(4, RoundingMode.HALF_UP));
-            price.setLowPrice(safe(price.getLowPrice(), next).min(next).setScale(4, RoundingMode.HALF_UP));
-            price.setOpenPrice(open.setScale(4, RoundingMode.HALF_UP));
-
-            BigDecimal priceChange = next.subtract(open);
-            BigDecimal percentChange = open.compareTo(BigDecimal.ZERO) == 0
-                    ? BigDecimal.ZERO
-                    : priceChange.divide(open, 4, RoundingMode.HALF_UP).multiply(HUNDRED);
-
-            price.setPriceChange24h(priceChange.setScale(2, RoundingMode.HALF_UP));
-            price.setPercentChange24h(percentChange.setScale(2, RoundingMode.HALF_UP));
-            price.setVolume24h(safe(price.getVolume24h(), BigDecimal.valueOf(100_000))
-                    .multiply(BigDecimal.valueOf(randomRange(0.995D, 1.006D)))
-                    .setScale(0, RoundingMode.HALF_UP));
-            price.setUpdatedAt(LocalDateTime.now());
+        for (CryptoPrice price : trackedPrices) {
+            try {
+                Map<String, Object> ticker = binanceService.getTicker24h(price.getSymbol());
+                if (ticker != null) {
+                    price.setCurrentPrice(new BigDecimal(ticker.get("lastPrice").toString()));
+                    price.setHighPrice(new BigDecimal(ticker.get("highPrice").toString()));
+                    price.setLowPrice(new BigDecimal(ticker.get("lowPrice").toString()));
+                    price.setOpenPrice(new BigDecimal(ticker.get("openPrice").toString()));
+                    price.setPriceChange24h(new BigDecimal(ticker.get("priceChange").toString()));
+                    price.setPercentChange24h(new BigDecimal(ticker.get("priceChangePercent").toString()));
+                    price.setVolume24h(new BigDecimal(ticker.get("volume").toString()));
+                    price.setUpdatedAt(LocalDateTime.now());
+                }
+            } catch (Exception e) {
+                log.warn("Failed to sync price for {}: {}", price.getSymbol(), e.getMessage());
+            }
         }
 
-        cryptoPriceRepository.saveAll(prices);
+        cryptoPriceRepository.saveAll(trackedPrices);
+    }
+
+    private String mapToBinanceInterval(String interval) {
+        if (interval == null)
+            return "1h";
+        return switch (interval.toLowerCase()) {
+            case "1m" -> "1m";
+            case "5m" -> "5m";
+            case "15m" -> "15m";
+            case "30m" -> "30m";
+            case "1h" -> "1h";
+            case "4h" -> "4h";
+            case "1d" -> "1d";
+            case "1w" -> "1w";
+            default -> "1h";
+        };
     }
 
     @Transactional
     public CryptoPrice updateOrCreatePrice(String symbol, BigDecimal currentPrice,
-                                           BigDecimal highPrice, BigDecimal lowPrice,
-                                           BigDecimal openPrice, BigDecimal priceChange24h,
-                                           BigDecimal percentChange24h, BigDecimal volume24h,
-                                           BigDecimal marketCap) {
+            BigDecimal highPrice, BigDecimal lowPrice,
+            BigDecimal openPrice, BigDecimal priceChange24h,
+            BigDecimal percentChange24h, BigDecimal volume24h,
+            BigDecimal marketCap) {
         Optional<CryptoPrice> existing = cryptoPriceRepository.findBySymbol(symbol);
 
         CryptoPrice price = existing.orElse(new CryptoPrice());
@@ -192,6 +173,20 @@ public class MarketService {
         CryptoPrice saved = cryptoPriceRepository.save(price);
         log.info("Updated price for {}: {}", symbol, currentPrice);
         return saved;
+    }
+
+    private CryptoPrice updateOrCreatePriceFromBinance(String symbol, Map<String, Object> ticker) {
+        return updateOrCreatePrice(
+                symbol,
+                new BigDecimal(ticker.get("lastPrice").toString()),
+                new BigDecimal(ticker.get("highPrice").toString()),
+                new BigDecimal(ticker.get("lowPrice").toString()),
+                new BigDecimal(ticker.get("openPrice").toString()),
+                new BigDecimal(ticker.get("priceChange").toString()),
+                new BigDecimal(ticker.get("priceChangePercent").toString()),
+                new BigDecimal(ticker.get("volume").toString()),
+                null // Market cap not available in 24h ticker
+        );
     }
 
     public CryptoPrice updatePrice(String symbol, BigDecimal currentPrice) {
@@ -263,8 +258,7 @@ public class MarketService {
                 url,
                 org.springframework.http.HttpMethod.GET,
                 entity,
-                String.class
-        );
+                String.class);
         return response.getBody();
     }
 
@@ -331,8 +325,7 @@ public class MarketService {
                 seeded.multiply(BigDecimal.valueOf(0.01)),
                 BigDecimal.valueOf(1.10),
                 BigDecimal.valueOf(1_500_000_000L),
-                BigDecimal.valueOf(90_000_000_000L)
-        );
+                BigDecimal.valueOf(90_000_000_000L));
     }
 
     private String extractProviderSymbol(String symbol) {

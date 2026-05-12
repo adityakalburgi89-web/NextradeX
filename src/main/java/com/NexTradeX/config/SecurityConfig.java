@@ -19,7 +19,9 @@ import com.NexTradeX.auth.JwtService;
 
 import java.util.Arrays;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -41,13 +43,23 @@ public class SecurityConfig {
     public JwtFilter jwtFilter() {
         return new JwtFilter(jwtService, authService);
     }
+
+    @Bean
+    public HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository() {
+        return new HttpCookieOAuth2AuthorizationRequestRepository();
+    }
     
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(session -> session
+                // IF_REQUIRED: allows Spring Security to create a temporary session
+                // for the OAuth2 state parameter cookie handshake only.
+                // API endpoints remain effectively stateless via JWT.
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+            )
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/oauth2/**", "/login/oauth2/code/**").permitAll()
@@ -58,10 +70,17 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
+                .authorizationEndpoint(endpoint -> endpoint
+                    .authorizationRequestRepository(cookieAuthorizationRequestRepository())
+                )
+                .redirectionEndpoint(endpoint -> endpoint
+                    .baseUri("/login/oauth2/code/*")
+                )
                 .successHandler(oAuth2AuthenticationSuccessHandler)
                 .failureHandler((request, response, exception) -> {
-                    response.sendRedirect("http://localhost:3000/auth?error=oauth_failed&message=" + 
-                        java.net.URLEncoder.encode("OAuth login failed: " + exception.getMessage(), 
+                    log.error("[OAuth2] Login failed: {}", exception.getMessage());
+                    response.sendRedirect("http://localhost:3000/auth?error=oauth_failed&message=" +
+                        java.net.URLEncoder.encode("OAuth login failed: " + exception.getMessage(),
                         java.nio.charset.StandardCharsets.UTF_8));
                 })
             )
