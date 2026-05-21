@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -65,6 +66,14 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse<>(403, "Access Denied", null));
     }
 
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<String>> handleNoResourceFound(
+            NoResourceFoundException ex, WebRequest request) {
+        log.error("No resource found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>(404, ex.getMessage(), null));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<String>> handleGlobalException(
             Exception ex, WebRequest request) {
@@ -74,3 +83,4 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse<>(500, msg, null));
     }
 }
+

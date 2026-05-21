@@ -44,13 +44,24 @@ public class MarketService {
         String normalizedSymbol = normalizeSymbol(symbol);
 
         try {
-            // Try fetching from Binance first
+            // 1. Try to find the cached price in our database first
+            Optional<CryptoPrice> cachedOpt = cryptoPriceRepository.findBySymbol(normalizedSymbol);
+            if (cachedOpt.isPresent()) {
+                CryptoPrice cached = cachedOpt.get();
+                // Check if it is fresh (updated in the last 10 seconds)
+                if (cached.getUpdatedAt() != null && 
+                    cached.getUpdatedAt().isAfter(LocalDateTime.now().minusSeconds(10))) {
+                    return cached;
+                }
+            }
+
+            // 2. If not present or stale, try fetching from Binance REST API
             Map<String, Object> ticker = binanceService.getTicker24h(normalizedSymbol);
             if (ticker != null) {
                 return updateOrCreatePriceFromBinance(normalizedSymbol, ticker);
             }
 
-            // Fallback to existing fetchLivePrice (CMC) if Binance fails
+            // 3. Fallback to existing fetchLivePrice (CMC) if Binance REST fails
             CryptoPrice livePrice = fetchLivePrice(normalizedSymbol);
             return persistPrice(livePrice);
         } catch (Exception exception) {
