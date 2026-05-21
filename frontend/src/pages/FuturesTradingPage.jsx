@@ -137,129 +137,240 @@ export default function FuturesTradingPage() {
 
   return (
     <PageTransition>
-      <div className="py-12 space-y-8 max-w-5xl mx-auto">
-        <TradingChartPanel
-          title="Futures Workspace"
-          description="A leverage-aware terminal with backend candle history, smoother interaction states, and clearer exposure math."
-          symbol={form.symbol}
-          interval={interval}
-          onIntervalChange={setInterval}
-          loading={chartLoading}
-          data={candleData}
-          status={{ label: "Risk aware", tone: "neutral" }}
-          stats={chartStats}
-        />
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Futures Trading</CardTitle>
-            <CardDescription>Configure direction, position size, and leverage before opening a simulated futures trade.</CardDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">
-                    Symbol
-                  </label>
-                  <Input name="symbol" value={form.symbol} onChange={handleChange} required />
-                </div>
-                <div>
-                  <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">
-                    Side
-                  </label>
-                  <Select name="side" value={form.side} onChange={handleChange}>
-                    <option value="BUY">Long</option>
-                    <option value="SELL">Short</option>
-                  </Select>
-                </div>
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-hairline-on-dark pb-6">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-white font-heading">Futures Trading</h1>
+            <p className="text-sm text-muted">Leverage-aware trading workspace featuring real-time risk calculations, positions tracking, and premium pricing boards.</p>
+          </div>
+          {priceSnapshot && (
+            <div className="flex items-center gap-4 bg-surface-card-dark px-4 py-2 rounded-lg border border-hairline-on-dark">
+              <div>
+                <span className="text-[10px] text-muted uppercase tracking-wider block font-mono">BTC/USDT Mark</span>
+                <span className="text-lg font-bold font-mono text-white">{formatCurrency(priceSnapshot.currentPrice)}</span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">
-                    Quantity
-                  </label>
-                  <Input
-                    type="number"
-                    step="0.0001"
-                    name="quantity"
-                    value={form.quantity}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">
-                    Leverage
-                  </label>
-                  <Input
-                    type="number"
-                    step="1"
-                    name="leverage"
-                    value={form.leverage}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="interactive-surface grid grid-cols-1 gap-3 rounded-[24px] border border-white/[0.06] bg-white/[0.02] px-5 py-4 text-sm text-muted sm:grid-cols-3">
-                <div>Mark {formatCurrency(priceSnapshot?.currentPrice || 0)}</div>
-                <div>Est. margin {formatCurrency(estimatedMargin)}</div>
-                <div>Notional {formatCurrency(Number(form.quantity || 0) * Number(priceSnapshot?.currentPrice || 0))}</div>
-              </div>
-              {message && (
-                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-accent-green/10 border border-accent-green/20 animate-slide-down">
-                  <p className="text-accent-green text-sm font-mono">{message}</p>
-                </div>
-              )}
-              {error && (
-                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-accent-red/10 border border-accent-red/20 animate-slide-down">
-                  <p className="text-accent-red text-sm font-mono">{error}</p>
-                </div>
-              )}
-            </CardContent>
-            <CardFooter>
-              <Button type="submit" className="w-full font-mono" loading={loading}>
-                Open Futures Position
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Open Positions</CardTitle>
-            <CardDescription>List of your current futures positions.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-0.5">
-              {loadingPositions ? (
-                <>
-                  <SkeletonRow /><SkeletonRow /><SkeletonRow />
-                </>
-              ) : positions.length === 0 ? (
-                <p className="text-muted text-sm py-6 text-center">No open positions or not logged in.</p>
-              ) : (
-                <div className="stagger-children">
-                  {positions.map((p) => (
-                    <div
-                      key={p.id}
-                      className="data-row flex-wrap gap-3"
-                    >
-                      <span className="font-mono text-sm font-medium">{p.symbol}</span>
-                      <span className="font-mono text-xs text-muted">
-                        {p.positionMode} · {p.quantity} @ {p.entryPrice}
-                      </span>
-                      <span className="font-mono text-sm text-primary">
-                        PnL: {p.unrealizedPnL} · {p.leverage}x
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <span className={`text-sm font-mono font-semibold px-2 py-0.5 rounded ${Number(priceSnapshot.percentChange24h) >= 0 ? "text-trading-up bg-trading-up/10" : "text-trading-down bg-trading-down/10"}`}>
+                {Number(priceSnapshot.percentChange24h) >= 0 ? "+" : ""}{priceSnapshot.percentChange24h}%
+              </span>
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
+
+        {/* 8/4 Split Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Column (8-cols): Chart + Positions */}
+          <div className="lg:col-span-8 space-y-6">
+            <TradingChartPanel
+              title="Futures Workspace"
+              description="A leverage-aware terminal with backend candle history, smoother interaction states, and clearer exposure math."
+              symbol={form.symbol}
+              interval={interval}
+              onIntervalChange={setInterval}
+              loading={chartLoading}
+              data={candleData}
+              status={{ label: "Risk aware", tone: "neutral" }}
+              stats={chartStats}
+            />
+
+            {/* Structured Positions Table Card */}
+            <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl shadow-elevation-md overflow-hidden">
+              <CardHeader className="border-b border-hairline-on-dark bg-canvas-dark/20 py-3 px-5 flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-sm font-bold text-white uppercase tracking-wider">Open Positions</CardTitle>
+                  <CardDescription className="text-xs text-muted">Simulated margin and exposure metrics updated in real-time.</CardDescription>
+                </div>
+                <span className="text-[10px] font-mono font-semibold text-muted bg-canvas-dark px-2.5 py-1 rounded border border-hairline-on-dark">
+                  ACTIVE EXPOSURES: {positions.length}
+                </span>
+              </CardHeader>
+
+              <CardContent className="p-0">
+                {loadingPositions ? (
+                  <div className="p-6 space-y-3">
+                    <div className="h-6 bg-canvas-dark/40 rounded animate-pulse w-full" />
+                    <div className="h-6 bg-canvas-dark/40 rounded animate-pulse w-full" />
+                  </div>
+                ) : positions.length === 0 ? (
+                  <div className="py-12 text-center">
+                    <p className="text-muted text-sm font-mono">No active positions. Open a simulated futures trade on the right panel.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-hairline-on-dark text-[10px] font-bold text-muted uppercase tracking-wider font-mono bg-canvas-dark/10">
+                          <th className="py-3 px-5">Symbol</th>
+                          <th className="py-3 px-5">Mode</th>
+                          <th className="py-3 px-5 text-right">Size</th>
+                          <th className="py-3 px-5 text-right">Entry Price</th>
+                          <th className="py-3 px-5 text-right">Leverage</th>
+                          <th className="py-3 px-5 text-right">Unrealized PnL</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-hairline-on-dark font-mono text-xs">
+                        {positions.map((p) => {
+                          const pnlValue = parseFloat(p.unrealizedPnL || "0");
+                          const isProfit = pnlValue >= 0;
+                          return (
+                            <tr key={p.id} className="hover:bg-canvas-dark/25 transition-colors">
+                              <td className="py-3 px-5 font-bold text-white">{p.symbol}</td>
+                              <td className="py-3 px-5">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${p.positionMode === "LONG" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"}`}>
+                                  {p.positionMode}
+                                </span>
+                              </td>
+                              <td className="py-3 px-5 text-right font-semibold text-white">{p.quantity}</td>
+                              <td className="py-3 px-5 text-right text-muted">{p.entryPrice}</td>
+                              <td className="py-3 px-5 text-right text-primary font-bold">{p.leverage}x</td>
+                              <td className={`py-3 px-5 text-right font-bold text-sm ${isProfit ? "text-trading-up" : "text-trading-down"}`}>
+                                {isProfit ? "+" : ""}{p.unrealizedPnL}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column (4-cols): Order Entry Form */}
+          <div className="lg:col-span-4">
+            <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl overflow-hidden shadow-elevation-md">
+              <form onSubmit={handleSubmit}>
+                {/* Binance Style Side Tabs */}
+                <div className="flex border-b border-hairline-on-dark p-1 bg-canvas-dark/40">
+                  <button
+                    type="button"
+                    className={`flex-1 py-3 text-center text-xs font-bold tracking-wider rounded transition-all ${form.side === "BUY"
+                      ? "bg-trading-up text-white shadow-sm"
+                      : "text-muted hover:text-white"
+                      }`}
+                    onClick={() => setForm((prev) => ({ ...prev, side: "BUY" }))}
+                  >
+                    BUY / LONG
+                  </button>
+                  <button
+                    type="button"
+                    className={`flex-1 py-3 text-center text-xs font-bold tracking-wider rounded transition-all ${form.side === "SELL"
+                      ? "bg-trading-down text-white shadow-sm"
+                      : "text-muted hover:text-white"
+                      }`}
+                    onClick={() => setForm((prev) => ({ ...prev, side: "SELL" }))}
+                  >
+                    SELL / SHORT
+                  </button>
+                </div>
+
+                <CardContent className="space-y-4 pt-4">
+                  <div>
+                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
+                      Symbol
+                    </label>
+                    <Input
+                      name="symbol"
+                      value={form.symbol}
+                      onChange={handleChange}
+                      required
+                      className="bg-canvas-dark border-hairline-on-dark font-mono text-sm uppercase text-white w-full rounded-md"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
+                      Quantity
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.0001"
+                      name="quantity"
+                      value={form.quantity}
+                      onChange={handleChange}
+                      required
+                      className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="font-mono text-[10px] text-muted uppercase tracking-widest block">
+                        Leverage ({form.leverage}x)
+                      </label>
+                      <span className="text-[10px] text-primary font-mono font-bold uppercase">Risk adjusted</span>
+                    </div>
+                    <Input
+                      type="number"
+                      step="1"
+                      name="leverage"
+                      value={form.leverage}
+                      onChange={handleChange}
+                      required
+                      className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md mb-2"
+                    />
+
+                    {/* Premium Quick Select Chips */}
+                    <div className="flex gap-2 justify-between">
+                      {["1", "5", "10", "20", "50"].map((lvl) => (
+                        <button
+                          key={lvl}
+                          type="button"
+                          onClick={() => setForm((prev) => ({ ...prev, leverage: lvl }))}
+                          className={`flex-1 py-1 font-mono text-[10px] font-bold rounded border transition-all ${form.leverage === lvl
+                            ? "bg-primary border-primary text-on-primary shadow-sm"
+                            : "border-hairline-on-dark text-muted hover:text-white hover:border-muted"
+                            }`}
+                        >
+                          {lvl}x
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Leverage Risk Statement */}
+                  <div className="border border-hairline-on-dark bg-canvas-dark/40 rounded-lg p-3 space-y-2">
+                    <div className="flex justify-between items-center text-xs font-mono">
+                      <span className="text-muted">Est. Margin Cost</span>
+                      <span className="text-primary font-bold">{formatCurrency(estimatedMargin)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-mono">
+                      <span className="text-muted">Notional Value</span>
+                      <span className="text-white font-semibold">{formatCurrency(Number(form.quantity || 0) * Number(priceSnapshot?.currentPrice || 0))}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-mono border-t border-hairline-on-dark pt-2">
+                      <span className="text-muted">Mark Price</span>
+                      <span className="text-white font-semibold">{formatCurrency(priceSnapshot?.currentPrice || 0)}</span>
+                    </div>
+                  </div>
+
+                  {message && (
+                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-trading-up/10 border border-trading-up/20 animate-slide-down">
+                      <p className="text-trading-up text-xs font-mono">{message}</p>
+                    </div>
+                  )}
+                  {error && (
+                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-trading-down/10 border border-trading-down/20 animate-slide-down">
+                      <p className="text-trading-down text-xs font-mono">{error}</p>
+                    </div>
+                  )}
+                </CardContent>
+
+                <CardFooter className="pt-2 pb-4">
+                  <Button
+                    type="submit"
+                    className="w-full font-mono text-sm uppercase py-3 font-bold rounded-md"
+                    variant={form.side === "BUY" ? "tradingUp" : "tradingDown"}
+                    loading={loading}
+                  >
+                    Open {form.side === "BUY" ? "LONG" : "SHORT"} Position
+                  </Button>
+                </CardFooter>
+              </form>
+            </Card>
+          </div>
+        </div>
       </div>
     </PageTransition>
   );

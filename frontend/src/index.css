@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,28 +9,28 @@
    ═══════════════════════════════════════════ */
 @layer base {
   :root {
-    --background: #030304;
-    --surface: #0F1115;
-    --surface-elevated: #161920;
-    --surface-glass: rgba(15, 17, 21, 0.6);
-    --foreground: #FFFFFF;
-    --muted: #94A3B8;
-    --border: #1E293B;
-    --input-bg: #0F1115;
-    --card-bg: #0F1115;
-    --transition-duration: 400ms;
+    --background: #0b0e11;
+    --surface: #1e2329;
+    --surface-elevated: #2b3139;
+    --surface-glass: rgba(30, 35, 41, 0.7);
+    --foreground: #eaecef;
+    --muted: #707a8a;
+    --border: #2b3139;
+    --input-bg: #1e2329;
+    --card-bg: #1e2329;
+    --transition-duration: 300ms;
   }
 
   .light {
-    --background: #F8FAFC;
-    --surface: #FFFFFF;
-    --surface-elevated: #F1F5F9;
-    --surface-glass: rgba(255, 255, 255, 0.8);
-    --foreground: #0F172A;
-    --muted: #64748B;
-    --border: #E2E8F0;
-    --input-bg: #F8FAFC;
-    --card-bg: #FFFFFF;
+    --background: #ffffff;
+    --surface: #ffffff;
+    --surface-elevated: #f5f5f5;
+    --surface-glass: rgba(255, 255, 255, 0.85);
+    --foreground: #181a20;
+    --muted: #707a8a;
+    --border: #eaecef;
+    --input-bg: #ffffff;
+    --card-bg: #ffffff;
   }
 
   html {
@@ -50,41 +52,7 @@
 
   body {
     @apply bg-background text-foreground antialiased selection:bg-primary/30 selection:text-primary font-body;
-    position: relative;
-    z-index: 0;
-  }
-
-  body::before, body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    transition: opacity var(--transition-duration) cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  body::before {
-    background-image:
-      radial-gradient(circle at top, rgba(247, 147, 26, 0.12), transparent 28%),
-      radial-gradient(circle at 85% 15%, rgba(234, 88, 12, 0.1), transparent 22%),
-      linear-gradient(180deg, rgba(15, 17, 21, 0.98), rgba(3, 3, 4, 1));
-    opacity: 1;
-  }
-
-  body::after {
-    background-image:
-      radial-gradient(circle at top, rgba(247, 147, 26, 0.08), transparent 28%),
-      radial-gradient(circle at 85% 15%, rgba(234, 88, 12, 0.05), transparent 22%),
-      linear-gradient(180deg, rgba(248, 250, 252, 1), rgba(241, 245, 249, 1));
-    opacity: 0;
-  }
-
-  .light body::before {
-    opacity: 0;
-  }
-
-  .light body::after {
-    opacity: 1;
+    background-color: var(--background);
   }
 
   /* CSS Custom Properties for animation timing */
@@ -225,7 +193,7 @@
     @apply bg-accent-green/15 text-accent-green border border-accent-green/20;
   }
   .status-badge--pending {
-    @apply bg-tertiary/15 text-tertiary border border-tertiary/20;
+    @apply bg-yellow-500/15 text-yellow-500 border border-yellow-500/20;
   }
   .status-badge--error {
     @apply bg-accent-red/15 text-accent-red border border-accent-red/20;
@@ -240,7 +208,7 @@
   }
   .nav-link::after {
     content: '';
-    @apply absolute bottom-0 left-0 w-0 h-[2px] bg-gradient-to-r from-primary to-secondary rounded-full;
+    @apply absolute bottom-0 left-0 w-0 h-[2px] bg-primary rounded-full;
     transition: width 0.3s var(--ease-spring);
   }
   .nav-link:hover::after,
@@ -287,7 +255,7 @@
 
   /* Gradient Text */
   .text-gradient {
-    @apply bg-gradient-to-r from-secondary via-primary to-tertiary bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary via-yellow-500 to-yellow-600 bg-clip-text text-transparent;
   }
 
   /* Glow Line Accent */
@@ -333,27 +301,27 @@
    GLOBAL STYLES
    ═══════════════════════════════════════════ */
 
-/* Custom Scrollbar */
+/* Sleek Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #030304;
+  background: #0b0e11;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
-  border-radius: 3px;
+  background: #2b3139;
+  border-radius: 2.5px;
   transition: background 0.2s ease;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #F7931A;
+  background: #fcd535;
 }
 
 /* Select dropdown options (dark background) */
 select option {
-  background: #0F1115;
-  color: #FFFFFF;
+  background: #1e2329;
+  color: #eaecef;
   padding: 8px;
 }
 
@@ -394,52 +362,52 @@ input[type="number"] {
   }
 }
 
-/* Light mode overrides */
+/* Light mode overrides with Binance Yellow & Gray-blue elements */
 .light .text-white {
-  color: #0F172A !important;
+  color: #181a20 !important;
 }
 
 .light .text-white\/80,
 .light .text-white\/90 {
-  color: rgba(15, 23, 42, 0.8) !important;
+  color: rgba(24, 26, 32, 0.8) !important;
 }
 
 .light .hover\:text-white:hover {
-  color: #0F172A !important;
+  color: #181a20 !important;
 }
 
 .light .nav-link.active {
-  color: #F7931A;
+  color: #fcd535;
 }
 
 .light nav.sticky {
-  background: rgba(248, 250, 252, 0.8);
-  border-color: #E2E8F0;
+  background: rgba(255, 255, 255, 0.8);
+  border-color: #eaecef;
 }
 
 .light footer {
-  background: #F8FAFC;
-  border-color: #E2E8F0;
+  background: #fafafa;
+  border-color: #eaecef;
 }
 
 .light .interactive-surface {
-  background: #FFFFFF;
-  border-color: #E2E8F0;
+  background: #ffffff;
+  border-color: #eaecef;
 }
 
 .light .glass-panel {
   background: rgba(255, 255, 255, 0.9);
-  border-color: #E2E8F0;
+  border-color: #eaecef;
 }
 
 .light thead {
-  background: #F1F5F9;
+  background: #f5f5f5;
 }
 
 .light .bg-surface {
-  background: #FFFFFF;
+  background: #ffffff;
 }
 
 .light .bg-surface-elevated {
-  background: #F1F5F9;
+  background: #f5f5f5;
 }

@@ -161,125 +161,182 @@ export default function SpotTradingPage() {
 
   return (
     <PageTransition>
-      <div className="mx-auto max-w-5xl space-y-8 py-12">
-        <TradingChartPanel
-          title="Spot Workspace"
-          description="Execute clean spot orders with backend candles, live pricing, and a calmer SaaS-grade order entry flow."
-          symbol={form.symbol}
-          interval={interval}
-          onIntervalChange={setInterval}
-          loading={chartLoading}
-          data={candleData}
-          status={{ label: connected ? "Live market" : "Snapshot", tone: connected ? "active" : "neutral" }}
-          stats={chartStats}
-        />
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Spot Trading</CardTitle>
-            <CardDescription>Place a spot buy or sell order using the currently selected symbol and execution style.</CardDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-5">
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        {/* Page Header banner */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-hairline-on-dark pb-6">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-white font-heading">Spot Trading</h1>
+            <p className="text-sm text-muted">Execute real-time spot orders with high-density workspace controls and streaming prices.</p>
+          </div>
+          {currentPrice && (
+            <div className="flex items-center gap-4 bg-surface-card-dark px-4 py-2 rounded-lg border border-hairline-on-dark">
               <div>
-                <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">
-                  Symbol
-                </label>
-                <Input name="symbol" value={form.symbol} onChange={handleChange} required />
+                <span className="text-[10px] text-muted uppercase tracking-wider block font-mono">BTC/USDT Live</span>
+                <span className="text-lg font-bold font-mono text-white">{formatCurrency(currentPrice)}</span>
               </div>
-              {currentPrice && (
-                <div className="interactive-surface rounded-[24px] border border-white/[0.06] bg-white/[0.02] px-5 py-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-muted">Current Price</span>
-                      <p className="mt-1 font-heading text-2xl font-semibold text-white">
-                        {formatCurrency(currentPrice)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <div className={`status-badge ${Number(priceSnapshot?.percentChange24h) >= 0 ? "status-badge--active" : "status-badge--error"}`}>
-                        {formatPercent(priceSnapshot?.percentChange24h || 0)}
-                      </div>
-                      {connected && (
-                        <div className="mt-2 text-[11px] uppercase tracking-[0.24em] text-muted">streaming</div>
-                      )}
-                    </div>
+              <span className={`text-sm font-mono font-semibold px-2 py-0.5 rounded ${Number(priceSnapshot?.percentChange24h) >= 0 ? "text-trading-up bg-trading-up/10" : "text-trading-down bg-trading-down/10"}`}>
+                {Number(priceSnapshot?.percentChange24h) >= 0 ? "+" : ""}{formatPercent(priceSnapshot?.percentChange24h || 0)}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* 8/4 Split Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Main Chart Panel (8-cols) */}
+          <div className="lg:col-span-8 space-y-6">
+            <TradingChartPanel
+              title="Spot Workspace"
+              description="Execute clean spot orders with backend candles, live pricing, and a calmer SaaS-grade order entry flow."
+              symbol={form.symbol}
+              interval={interval}
+              onIntervalChange={setInterval}
+              loading={chartLoading}
+              data={candleData}
+              status={{ label: connected ? "Live market" : "Snapshot", tone: connected ? "active" : "neutral" }}
+              stats={chartStats}
+            />
+          </div>
+
+          {/* Order Entry Panel (4-cols) */}
+          <div className="lg:col-span-4">
+            <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl overflow-hidden shadow-elevation-md">
+              <form onSubmit={handleSubmit}>
+                {/* Binance Style Side Tabs */}
+                <div className="flex border-b border-hairline-on-dark p-1 bg-canvas-dark/40">
+                  <button
+                    type="button"
+                    className={`flex-1 py-3 text-center text-xs font-bold tracking-wider rounded transition-all ${
+                      form.side === "BUY"
+                        ? "bg-trading-up text-white shadow-sm"
+                        : "text-muted hover:text-white"
+                    }`}
+                    onClick={() => setForm((prev) => ({ ...prev, side: "BUY" }))}
+                  >
+                    BUY
+                  </button>
+                  <button
+                    type="button"
+                    className={`flex-1 py-3 text-center text-xs font-bold tracking-wider rounded transition-all ${
+                      form.side === "SELL"
+                        ? "bg-trading-down text-white shadow-sm"
+                        : "text-muted hover:text-white"
+                    }`}
+                    onClick={() => setForm((prev) => ({ ...prev, side: "SELL" }))}
+                  >
+                    SELL
+                  </button>
+                </div>
+
+                <CardContent className="space-y-4 pt-4">
+                  <div>
+                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
+                      Symbol
+                    </label>
+                    <Input 
+                      name="symbol" 
+                      value={form.symbol} 
+                      onChange={handleChange} 
+                      required 
+                      className="bg-canvas-dark border-hairline-on-dark font-mono text-sm uppercase text-white w-full rounded-md" 
+                    />
                   </div>
-                  <div className="mt-4 grid grid-cols-1 gap-3 text-sm text-muted sm:grid-cols-3">
-                    <div>High {formatCurrency(priceSnapshot?.highPrice || currentPrice)}</div>
-                    <div>Low {formatCurrency(priceSnapshot?.lowPrice || currentPrice)}</div>
-                    <div>Notional {formatCurrency(estimatedNotional)}</div>
+
+                  <div>
+                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
+                      Order Type
+                    </label>
+                    <Select 
+                      name="orderType" 
+                      value={form.orderType} 
+                      onChange={handleChange} 
+                      className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
+                    >
+                      <option value="MARKET">Market</option>
+                      <option value="LIMIT">Limit</option>
+                    </Select>
                   </div>
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">
-                    Side
-                  </label>
-                  <Select name="side" value={form.side} onChange={handleChange}>
-                    <option value="BUY">Buy</option>
-                    <option value="SELL">Sell</option>
-                  </Select>
-                </div>
-                <div>
-                  <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">
-                    Order Type
-                  </label>
-                  <Select name="orderType" value={form.orderType} onChange={handleChange}>
-                    <option value="MARKET">Market</option>
-                    <option value="LIMIT">Limit</option>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">
-                    Quantity
-                  </label>
-                  <Input
-                    type="number"
-                    step="0.0001"
-                    name="quantity"
-                    value={form.quantity}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                {form.orderType === "LIMIT" && (
-                  <div className="animate-slide-down">
-                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">
-                      Limit Price
+
+                  <div>
+                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
+                      Quantity
                     </label>
                     <Input
                       type="number"
-                      step="0.01"
-                      name="price"
-                      value={form.price}
+                      step="0.0001"
+                      name="quantity"
+                      value={form.quantity}
                       onChange={handleChange}
-                      required={form.orderType === "LIMIT"}
+                      required
+                      className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
                     />
                   </div>
-                )}
-              </div>
-              {message && (
-                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-accent-green/10 border border-accent-green/20 animate-slide-down">
-                  <p className="text-accent-green text-sm font-mono">{message}</p>
-                </div>
-              )}
-              {error && (
-                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-accent-red/10 border border-accent-red/20 animate-slide-down">
-                  <p className="text-accent-red text-sm font-mono">{error}</p>
-                </div>
-              )}
-            </CardContent>
-            <CardFooter>
-              <Button type="submit" className="w-full font-mono" loading={loading}>
-                Place Spot Order
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
+
+                  {form.orderType === "LIMIT" && (
+                    <div className="animate-slide-down">
+                      <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
+                        Limit Price
+                      </label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        name="price"
+                        value={form.price}
+                        onChange={handleChange}
+                        required={form.orderType === "LIMIT"}
+                        className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
+                      />
+                    </div>
+                  )}
+
+                  {/* High/Low/Notional Summary */}
+                  {currentPrice && (
+                    <div className="border border-hairline-on-dark bg-canvas-dark/40 rounded-lg p-3 space-y-2">
+                      <div className="flex justify-between items-center text-xs font-mono">
+                        <span className="text-muted">Current Price</span>
+                        <span className="text-white font-semibold">{formatCurrency(currentPrice)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs font-mono">
+                        <span className="text-muted font-mono">24H High</span>
+                        <span className="text-white font-semibold">{formatCurrency(priceSnapshot?.highPrice || currentPrice)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs font-mono">
+                        <span className="text-muted font-mono">24H Low</span>
+                        <span className="text-white font-semibold">{formatCurrency(priceSnapshot?.lowPrice || currentPrice)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs font-mono border-t border-hairline-on-dark pt-2">
+                        <span className="text-muted">Est. Notional</span>
+                        <span className="text-white font-semibold font-mono">{formatCurrency(estimatedNotional)}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {message && (
+                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-trading-up/10 border border-trading-up/20 animate-slide-down">
+                      <p className="text-trading-up text-xs font-mono">{message}</p>
+                    </div>
+                  )}
+                  {error && (
+                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-trading-down/10 border border-trading-down/20 animate-slide-down">
+                      <p className="text-trading-down text-xs font-mono">{error}</p>
+                    </div>
+                  )}
+                </CardContent>
+
+                <CardFooter className="pt-2 pb-4">
+                  <Button
+                    type="submit"
+                    className="w-full font-mono text-sm uppercase py-3 font-bold rounded-md"
+                    variant={form.side === "BUY" ? "tradingUp" : "tradingDown"}
+                    loading={loading}
+                  >
+                    {form.side === "BUY" ? "BUY" : "SELL"} {form.symbol}
+                  </Button>
+                </CardFooter>
+              </form>
+            </Card>
+          </div>
+        </div>
       </div>
     </PageTransition>
   );

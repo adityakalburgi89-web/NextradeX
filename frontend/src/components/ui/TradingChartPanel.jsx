@@ -74,10 +74,10 @@ export function TradingChartPanel({
                 type="button"
                 onClick={() => onIntervalChange?.(value)}
                 className={cn(
-                  "interactive-chip rounded-full px-4 py-2 font-mono text-[11px] uppercase tracking-[0.24em] text-muted transition-all duration-300",
+                  "rounded-md px-3 py-1.5 font-mono text-xs transition-all duration-200",
                   interval === value
-                    ? "border-primary/40 bg-primary/12 text-primary shadow-glow-soft"
-                    : "border-white/10 bg-white/[0.04] hover:border-white/20 hover:text-white"
+                    ? "bg-[#fcd535] text-on-primary font-semibold"
+                    : "bg-surface-elevated-dark text-muted hover:text-white"
                 )}
               >
                 {value}
@@ -94,19 +94,19 @@ export function TradingChartPanel({
               return (
                 <div
                   key={stat.label}
-                  className="interactive-surface rounded-2xl border border-white/8 bg-black/20 px-4 py-3"
+                  className="rounded-lg border border-hairline-on-dark bg-surface-card-dark px-4 py-3"
                 >
-                  <div className="mb-3 flex items-center justify-between">
-                    <span className="text-[11px] uppercase tracking-[0.24em] text-muted">{stat.label}</span>
-                    <div className="rounded-full border border-white/10 bg-white/[0.04] p-2 text-primary">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs tracking-wider text-muted font-heading uppercase">{stat.label}</span>
+                    <div className="rounded-full border border-hairline-on-dark bg-surface-elevated-dark p-1.5 text-primary">
                       <Icon size={14} />
                     </div>
                   </div>
-                  <div className="text-lg font-semibold text-white">
+                  <div className="text-xl font-bold font-mono text-on-dark">
                     {formatStatValue(stat)}
                   </div>
                   {stat.hint ? (
-                    <div className="mt-1 text-xs text-muted">{stat.hint}</div>
+                    <div className="mt-1 text-[11px] text-muted font-heading">{stat.hint}</div>
                   ) : null}
                 </div>
               );

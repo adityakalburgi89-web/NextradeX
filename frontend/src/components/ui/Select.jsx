@@ -6,10 +6,10 @@ const Select = React.forwardRef(({ className, children, ...props }, ref) => {
         <div className="relative">
             <select
                 className={cn(
-                    "flex h-12 w-full appearance-none rounded-xl bg-white/[0.03] border border-white/[0.08] px-4 py-2 pr-10 font-mono text-sm text-white",
-                    "transition-all duration-300 ease-smooth",
-                    "hover:border-white/[0.15] hover:bg-white/[0.05]",
-                    "focus-visible:outline-none focus-visible:border-primary/60 focus-visible:bg-white/[0.06] focus-visible:shadow-input-focus focus-visible:ring-1 focus-visible:ring-primary/20",
+                    "flex h-10 w-full appearance-none font-mono text-sm px-4 py-2 pr-10",
+                    "bg-surface-card-dark text-on-dark border border-hairline-on-dark rounded-lg",
+                    "light:bg-canvas-light light:text-ink light:border-hairline-on-light light:rounded-md",
+                    "transition-all duration-200 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20",
                     "disabled:cursor-not-allowed disabled:opacity-50",
                     className
                 )}

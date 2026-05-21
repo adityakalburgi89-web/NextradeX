@@ -4,20 +4,20 @@ import { cva } from "class-variance-authority"
 import { cn } from "../../lib/utils"
 
 const cardVariants = cva(
-    "rounded-2xl border transition-all duration-300 ease-smooth relative overflow-hidden gpu-accelerated animate-fade-in",
+    "rounded-xl border transition-all duration-200 relative overflow-hidden animate-fade-in",
     {
         variants: {
             variant: {
                 default:
-                    "bg-[var(--card-bg)] border-[var(--border)] shadow-elevation-sm hover:-translate-y-1 hover:border-primary/30 hover:shadow-card-hover ambient-glow",
+                    "bg-surface-card-dark border-hairline-on-dark text-on-dark light:bg-canvas-light light:border-hairline-on-light light:text-ink",
                 glass:
-                    "bg-surface-glass backdrop-blur-2xl border-white/[0.06] shadow-inner-glow",
+                    "bg-surface-card-dark/95 backdrop-blur-2xl border-hairline-on-dark text-on-dark light:bg-canvas-light/95 light:border-hairline-on-light light:text-ink",
                 elevated:
-                    "bg-[var(--surface-elevated)] border-[var(--border)] shadow-elevation-md hover:-translate-y-1 hover:shadow-elevation-lg",
+                    "bg-surface-elevated-dark border-hairline-on-dark text-on-dark light:bg-surface-soft-light light:border-hairline-on-light light:text-ink",
                 pricing:
-                    "bg-[var(--card-bg)] border-[var(--border)] opacity-80 hover:opacity-100 hover:scale-[1.03]",
+                    "bg-surface-card-dark border-hairline-on-dark text-on-dark light:bg-canvas-light light:border-hairline-on-light light:text-ink",
                 pricingActive:
-                    "bg-[var(--card-bg)] border-primary shadow-card-elevation scale-[1.03] z-10 gradient-border",
+                    "bg-surface-card-dark border-primary border-2 z-10 text-on-dark light:bg-canvas-light light:border-primary light:border-2 light:text-ink",
             },
         },
         defaultVariants: {

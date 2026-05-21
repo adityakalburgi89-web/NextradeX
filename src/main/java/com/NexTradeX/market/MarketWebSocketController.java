@@ -62,7 +62,7 @@ public class MarketWebSocketController {
         }
     }
 
-    @Scheduled(fixedRate = 1000)
+    //@Scheduled(fixedRate = 50000)
     public void broadcastPrices() {
         try {
             marketService.syncMarketPrices();

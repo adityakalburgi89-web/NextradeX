@@ -116,15 +116,15 @@ export default function AuthPage() {
     return (
       <PageTransition>
         <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12">
-          <Card className="w-full max-w-md overflow-hidden">
-            <CardHeader>
-              <CardTitle>Complete Your Profile</CardTitle>
-              <CardDescription>Choose a username and verify your name to continue.</CardDescription>
+          <Card className="w-full max-w-md overflow-hidden border border-hairline-on-dark light:border-hairline-on-light">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl">Complete Your Profile</CardTitle>
+              <CardDescription className="text-sm mt-1">Choose a username and verify your name to continue.</CardDescription>
             </CardHeader>
             <form onSubmit={handleSetupSubmit}>
               <CardContent className="space-y-5">
                 <div>
-                  <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">Username</label>
+                  <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2 block font-semibold">Username</label>
                   <Input
                     name="username"
                     value={setupForm.username}
@@ -135,7 +135,7 @@ export default function AuthPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">First Name</label>
+                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2 block font-semibold">First Name</label>
                     <Input
                       name="firstName"
                       value={setupForm.firstName}
@@ -145,7 +145,7 @@ export default function AuthPage() {
                     />
                   </div>
                   <div>
-                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">Last Name</label>
+                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2 block font-semibold">Last Name</label>
                     <Input
                       name="lastName"
                       value={setupForm.lastName}
@@ -156,13 +156,13 @@ export default function AuthPage() {
                   </div>
                 </div>
                 {error && (
-                  <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-accent-red/10 border border-accent-red/20 animate-slide-down">
-                    <p className="text-accent-red text-sm font-mono">{error}</p>
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-trading-down/10 border border-trading-down/20 animate-slide-down">
+                    <p className="text-trading-down text-sm font-mono">{error}</p>
                   </div>
                 )}
               </CardContent>
-              <CardFooter>
-                <Button type="submit" className="w-full font-mono" loading={loading}>
+              <CardFooter className="pt-2">
+                <Button type="submit" className="w-full font-mono font-bold" loading={loading}>
                   Complete Setup
                 </Button>
               </CardFooter>
@@ -176,32 +176,36 @@ export default function AuthPage() {
   return (
     <PageTransition>
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md overflow-hidden">
-          <CardHeader>
+        <Card className="w-full max-w-md overflow-hidden border border-hairline-on-dark light:border-hairline-on-light">
+          <CardHeader className="pb-4">
             <div className="relative mb-6">
-              <div className="flex items-center bg-white/[0.04] rounded-xl p-1 border border-white/[0.06] relative overflow-hidden">
+              <div className="flex items-center bg-surface-elevated-dark light:bg-surface-strong-light rounded-xl p-1 border border-hairline-on-dark light:border-hairline-on-light relative overflow-hidden">
                 <div
-                  className="absolute top-1 bottom-1 rounded-lg bg-gradient-to-r from-secondary to-primary shadow-glow-primary"
+                  className="absolute top-1 bottom-1 rounded-lg bg-primary"
                   style={{
                     ...getToggleStyle(),
-                    transition: 'transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1), width 0.5s cubic-bezier(0.25, 0.1, 0.25, 1)',
+                    transition: 'transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1), width 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)',
                   }}
                 />
                 <button
                   type="button"
                   onClick={() => setMode("login")}
-                  className={`flex-1 font-mono text-xs uppercase tracking-widest px-4 py-2.5 rounded-lg relative z-10 ${mode === "login" ? "text-white font-bold" : "text-muted hover:text-white"
-                    }`}
-                  style={{ transition: 'color 0.4s ease' }}
+                  className={`flex-1 font-mono text-xs uppercase tracking-widest px-4 py-2.5 rounded-lg relative z-10 transition-colors duration-300 ${
+                    mode === "login"
+                      ? "text-on-primary font-bold"
+                      : "text-muted hover:text-on-dark light:hover:text-ink"
+                  }`}
                 >
                   Login
                 </button>
                 <button
                   type="button"
                   onClick={() => setMode("register")}
-                  className={`flex-1 font-mono text-xs uppercase tracking-widest px-4 py-2.5 rounded-lg relative z-10 ${mode === "register" ? "text-white font-bold" : "text-muted hover:text-white"
-                    }`}
-                  style={{ transition: 'color 0.4s ease' }}
+                  className={`flex-1 font-mono text-xs uppercase tracking-widest px-4 py-2.5 rounded-lg relative z-10 transition-colors duration-300 ${
+                    mode === "register"
+                      ? "text-on-primary font-bold"
+                      : "text-muted hover:text-on-dark light:hover:text-ink"
+                  }`}
                 >
                   Register
                 </button>
@@ -216,7 +220,7 @@ export default function AuthPage() {
                   opacity: mode === 'login' ? 1 : 0,
                 }}
               >
-                <CardTitle>Welcome back</CardTitle>
+                <CardTitle className="text-xl">Welcome back</CardTitle>
               </div>
               <div
                 className="absolute top-0 left-0 right-0 transition-all duration-500 ease-out"
@@ -225,11 +229,11 @@ export default function AuthPage() {
                   opacity: mode === 'register' ? 1 : 0,
                 }}
               >
-                <CardTitle>Create your account</CardTitle>
+                <CardTitle className="text-xl">Create your account</CardTitle>
               </div>
             </div>
 
-            <div className="relative overflow-hidden h-6 mt-2">
+            <div className="relative overflow-hidden h-6 mt-1.5">
               <div
                 className="transition-all duration-500 ease-out"
                 style={{
@@ -237,7 +241,7 @@ export default function AuthPage() {
                   opacity: mode === 'login' ? 1 : 0,
                 }}
               >
-                <CardDescription>Sign in to access your trading terminal.</CardDescription>
+                <CardDescription className="text-sm">Sign in to access your NexTradeX trading terminal.</CardDescription>
               </div>
               <div
                 className="absolute top-0 left-0 right-0 transition-all duration-500 ease-out"
@@ -246,15 +250,15 @@ export default function AuthPage() {
                   opacity: mode === 'register' ? 1 : 0,
                 }}
               >
-                <CardDescription>Register to start paper trading on NexTradeX.</CardDescription>
+                <CardDescription className="text-sm">Register to start paper trading on NexTradeX.</CardDescription>
               </div>
             </div>
           </CardHeader>
 
           <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-5">
+            <CardContent className="space-y-5 pb-5">
               <div>
-                <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">Username</label>
+                <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2 block font-semibold">Username</label>
                 <Input
                   name="username"
                   value={form.username}
@@ -269,40 +273,41 @@ export default function AuthPage() {
                 style={{
                   maxHeight: mode === "register" ? '500px' : '0',
                   opacity: mode === "register" ? 1 : 0,
-                  marginTop: mode === "register" ? '0' : '-1rem',
+                  marginTop: mode === "register" ? '1.25rem' : '0',
+                  marginBottom: mode === "register" ? '1.25rem' : '0',
                 }}
               >
                 <div className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">First Name</label>
+                      <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2 block font-semibold">First Name</label>
                       <Input
                         name="firstName"
                         value={form.firstName}
                         onChange={handleChange}
-                        required
+                        required={mode === "register"}
                         placeholder="First name"
                       />
                     </div>
                     <div>
-                      <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">Last Name</label>
+                      <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2 block font-semibold">Last Name</label>
                       <Input
                         name="lastName"
                         value={form.lastName}
                         onChange={handleChange}
-                        required
+                        required={mode === "register"}
                         placeholder="Last name"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">Email</label>
+                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2 block font-semibold">Email Address</label>
                     <Input
                       type="email"
                       name="email"
                       value={form.email}
                       onChange={handleChange}
-                      required
+                      required={mode === "register"}
                       placeholder="Email address"
                     />
                   </div>
@@ -310,7 +315,7 @@ export default function AuthPage() {
               </div>
 
               <div>
-                <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">Password</label>
+                <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2 block font-semibold">Password</label>
                 <Input
                   type={showPassword ? "text" : "password"}
                   name="password"
@@ -331,25 +336,25 @@ export default function AuthPage() {
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-accent-red/10 border border-accent-red/20 animate-slide-down">
-                  <p className="text-accent-red text-sm font-mono">{error}</p>
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-trading-down/10 border border-trading-down/20 animate-slide-down">
+                  <p className="text-trading-down text-sm font-mono">{error}</p>
                 </div>
               )}
             </CardContent>
 
-            <CardFooter className="flex flex-col gap-3">
-              <Button type="submit" className="w-full font-mono" loading={loading}>
+            <CardFooter className="flex flex-col gap-4 pb-6">
+              <Button type="submit" className="w-full font-mono font-bold" loading={loading}>
                 {content.button}
               </Button>
-              <div className="relative flex items-center w-full">
-                <div className="flex-grow border-t border-white/10"></div>
+              <div className="relative flex items-center w-full my-1">
+                <div className="flex-grow border-t border-hairline-on-dark light:border-hairline-on-light"></div>
                 <span className="flex-shrink mx-4 text-muted text-xs font-mono uppercase tracking-wider">or</span>
-                <div className="flex-grow border-t border-white/10"></div>
+                <div className="flex-grow border-t border-hairline-on-dark light:border-hairline-on-light"></div>
               </div>
               <Button
                 type="button"
                 variant="outline"
-                className="w-full font-mono flex items-center justify-center gap-2"
+                className="w-full font-mono flex items-center justify-center gap-2 hover:bg-surface-elevated-dark light:hover:bg-surface-strong-light"
                 onClick={googleLogin}
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">

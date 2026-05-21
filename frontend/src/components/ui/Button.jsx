@@ -4,24 +4,38 @@ import { cva } from "class-variance-authority"
 import { cn } from "../../lib/utils"
 
 const buttonVariants = cva(
-    "inline-flex items-center justify-center whitespace-nowrap rounded-full font-body text-sm font-medium relative overflow-hidden transition-all duration-300 ease-smooth disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97] min-h-[44px] px-8 py-3 gpu-accelerated focus-ring",
+    "inline-flex items-center justify-center whitespace-nowrap font-body text-sm font-semibold relative overflow-hidden transition-all duration-200 disabled:pointer-events-none focus-ring",
     {
         variants: {
             variant: {
                 default:
-                    "bg-gradient-to-r from-secondary to-primary text-white font-bold uppercase tracking-wider shadow-glow-primary hover:scale-[1.03] hover:shadow-glow-primary-hover",
+                    "bg-primary text-on-primary hover:bg-[#f0b90b] disabled:bg-primary-disabled disabled:text-muted rounded-md px-6 py-3 h-10",
+                primaryPill:
+                    "bg-primary text-on-primary hover:bg-[#f0b90b] rounded-pill px-8 py-3.5",
+                secondaryOnDark:
+                    "bg-surface-card-dark text-on-dark hover:bg-surface-elevated-dark rounded-md px-6 py-3 h-10",
+                secondaryOnLight:
+                    "bg-canvas-light text-ink border border-hairline-on-light hover:bg-surface-soft-light rounded-md px-6 py-3 h-10",
+                tertiaryText:
+                    "bg-transparent text-body hover:opacity-90 font-semibold p-0 min-h-0",
                 outline:
-                    "border border-[var(--border)] text-[var(--foreground)] hover:border-primary/60 hover:bg-[var(--surface-elevated)] hover:shadow-glow-soft",
-                ghost: "hover:bg-[var(--surface-elevated)] hover:text-primary text-[var(--foreground)]",
-                link: "text-primary hover:underline underline-offset-4",
+                    "border border-hairline-on-dark text-body hover:bg-surface-elevated-dark rounded-md px-6 py-3 h-10",
+                ghost: "hover:bg-surface-elevated-dark hover:text-primary text-body rounded-md px-6 py-3 h-10",
+                link: "text-primary hover:opacity-90",
                 danger:
-                    "bg-accent-red/10 text-accent-red border border-accent-red/20 hover:bg-accent-red/20 hover:shadow-[0_0_20px_-5px_rgba(239,68,68,0.4)]",
+                    "bg-trading-down text-white hover:opacity-90 rounded-md px-6 py-3 h-10",
+                tradingUp:
+                    "bg-trading-up text-white rounded-sm font-semibold px-5 py-2 hover:opacity-90",
+                tradingDown:
+                    "bg-trading-down text-white rounded-sm font-semibold px-5 py-2 hover:opacity-90",
+                subscribe:
+                    "bg-primary text-on-primary rounded-sm text-xs font-semibold px-4 py-1.5 h-[28px] min-h-[28px] hover:bg-[#f0b90b]",
             },
             size: {
-                default: "min-h-[44px] px-8 py-3",
-                sm: "h-9 rounded-full px-4 text-xs",
-                lg: "h-14 rounded-full px-10 text-base",
-                icon: "h-12 w-12 rounded-full",
+                default: "h-10 px-6 py-3",
+                sm: "h-[28px] rounded-sm px-3 text-xs",
+                lg: "h-12 rounded-md px-8 text-base",
+                icon: "h-10 w-10 rounded-md",
             },
         },
         defaultVariants: {

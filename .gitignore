@@ -5,6 +5,9 @@ frontend/build/
 frontend/dist/
 build/
 
+# Graphify output
+graphify-out/
+
 # Environment files
 .env
 .env.local

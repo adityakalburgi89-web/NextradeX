@@ -40,353 +40,369 @@ import gmailIcon from "./assets/Gmail_icon_svg.webp";
 function HomePage() {
   return (
     <PageTransition>
-      <main className="relative z-10 w-full max-w-7xl mx-auto px-6">
-        {/* HERO SECTION */}
-        <section className="py-28 md:py-36 flex flex-col lg:flex-row items-center justify-between gap-20">
-          <div className="flex-1 text-center lg:text-left relative z-20 stagger-children">
-            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] mb-8 backdrop-blur-sm">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-tertiary" />
-              </span>
-              <span className="font-mono text-xs text-muted tracking-wider uppercase">Live Network V2</span>
-            </div>
-
-            <h1 className="font-heading text-5xl sm:text-6xl md:text-7xl font-bold leading-[1.05] mb-8 tracking-tight">
-              Trade with <br className="hidden md:block" />
-              <span className="text-gradient">
-                Mathematical Precision
-              </span>
-            </h1>
-
-            <p className="text-muted text-lg md:text-xl max-w-xl mx-auto lg:mx-0 mb-12 leading-relaxed">
-              Experience the deepest liquidity and lowest slippage in decentralized finance.
-              Engineered for true void performance.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
-              <Button size="lg" className="w-full sm:w-auto" asChild>
-                <Link to="/trade/spot">Start Trading</Link>
-              </Button>
-              <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
-                <Link to="/markets">View Markets</Link>
-              </Button>
-            </div>
-          </div>
-
-          {/* 3D Visual Area */}
-          <div className="flex-1 relative w-full h-[400px] md:h-[500px] flex items-center justify-center">
-            {/* Orbital Rings */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div
-                className="w-[300px] h-[300px] md:w-[400px] md:h-[400px] rounded-full border border-primary/15 animate-spin-slow absolute"
-                style={{ borderStyle: "dashed" }}
-              />
-              <div className="w-[200px] h-[200px] md:w-[280px] md:h-[280px] rounded-full border border-secondary/20 animate-spin-reverse-slow absolute" />
-            </div>
-
-            {/* Core Node */}
-            <div className="relative z-10 w-32 h-32 md:w-48 md:h-48 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center shadow-[0_0_80px_rgba(247,147,26,0.4)] animate-float gpu-accelerated">
-              <Layers size={48} className="text-white opacity-90" />
-            </div>
-
-            {/* Floating Stats Glass Cards */}
-            <Card variant="glass" className="absolute top-[10%] left-[5%] p-4 w-44 animate-float gpu-accelerated" style={{ animationDelay: "0s" }}>
-              <p className="font-mono text-[10px] text-muted mb-1 uppercase tracking-wider">24H Volume</p>
-              <p className="font-heading text-xl text-white font-semibold">$2.4B</p>
-            </Card>
-
-            <Card
-              variant="glass"
-              className="absolute bottom-[15%] right-[5%] p-4 w-48 animate-float-slow gpu-accelerated"
-              style={{ animationDelay: "2s" }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-tertiary/15 flex items-center justify-center border border-tertiary/20">
-                  <Activity size={16} className="text-tertiary" />
-                </div>
-                <div>
-                  <p className="font-mono text-[10px] text-muted leading-tight uppercase tracking-wider">Transactions</p>
-                  <p className="font-heading text-lg text-white font-semibold">1,042/s</p>
-                </div>
+      <main className="w-full text-white bg-canvas-dark">
+        {/* HERO SECTION BAND (Full-Bleed bg-canvas-dark) */}
+        <section className="relative overflow-hidden py-20 md:py-24 border-b border-hairline-on-dark bg-canvas-dark">
+          {/* Subtle background ambient mesh (no heavy gradients as per elevation guidelines) */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/[0.03] blur-[160px] pointer-events-none" />
+          
+          <div className="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-16 relative z-10">
+            {/* Left Hero Content */}
+            <div className="flex-1 text-center lg:text-left stagger-children">
+              {/* V2 Simulated Terminal Tag */}
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-hairline-on-dark bg-surface-card-dark mb-6">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                </span>
+                <span className="font-mono text-xs text-muted uppercase tracking-wider font-semibold">Simulated Terminal V2</span>
               </div>
-            </Card>
+
+              {/* Display Headline */}
+              <h1 className="font-heading text-4xl sm:text-5xl md:text-[56px] lg:text-[64px] font-bold leading-[1.1] mb-6 tracking-tight">
+                Trade with <br />
+                <span className="text-primary">Mathematical Precision</span>
+              </h1>
+
+              {/* Subtext */}
+              <p className="text-muted text-base md:text-lg max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed font-sans">
+                Experience high-density simulated trading, real-time depth visualizations, and custom order matching. Zero risk, professional-grade tools.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
+                <Button variant="primaryPill" className="w-full sm:w-auto" asChild>
+                  <Link to="/auth">Start Trading</Link>
+                </Button>
+                <Button variant="outline" className="w-full sm:w-auto text-body hover:bg-surface-card-dark" asChild>
+                  <Link to="/markets">View Markets</Link>
+                </Button>
+              </div>
+            </div>
+
+            {/* Right Hero Content: Premium simulated trading dashboard mockup */}
+            <div className="flex-1 w-full max-w-md bg-surface-card-dark rounded-xl border border-hairline-on-dark p-6 shadow-elevation-lg stagger-children relative">
+              <div className="flex items-center justify-between border-b border-hairline-on-dark pb-3 mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-trading-up animate-pulse" />
+                  <span className="font-mono text-xs text-body uppercase tracking-wider font-semibold">Simulated Order Book</span>
+                </div>
+                <span className="font-mono text-[10px] text-muted uppercase">BTC/USDT</span>
+              </div>
+              
+              {/* Ask Rows (Red) */}
+              <div className="space-y-1">
+                {[
+                  { price: "68,424.50", size: "0.145", fill: "25%" },
+                  { price: "68,423.00", size: "1.082", fill: "60%" },
+                  { price: "68,422.00", size: "0.529", fill: "40%" },
+                ].map((row, idx) => (
+                  <div key={idx} className="relative flex items-center justify-between h-6 font-mono text-xs">
+                    <div className="absolute right-0 top-0 bottom-0 bg-trading-down/5" style={{ width: row.fill }} />
+                    <span className="text-trading-down relative z-10">{row.price}</span>
+                    <span className="text-body relative z-10">{row.size}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Current Mark Price */}
+              <div className="border-y border-hairline-on-dark py-3 my-3 text-center">
+                <span className="font-mono text-[10px] text-muted uppercase block">Mark Price</span>
+                <span className="font-mono text-2xl font-bold text-trading-up tracking-tight animate-pulse">$68,421.20</span>
+              </div>
+
+              {/* Bid Rows (Green) */}
+              <div className="space-y-1">
+                {[
+                  { price: "68,420.50", size: "0.983", fill: "50%" },
+                  { price: "68,419.00", size: "1.429", fill: "80%" },
+                  { price: "68,418.00", size: "0.054", fill: "10%" },
+                ].map((row, idx) => (
+                  <div key={idx} className="relative flex items-center justify-between h-6 font-mono text-xs">
+                    <div className="absolute right-0 top-0 bottom-0 bg-trading-up/5" style={{ width: row.fill }} />
+                    <span className="text-trading-up relative z-10">{row.price}</span>
+                    <span className="text-body relative z-10">{row.size}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* FEATURE CARDS */}
-        <section className="py-28 relative z-20">
-          <div className="text-center mb-20 stagger-children">
-            <h2 className="font-heading text-3xl md:text-5xl font-bold mb-5 tracking-tight">Engineered for Alpha</h2>
-            <p className="text-muted font-mono tracking-wider uppercase text-sm">Security · Speed · Liquidity</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 stagger-children">
-            {/* Card 1 */}
-            <Card className="group">
-              <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-30 transition-opacity duration-700 pointer-events-none">
-                <Zap size={100} className="text-primary rotate-12" />
-              </div>
-              <CardHeader>
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center mb-4 group-hover:shadow-[0_0_24px_rgba(247,147,26,0.3)] transition-all duration-500">
-                  <Zap size={22} className="text-primary" />
+        {/* TRUST BADGES GRID (Flat surface cards) */}
+        <section className="bg-canvas-dark py-12 border-b border-hairline-on-dark">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { badge: "No.1", label: "Simulated Volume", desc: "Highest simulated trades routed daily" },
+                { badge: "24/7", label: "Customer Service", desc: "Live chat with simulated desk agents" },
+                { badge: "100%", label: "Reserves (SAFU)", desc: "All simulation assets collateralized 1:1" },
+                { badge: "0.0%", label: "Slip Guarantee", desc: "Precise matching for simulation execution" },
+              ].map((item, idx) => (
+                <div key={idx} className="bg-surface-card-dark rounded-lg border border-hairline-on-dark p-5 flex flex-col gap-2">
+                  <div className="text-primary font-mono text-2xl font-bold tracking-tight">{item.badge}</div>
+                  <div className="text-white text-sm font-semibold tracking-tight">{item.label}</div>
+                  <div className="text-muted text-xs font-sans leading-relaxed">{item.desc}</div>
                 </div>
-                <CardTitle>Lightning Execution</CardTitle>
-                <CardDescription>Sub-millisecond trade settlement powered by our optimized matching engine.</CardDescription>
-              </CardHeader>
-            </Card>
-
-            {/* Card 2 */}
-            <Card className="group">
-              <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-30 transition-opacity duration-700 pointer-events-none">
-                <Shield size={100} className="text-secondary -rotate-12" />
-              </div>
-              <CardHeader>
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/5 border border-secondary/20 flex items-center justify-center mb-4 group-hover:shadow-[0_0_24px_rgba(234,88,12,0.3)] transition-all duration-500">
-                  <Shield size={22} className="text-secondary" />
-                </div>
-                <CardTitle>Cryptographic Trust</CardTitle>
-                <CardDescription>Fully audited smart contracts. Your assets are secured by the underlying network.</CardDescription>
-              </CardHeader>
-            </Card>
-
-            {/* Card 3 */}
-            <Card className="group">
-              <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-30 transition-opacity duration-700 pointer-events-none">
-                <Globe size={100} className="text-tertiary rotate-6" />
-              </div>
-              <CardHeader>
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-tertiary/20 to-tertiary/5 border border-tertiary/20 flex items-center justify-center mb-4 group-hover:shadow-[0_0_24px_rgba(255,214,0,0.3)] transition-all duration-500">
-                  <Globe size={22} className="text-tertiary" />
-                </div>
-                <CardTitle>Global Liquidity</CardTitle>
-                <CardDescription>Access aggregated liquidity pools across multiple chains from a single terminal.</CardDescription>
-              </CardHeader>
-            </Card>
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* INPUT TERMINAL SHOWCASE */}
-        <section className="py-28 border-y border-white/[0.04] relative bg-grid-pattern">
-          <div className="max-w-2xl mx-auto">
-            <PageTransition>
-              <Card
-                variant="glass"
-                className="w-full relative z-10 border-t border-l border-t-primary/40 border-l-primary/40 !rounded-2xl"
-              >
-                <div className="absolute -top-[2px] -left-[2px] w-2 h-2 bg-primary rounded-sm" />
-                <CardHeader>
-                  <CardTitle className="font-mono text-lg text-primary">{">"}&#160;_INITIALIZE_TRADE</CardTitle>
-                  <CardDescription>Enter parameters for algorithmic execution.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-5">
-                  <div>
-                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">
-                      Asset Pair
-                    </label>
-                    <Input placeholder="e.g. BTC/USDC" />
-                  </div>
-                  <div>
-                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2.5 block">
-                      Leverage (x)
-                    </label>
-                    <Input type="number" placeholder="10" />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full font-mono" asChild>
-                    <Link to="/trade/futures">EXECUTE_ORDER</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            </PageTransition>
+        {/* HERO USER STAT BANDS */}
+        <section className="py-20 bg-canvas-dark border-b border-hairline-on-dark text-center relative overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-primary/[0.02] blur-[130px] pointer-events-none" />
+          <div className="max-w-7xl mx-auto px-6 relative z-10 stagger-children">
+            <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block">Platform Metric</span>
+            <h2 className="font-heading text-5xl md:text-7xl font-bold tracking-tight text-white mb-6">316,258,026</h2>
+            <h3 className="font-heading text-lg md:text-2xl font-semibold tracking-tight text-muted max-w-2xl mx-auto">
+              Simulated Users Trust NexTradeX Platform Ecosystem
+            </h3>
           </div>
         </section>
 
         {/* PRO TRADING FEATURES */}
-        <section className="py-28 relative z-20">
-          <div className="text-center mb-16 stagger-children">
-            <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block">Best in Class</span>
-            <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight">Pro Trading Features For Everyone</h2>
-          </div>
+        <section className="py-20 relative bg-canvas-dark border-b border-hairline-on-dark">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="text-center mb-16 stagger-children">
+              <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block">Best in Class</span>
+              <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-white">Pro Trading Features For Everyone</h2>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 stagger-children">
-            <FeatureRow
-              icon={<Package size={22} />}
-              title="Basket Orders With Margin Benefits"
-              description="Place multiple orders together as a basket to enjoy margin offsetting"
-            />
-            <FeatureRow
-              icon={<Target size={22} />}
-              title="Strategy Builder"
-              description="Build and analyse trading strategies comprising of group of futures and options"
-            />
-            <FeatureRow
-              icon={<Layers size={22} />}
-              title="Deep OTM/ITM Strikes"
-              description="Trade deep OTM/ITM options strikes with daily and weekly expiry"
-            />
-            <FeatureRow
-              icon={<BarChart3 size={22} />}
-              title="PnL Analytics"
-              description="Conveniently track and analyse your trading performance"
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 stagger-children">
+              <FeatureRow
+                icon={<Package size={22} className="text-primary" />}
+                title="Basket Orders With Margin Benefits"
+                description="Place multiple simulated orders together as a basket to enjoy custom margin offsetting."
+              />
+              <FeatureRow
+                icon={<Target size={22} className="text-primary" />}
+                title="Strategy Builder"
+                description="Build and analyse virtual trading strategies comprising group of futures and options contracts."
+              />
+              <FeatureRow
+                icon={<Layers size={22} className="text-primary" />}
+                title="Deep OTM/ITM Strikes"
+                description="Trade simulated deep OTM/ITM options strikes with customizable daily and weekly expiry terms."
+              />
+              <FeatureRow
+                icon={<BarChart3 size={22} className="text-primary" />}
+                title="PnL Analytics"
+                description="Conveniently track and analyse your simulated trading history with advanced visual indices."
+              />
+            </div>
           </div>
         </section>
 
-        {/* CRYPTOCURRENCIES LIST */}
-        <section className="py-28 border-t border-white/[0.04] relative z-20">
-          <div className="text-center mb-16 stagger-children">
-            <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight mb-4">List of cryptocurrencies</h2>
-            <p className="text-muted text-sm md:text-base">Discover which cryptocurrencies, trade and tick sizes are available through our partner, Paxos.</p>
-          </div>
+        {/* FUNDS SAFU BAND (reserves stats) */}
+        <section className="py-20 bg-canvas-dark border-b border-hairline-on-dark">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="mb-12 stagger-children text-center lg:text-left">
+              <span className="font-mono text-xs text-primary uppercase tracking-widest mb-3 block">Security Guarantee</span>
+              <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">Simulated Reserves You Can Trust</h2>
+              <p className="text-muted text-sm md:text-base max-w-2xl font-sans">
+                All mock balances are backed 1:1 on our virtual ledger. Verified proof of simulated reserves protects all users.
+              </p>
+            </div>
 
-          <div className="max-w-4xl mx-auto stagger-children">
-            <Card variant="glass" className="overflow-hidden border border-white/[0.06] !p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-white/[0.04] border-b border-white/[0.08] font-heading text-white">
-                    <tr>
-                      <th className="px-6 py-4 font-semibold">Token</th>
-                      <th className="px-6 py-4 font-semibold text-center">Min Trade Size</th>
-                      <th className="px-6 py-4 font-semibold text-center">Max Trade Size</th>
-                      <th className="px-6 py-4 font-semibold text-center">Tick Size</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/[0.04] font-mono text-muted">
-                    <tr className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4 text-white font-medium flex items-center gap-2">Bitcoin</td>
-                      <td className="px-6 py-4 text-center">0.0001</td>
-                      <td className="px-6 py-4 text-center">10</td>
-                      <td className="px-6 py-4 text-center">0.25</td>
-                    </tr>
-                    <tr className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4 text-white font-medium">Ethereum</td>
-                      <td className="px-6 py-4 text-center">0.002</td>
-                      <td className="px-6 py-4 text-center">135</td>
-                      <td className="px-6 py-4 text-center">0.05</td>
-                    </tr>
-                    <tr className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4 text-white font-medium">Litecoin</td>
-                      <td className="px-6 py-4 text-center">0.05</td>
-                      <td className="px-6 py-4 text-center">3759</td>
-                      <td className="px-6 py-4 text-center">0.01</td>
-                    </tr>
-                    <tr className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4 text-white font-medium">Bitcoin Cash</td>
-                      <td className="px-6 py-4 text-center">0.02</td>
-                      <td className="px-6 py-4 text-center">1342</td>
-                      <td className="px-6 py-4 text-center">0.05</td>
-                    </tr>
-                    <tr className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4 text-white font-medium">PAX Gold</td>
-                      <td className="px-6 py-4 text-center">0.002</td>
-                      <td className="px-6 py-4 text-center">211</td>
-                      <td className="px-6 py-4 text-center">0.01</td>
-                    </tr>
-                    <tr className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4 text-white font-medium">Chainlink</td>
-                      <td className="px-6 py-4 text-center">0.4</td>
-                      <td className="px-6 py-4 text-center">33277</td>
-                      <td className="px-6 py-4 text-center">0.01</td>
-                    </tr>
-                    <tr className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4 text-white font-medium">Uniswap</td>
-                      <td className="px-6 py-4 text-center">0.6</td>
-                      <td className="px-6 py-4 text-center">51480</td>
-                      <td className="px-6 py-4 text-center">0.01</td>
-                    </tr>
-                    <tr className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4 text-white font-medium">Aave</td>
-                      <td className="px-6 py-4 text-center">0.04</td>
-                      <td className="px-6 py-4 text-center">2577</td>
-                      <td className="px-6 py-4 text-center">0.01</td>
-                    </tr>
-                    <tr className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4 text-white font-medium">Solana</td>
-                      <td className="px-6 py-4 text-center">0.00000001</td>
-                      <td className="px-6 py-4 text-center">1800</td>
-                      <td className="px-6 py-4 text-center">0.01</td>
-                    </tr>
-                  </tbody>
-                </table>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                { value: "$1,248,592,932", label: "Simulated reserves", desc: "Total paper balance allocated to user accounts" },
+                { value: "100.00%", label: "Collateralized ratio", desc: "Virtual funds fully collateralized by central simulated vaults" },
+                { value: "0.0001 BTC", label: "Min Lot Execution", desc: "Hyper-precise allocation for simulated matching engines" }
+              ].map((item, idx) => (
+                <div key={idx} className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-6 stagger-children">
+                  <div className="font-mono text-2xl sm:text-3xl font-bold text-primary mb-2 tracking-tight">{item.value}</div>
+                  <div className="text-white text-sm font-semibold tracking-tight mb-1">{item.label}</div>
+                  <div className="text-muted text-xs leading-relaxed font-sans">{item.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CRYPTOCURRENCIES LIST (Binance-Inspired markets-table-card) */}
+        <section className="py-20 bg-canvas-dark border-b border-hairline-on-dark">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="text-center mb-16 stagger-children">
+              <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">Supported Simulation Cryptocurrencies</h2>
+              <p className="text-muted text-sm md:text-base max-w-xl mx-auto font-sans">
+                Discover virtual currencies, lot restrictions, and tick rules routed through our simulation engine.
+              </p>
+            </div>
+
+            <div className="max-w-4xl mx-auto stagger-children">
+              <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden p-6 shadow-elevation-md">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-[#15191e] border-b border-hairline-on-dark font-heading text-white">
+                      <tr>
+                        <th className="px-6 py-4 font-semibold">Token Pair</th>
+                        <th className="px-6 py-4 font-semibold text-center">Min Trade Size</th>
+                        <th className="px-6 py-4 font-semibold text-center">Max Trade Size</th>
+                        <th className="px-6 py-4 font-semibold text-center text-primary">Tick Size</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-hairline-on-dark font-mono text-muted">
+                      {[
+                        { token: "BTC / USDT", min: "0.0001", max: "10.00", tick: "0.25" },
+                        { token: "ETH / USDT", min: "0.002", max: "135.00", tick: "0.05" },
+                        { token: "LTC / USDT", min: "0.05", max: "3,759.00", tick: "0.01" },
+                        { token: "LINK / USDT", min: "0.40", max: "33,277.00", tick: "0.01" },
+                        { token: "SOL / USDT", min: "0.00000001", max: "1,800.00", tick: "0.01" },
+                      ].map((coin, index) => (
+                        <tr key={index} className="hover:bg-[#20262d] transition-colors duration-150">
+                          <td className="px-6 py-4 text-white font-semibold flex items-center gap-2">{coin.token}</td>
+                          <td className="px-6 py-4 text-center">{coin.min}</td>
+                          <td className="px-6 py-4 text-center">{coin.max}</td>
+                          <td className="px-6 py-4 text-center text-primary">{coin.tick}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* QR PROMO & APP DOWNLOAD SECTION */}
+        <section className="py-20 bg-canvas-dark border-b border-hairline-on-dark">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-8 md:p-12 flex flex-col lg:flex-row items-center justify-between gap-12 shadow-elevation-md">
+              <div className="flex-1 space-y-6 stagger-children text-center lg:text-left">
+                <h2 className="font-heading text-3xl md:text-4xl font-bold text-white tracking-tight leading-tight">
+                  Trade On The Go. <br />Anytime, Anywhere.
+                </h2>
+                <p className="text-muted text-sm md:text-base leading-relaxed font-sans max-w-xl">
+                  Scan the mock code with your browser simulator to run the trading terminal on mobile devices. Full support for custom lot sizing, tickers, and profile tracking.
+                </p>
+                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
+                  <div className="px-4 py-2 bg-[#15191e] border border-hairline-on-dark rounded-md text-xs font-mono text-muted">
+                    iOS / iPadOS
+                  </div>
+                  <div className="px-4 py-2 bg-[#15191e] border border-hairline-on-dark rounded-md text-xs font-mono text-muted">
+                    Android / APK
+                  </div>
+                  <div className="px-4 py-2 bg-[#15191e] border border-hairline-on-dark rounded-md text-xs font-mono text-muted">
+                    macOS / Desktop
+                  </div>
+                </div>
+              </div>
+              
+              {/* CSS QR Code Mock */}
+              <div className="w-48 h-48 bg-white p-4 rounded-xl border border-hairline-on-dark flex items-center justify-center flex-shrink-0 relative shadow-elevation-lg">
+                <div className="absolute inset-2 border-2 border-dashed border-[#1e2329]/10 rounded-lg pointer-events-none" />
+                <div className="w-full h-full flex flex-col justify-between p-1 bg-white relative">
+                  {/* Mock QR Block Grid Pattern */}
+                  <div className="w-full h-full grid grid-cols-6 gap-1 opacity-90">
+                    {[...Array(36)].map((_, i) => {
+                      const isSolid = (i % 3 === 0 || i % 4 === 1 || i < 6 || i > 30 || i % 6 === 0 || i % 6 === 5) && !(i > 8 && i < 15) && !(i > 20 && i < 27);
+                      return (
+                        <div
+                          key={i}
+                          className={`w-full h-full rounded-[2px] transition-colors ${
+                            isSolid ? "bg-[#181a20]" : "bg-transparent"
+                          }`}
+                        />
+                      );
+                    })}
+                  </div>
+                  {/* Brand Badge inside QR center */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-[#1e2329]/15 rounded-md p-1 shadow-md w-9 h-9 flex items-center justify-center font-bold text-xs text-[#1e2329]">
+                    NTX
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* SUPPORT + FAQ */}
-        <section className="py-28 border-t border-white/[0.04]">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
-            {/* Support Card */}
-            <div className="lg:col-span-2">
-              <Card variant="glass" className="h-full relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-full h-1/2 opacity-10 pointer-events-none">
-                  <svg viewBox="0 0 400 200" className="w-full h-full">
-                    <circle cx="80" cy="180" r="120" stroke="currentColor" strokeWidth="0.5" fill="none" className="text-primary" />
-                    <circle cx="120" cy="200" r="160" stroke="currentColor" strokeWidth="0.5" fill="none" className="text-primary" />
-                    <circle cx="60" cy="220" r="200" stroke="currentColor" strokeWidth="0.3" fill="none" className="text-primary" />
-                  </svg>
-                </div>
-                <CardContent className="p-8 relative z-10 space-y-8">
-                  <h3 className="font-heading text-2xl md:text-3xl font-bold leading-tight">24x7 Customer<br />Support</h3>
-
-                  <div className="space-y-6">
-                    <div>
-                      <p className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5">Have a question?</p>
-                      <p className="text-sm text-white/80">Visit our <Link to="/" className="text-primary hover:underline underline-offset-2">Support Centre</Link> for quick answers</p>
-                    </div>
-                    <div>
-                      <p className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5">Need help?</p>
-                      <p className="text-sm text-white/80">Raise a <Link to="/" className="text-primary hover:underline underline-offset-2">support ticket</Link><br />We are here to help</p>
-                    </div>
-                    <div>
-                      <p className="font-mono text-[10px] text-muted uppercase tracking-widest mb-3">Connect with us</p>
-                      <div className="flex items-center gap-3">
-                        <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 transition-all duration-300">
-                          <img src={xIcon} alt="X" className="w-4 h-4 object-contain" />
-                        </a>
-                        <a href="mailto:contact@nextradex.sim" className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 transition-all duration-300">
-                          <img src={gmailIcon} alt="Gmail" className="w-4 h-4 object-contain" />
-                        </a>
-                        <a href="https://portfolio-zeta-two-0s3z3wko1s.vercel.app" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 transition-all duration-300">
-                          <Globe size={16} className="text-muted" />
-                        </a>
-                        <a href="https://www.linkedin.com/in/aditya-kalburgi-080b5b267/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 transition-all duration-300">
-                          <img src={linkedInIcon} alt="LinkedIn" className="w-4 h-4 object-contain" />
-                        </a>
-                        <a href="https://github.com/aditykalburgi" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 transition-all duration-300">
-                          <img src={githubIcon} alt="GitHub" className="w-4 h-4 object-contain brightness-0 invert" />
-                        </a>
+        <section className="py-20 bg-canvas-dark border-b border-hairline-on-dark">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16">
+              {/* Support Card */}
+              <div className="lg:col-span-2">
+                <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-8 relative overflow-hidden h-full flex flex-col justify-between shadow-elevation-md">
+                  <div className="space-y-6 relative z-10">
+                    <h3 className="font-heading text-2xl md:text-3xl font-bold leading-tight text-white">24x7 Customer<br />Support</h3>
+                    <div className="space-y-4 font-sans">
+                      <div>
+                        <p className="font-mono text-[10px] text-primary uppercase tracking-widest mb-1">Have a question?</p>
+                        <p className="text-sm text-body">Visit our simulated Support Centre for quick documentation answers.</p>
+                      </div>
+                      <div>
+                        <p className="font-mono text-[10px] text-primary uppercase tracking-widest mb-1">Need help?</p>
+                        <p className="text-sm text-body">Raise a virtual support ticket with our developer team.</p>
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
 
-            {/* FAQ */}
-            <div className="lg:col-span-3">
-              <h3 className="font-heading text-2xl md:text-3xl font-bold mb-8 tracking-tight">Frequently Asked Questions</h3>
-              <div className="space-y-3 stagger-children">
-                <FAQItem
-                  question="Is NexTradeX a regulated platform?"
-                  answer="NexTradeX operates as a paper trading simulation platform for educational purposes. All trades are simulated and no real assets are involved."
-                />
-                <FAQItem
-                  question="Do I need crypto to trade on NexTradeX?"
-                  answer="No. NexTradeX provides simulated wallets with virtual balances. You can start trading immediately after creating an account without any deposits."
-                />
-                <FAQItem
-                  question="What trading instruments are available?"
-                  answer="NexTradeX supports spot trading, leveraged futures with customizable leverage, and options contracts (calls and puts) with configurable strike prices and expiry dates."
-                />
-                <FAQItem
-                  question="How does the real-time pricing work?"
-                  answer="Our backend price engine generates realistic market data streamed via WebSocket connections, providing live price updates across all supported trading pairs."
-                />
+                  <div className="mt-8 relative z-10">
+                    <p className="font-mono text-[10px] text-muted uppercase tracking-widest mb-3">Connect with us</p>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-md bg-[#15191e] border border-hairline-on-dark flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
+                        <img src={xIcon} alt="X" className="w-4 h-4 object-contain brightness-0 invert" />
+                      </a>
+                      <a href="mailto:contact@nextradex.sim" className="w-9 h-9 rounded-md bg-[#15191e] border border-hairline-on-dark flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
+                        <img src={gmailIcon} alt="Gmail" className="w-4 h-4 object-contain" />
+                      </a>
+                      <a href="https://portfolio-zeta-two-0s3z3wko1s.vercel.app" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-md bg-[#15191e] border border-hairline-on-dark flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
+                        <Globe size={16} className="text-muted" />
+                      </a>
+                      <a href="https://www.linkedin.com/in/aditya-kalburgi-080b5b267/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-md bg-[#15191e] border border-hairline-on-dark flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
+                        <img src={linkedInIcon} alt="LinkedIn" className="w-4 h-4 object-contain" />
+                      </a>
+                      <a href="https://github.com/aditykalburgi" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-md bg-[#15191e] border border-hairline-on-dark flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
+                        <img src={githubIcon} alt="GitHub" className="w-4 h-4 object-contain brightness-0 invert" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              {/* FAQ */}
+              <div className="lg:col-span-3">
+                <h3 className="font-heading text-2xl md:text-3xl font-bold mb-8 tracking-tight text-white">Frequently Asked Questions</h3>
+                <div className="divide-y divide-hairline-on-dark font-sans">
+                  <FAQItem
+                    question="Is NexTradeX a regulated trading platform?"
+                    answer="NexTradeX operates strictly as a paper trading simulation platform for educational purposes. All trades, orders, funds, and positions are entirely simulated."
+                  />
+                  <FAQItem
+                    question="Do I need actual crypto to use NexTradeX?"
+                    answer="No. All accounts receive immediate mock balances upon login. No credit cards or deposits are required."
+                  />
+                  <FAQItem
+                    question="What simulated contracts are available?"
+                    answer="We support spot trading pairs, leveraged futures with configurable margin structures, and European-style options contracts."
+                  />
+                  <FAQItem
+                    question="How does simulated market data stream?"
+                    answer="Our backend aggregates tick snapshots and streams updates via high-frequency WebSockets to emulate live market dynamics."
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA BAND (Pre-Footer Banner) */}
+        <section className="py-20 bg-canvas-dark">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-elevation-md">
+              <div className="space-y-2 text-center md:text-left">
+                <h2 className="font-heading text-2xl md:text-3xl font-bold text-white tracking-tight">
+                  Secure, Low-Fee Trading on NexTradeX
+                </h2>
+                <p className="text-muted text-sm md:text-base font-sans">
+                  Create a virtual account in less than a minute and begin testing options chains instantly.
+                </p>
+              </div>
+              <Button variant="default" className="w-full md:w-auto h-12 px-8 text-base font-semibold" asChild>
+                <Link to="/auth">Sign Up Now</Link>
+              </Button>
             </div>
           </div>
         </section>
@@ -524,71 +540,82 @@ function SearchModal({ open, onClose, query, setQuery }) {
    FOOTER
    ═══════════════════════════════════════════ */
 function Footer() {
-  const linkClass = "text-sm text-muted hover:text-primary transition-colors duration-200 block py-1";
+  const linkClass = "text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200 block py-1.5";
   return (
-    <footer className="relative z-10 border-t border-white/[0.06] mt-12">
-      <div className="max-w-7xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
+    <footer className="relative z-10 bg-[#fafafa] border-t border-[#eaecef] py-16 text-[#181a20]">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10">
           {/* Brand */}
-          <div className="lg:col-span-1">
+          <div className="col-span-2 md:col-span-3 lg:col-span-1">
             <div className="flex items-center mb-4">
-              <span className="font-heading font-bold text-lg tracking-tight">
-                NexTrade<span className="text-primary">X</span>
+              <span className="font-heading font-bold text-lg tracking-tight text-[#181a20]">
+                NexTrade<span className="text-[#fcd535]">X</span>
               </span>
             </div>
-            <p className="text-xs text-muted leading-relaxed max-w-[220px]">
+            <p className="text-xs text-[#707a8a] leading-relaxed max-w-[200px]">
               NexTradeX is a paper trading simulation platform for educational purposes. No real assets are traded.
             </p>
           </div>
 
-          {/* Company */}
+          {/* About */}
           <div>
-            <h4 className="font-heading text-sm font-semibold text-white mb-4">Company</h4>
-            <nav className="space-y-0.5">
+            <h4 className="font-heading text-xs font-bold uppercase tracking-widest text-[#181a20] mb-4">About</h4>
+            <nav className="space-y-1">
               <Link to="/about" className={linkClass}>About Us</Link>
-              <Link to="/terms" className={linkClass}>Terms of Service</Link>
-              <Link to="/privacy" className={linkClass}>Privacy Policy</Link>
               <Link to="/careers" className={linkClass}>Careers</Link>
+              <Link to="/" className={linkClass}>Press</Link>
+              <Link to="/" className={linkClass}>Community</Link>
             </nav>
           </div>
 
-          {/* Information */}
+          {/* Products */}
           <div>
-            <h4 className="font-heading text-sm font-semibold text-white mb-4">Information</h4>
-            <nav className="space-y-0.5">
-              <Link to="/contract-specs" className={linkClass}>Contract Specifications</Link>
-              <Link to="/trading-fees" className={linkClass}>Trading Fees</Link>
-              <Link to="/settlement-prices" className={linkClass}>Settlement Prices</Link>
+            <h4 className="font-heading text-xs font-bold uppercase tracking-widest text-[#181a20] mb-4">Products</h4>
+            <nav className="space-y-1">
+              <Link to="/trade/spot" className={linkClass}>Spot Trading</Link>
+              <Link to="/trade/futures" className={linkClass}>Futures Trading</Link>
+              <Link to="/trade/options" className={linkClass}>Options Trading</Link>
+              <Link to="/markets" className={linkClass}>Markets Board</Link>
+            </nav>
+          </div>
+
+          {/* Service */}
+          <div>
+            <h4 className="font-heading text-xs font-bold uppercase tracking-widest text-[#181a20] mb-4">Service</h4>
+            <nav className="space-y-1">
+              <Link to="/support" className={linkClass}>Support Center</Link>
+              <Link to="/user-guide" className={linkClass}>User Guide</Link>
+              <Link to="/api-docs" className={linkClass}>API Docs</Link>
               <Link to="/bug-bounty" className={linkClass}>Bug Bounty</Link>
             </nav>
           </div>
 
-          {/* Resources */}
+          {/* Legal */}
           <div>
-            <h4 className="font-heading text-sm font-semibold text-white mb-4">Resources & Support</h4>
-            <nav className="space-y-0.5">
-              <Link to="/api-docs" className={linkClass}>API Docs</Link>
-              <Link to="/support" className={linkClass}>Support Center</Link>
-              <Link to="/user-guide" className={linkClass}>User Guide</Link>
-              <Link to="/referral" className={linkClass}>Referral Program</Link>
-              <Link to="/" className={linkClass}>Demo Trading</Link>
+            <h4 className="font-heading text-xs font-bold uppercase tracking-widest text-[#181a20] mb-4">Legal</h4>
+            <nav className="space-y-1">
+              <Link to="/terms" className={linkClass}>Terms of Service</Link>
+              <Link to="/privacy" className={linkClass}>Privacy Policy</Link>
+              <Link to="/settlement-prices" className={linkClass}>Settlement Prices</Link>
+              <Link to="/trading-fees" className={linkClass}>Trading Fees</Link>
             </nav>
           </div>
 
+          {/* Socials */}
           <div>
-            <h4 className="font-heading text-sm font-semibold text-white mb-4">Socials</h4>
-            <nav className="space-y-4">
-              <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-muted hover:text-primary transition-colors duration-200">
-                <img src={xIcon} alt="X" className="w-5 h-5 object-contain" /> <span>X (Twitter)</span>
+            <h4 className="font-heading text-xs font-bold uppercase tracking-widest text-[#181a20] mb-4">Socials</h4>
+            <nav className="space-y-3">
+              <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
+                <img src={xIcon} alt="X" className="w-4 h-4 object-contain" /> <span>X (Twitter)</span>
               </a>
-              <a href="https://www.linkedin.com/in/aditya-kalburgi-080b5b267/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-muted hover:text-primary transition-colors duration-200">
-                <img src={linkedInIcon} alt="LinkedIn" className="w-5 h-5 object-contain" /> <span>LinkedIn</span>
+              <a href="https://www.linkedin.com/in/aditya-kalburgi-080b5b267/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
+                <img src={linkedInIcon} alt="LinkedIn" className="w-4 h-4 object-contain" /> <span>LinkedIn</span>
               </a>
-              <a href="mailto:contact@nextradex.sim" className="flex items-center gap-3 text-sm text-muted hover:text-primary transition-colors duration-200">
-                <img src={gmailIcon} alt="Email" className="w-5 h-5 object-contain" /> <span>Email</span>
+              <a href="mailto:contact@nextradex.sim" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
+                <img src={gmailIcon} alt="Email" className="w-4 h-4 object-contain" /> <span>Email</span>
               </a>
-              <a href="https://github.com/aditykalburgi" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-muted hover:text-primary transition-colors duration-200">
-                <img src={githubIcon} alt="GitHub" className="w-5 h-5 object-contain brightness-0 invert" /> <span>GitHub</span>
+              <a href="https://github.com/aditykalburgi" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
+                <img src={githubIcon} alt="GitHub" className="w-4 h-4 object-contain brightness-0 contrast-50" /> <span>GitHub</span>
               </a>
             </nav>
           </div>
@@ -621,7 +648,7 @@ function NavLink({ to, children }) {
   );
 }
 
-function TradeDropdown() {
+function TradeDropdown({ theme }) {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const isTradeActive = location.pathname.startsWith("/trade");
@@ -637,24 +664,28 @@ function TradeDropdown() {
       </span>
       {open && (
         <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 z-50 animate-fade-in-fast">
-          <div className="glass-panel rounded-xl shadow-elevation-lg py-2 min-w-[160px] animate-slide-down">
+          <div className={`rounded-xl shadow-elevation-lg py-2 min-w-[160px] border ${
+            theme === 'dark' 
+              ? 'bg-surface-card-dark border-hairline-on-dark text-white' 
+              : 'bg-white border-hairline-on-light text-ink'
+          }`}>
             <Link
               to="/trade/spot"
-              className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-white/[0.04] hover:text-primary transition-colors"
+              className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold hover:bg-white/[0.04] hover:text-primary transition-colors"
               onClick={() => setOpen(false)}
             >
               Spot
             </Link>
             <Link
               to="/trade/futures"
-              className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-white/[0.04] hover:text-primary transition-colors"
+              className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold hover:bg-white/[0.04] hover:text-primary transition-colors"
               onClick={() => setOpen(false)}
             >
               Futures
             </Link>
             <Link
               to="/trade/options"
-              className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-white/[0.04] hover:text-primary transition-colors"
+              className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold hover:bg-white/[0.04] hover:text-primary transition-colors"
               onClick={() => setOpen(false)}
             >
               Options
@@ -722,20 +753,24 @@ function App() {
       <div className={`fixed top-1/2 left-0 w-[400px] h-[400px] blur-[120px] rounded-full pointer-events-none animate-drift transition-all duration-500 ${theme === 'dark' ? 'bg-tertiary/[0.03]' : 'bg-tertiary/[0.01]'}`} style={{ animationDelay: "-5s" }} />
 
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 backdrop-blur-2xl bg-background/80 border-b border-white/[0.06]">
-        <div className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
-          <div className="flex items-center">
-            <Link to="/" className="font-heading font-bold text-xl tracking-tight hover:opacity-90 transition-opacity">
-              NexTrade<span className="text-primary">X</span>
+      <nav className={`sticky top-0 z-50 h-16 border-b transition-all duration-300 ${
+        theme === 'dark' 
+          ? 'bg-canvas-dark border-hairline-on-dark text-white' 
+          : 'bg-canvas-light border-hairline-on-light text-ink'
+      } flex items-center`}>
+        <div className="flex items-center justify-between px-6 w-full max-w-7xl mx-auto">
+          <div className="flex items-center gap-8">
+            <Link to="/" className="font-heading font-bold text-xl tracking-tight flex items-center gap-1 hover:opacity-90 transition-opacity">
+              <span className="text-primary">NexTradeX</span>
             </Link>
-          </div>
-
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8 font-mono text-sm text-muted">
-            <TradeDropdown />
-            <NavLink to="/markets">Markets</NavLink>
-            <NavLink to="/wallets">Wallets</NavLink>
-            <NavLink to="/orders">Orders</NavLink>
+            
+            {/* Desktop Nav */}
+            <div className="hidden md:flex items-center gap-6 font-mono text-xs tracking-wider">
+              <TradeDropdown theme={theme} />
+              <NavLink to="/markets">Markets</NavLink>
+              <NavLink to="/wallets">Wallets</NavLink>
+              <NavLink to="/orders">Orders</NavLink>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -745,7 +780,7 @@ function App() {
               className="p-2 rounded-lg hover:bg-white/[0.06] transition-colors text-muted hover:text-primary"
               title="Search"
             >
-              <Search size={20} />
+              <Search size={18} />
             </button>
 
             {/* Theme Toggle */}
@@ -754,9 +789,9 @@ function App() {
               className="p-2 rounded-lg hover:bg-white/[0.06] transition-all duration-300 text-muted hover:text-primary group"
               title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
-              <div className="relative w-5 h-5">
+              <div className="relative w-[18px] h-[18px]">
                 <Sun 
-                  size={20} 
+                  size={18} 
                   className={`absolute inset-0 transition-all duration-500 ${
                     theme === 'dark' 
                       ? 'opacity-100 rotate-0 scale-100 text-primary' 
@@ -764,7 +799,7 @@ function App() {
                   }`}
                 />
                 <Moon 
-                  size={20} 
+                  size={18} 
                   className={`absolute inset-0 transition-all duration-500 ${
                     theme === 'light' 
                       ? 'opacity-100 rotate-0 scale-100 text-primary' 
@@ -778,39 +813,47 @@ function App() {
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300"
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all duration-300 ${
+                    theme === 'dark' 
+                      ? 'bg-surface-card-dark border-hairline-on-dark hover:bg-surface-elevated-dark' 
+                      : 'bg-white border-hairline-on-light hover:bg-surface-soft-light'
+                  }`}
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                    <User size={16} className="text-white" />
+                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                    <User size={12} className="text-on-primary" />
                   </div>
-                  <span className="font-mono text-xs text-white hidden sm:inline">{user?.username}</span>
-                  <ChevronDown size={14} className={`text-muted transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                  <span className="font-mono text-xs font-semibold hidden sm:inline">{user?.username}</span>
+                  <ChevronDown size={12} className={`text-muted transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {userMenuOpen && (
                   <div className="absolute right-0 top-full pt-2 z-50 animate-fade-in-fast">
-                    <div className="glass-panel rounded-xl shadow-elevation-lg py-2 min-w-[180px] animate-slide-down">
+                    <div className={`rounded-xl shadow-elevation-lg py-2 min-w-[180px] border ${
+                      theme === 'dark'
+                        ? 'bg-surface-card-dark border-hairline-on-dark text-white'
+                        : 'bg-white border-hairline-on-light text-ink'
+                    }`}>
                       <Link
                         to="/profile"
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-white/[0.04] hover:text-primary transition-colors"
+                        className="flex items-center gap-3 px-4 py-2 text-xs hover:bg-white/[0.04] hover:text-primary transition-colors font-semibold"
                         onClick={() => setUserMenuOpen(false)}
                       >
-                        <User size={16} />
+                        <User size={14} />
                         Profile
                       </Link>
                       <Link
                         to="/wallets"
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-white/[0.04] hover:text-primary transition-colors"
+                        className="flex items-center gap-3 px-4 py-2 text-xs hover:bg-white/[0.04] hover:text-primary transition-colors font-semibold"
                         onClick={() => setUserMenuOpen(false)}
                       >
-                        <Layers size={16} />
+                        <Layers size={14} />
                         Wallets
                       </Link>
-                      <div className="border-t border-white/[0.06] my-1" />
+                      <div className={`border-t my-1 ${theme === 'dark' ? 'border-hairline-on-dark' : 'border-hairline-on-light'}`} />
                       <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm w-full text-left hover:bg-white/[0.04] hover:text-accent-red transition-colors"
+                        className="flex items-center gap-3 px-4 py-2 text-xs w-full text-left hover:bg-white/[0.04] hover:text-trading-down transition-colors font-semibold"
                       >
-                        <LogOut size={16} />
+                        <LogOut size={14} />
                         Logout
                       </button>
                     </div>
@@ -819,10 +862,10 @@ function App() {
               </div>
             ) : (
               <>
-                <Button variant="ghost" className="hidden sm:inline-flex font-mono text-xs" asChild>
+                <Button variant="tertiaryText" className="hidden sm:inline-flex text-xs" asChild>
                   <Link to="/auth">Log In</Link>
                 </Button>
-                <Button className="hidden sm:inline-flex text-xs" asChild>
+                <Button className="hidden sm:inline-flex text-xs h-9" asChild>
                   <Link to="/auth">Connect Wallet</Link>
                 </Button>
               </>
@@ -837,36 +880,38 @@ function App() {
             </button>
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t border-white/[0.06] animate-slide-down">
-            <div className="px-6 py-4 space-y-1 font-mono text-sm">
-              <Link to="/trade/spot" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Spot Trading</Link>
-              <Link to="/trade/futures" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Futures Trading</Link>
-              <Link to="/trade/options" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Options Trading</Link>
-              <div className="glow-line my-3" />
-              <Link to="/markets" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Markets</Link>
-              <Link to="/wallets" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Wallets</Link>
-              <Link to="/orders" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Orders</Link>
-              {isLoggedIn ? (
-                <>
-                  <div className="glow-line my-3" />
-                  <Link to="/profile" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Profile</Link>
-                  <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-accent-red transition-colors w-full text-left">Logout</button>
-                </>
-              ) : (
-                <>
-                  <div className="glow-line my-3" />
-                  <Link to="/auth" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
-                </>
-              )}
-            </div>
-          </div>
-        )}
       </nav>
 
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className={`md:hidden border-t animate-slide-down ${
+          theme === 'dark' ? 'bg-canvas-dark border-hairline-on-dark text-white' : 'bg-canvas-light border-hairline-on-light text-ink'
+        }`}>
+          <div className="px-6 py-4 space-y-1 font-mono text-sm">
+            <Link to="/trade/spot" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Spot Trading</Link>
+            <Link to="/trade/futures" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Futures Trading</Link>
+            <Link to="/trade/options" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Options Trading</Link>
+            <div className={`h-[1px] my-3 ${theme === 'dark' ? 'bg-hairline-on-dark' : 'bg-hairline-on-light'}`} />
+            <Link to="/markets" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Markets</Link>
+            <Link to="/wallets" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Wallets</Link>
+            <Link to="/orders" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Orders</Link>
+            {isLoggedIn ? (
+              <>
+                <div className={`h-[1px] my-3 ${theme === 'dark' ? 'bg-hairline-on-dark' : 'bg-hairline-on-light'}`} />
+                <Link to="/profile" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Profile</Link>
+                <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-trading-down transition-colors w-full text-left">Logout</button>
+              </>
+            ) : (
+              <>
+                <div className={`h-[1px] my-3 ${theme === 'dark' ? 'bg-hairline-on-dark' : 'bg-hairline-on-light'}`} />
+                <Link to="/auth" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="relative z-10 w-full">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/auth" element={<AuthPage />} />

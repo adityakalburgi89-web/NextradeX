@@ -30,8 +30,8 @@ export default function CandlestickChart({ data = [], options = EMPTY_OPTIONS, h
       },
       crosshair: {
         mode: 1,
-        vertLine: { color: "rgba(247, 147, 26, 0.35)", width: 1, style: 2, labelBackgroundColor: "rgba(247, 147, 26, 0.8)" },
-        horzLine: { color: "rgba(247, 147, 26, 0.35)", width: 1, style: 2, labelBackgroundColor: "rgba(247, 147, 26, 0.8)" },
+        vertLine: { color: "rgba(252, 213, 53, 0.35)", width: 1, style: 2, labelBackgroundColor: "rgba(252, 213, 53, 0.9)" },
+        horzLine: { color: "rgba(252, 213, 53, 0.35)", width: 1, style: 2, labelBackgroundColor: "rgba(252, 213, 53, 0.9)" },
       },
       rightPriceScale: {
         borderColor: "rgba(255, 255, 255, 0.1)",
@@ -48,12 +48,12 @@ export default function CandlestickChart({ data = [], options = EMPTY_OPTIONS, h
     });
 
     const candlestickSeries = chart.addSeries(CandlestickSeries, {
-      upColor: "#22c55e",
-      downColor: "#ef4444",
-      borderUpColor: "#22c55e",
-      borderDownColor: "#ef4444",
-      wickUpColor: "#22c55e",
-      wickDownColor: "#ef4444",
+      upColor: "#0ecb81",
+      downColor: "#f6465d",
+      borderUpColor: "#0ecb81",
+      borderDownColor: "#f6465d",
+      wickUpColor: "#0ecb81",
+      wickDownColor: "#f6465d",
     });
 
     const volumeSeries = chart.addSeries(HistogramSeries, {
@@ -114,7 +114,7 @@ export default function CandlestickChart({ data = [], options = EMPTY_OPTIONS, h
   useEffect(() => {
     if (candleSeriesRef.current && volumeSeriesRef.current && chartRef.current && data && data.length > 0) {
       const candleData = data.map(d => ({ time: d.time, open: d.open, high: d.high, low: d.low, close: d.close }));
-      const volumeData = data.map(d => ({ time: d.time, value: d.volume, color: d.close >= d.open ? "rgba(34, 197, 94, 0.5)" : "rgba(239, 68, 68, 0.5)" }));
+      const volumeData = data.map(d => ({ time: d.time, value: d.volume, color: d.close >= d.open ? "rgba(14, 203, 129, 0.5)" : "rgba(246, 70, 93, 0.5)" }));
 
       candleSeriesRef.current.setData(candleData);
       volumeSeriesRef.current.setData(volumeData);
