@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MessageSquare, Send, X, Bot, HelpCircle, Activity, DollarSign, Shield } from "lucide-react";
 import trixieAvatar from "../assets/Chatbot/trixie.png";
+import trixieVideo from "../assets/Chatbot/Audio/Video/Cute_eye_blinking_animation_202605231326.mp4";
 import { fetchAllPrices } from "../api";
 import { formatCurrency, formatPercent } from "../lib/utils";
 
@@ -11,19 +12,28 @@ import giggleSound from "../assets/Chatbot/Audio/giggle_XuDecHl (1).mp3";
 import ohCuteSound from "../assets/Chatbot/Audio/oh-cute-anime-girl-voice-sound-effect (1).mp3";
 
 const replySounds = [bangSound, cuteSound, giggleSound, ohCuteSound];
+const audioElements = replySounds.map((sound) => {
+  const audio = new Audio(sound);
+  audio.preload = "auto";
+  return audio;
+});
 
 const playRandomSound = () => {
   try {
-    const randomIndex = Math.floor(Math.random() * replySounds.length);
-    const audio = new Audio(replySounds[randomIndex]);
-    audio.play().catch((err) => {
-      console.warn("Audio playback failed or was blocked by browser autoplay policy:", err);
-    });
+    const randomIndex = Math.floor(Math.random() * audioElements.length);
+    const audio = audioElements[randomIndex];
+    audio.currentTime = 0;
+    audio.volume = 1.0;
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((err) => {
+        console.warn("Audio playback was blocked or failed:", err);
+      });
+    }
   } catch (err) {
-    console.warn("Error playing chat reply audio:", err);
+    console.warn("Error playing audio:", err);
   }
 };
-
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,7 +41,7 @@ export default function Chatbot() {
     {
       id: "welcome",
       sender: "trixie",
-      text: "Hi there! I'm Trixie, your official NexTradeX simulated trading virtual copilot. 🤖\n\nI can fetch live simulated prices, verify virtual reserves, and help you navigate our spot, futures, and options terminals. How can I assist you today?",
+      text: "Hi there! I'm Trixie, your official NexTradeX simulated trading virtual copilot. \n\nI can fetch live simulated prices, verify virtual reserves, and help you navigate our spot, futures, and options terminals. How can I assist you today?",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -125,15 +135,20 @@ export default function Chatbot() {
       <div className="fixed bottom-6 right-6 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`size-14 rounded-full flex items-center justify-center bg-primary hover:bg-primary-active text-on-primary transition-all duration-300 shadow-glow-primary hover:scale-105 active:scale-95 border-2 border-background focus:outline-none relative`}
+          className={`size-20 rounded-full flex items-center justify-center bg-primary hover:bg-primary-active text-on-primary transition-all duration-300 shadow-glow-primary hover:scale-105 active:scale-95 border-2 border-background focus:outline-none relative`}
         >
           {isOpen ? (
-            <X size={24} className="animate-scale-in text-ink" />
+            <X size={32} className="animate-scale-in text-ink" />
           ) : (
             <div className="relative size-full rounded-full overflow-hidden flex items-center justify-center p-1.5">
-              <img src={trixieAvatar} alt="Trixie" className="size-full object-cover rounded-full" />
-              {/* Online pulse dot indicator */}
-              <span className="absolute bottom-0.5 right-0.5 size-3 rounded-full bg-trading-up border-2 border-[#181a20] animate-pulse" />
+              <video
+                src={trixieVideo}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="size-full object-cover rounded-full"
+              />
             </div>
           )}
         </button>
@@ -145,15 +160,21 @@ export default function Chatbot() {
           {/* Header */}
           <div className="bg-canvas-dark border-b border-hairline-on-dark px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center relative overflow-hidden">
-                <img src={trixieAvatar} alt="Trixie" className="w-full h-full object-cover" />
+              <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center relative overflow-hidden">
+                <video
+                  src={trixieVideo}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div>
                 <h4 className="font-heading text-xs font-bold text-white flex items-center gap-1.5">
                   Trixie <span className="text-[10px] font-normal text-trading-up font-mono">Copilot</span>
                 </h4>
                 <div className="flex items-center gap-1 text-[10px] text-muted">
-                  <span className="w-1.5 h-1.5 rounded-full bg-trading-up" />
                   <span>Online & ready</span>
                 </div>
               </div>
@@ -171,9 +192,8 @@ export default function Chatbot() {
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex gap-2.5 max-w-[85%] ${
-                  msg.sender === "user" ? "self-end flex-row-reverse" : "self-start"
-                }`}
+                className={`flex gap-2.5 max-w-[85%] ${msg.sender === "user" ? "self-end flex-row-reverse" : "self-start"
+                  }`}
               >
                 {msg.sender === "trixie" && (
                   <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 overflow-hidden mt-0.5">
@@ -182,17 +202,15 @@ export default function Chatbot() {
                 )}
                 <div className="flex flex-col gap-1">
                   <div
-                    className={`rounded-2xl px-4 py-2.5 text-xs font-sans leading-relaxed whitespace-pre-wrap ${
-                      msg.sender === "user"
-                        ? "bg-primary text-on-primary font-semibold rounded-tr-sm"
-                        : "bg-surface-elevated-dark border border-hairline-on-dark text-foreground rounded-tl-sm"
-                    }`}
+                    className={`rounded-2xl px-4 py-2.5 text-xs font-sans leading-relaxed whitespace-pre-wrap ${msg.sender === "user"
+                      ? "bg-primary text-on-primary font-semibold rounded-tr-sm"
+                      : "bg-surface-elevated-dark border border-hairline-on-dark text-foreground rounded-tl-sm"
+                      }`}
                   >
                     {msg.text}
                   </div>
-                  <span className={`text-[9px] text-muted font-mono tracking-wide ${
-                    msg.sender === "user" ? "self-end" : "self-start pl-1"
-                  }`}>
+                  <span className={`text-[9px] text-muted font-mono tracking-wide ${msg.sender === "user" ? "self-end" : "self-start pl-1"
+                    }`}>
                     {msg.timestamp}
                   </span>
                 </div>
