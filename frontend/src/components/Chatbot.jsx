@@ -80,27 +80,26 @@ export default function Chatbot() {
         const response = await fetchAllPrices();
         const coins = response?.data || [];
         if (coins.length > 0) {
-          reply = "📊 **Live Simulated Prices**:\n\n";
+          reply = "**Live Simulated Prices**:\n\n";
           coins.forEach((coin) => {
             const isUp = Number(coin.percentChange24h) >= 0;
-            const changeIcon = isUp ? "📈" : "📉";
             const trend = isUp ? "+" : "";
-            reply += `• **${coin.symbol}**: \`${formatCurrency(coin.currentPrice)}\`  (${changeIcon} ${trend}${formatPercent(coin.percentChange24h)})\n`;
+            reply += `• **${coin.symbol}**: \`${formatCurrency(coin.currentPrice)}\`  (${trend}${formatPercent(coin.percentChange24h)})\n`;
           });
           reply += "\n*Note: These are mock prices streaming from the simulated backend engine.*";
         } else {
           reply = "I tried to query the price server, but it seems to be updating. Please try checking prices again in a few seconds!";
         }
       } else if (cleanQuery.includes("reserve") || cleanQuery.includes("safu") || cleanQuery.includes("fund") || cleanQuery.includes("backing") || cleanQuery.includes("proof")) {
-        reply = "🛡️ **Proof of Reserves (SAFU)**\n\nNexTradeX operates strictly as a virtual trading simulation. All paper balances ($1.24B mock assets allocated) are backed **100% 1:1 on our simulated ledgers**.\n\nAll funds are locked in centralized mock storage vaults with absolute tick execution guarantees! Your simulation is fully secure.";
+        reply = "**Proof of Reserves (SAFU)**\n\nNexTradeX operates strictly as a virtual trading simulation. All paper balances ($1.24B mock assets allocated) are backed **100% 1:1 on our simulated ledgers**.\n\nAll funds are locked in centralized mock storage vaults with absolute tick execution guarantees! Your simulation is fully secure.";
       } else if (cleanQuery.includes("fee") || cleanQuery.includes("cost") || cleanQuery.includes("slippage") || cleanQuery.includes("spread")) {
-        reply = "⚡ **Trading Fees & Slippage**\n\nGood news! NexTradeX features **0% simulated trading execution fees** across all products:\n\n• **Spot**: 0% fees, instant depth routing.\n• **Futures**: 0% maker/taker fees, full margin offset benefits.\n• **Options**: 0% contract expiry settlement charges.\n\nExperience high-frequency paper trading without standard overhead fees!";
+        reply = "**Trading Fees & Slippage**\n\nGood news! NexTradeX features **0% simulated trading execution fees** across all products:\n\n• **Spot**: 0% fees, instant depth routing.\n• **Futures**: 0% maker/taker fees, full margin offset benefits.\n• **Options**: 0% contract expiry settlement charges.\n\nExperience high-frequency paper trading without standard overhead fees!";
       } else if (cleanQuery.includes("option") || cleanQuery.includes("future") || cleanQuery.includes("spot") || cleanQuery.includes("terminal") || cleanQuery.includes("trade")) {
-        reply = "🎯 **Supported Simulated Terminals**:\n\n1. **Spot Trading** - Practice routing immediate mock orders against simulated order books.\n2. **Futures Trading** - Take leveraged synthetic positions with full cross/isolated margin rules.\n3. **Options Trading** - Build complex options combinations with our interactive options chain editor.";
+        reply = "**Supported Simulated Terminals**:\n\n1. **Spot Trading** - Practice routing immediate mock orders against simulated order books.\n2. **Futures Trading** - Take leveraged synthetic positions with full cross/isolated margin rules.\n3. **Options Trading** - Build complex options combinations with our interactive options chain editor.";
       } else if (cleanQuery.includes("who") || cleanQuery.includes("name") || cleanQuery.includes("trixie") || cleanQuery.includes("creator")) {
-        reply = "I'm **Trixie**! 🤖 Your official NexTradeX paper-trading virtual companion.\n\nI was created by the NexTradeX engineering team to stream real-time price feeds, explain trading terminal mechanics, and assist simulated users.";
+        reply = "I'm **Trixie**! Your official NexTradeX paper-trading virtual companion.\n\nI was created by the NexTradeX engineering team to stream real-time price feeds, explain trading terminal mechanics, and assist simulated users.";
       } else if (cleanQuery.includes("hello") || cleanQuery.includes("hi") || cleanQuery.includes("hey") || cleanQuery.includes("greetings")) {
-        reply = "Hello! 👋 Great to see you in the terminal. How can I help you trade, chart, or inspect our mock ledger reserves?";
+        reply = "Hello! Great to see you in the terminal. How can I help you trade, chart, or inspect our mock ledger reserves?";
       } else {
         reply = "I'm not fully sure how to answer that specific query. However, I can help you with:\n\n• **Simulated Live Prices**: Type 'price'\n• **Reserves Status**: Type 'safu' or 'reserves'\n• **Execution Fees**: Type 'fees'\n• **Trading Terminals**: Type 'options' or 'futures'\n\nWhat would you like to explore?";
       }
@@ -225,19 +224,19 @@ export default function Chatbot() {
               onClick={() => handleQuickAction("Check Prices", "price")}
               className="px-2.5 py-1 text-[10px] font-mono rounded-full border border-hairline-on-dark bg-surface-card-dark text-muted hover:text-primary hover:border-primary/30 transition-all font-semibold"
             >
-              📊 Live Prices
+              Live Prices
             </button>
             <button
               onClick={() => handleQuickAction("Verify Safu", "safu")}
               className="px-2.5 py-1 text-[10px] font-mono rounded-full border border-hairline-on-dark bg-surface-card-dark text-muted hover:text-primary hover:border-primary/30 transition-all font-semibold"
             >
-              🛡️ Reserves SAFU
+              Reserves SAFU
             </button>
             <button
               onClick={() => handleQuickAction("Cost and Fees?", "fees")}
               className="px-2.5 py-1 text-[10px] font-mono rounded-full border border-hairline-on-dark bg-surface-card-dark text-muted hover:text-primary hover:border-primary/30 transition-all font-semibold"
             >
-              ⚡ Spot/Futures Fees
+              Spot/Futures Fees
             </button>
           </div>
 
