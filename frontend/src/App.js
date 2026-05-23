@@ -33,6 +33,7 @@ import xIcon from "./assets/x.com_icon.png";
 import linkedInIcon from "./assets/LinkedIn_icon.svg.png";
 import githubIcon from "./assets/github_icon.png";
 import gmailIcon from "./assets/Gmail_icon_svg.webp";
+import Chatbot from "./components/Chatbot";
 
 /* ═══════════════════════════════════════════
    HOME PAGE
@@ -941,6 +942,9 @@ function App() {
 
         {/* Search Modal */}
         <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} query={searchQuery} setQuery={setSearchQuery} />
+
+        {/* Floating Chatbot Assistant Trixie */}
+        <Chatbot />
 
         {/* Footer */}
       <Footer />
