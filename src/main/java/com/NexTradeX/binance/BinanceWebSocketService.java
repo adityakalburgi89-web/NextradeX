@@ -73,20 +73,7 @@ public class BinanceWebSocketService {
                             symbol,
                             price,
                             high,
- api.js:122 
- POST http://localhost:8080/api/oauth2/complete-profile 500 (Internal Server Error)
-completeProfile	@	api.js:122
-(anonymous)	@	AuthPage.jsx:73
-
-installHook.js:1 [API] ❌ Response error: No static resource oauth2/complete-profile. Status: 500
-overrideMethod	@	installHook.js:1
-handleResponse	@	api.js:48
-await in handleResponse		
-completeProfile	@	api.js:125
-await in completeProfile		
-(anonymous)	@	AuthPage.jsx:73
-﻿
-                           low,
+                            low,
                             open,
                             priceChange,
                             percentChange,
