@@ -1,4 +1,4 @@
-# 📊 OAuth 401 Fix - Visual Reference
+#  OAuth 401 Fix - Visual Reference
 
 ## The Problem: Request Flow (Before Fix)
 
@@ -18,8 +18,8 @@
       │    localStorage.setItem("token", jwt)      │
       │                                             │
       │    4. POST /oauth2/complete-profile        │
-      │       ❌ CORS blocks Authorization header  │
-      │       ❌ credentials: "include" missing    │
+      │        CORS blocks Authorization header  │
+      │        credentials: "include" missing    │
       │<──── 5. 401 Unauthorized ─────────────────  │
       │       (No Authorization header received)    │
       │                                             │
@@ -40,24 +40,24 @@
       │       OAuth2AuthenticationSuccessHandler    │
       │                                             │
       │ 3. Store Token in localStorage             │
-      │    ✅ Token stored successfully            │
+      │     Token stored successfully            │
       │                                             │
       │    4. POST /oauth2/complete-profile        │
-      │       ✅ Header: Authorization: Bearer JWT │
-      │       ✅ credentials: "include" set        │
-      │       ✅ CORS preflight with Auth header   │
+      │        Header: Authorization: Bearer JWT │
+      │        credentials: "include" set        │
+      │        CORS preflight with Auth header   │
       │                                             │
       │────────────────────────────────────────────>│
       │       Content-Type: application/json        │
       │       Authorization: Bearer <JWT>           │
       │       (OPTIONS preflight first)             │
       │                                             │
-      │                                       ✅ JwtFilter
+      │                                        JwtFilter
       │                                       Extracts JWT
       │                                       Validates
       │                                       Sets SecurityContext
       │                                             │
-      │                                       ✅ OAuthController
+      │                                        OAuthController
       │                                       Gets @Authentication
       │                                       Updates profile
       │                                             │
@@ -67,7 +67,7 @@
       │ 6. Update localStorage with new token      │
       │    Redirect to dashboard                   │
       │                                             │
-      │    7. All subsequent requests work! ✅     │
+      │    7. All subsequent requests work!      │
       │       Authorization header sent correctly   │
       │                                             │
 ```
@@ -76,7 +76,7 @@
 
 ## CORS Configuration Comparison
 
-### ❌ BEFORE (Broken)
+###  BEFORE (Broken)
 
 ```java
 CorsConfiguration configuration = new CorsConfiguration();
@@ -95,7 +95,7 @@ configuration.addAllowedMethod(CorsConfiguration.ALL);
 // - Backend gets 401 because no token
 ```
 
-### ✅ AFTER (Fixed)
+###  AFTER (Fixed)
 
 ```java
 CorsConfiguration configuration = new CorsConfiguration();
@@ -127,10 +127,10 @@ configuration.setExposedHeaders(Arrays.asList(
 ));
 
 // RESULT:
-// ✅ Preflight succeeds with Authorization
-// ✅ Actual request includes Authorization header
-// ✅ Backend authenticates with JWT
-// ✅ 200 OK response
+//  Preflight succeeds with Authorization
+//  Actual request includes Authorization header
+//  Backend authenticates with JWT
+//  200 OK response
 ```
 
 ---
@@ -234,9 +234,9 @@ configuration.setExposedHeaders(Arrays.asList(
                               ↓
          ┌─────────────────────────────────────┐
          │ JwtService.isTokenValid(token, user)│
-         │ - Check signature ✅               │
-         │ - Check expiration ✅              │
-         │ - Check username matches ✅        │
+         │ - Check signature                │
+         │ - Check expiration               │
+         │ - Check username matches         │
          └─────────────────────────────────────┘
                               │
                               ↓
@@ -253,7 +253,7 @@ configuration.setExposedHeaders(Arrays.asList(
          │ SecurityContextHolder.getContext()   │
          │ .setAuthentication(authToken)        │
          │                                     │
-         │ ✅ Authentication now available!    │
+         │  Authentication now available!    │
          └─────────────────────────────────────┘
                               │
                               ↓
@@ -274,9 +274,9 @@ configuration.setExposedHeaders(Arrays.asList(
                               │
                               ↓
          ┌─────────────────────────────────────┐
-         │ Check: authentication != null? ✅  │
-         │ Check: authenticated? ✅           │
-         │ Extract: userId from JWT ✅        │
+         │ Check: authentication != null?   │
+         │ Check: authenticated?            │
+         │ Extract: userId from JWT         │
          └─────────────────────────────────────┘
                               │
                               ↓
@@ -342,8 +342,8 @@ configuration.setExposedHeaders(Arrays.asList(
     GET /api/wallets
     etc.
     
-    All have: Authorization: Bearer <TOKEN> ✅
-    All return: 200 OK ✅
+    All have: Authorization: Bearer <TOKEN> 
+    All return: 200 OK 
 ```
 
 ---
@@ -402,13 +402,13 @@ ms    │ Headers: Authorization: Bearer <TOKEN>
       │ Body: {username, firstName, lastName}
       │
 2025  │ Browser sends CORS preflight (OPTIONS)
-ms    │ ✅ Now includes Authorization header (thanks to CORS fix)
+ms    │  Now includes Authorization header (thanks to CORS fix)
       │
 2030  │ Backend responds to preflight with 200 OK
 ms    │ Headers: Access-Control-Allow-Headers: Authorization...
       │
 2035  │ Browser sends actual POST request
-ms    │ ✅ With Authorization header (credentials: "include" fix)
+ms    │  With Authorization header (credentials: "include" fix)
       │
 2040  │ JwtFilter intercepts request
 ms    │ Extracts token from Authorization header
@@ -416,10 +416,10 @@ ms    │ Extracts token from Authorization header
       │ Sets in SecurityContextHolder
       │
 2045  │ OAuthController.completeProfile() called
-ms    │ ✅ Authentication parameter injected by Spring
+ms    │  Authentication parameter injected by Spring
       │
 2050  │ Controller validates token and userId
-ms    │ ✅ Both successful (Authentication was populated)
+ms    │  Both successful (Authentication was populated)
       │
 2055  │ Controller updates user profile in DB
 ms    │
@@ -428,7 +428,7 @@ ms    │
 2065  │ Controller returns 200 OK with new token
 ms    │
 2070  │ Frontend receives response
-ms    │ ✅ Status 200 (not 401!)
+ms    │  Status 200 (not 401!)
       │
 2075  │ Frontend updates localStorage with new token
 ms    │ setAuthToken(newToken)
@@ -437,7 +437,7 @@ ms    │ setAuthToken(newToken)
 ms    │ window.location.href = "/"
       │
 2100  │ Dashboard loads
-ms    │ All API calls work! ✅
+ms    │ All API calls work! 
       │
 ```
 
@@ -449,10 +449,10 @@ ms    │ All API calls work! ✅
 ┌─ CORS Layer ────────────────────────────────────────────┐
 │                                                          │
 │  Preflight Check:                                       │
-│  - Origin matches allowed list? ✅                      │
-│  - Authorization in allowed headers? ✅                 │
-│  - Method in allowed methods? ✅                        │
-│  - Credentials mode? ✅                                 │
+│  - Origin matches allowed list?                       │
+│  - Authorization in allowed headers?                  │
+│  - Method in allowed methods?                         │
+│  - Credentials mode?                                  │
 │                                                          │
 │  Response: 200 OK (preflight passes)                   │
 └──────────────────────────────────────────────────────────┘
@@ -498,13 +498,13 @@ ms    │ All API calls work! ✅
 │    Authentication authentication,  ← INJECTED           │
 │    Map<String,String> profileData                       │
 │  ) {                                                    │
-│    // authentication != null ✅                         │
-│    // authentication.isAuthenticated() == true ✅       │
-│    Long userId = auth.getUserId() ← FROM JWT ✅        │
+│    // authentication != null                          │
+│    // authentication.isAuthenticated() == true        │
+│    Long userId = auth.getUserId() ← FROM JWT         │
 │                                                          │
 │    // Update profile                                    │
 │    // Generate new token                               │
-│    // Return 200 OK ✅                                  │
+│    // Return 200 OK                                   │
 │  }                                                      │
 │                                                          │
 └──────────────────────────────────────────────────────────┘

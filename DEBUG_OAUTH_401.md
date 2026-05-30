@@ -1,6 +1,6 @@
-# 🔧 OAuth2 401 Unauthorized - Complete Debug & Fix Guide
+#  OAuth2 401 Unauthorized - Complete Debug & Fix Guide
 
-## ⚡ WHAT WAS THE ISSUE?
+##  WHAT WAS THE ISSUE?
 
 The `POST /api/oauth2/complete-profile` endpoint was returning **401 Unauthorized** after successful OAuth login because:
 
@@ -11,13 +11,13 @@ The `POST /api/oauth2/complete-profile` endpoint was returning **401 Unauthorize
 
 ---
 
-## ✅ COMPLETE FIXES IMPLEMENTED
+##  COMPLETE FIXES IMPLEMENTED
 
-### 1️⃣ **Backend: SecurityConfig.java** (CORS Configuration)
+### 1⃣ **Backend: SecurityConfig.java** (CORS Configuration)
 
 **What Changed:**
-- ❌ **Before**: `addAllowedOriginPattern("*")` - Wildcard origin with credentials
-- ✅ **After**: Explicit list of allowed origins from `cors.allowed.origins` property
+-  **Before**: `addAllowedOriginPattern("*")` - Wildcard origin with credentials
+-  **After**: Explicit list of allowed origins from `cors.allowed.origins` property
 
 ```java
 // FIX #1: Use explicit origins instead of wildcard
@@ -62,7 +62,7 @@ configuration.setExposedHeaders(Arrays.asList(
 
 ---
 
-### 2️⃣ **Backend: JwtFilter.java** (Enhanced Debugging)
+### 2⃣ **Backend: JwtFilter.java** (Enhanced Debugging)
 
 **Added Comprehensive Logging:**
 
@@ -81,7 +81,7 @@ if (jwtService.isTokenValid(jwt, userDetails)) {
     JwtAuthenticationToken authToken = 
         new JwtAuthenticationToken(username, userId, jwt, userDetails.getAuthorities());
     SecurityContextHolder.getContext().setAuthentication(authToken);
-    log.debug("[JwtFilter] ✅ JWT Token valid. Authentication set for user: {} (ID: {})", 
+    log.debug("[JwtFilter]  JWT Token valid. Authentication set for user: {} (ID: {})", 
         username, userId);
 }
 ```
@@ -90,17 +90,17 @@ if (jwtService.isTokenValid(jwt, userDetails)) {
 ```
 [JwtFilter] Token found in request for path: /api/oauth2/complete-profile
 [JwtFilter] Extracted username: google-user@example.com, userId: 1 from token
-[JwtFilter] ✅ JWT Token valid. Authentication set for user: google-user@example.com (ID: 1)
+[JwtFilter]  JWT Token valid. Authentication set for user: google-user@example.com (ID: 1)
 ```
 
 ---
 
-### 3️⃣ **Backend: OAuthController.java** (Authentication Handling)
+### 3⃣ **Backend: OAuthController.java** (Authentication Handling)
 
 **Changed from manual header parsing to Spring Security Authentication:**
 
 ```java
-// ❌ OLD: Manual header parsing
+//  OLD: Manual header parsing
 @PostMapping("/complete-profile")
 public ResponseEntity<ApiResponse<AuthResponse>> completeProfile(
         @RequestHeader(value = "Authorization", required = false) String bearerToken,
@@ -110,7 +110,7 @@ public ResponseEntity<ApiResponse<AuthResponse>> completeProfile(
     }
 }
 
-// ✅ NEW: Spring Security Authentication object (populated by JwtFilter)
+//  NEW: Spring Security Authentication object (populated by JwtFilter)
 @PostMapping("/complete-profile")
 public ResponseEntity<ApiResponse<AuthResponse>> completeProfile(
         Authentication authentication,  // ← Spring injects this
@@ -138,12 +138,12 @@ public ResponseEntity<ApiResponse<AuthResponse>> completeProfile(
 
 ---
 
-### 4️⃣ **Frontend: api.js** (CORS Credentials & Logging)
+### 4⃣ **Frontend: api.js** (CORS Credentials & Logging)
 
 **Added credentials and debugging:**
 
 ```javascript
-// ✅ FIX #1: Create fetch options with credentials for CORS
+//  FIX #1: Create fetch options with credentials for CORS
 function createFetchOptions(method = "GET", body = null, headers = {}) {
   const options = {
     method,
@@ -156,20 +156,20 @@ function createFetchOptions(method = "GET", body = null, headers = {}) {
   return options;
 }
 
-// ✅ FIX #2: Log token and headers
+//  FIX #2: Log token and headers
 function authHeaders() {
   const token = getAuthToken();
   const headers = { "Content-Type": "application/json" };
   if (token) {
     headers.Authorization = `Bearer ${token}`;
-    console.log("[API] 🔐 Authorization header set");
+    console.log("[API]  Authorization header set");
   } else {
-    console.log("[API] ⚠️ No token found!");
+    console.log("[API]  No token found!");
   }
   return headers;
 }
 
-// ✅ FIX #3: Use credentials in all authenticated requests
+//  FIX #3: Use credentials in all authenticated requests
 export async function completeProfile(payload) {
   console.log("[API] POST /oauth2/complete-profile");
   const headers = authHeaders();
@@ -185,15 +185,15 @@ export async function completeProfile(payload) {
 
 **Browser Console Output:**
 ```
-[API] 📝 Token stored in localStorage
-[API] 🔐 Authorization header set for request
+[API]  Token stored in localStorage
+[API]  Authorization header set for request
 [API] POST /oauth2/complete-profile
-[API] ✅ Response received successfully
+[API]  Response received successfully
 ```
 
 ---
 
-## 🐛 HOW TO DEBUG IF STILL GETTING 401
+##  HOW TO DEBUG IF STILL GETTING 401
 
 ### Step 1: Check Browser Network Tab
 
@@ -236,7 +236,7 @@ console.log("[DEBUG] Request headers:", Object.fromEntries(headers));
 ```
 [JwtFilter] Token found in request for path: /api/oauth2/complete-profile
 [JwtFilter] Extracted username: user@example.com, userId: 1 from token
-[JwtFilter] ✅ JWT Token valid. Authentication set for user: user@example.com (ID: 1)
+[JwtFilter]  JWT Token valid. Authentication set for user: user@example.com (ID: 1)
 
 complete-profile: Processing profile setup for userId: 1
 complete-profile: Profile setup completed for user: new-username
@@ -244,13 +244,13 @@ complete-profile: Profile setup completed for user: new-username
 
 **If you see these errors:**
 ```
-❌ [JwtFilter] No token found for path: /api/oauth2/complete-profile
+ [JwtFilter] No token found for path: /api/oauth2/complete-profile
    → Authorization header not being sent (check credentials in fetch)
 
-❌ [JwtFilter] JWT Token validation failed
+ [JwtFilter] JWT Token validation failed
    → Token is expired or invalid (check expiration time in JWT)
 
-❌ complete-profile: Authentication is null or not authenticated
+ complete-profile: Authentication is null or not authenticated
    → JwtFilter didn't populate SecurityContextHolder
 ```
 
@@ -282,22 +282,22 @@ Profile response: {code: 200, message: "Profile retrieved", data: {...}}
 
 ---
 
-## 🔍 VERIFICATION CHECKLIST
+##  VERIFICATION CHECKLIST
 
-✅ **Backend Checks:**
+ **Backend Checks:**
 - [ ] `cors.allowed.origins` in `application.properties` includes `http://localhost:3000`
 - [ ] `JwtFilter` is registered before `UsernamePasswordAuthenticationFilter`
 - [ ] `SessionCreationPolicy.STATELESS` is configured
 - [ ] `Authorization` header is in `allowedHeaders`
 - [ ] `setAllowCredentials(true)` is set
 
-✅ **Frontend Checks:**
+ **Frontend Checks:**
 - [ ] Token is stored in `localStorage` after OAuth redirect
 - [ ] `Authorization` header includes `Bearer <token>`
 - [ ] `credentials: "include"` in fetch options
 - [ ] No browser console errors about CORS
 
-✅ **Testing Sequence:**
+ **Testing Sequence:**
 1. Start fresh (clear localStorage): `localStorage.clear()`
 2. Click Google Login
 3. Check that `/auth?token=<JWT>` redirects to profile setup
@@ -307,7 +307,7 @@ Profile response: {code: 200, message: "Profile retrieved", data: {...}}
 
 ---
 
-## 📝 QUICK REFERENCE: What Each File Does
+##  QUICK REFERENCE: What Each File Does
 
 | File | Role | Why It Matters |
 |------|------|---|
@@ -318,7 +318,7 @@ Profile response: {code: 200, message: "Profile retrieved", data: {...}}
 
 ---
 
-## 🚀 PRODUCTION CHECKLIST
+##  PRODUCTION CHECKLIST
 
 Before deploying to production:
 
@@ -343,7 +343,7 @@ logging.level.org.springframework.security=WARN
 
 ---
 
-## 📞 STILL HAVING ISSUES?
+##  STILL HAVING ISSUES?
 
 **Most Common Causes:**
 
