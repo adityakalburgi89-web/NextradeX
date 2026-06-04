@@ -3,7 +3,6 @@ import {
   fetchWallets, 
   depositToWallet, 
   transferBetweenWallets, 
-  withdrawFromWallet, 
   fetchOpenFuturesPositions,
   fetchOrderHistory,
   fetchActiveOrders
@@ -23,7 +22,6 @@ import {
   Wallet as WalletIcon, 
   ChevronRight,
   ShieldCheck,
-  Send,
   PlusCircle,
   FileText
 } from "lucide-react";
@@ -44,9 +42,8 @@ export default function WalletsPage() {
   const [spotSearch, setSpotSearch] = useState("");
 
   // Action Modals State
-  const [depositModal, setDepositModal] = useState({ open: false, walletType: "SPOT", asset: "USDT", network: "TRC20" });
+  const [depositModal, setDepositModal] = useState({ open: false, walletType: "SPOT", amount: "" });
   const [transferModal, setTransferModal] = useState({ open: false, from: "SPOT", to: "FUTURES", amount: "" });
-  const [sendModal, setSendModal] = useState({ open: false, walletType: "SPOT", asset: "USDT", network: "ERC20", address: "", amount: "" });
 
   const [copiedText, setCopiedText] = useState(false);
 
@@ -99,12 +96,12 @@ export default function WalletsPage() {
 
   // Modal Deposit trigger
   const executeModalDeposit = async (amountVal) => {
-    const amt = parseFloat(amountVal || depositModal.customAmount);
+    const amt = parseFloat(amountVal || depositModal.amount);
     if (isNaN(amt) || amt <= 0) {
       setError("Please specify a valid deposit amount.");
       return;
     }
-    setDepositModal({ ...depositModal, open: false });
+    setDepositModal({ ...depositModal, open: false, amount: "" });
     await handleQuickDeposit(depositModal.walletType, amt);
   };
 
@@ -131,33 +128,6 @@ export default function WalletsPage() {
       setTimeout(() => setSuccessMessage(""), 4000);
     } catch (err) {
       setError(err.message || "Failed to transfer funds.");
-      setSuccessMessage("");
-    }
-  };
-
-  // Withdrawal function
-  const executeWithdrawal = async (e) => {
-    e.preventDefault();
-    const amt = parseFloat(sendModal.amount);
-    if (isNaN(amt) || amt <= 0) {
-      setError("Please enter a valid amount.");
-      return;
-    }
-    if (!sendModal.address || sendModal.address.trim().length < 10) {
-      setError("Please enter a valid withdrawal address.");
-      return;
-    }
-
-    try {
-      setError("");
-      setSuccessMessage(`Withdrawing ${formatCurrency(amt)} via ${sendModal.network}...`);
-      setSendModal({ ...sendModal, open: false });
-      await withdrawFromWallet(sendModal.walletType, amt, sendModal.address, sendModal.network);
-      setSuccessMessage(`Withdrawal of ${formatCurrency(amt)} requested successfully.`);
-      await loadData();
-      setTimeout(() => setSuccessMessage(""), 4000);
-    } catch (err) {
-      setError(err.message || "Failed to process withdrawal.");
       setSuccessMessage("");
     }
   };
@@ -237,13 +207,7 @@ export default function WalletsPage() {
       );
   }, [spotWallet, spotSearch]);
 
-  // Address lookup helper for deposit modal
-  const getMockAddress = (asset, network) => {
-    if (asset === "BTC") return "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh";
-    if (network === "TRC20") return "TY3zF9AJxN7q2m215wz4q2h8K92m5z11vX";
-    if (network === "ERC20") return "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
-    return "0x71C7656EC7ab88b098defB751B7401B5f6d8976F"; // Default BSC/ERC20
-  };
+
 
   return (
     <PageTransition>
@@ -273,13 +237,6 @@ export default function WalletsPage() {
             >
               <RefreshCw size={14} />
               TRANSFER
-            </button>
-            <button 
-              onClick={() => setSendModal({ ...sendModal, open: true })}
-              className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold font-mono tracking-wide rounded border border-hairline-on-dark hover:bg-white/[0.03] text-white transition-all"
-            >
-              <Send size={14} />
-              SEND
             </button>
           </div>
         </div>
@@ -761,19 +718,23 @@ export default function WalletsPage() {
                   Deposit Simulated Capital
                 </h3>
                 <button 
-                  onClick={() => setDepositModal({ ...depositModal, open: false })}
+                  onClick={() => setDepositModal({ ...depositModal, open: false, amount: "" })}
                   className="text-muted hover:text-white transition-colors font-bold font-mono text-sm"
                 >
                   ✕
                 </button>
               </div>
 
-              <div className="p-5 space-y-4">
+              <form onSubmit={(e) => { e.preventDefault(); executeModalDeposit(); }} className="p-5 space-y-4">
                 
+                <p className="text-[11px] text-muted leading-relaxed font-sans border-b border-hairline-on-dark/30 pb-3">
+                  This is a simulated paper trading platform. You can instantly credit virtual funds to any of your wallets for free.
+                </p>
+
                 {/* Target Wallet selection */}
                 <div>
                   <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
-                    1. Select Destination Wallet
+                    1. Destination Wallet
                   </label>
                   <select
                     value={depositModal.walletType}
@@ -787,90 +748,62 @@ export default function WalletsPage() {
                   </select>
                 </div>
 
-                {/* Coin selection */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
-                      2. Select Asset
-                    </label>
-                    <select
-                      value={depositModal.asset}
-                      onChange={(e) => setDepositModal({ ...depositModal, asset: e.target.value })}
-                      className="bg-canvas-dark border border-hairline-on-dark font-mono text-xs text-white w-full rounded px-3 py-2 cursor-pointer outline-none focus:border-primary"
-                    >
-                      <option value="USDT">USDT (Simulated Dollar)</option>
-                      <option value="BTC">BTC</option>
-                      <option value="ETH">ETH</option>
-                    </select>
+                {/* Amount input */}
+                <div>
+                  <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
+                    2. Deposit Amount (USD)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      required
+                      placeholder="0.00"
+                      value={depositModal.amount || ""}
+                      onChange={(e) => setDepositModal({ ...depositModal, amount: e.target.value })}
+                      className="bg-canvas-dark border border-hairline-on-dark font-mono text-sm text-white w-full rounded px-3 py-2 pr-12 outline-none focus:border-primary transition-all"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-xs font-mono">USD</span>
                   </div>
-
-                  <div>
-                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
-                      3. Select Network
-                    </label>
-                    <select
-                      value={depositModal.network}
-                      onChange={(e) => setDepositModal({ ...depositModal, network: e.target.value })}
-                      className="bg-canvas-dark border border-hairline-on-dark font-mono text-xs text-white w-full rounded px-3 py-2 cursor-pointer outline-none focus:border-primary"
-                      disabled={depositModal.asset === "BTC"}
-                    >
-                      {depositModal.asset === "BTC" ? (
-                        <option value="Bitcoin">Bitcoin Native</option>
-                      ) : (
-                        <>
-                          <option value="TRC20">TRON (TRC20)</option>
-                          <option value="ERC20">Ethereum (ERC20)</option>
-                          <option value="BSC">BNB Chain (BEP20)</option>
-                        </>
-                      )}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Mock Wallet Address view */}
-                <div className="border border-hairline-on-dark bg-canvas-dark/40 rounded-lg p-3 space-y-2">
-                  <div className="flex justify-between items-center text-[10px] font-mono text-muted uppercase">
-                    <span>Deposit Address</span>
-                    <span>{depositModal.network}</span>
-                  </div>
-                  
-                  <div className="bg-[#0a0a0f] border border-hairline-on-dark rounded p-2 flex items-center justify-between gap-3 font-mono text-xs">
-                    <span className="text-[#fcd535] break-all select-all">
-                      {getMockAddress(depositModal.asset, depositModal.network)}
-                    </span>
-                    <button 
-                      onClick={() => handleCopy(getMockAddress(depositModal.asset, depositModal.network))}
-                      className="text-muted hover:text-white transition-colors"
-                      title="Copy Address"
-                    >
-                      {copiedText ? <Check size={14} className="text-[#02c076]" /> : <Copy size={14} />}
-                    </button>
-                  </div>
-                  
-                  <span className="text-[9px] text-muted block text-center font-mono">
-                    Send only simulated {depositModal.asset} on {depositModal.network} network.
-                  </span>
                 </div>
 
                 {/* Instant Quick Deposit Presets */}
                 <div className="space-y-1.5 border-t border-hairline-on-dark/40 pt-3">
                   <label className="font-mono text-[10px] text-muted uppercase tracking-widest block">
-                    Instant One-Click Deposit Preset
+                    Instant One-Click Presets
                   </label>
                   <div className="flex gap-2">
-                    {[100, 500, 1000].map((amt) => (
+                    {[1000, 10000, 100000].map((amt) => (
                       <button
                         key={amt}
+                        type="button"
                         onClick={() => executeModalDeposit(amt)}
                         className="flex-1 py-2 text-xs font-mono font-bold bg-[#fcd535]/10 text-[#fcd535] hover:bg-[#fcd535]/20 border border-[#fcd535]/25 rounded transition-all"
                       >
-                        +${amt}
+                        +${amt.toLocaleString()}
                       </button>
                     ))}
                   </div>
                 </div>
 
-              </div>
+                <div className="pt-2 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDepositModal({ ...depositModal, open: false, amount: "" })}
+                    className="flex-1 py-2.5 text-xs font-mono font-bold border border-hairline-on-dark text-white rounded hover:bg-white/[0.02] transition-colors"
+                  >
+                    CANCEL
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-2.5 text-xs font-mono font-bold bg-primary text-on-primary hover:bg-[#f0b90b] rounded transition-colors"
+                  >
+                    CONFIRM DEPOSIT
+                  </button>
+                </div>
+
+              </form>
             </div>
           </div>
         )}
@@ -1001,148 +934,7 @@ export default function WalletsPage() {
         {/* ============================================================== */}
         {/* SEND / WITHDRAWAL MODAL */}
         {/* ============================================================== */}
-        {sendModal.open && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="bg-[#121218] border border-hairline-on-dark rounded-xl max-w-md w-full overflow-hidden shadow-elevation-lg animate-slide-up">
-              
-              <div className="bg-[#181822] border-b border-hairline-on-dark px-5 py-4 flex justify-between items-center">
-                <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <Send className="text-primary" size={16} />
-                  Send / Withdraw Assets
-                </h3>
-                <button 
-                  onClick={() => setSendModal({ ...sendModal, open: false })}
-                  className="text-muted hover:text-white transition-colors font-bold font-mono text-sm"
-                >
-                  ✕
-                </button>
-              </div>
 
-              <form onSubmit={executeWithdrawal} className="p-5 space-y-4">
-                
-                {/* Source wallet and coin selection */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
-                      From Wallet
-                    </label>
-                    <select
-                      value={sendModal.walletType}
-                      onChange={(e) => setSendModal({ ...sendModal, walletType: e.target.value })}
-                      className="bg-canvas-dark border border-hairline-on-dark font-mono text-xs text-white w-full rounded px-3 py-2 cursor-pointer outline-none focus:border-primary"
-                    >
-                      <option value="SPOT">SPOT</option>
-                      <option value="MARGIN">MARGIN</option>
-                      <option value="FUTURES">FUTURES</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
-                      Withdraw Coin
-                    </label>
-                    <select
-                      value={sendModal.asset}
-                      onChange={(e) => setSendModal({ ...sendModal, asset: e.target.value })}
-                      className="bg-canvas-dark border border-hairline-on-dark font-mono text-xs text-white w-full rounded px-3 py-2 cursor-pointer outline-none focus:border-primary"
-                    >
-                      <option value="USDT">USDT (US Dollar)</option>
-                      <option value="BTC">BTC</option>
-                      <option value="ETH">ETH</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Recipient Address input */}
-                <div>
-                  <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
-                    Recipient Wallet Address
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Enter external destination address"
-                    value={sendModal.address}
-                    onChange={(e) => setSendModal({ ...sendModal, address: e.target.value })}
-                    className="bg-canvas-dark border border-hairline-on-dark font-mono text-xs text-white w-full rounded px-3 py-2.5 outline-none focus:border-primary transition-all placeholder-muted"
-                  />
-                </div>
-
-                {/* Network selector */}
-                <div>
-                  <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
-                    Withdrawal Network
-                  </label>
-                  <select
-                    value={sendModal.network}
-                    onChange={(e) => setSendModal({ ...sendModal, network: e.target.value })}
-                    className="bg-canvas-dark border border-hairline-on-dark font-mono text-xs text-white w-full rounded px-3 py-2 cursor-pointer outline-none focus:border-primary"
-                  >
-                    <option value="ERC20">Ethereum (ERC20)</option>
-                    <option value="TRC20">TRON (TRC20)</option>
-                    <option value="BSC">BNB Smart Chain (BEP20)</option>
-                  </select>
-                </div>
-
-                {/* Amount input */}
-                <div>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest block">
-                      Withdrawal Amount
-                    </label>
-                    <span className="text-[10px] font-mono text-muted">
-                      Available: {formatCurrency(
-                        walletMap[sendModal.walletType] ? Number(walletMap[sendModal.walletType].availableBalance) : 0
-                      )}
-                    </span>
-                  </div>
-
-                  <div className="relative">
-                    <input
-                      type="number"
-                      step="0.01"
-                      required
-                      placeholder="0.00"
-                      value={sendModal.amount}
-                      onChange={(e) => setSendModal({ ...sendModal, amount: e.target.value })}
-                      className="bg-canvas-dark border border-hairline-on-dark font-mono text-sm text-white w-full rounded px-3 py-2 pr-12 outline-none focus:border-primary transition-all"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-xs font-mono">{sendModal.asset}</span>
-                  </div>
-                </div>
-
-                {/* Fee and final estimation info */}
-                <div className="border border-hairline-on-dark bg-canvas-dark/40 rounded-lg p-2.5 space-y-1.5 text-[10px] font-mono text-muted">
-                  <div className="flex justify-between items-center">
-                    <span>Estimated Network Gas Fee</span>
-                    <span className="text-white font-semibold">1.50 {sendModal.asset}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Transaction Settlement Time</span>
-                    <span className="text-white font-semibold">≈ 5-10 Minutes</span>
-                  </div>
-                </div>
-
-                <div className="pt-2 flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setSendModal({ ...sendModal, open: false })}
-                    className="flex-1 py-2.5 text-xs font-mono font-bold border border-hairline-on-dark text-white rounded hover:bg-white/[0.02] transition-colors"
-                  >
-                    CANCEL
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 py-2.5 text-xs font-mono font-bold bg-primary text-on-primary hover:bg-[#f0b90b] rounded transition-colors"
-                  >
-                    SEND CRYPTO
-                  </button>
-                </div>
-
-              </form>
-            </div>
-          </div>
-        )}
 
       </div>
     </PageTransition>
