@@ -41,6 +41,7 @@ import linkedInIcon from "./assets/LinkedIn_icon.svg.png";
 import githubIcon from "./assets/github_icon.png";
 import gmailIcon from "./assets/Gmail_icon_svg.webp";
 import Chatbot from "./components/Chatbot";
+import tradingVideo from "./assets/videos/TradingVid.mp4";
 
 /* ═══════════════════════════════════════════
    HOME PAGE
@@ -50,89 +51,52 @@ function HomePage() {
     <PageTransition>
       <main className="w-full text-white bg-canvas-dark">
         {/* HERO SECTION BAND (Full-Bleed bg-canvas-dark) */}
-        <section className="relative overflow-hidden py-20 md:py-24 border-b border-hairline-on-dark bg-canvas-dark">
-          {/* Subtle background ambient mesh (no heavy gradients as per elevation guidelines) */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/[0.03] blur-[160px] pointer-events-none" />
+        <section className="relative overflow-hidden py-20 md:py-28 border-b border-hairline-on-dark bg-canvas-dark min-h-[75vh] flex items-center">
+          {/* Video Background */}
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 pointer-events-none"
+          >
+            <source src={tradingVideo} type="video/mp4" />
+          </video>
+          {/* Dark Overlay Gradient to maintain contrast and blend the video */}
+          <div className="absolute inset-0 bg-gradient-to-b from-canvas-dark/10 via-canvas-dark/70 to-canvas-dark z-0" />
           
-          <div className="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-16 relative z-10">
-            {/* Left Hero Content */}
-            <div className="flex-1 text-center lg:text-left stagger-children">
-              {/* V2 Simulated Terminal Tag */}
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-hairline-on-dark bg-surface-card-dark mb-6">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-                </span>
-                <span className="font-mono text-xs text-muted uppercase tracking-wider font-semibold">Simulated Terminal V2</span>
-              </div>
-
-              {/* Display Headline */}
-              <h1 className="font-heading text-4xl sm:text-5xl md:text-[56px] lg:text-[64px] font-bold leading-[1.1] mb-6 tracking-tight">
-                Trade with <br />
-                <span className="text-primary">Mathematical Precision</span>
-              </h1>
-
-              {/* Subtext */}
-              <p className="text-muted text-base md:text-lg max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed font-sans">
-                Experience high-density simulated trading, real-time depth visualizations, and custom order matching. Zero risk, professional-grade tools.
-              </p>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
-                <Button variant="primaryPill" className="w-full sm:w-auto" asChild>
-                  <Link to="/auth">Start Trading</Link>
-                </Button>
-                <Button variant="outline" className="w-full sm:w-auto text-body hover:bg-surface-card-dark" asChild>
-                  <Link to="/markets">View Markets</Link>
-                </Button>
-              </div>
+          {/* Subtle background ambient mesh (no heavy gradients as per elevation guidelines) */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/[0.05] blur-[160px] pointer-events-none z-0" />
+          
+          <div className="max-w-7xl mx-auto px-6 relative z-10 w-full text-left stagger-children">
+            {/* V2 Simulated Terminal Tag */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-hairline-on-dark bg-surface-card-dark mb-6">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+              </span>
+              <span className="font-mono text-xs text-muted uppercase tracking-wider font-semibold">Simulated Terminal V2</span>
             </div>
 
-            {/* Right Hero Content: Premium simulated trading dashboard mockup */}
-            <div className="flex-1 w-full max-w-md bg-surface-card-dark rounded-xl border border-hairline-on-dark p-6 shadow-elevation-lg stagger-children relative">
-              <div className="flex items-center justify-between border-b border-hairline-on-dark pb-3 mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-trading-up animate-pulse" />
-                  <span className="font-mono text-xs text-body uppercase tracking-wider font-semibold">Simulated Order Book</span>
-                </div>
-                <span className="font-mono text-[10px] text-muted uppercase">BTC/USDT</span>
-              </div>
-              
-              {/* Ask Rows (Red) */}
-              <div className="space-y-1">
-                {[
-                  { price: "68,424.50", size: "0.145", fill: "25%" },
-                  { price: "68,423.00", size: "1.082", fill: "60%" },
-                  { price: "68,422.00", size: "0.529", fill: "40%" },
-                ].map((row, idx) => (
-                  <div key={idx} className="relative flex items-center justify-between h-6 font-mono text-xs">
-                    <div className="absolute right-0 top-0 bottom-0 bg-trading-down/5" style={{ width: row.fill }} />
-                    <span className="text-trading-down relative z-10">{row.price}</span>
-                    <span className="text-body relative z-10">{row.size}</span>
-                  </div>
-                ))}
-              </div>
+            {/* Display Headline */}
+            <h1 className="font-heading text-4xl sm:text-5xl md:text-[60px] lg:text-[72px] font-bold leading-[1.1] mb-6 tracking-tight">
+              Trade with <br />
+              <span className="text-primary">Mathematical Precision</span>
+            </h1>
 
-              {/* Current Mark Price */}
-              <div className="border-y border-hairline-on-dark py-3 my-3 text-center">
-                <span className="font-mono text-[10px] text-muted uppercase block">Mark Price</span>
-                <span className="font-mono text-2xl font-bold text-trading-up tracking-tight animate-pulse">$68,421.20</span>
-              </div>
+            {/* Subtext */}
+            <p className="text-muted text-base md:text-lg max-w-2xl mb-10 leading-relaxed font-sans">
+              Experience high-density simulated trading, real-time depth visualizations, and custom order matching. Zero risk, professional-grade tools.
+            </p>
 
-              {/* Bid Rows (Green) */}
-              <div className="space-y-1">
-                {[
-                  { price: "68,420.50", size: "0.983", fill: "50%" },
-                  { price: "68,419.00", size: "1.429", fill: "80%" },
-                  { price: "68,418.00", size: "0.054", fill: "10%" },
-                ].map((row, idx) => (
-                  <div key={idx} className="relative flex items-center justify-between h-6 font-mono text-xs">
-                    <div className="absolute right-0 top-0 bottom-0 bg-trading-up/5" style={{ width: row.fill }} />
-                    <span className="text-trading-up relative z-10">{row.price}</span>
-                    <span className="text-body relative z-10">{row.size}</span>
-                  </div>
-                ))}
-              </div>
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 justify-start">
+              <Button variant="primaryPill" className="w-full sm:w-auto" asChild>
+                <Link to="/auth">Start Trading</Link>
+              </Button>
+              <Button variant="outline" className="w-full sm:w-auto text-body hover:bg-surface-card-dark" asChild>
+                <Link to="/markets">View Markets</Link>
+              </Button>
             </div>
           </div>
         </section>
