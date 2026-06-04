@@ -31,4 +31,6 @@ public class SpotOrderRequest {
     
     @DecimalMin(value = "0.00000001", message = "Price must be greater than zero")
     private BigDecimal price;
+
+    private BigDecimal stopPrice;
 }

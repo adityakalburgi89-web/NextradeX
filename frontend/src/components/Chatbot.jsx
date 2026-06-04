@@ -37,6 +37,7 @@ const playRandomSound = () => {
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [messages, setMessages] = useState([
     {
       id: "welcome",
@@ -48,6 +49,29 @@ export default function Chatbot() {
   const [inputVal, setInputVal] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+  const videoRef = useRef(null);
+
+  const handleVideoEnded = () => {
+    if (videoRef.current) {
+      if (isHovered) {
+        videoRef.current.currentTime = 0;
+        videoRef.current.play().catch((err) => {
+          console.warn("Video replay failed:", err);
+        });
+      } else {
+        videoRef.current.currentTime = 0;
+        videoRef.current.pause();
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (!isOpen && isHovered && videoRef.current) {
+      videoRef.current.play().catch((err) => {
+        console.warn("Video play failed on hover/mount:", err);
+      });
+    }
+  }, [isOpen, isHovered]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -133,20 +157,46 @@ export default function Chatbot() {
     <>
       {/* Floating Chat Trigger Bubble */}
       <div className="fixed bottom-6 right-6 z-50">
+        {/* Tooltip speech bubble */}
+        {!isOpen && (
+          <div
+            className={`absolute bottom-24 right-2 bg-surface-card-dark text-white border border-hairline-on-dark px-3 py-1.5 rounded-xl text-xs font-semibold shadow-elevation-md transition-all duration-300 pointer-events-none whitespace-nowrap flex items-center gap-1.5 ${
+              isHovered
+                ? "opacity-100 translate-y-0 scale-100"
+                : "opacity-0 translate-y-2 scale-95"
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-trading-up animate-pulse"></span>
+            <span>Chat with Trixie!</span>
+            <div className="absolute bottom-[-5px] right-8 w-2 h-2 bg-surface-card-dark border-r border-b border-hairline-on-dark transform rotate-45"></div>
+          </div>
+        )}
+
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`size-20 rounded-full flex items-center justify-center bg-primary hover:bg-primary-active text-on-primary transition-all duration-300 shadow-glow-primary hover:scale-105 active:scale-95 border-2 border-background focus:outline-none relative`}
+          onMouseEnter={() => {
+            setIsHovered(true);
+            if (videoRef.current) {
+              videoRef.current.play().catch((err) => {
+                console.warn("Video play failed on hover:", err);
+              });
+            }
+          }}
+          onMouseLeave={() => {
+            setIsHovered(false);
+          }}
+          className={`size-20 rounded-full flex items-center justify-center bg-primary hover:bg-primary-active text-on-primary transition-all duration-300 shadow-glow-primary hover:shadow-glow-primary-hover hover:scale-110 active:scale-95 border-2 border-background focus:outline-none relative`}
         >
           {isOpen ? (
             <X size={32} className="animate-scale-in text-ink" />
           ) : (
             <div className="relative size-full rounded-full overflow-hidden flex items-center justify-center p-1.5">
               <video
+                ref={videoRef}
                 src={trixieVideo}
-                autoPlay
-                loop
                 muted
                 playsInline
+                onEnded={handleVideoEnded}
                 className="size-full object-cover rounded-full"
               />
             </div>

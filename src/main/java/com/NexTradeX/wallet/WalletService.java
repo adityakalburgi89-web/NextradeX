@@ -95,4 +95,15 @@ public class WalletService {
         Wallet wallet = getWalletById(walletId);
         return wallet.getAvailableBalance().compareTo(amount) >= 0;
     }
+
+    public void resetUserWallets(Long userId) {
+        List<Wallet> wallets = getUserWallets(userId);
+        for (Wallet wallet : wallets) {
+            wallet.setBalance(INITIAL_PAPER_CAPITAL);
+            wallet.setLockedFunds(BigDecimal.ZERO);
+            wallet.setUnrealizedPnL(BigDecimal.ZERO);
+            walletRepository.save(wallet);
+        }
+        log.info("Reset all wallets to default balance for user: {}", userId);
+    }
 }

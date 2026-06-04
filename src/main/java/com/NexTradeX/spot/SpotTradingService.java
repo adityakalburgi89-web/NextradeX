@@ -32,7 +32,7 @@ public class SpotTradingService {
     private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.001"); // 0.1%
     
     public Order createSpotOrder(Long userId, String symbol, OrderSide side,
-                                 OrderType orderType, BigDecimal quantity, BigDecimal price) {
+                                 OrderType orderType, BigDecimal quantity, BigDecimal price, BigDecimal stopPrice) {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
@@ -47,6 +47,12 @@ public class SpotTradingService {
         } else if (orderType == OrderType.LIMIT && (price == null || price.compareTo(BigDecimal.ZERO) <= 0)) {
             throw new InvalidOrderException("Price must be specified for limit orders");
         }
+
+        if ((orderType == OrderType.STOP_LIMIT || orderType == OrderType.STOP_MARKET ||
+             orderType == OrderType.TAKE_PROFIT_LIMIT || orderType == OrderType.TAKE_PROFIT_MARKET) && 
+            (stopPrice == null || stopPrice.compareTo(BigDecimal.ZERO) <= 0)) {
+            throw new InvalidOrderException("Stop/Trigger price must be specified for Stop/Take-Profit orders");
+        }
         
         Order order = Order.builder()
                 .user(user)
@@ -55,6 +61,7 @@ public class SpotTradingService {
                 .orderType(orderType)
                 .quantity(quantity)
                 .price(executionPrice)
+                .stopPrice(stopPrice)
                 .status(OrderStatus.OPEN)
                 .tradeType(TradeType.SPOT)
                 .leverage(BigDecimal.ONE)

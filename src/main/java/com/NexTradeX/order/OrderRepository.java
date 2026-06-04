@@ -22,4 +22,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findActiveOrdersByUser(@Param("user") User user);
     
     Optional<Order> findByIdAndUser(Long orderId, User user);
+    List<Order> findByStatus(OrderStatus status);
 }

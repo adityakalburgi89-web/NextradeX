@@ -60,6 +60,20 @@ public class WalletController {
         }
     }
     
+    @PostMapping("/reset")
+    public ResponseEntity<ApiResponse<Void>> resetWallets(Authentication authentication) {
+        try {
+            Long userId = extractUserIdFromAuth(authentication);
+            walletService.resetUserWallets(userId);
+            return ResponseEntity.ok()
+                    .body(new ApiResponse<>(200, "Wallets successfully reset to default simulated capital", null));
+        } catch (Exception e) {
+            log.error("Error resetting wallets: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        }
+    }
+    
     private WalletResponse toWalletResponse(Wallet wallet) {
         return WalletResponse.builder()
                 .id(wallet.getId())

@@ -12,6 +12,10 @@ import MarketsPage from "./pages/MarketsPage";
 import SpotTradingPage from "./pages/SpotTradingPage";
 import FuturesTradingPage from "./pages/FuturesTradingPage";
 import OptionsTradingPage from "./pages/OptionsTradingPage";
+import MarginTradingPage from "./pages/MarginTradingPage";
+import PortfolioAnalyticsPage from "./pages/PortfolioAnalyticsPage";
+import LeaderboardPage from "./pages/LeaderboardPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 import WalletsPage from "./pages/WalletsPage";
 import OrdersPage from "./pages/OrdersPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -28,6 +32,9 @@ import APIDocsPage from "./pages/resources/APIDocsPage";
 import SupportPage from "./pages/support/SupportPage";
 import UserGuidePage from "./pages/resources/UserGuidePage";
 import ReferralPage from "./pages/resources/ReferralPage";
+import EarnPage from "./pages/EarnPage";
+import FundingPage from "./pages/FundingPage";
+import SubAccountsPage from "./pages/SubAccountsPage";
 import { hasAuthToken, clearAuthToken, fetchUserProfile } from "./api";
 import xIcon from "./assets/x.com_icon.png";
 import linkedInIcon from "./assets/LinkedIn_icon.svg.png";
@@ -685,6 +692,13 @@ function TradeDropdown({ theme }) {
               Futures
             </Link>
             <Link
+              to="/trade/margin"
+              className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold hover:bg-white/[0.04] hover:text-primary transition-colors"
+              onClick={() => setOpen(false)}
+            >
+              Margin
+            </Link>
+            <Link
               to="/trade/options"
               className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold hover:bg-white/[0.04] hover:text-primary transition-colors"
               onClick={() => setOpen(false)}
@@ -771,6 +785,9 @@ function App() {
               <NavLink to="/markets">Markets</NavLink>
               <NavLink to="/wallets">Wallets</NavLink>
               <NavLink to="/orders">Orders</NavLink>
+              <NavLink to="/analytics">Analytics</NavLink>
+              <NavLink to="/leaderboard">Leaderboard</NavLink>
+              <NavLink to="/admin">Admin</NavLink>
             </div>
           </div>
 
@@ -921,9 +938,16 @@ function App() {
           <Route path="/trade/spot" element={<SpotTradingPage />} />
           <Route path="/trade/futures" element={<FuturesTradingPage />} />
           <Route path="/trade/options" element={<OptionsTradingPage />} />
+          <Route path="/trade/margin" element={<MarginTradingPage />} />
+          <Route path="/analytics" element={<PortfolioAnalyticsPage />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/wallets" element={<WalletsPage />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/earn" element={<EarnPage />} />
+          <Route path="/funding" element={<FundingPage />} />
+          <Route path="/sub-accounts" element={<SubAccountsPage />} />
           <Route path="/careers" element={<CareersPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/terms" element={<TermsPage />} />

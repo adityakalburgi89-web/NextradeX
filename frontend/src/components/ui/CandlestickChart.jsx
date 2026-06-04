@@ -10,7 +10,7 @@ export default function CandlestickChart({ data = [], options = EMPTY_OPTIONS, h
   const volumeSeriesRef = useRef(null);
   const tooltipRef = useRef(null);
   const [tooltipData, setTooltipData] = useState(null);
-  const [initialFitDone, setInitialFitDone] = useState(false);
+  const initialFitDone = useRef(false);
   const lastDataLength = useRef(0);
 
   useEffect(() => {
@@ -120,15 +120,15 @@ export default function CandlestickChart({ data = [], options = EMPTY_OPTIONS, h
       volumeSeriesRef.current.setData(volumeData);
 
       // Only fit content on first load or when moving to a new symbol/interval (detected by length change)
-      if (!initialFitDone || Math.abs(data.length - lastDataLength.current) > 2) {
+      if (!initialFitDone.current || Math.abs(data.length - lastDataLength.current) > 2) {
         chartRef.current.timeScale().fitContent();
-        setInitialFitDone(true);
+        initialFitDone.current = true;
       }
       lastDataLength.current = data.length;
     } else if (data && data.length === 0) {
-      setInitialFitDone(false);
+      initialFitDone.current = false;
     }
-  }, [data, initialFitDone]);
+  }, [data]);
 
   const formatPrice = (num) => {
     if (num === undefined || num === null) return "--";

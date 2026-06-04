@@ -6,6 +6,7 @@ import { Select } from "../components/ui/Select";
 import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
 import { TradingChartPanel } from "../components/ui/TradingChartPanel";
+import { OrderBook } from "../components/ui/OrderBook";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { formatCurrency, formatPercent } from "../lib/utils";
 
@@ -15,6 +16,7 @@ const initialForm = {
   orderType: "MARKET",
   quantity: "0.001",
   price: "",
+  stopPrice: "",
 };
 
 export default function SpotTradingPage() {
@@ -106,15 +108,18 @@ export default function SpotTradingPage() {
     setError("");
     setMessage("");
     try {
+      const isLimitPriceType = ["LIMIT", "STOP_LIMIT", "TAKE_PROFIT_LIMIT"].includes(form.orderType);
+      const isTriggerPriceType = ["STOP_LIMIT", "STOP_MARKET", "TAKE_PROFIT_LIMIT", "TAKE_PROFIT_MARKET"].includes(form.orderType);
       const payload = {
         symbol: form.symbol,
         side: form.side,
         orderType: form.orderType,
         quantity: parseFloat(form.quantity),
-        price: form.orderType === "LIMIT" ? parseFloat(form.price) : null,
+        price: isLimitPriceType ? parseFloat(form.price) : null,
+        stopPrice: isTriggerPriceType ? parseFloat(form.stopPrice) : null,
       };
       const res = await createSpotOrder(payload);
-      setMessage(res?.message || "Spot order created");
+      setMessage(res?.message || "Spot order created successfully");
     } catch (err) {
       setError(err.message || "Failed to create order");
     } finally {
@@ -181,10 +186,10 @@ export default function SpotTradingPage() {
           )}
         </div>
 
-        {/* 8/4 Split Grid */}
+        {/* Three-Column Split Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Main Chart Panel (8-cols) */}
-          <div className="lg:col-span-8 space-y-6">
+          {/* Main Chart Panel (6-cols) */}
+          <div className="lg:col-span-6 space-y-6">
             <TradingChartPanel
               title="Spot Workspace"
               description="Execute clean spot orders with backend candles, live pricing, and a calmer SaaS-grade order entry flow."
@@ -198,8 +203,17 @@ export default function SpotTradingPage() {
             />
           </div>
 
-          {/* Order Entry Panel (4-cols) */}
-          <div className="lg:col-span-4">
+          {/* Order Book Panel (3-cols) */}
+          <div className="lg:col-span-3">
+            <OrderBook 
+              symbol={form.symbol} 
+              currentPrice={currentPrice} 
+              onSelectPrice={(p) => setForm((prev) => ({ ...prev, price: p.toFixed(2), orderType: "LIMIT" }))} 
+            />
+          </div>
+
+          {/* Order Entry Panel (3-cols) */}
+          <div className="lg:col-span-3">
             <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl overflow-hidden shadow-elevation-md">
               <form onSubmit={handleSubmit}>
                 {/* Binance Style Side Tabs */}
@@ -254,6 +268,10 @@ export default function SpotTradingPage() {
                     >
                       <option value="MARKET">Market</option>
                       <option value="LIMIT">Limit</option>
+                      <option value="STOP_MARKET">Stop Market</option>
+                      <option value="STOP_LIMIT">Stop Limit</option>
+                      <option value="TAKE_PROFIT_MARKET">Take Profit Market</option>
+                      <option value="TAKE_PROFIT_LIMIT">Take Profit Limit</option>
                     </Select>
                   </div>
 
@@ -272,7 +290,24 @@ export default function SpotTradingPage() {
                     />
                   </div>
 
-                  {form.orderType === "LIMIT" && (
+                  {["STOP_LIMIT", "STOP_MARKET", "TAKE_PROFIT_LIMIT", "TAKE_PROFIT_MARKET"].includes(form.orderType) && (
+                    <div className="animate-slide-down">
+                      <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
+                        Trigger Price
+                      </label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        name="stopPrice"
+                        value={form.stopPrice}
+                        onChange={handleChange}
+                        required
+                        className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
+                      />
+                    </div>
+                  )}
+
+                  {["LIMIT", "STOP_LIMIT", "TAKE_PROFIT_LIMIT"].includes(form.orderType) && (
                     <div className="animate-slide-down">
                       <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
                         Limit Price
@@ -283,7 +318,7 @@ export default function SpotTradingPage() {
                         name="price"
                         value={form.price}
                         onChange={handleChange}
-                        required={form.orderType === "LIMIT"}
+                        required
                         className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
                       />
                     </div>

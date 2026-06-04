@@ -37,7 +37,7 @@ public class OrderController {
             
             Order order = spotTradingService.createSpotOrder(
                     userId, request.getSymbol(), side, orderType, 
-                    request.getQuantity(), request.getPrice());
+                    request.getQuantity(), request.getPrice(), request.getStopPrice());
             
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse<>(201, "Order created", toOrderResponse(order)));

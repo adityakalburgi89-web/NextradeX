@@ -57,6 +57,9 @@ public class Order {
     private BigDecimal price;
     
     @Column(precision = 19, scale = 8)
+    private BigDecimal stopPrice;
+    
+    @Column(precision = 19, scale = 8)
     private BigDecimal filledQuantity = BigDecimal.ZERO;
     
     @Column(precision = 19, scale = 8)

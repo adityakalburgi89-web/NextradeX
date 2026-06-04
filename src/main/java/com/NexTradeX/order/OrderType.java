@@ -2,5 +2,9 @@ package com.NexTradeX.order;
 
 public enum OrderType {
     MARKET,
-    LIMIT
+    LIMIT,
+    STOP_MARKET,
+    STOP_LIMIT,
+    TAKE_PROFIT_MARKET,
+    TAKE_PROFIT_LIMIT
 }

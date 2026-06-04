@@ -236,6 +236,22 @@ export async function openMarginPosition(payload) {
   return handleResponse(res);
 }
 
+export async function fetchOpenMarginPositions() {
+  console.log("[API] GET /margin/positions/open");
+  const res = await fetch(`${API_BASE_URL}/margin/positions/open`,
+    createFetchOptions("GET", null, authHeaders())
+  );
+  return handleResponse(res);
+}
+
+export async function closeMarginPosition(positionId) {
+  console.log("[API] POST /margin/close/:id");
+  const res = await fetch(`${API_BASE_URL}/margin/close/${positionId}`,
+    createFetchOptions("POST", null, authHeaders())
+  );
+  return handleResponse(res);
+}
+
 // OPTIONS
 export async function buyOption(payload) {
   console.log("[API] POST /options/buy");
