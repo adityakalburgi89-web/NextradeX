@@ -1,3 +1,15 @@
+import tradeSoundFile from "./assets/audio/TradeSound.mp3";
+
+const playTradeSound = () => {
+  try {
+    const audio = new Audio(tradeSoundFile);
+    audio.volume = 0.55;
+    audio.play();
+  } catch (e) {
+    console.warn("[API] Play sound failed:", e.message);
+  }
+};
+
 const DEFAULT_API_BASE_URL = "http://localhost:8080/api";
 export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || DEFAULT_API_BASE_URL;
 
@@ -175,7 +187,9 @@ export async function createSpotOrder(payload) {
   const res = await fetch(`${API_BASE_URL}/orders/spot`,
     createFetchOptions("POST", payload, authHeaders())
   );
-  return handleResponse(res);
+  const data = await handleResponse(res);
+  playTradeSound();
+  return data;
 }
 
 export async function fetchActiveOrders() {
@@ -249,7 +263,9 @@ export async function openFuturesPosition(payload) {
   const res = await fetch(`${API_BASE_URL}/futures/open`,
     createFetchOptions("POST", payload, authHeaders())
   );
-  return handleResponse(res);
+  const data = await handleResponse(res);
+  playTradeSound();
+  return data;
 }
 
 export async function fetchOpenFuturesPositions() {
@@ -266,7 +282,9 @@ export async function openMarginPosition(payload) {
   const res = await fetch(`${API_BASE_URL}/margin/open`,
     createFetchOptions("POST", payload, authHeaders())
   );
-  return handleResponse(res);
+  const data = await handleResponse(res);
+  playTradeSound();
+  return data;
 }
 
 export async function fetchOpenMarginPositions() {
@@ -291,7 +309,9 @@ export async function buyOption(payload) {
   const res = await fetch(`${API_BASE_URL}/options/buy`,
     createFetchOptions("POST", payload, authHeaders())
   );
-  return handleResponse(res);
+  const data = await handleResponse(res);
+  playTradeSound();
+  return data;
 }
 
 export async function settleOption(contractId) {
