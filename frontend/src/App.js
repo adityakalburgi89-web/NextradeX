@@ -58,7 +58,7 @@ function HomePage() {
             loop
             muted
             playsInline
-            className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 pointer-events-none"
+            className="absolute inset-0 w-full h-full object-cover z-0 opacity-60 pointer-events-none"
           >
             <source src={tradingVideo} type="video/mp4" />
           </video>
@@ -69,14 +69,6 @@ function HomePage() {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/[0.05] blur-[160px] pointer-events-none z-0" />
           
           <div className="max-w-7xl mx-auto px-6 relative z-10 w-full text-left stagger-children">
-            {/* V2 Simulated Terminal Tag */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-hairline-on-dark bg-surface-card-dark mb-6">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-              </span>
-              <span className="font-mono text-xs text-muted uppercase tracking-wider font-semibold">Simulated Terminal V2</span>
-            </div>
 
             {/* Display Headline */}
             <h1 className="font-heading text-4xl sm:text-5xl md:text-[60px] lg:text-[72px] font-bold leading-[1.1] mb-6 tracking-tight">
