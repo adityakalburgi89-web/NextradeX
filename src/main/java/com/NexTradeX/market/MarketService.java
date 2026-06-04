@@ -7,6 +7,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
@@ -30,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MarketService {
 
     private static final String COINMARKETCAP_API = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest";
+    private static final java.util.Set<String> ALLOWED_SYMBOLS = java.util.Set.of("BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "DOTUSDT");
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
 
@@ -80,7 +82,33 @@ public class MarketService {
     }
 
     public List<CryptoPrice> getAllPrices() {
-        return cryptoPriceRepository.findAll().stream()
+        List<CryptoPrice> prices = cryptoPriceRepository.findAll();
+        boolean needsSave = false;
+        for (CryptoPrice price : prices) {
+            // Check if price is stale (older than 10 seconds) and sync from Binance
+            if (price.getUpdatedAt() == null || price.getUpdatedAt().isBefore(LocalDateTime.now().minusSeconds(10))) {
+                try {
+                    Map<String, Object> ticker = binanceService.getTicker24h(price.getSymbol());
+                    if (ticker != null) {
+                        price.setCurrentPrice(new BigDecimal(ticker.get("lastPrice").toString()));
+                        price.setHighPrice(new BigDecimal(ticker.get("highPrice").toString()));
+                        price.setLowPrice(new BigDecimal(ticker.get("lowPrice").toString()));
+                        price.setOpenPrice(new BigDecimal(ticker.get("openPrice").toString()));
+                        price.setPriceChange24h(new BigDecimal(ticker.get("priceChange").toString()));
+                        price.setPercentChange24h(new BigDecimal(ticker.get("priceChangePercent").toString()));
+                        price.setVolume24h(new BigDecimal(ticker.get("volume").toString()));
+                        price.setUpdatedAt(LocalDateTime.now());
+                        needsSave = true;
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to sync price for {}: {}", price.getSymbol(), e.getMessage());
+                }
+            }
+        }
+        if (needsSave) {
+            cryptoPriceRepository.saveAll(prices);
+        }
+        return prices.stream()
                 .sorted(Comparator.comparing(CryptoPrice::getSymbol))
                 .toList();
     }
@@ -167,10 +195,11 @@ public class MarketService {
             BigDecimal openPrice, BigDecimal priceChange24h,
             BigDecimal percentChange24h, BigDecimal volume24h,
             BigDecimal marketCap) {
-        Optional<CryptoPrice> existing = cryptoPriceRepository.findBySymbol(symbol);
+        String normalizedSymbol = normalizeSymbol(symbol);
+        Optional<CryptoPrice> existing = cryptoPriceRepository.findBySymbol(normalizedSymbol);
 
         CryptoPrice price = existing.orElse(new CryptoPrice());
-        price.setSymbol(symbol);
+        price.setSymbol(normalizedSymbol);
         price.setCurrentPrice(currentPrice);
         price.setHighPrice(highPrice);
         price.setLowPrice(lowPrice);
@@ -182,7 +211,7 @@ public class MarketService {
         price.setUpdatedAt(LocalDateTime.now());
 
         CryptoPrice saved = cryptoPriceRepository.save(price);
-        log.info("Updated price for {}: {}", symbol, currentPrice);
+        log.info("Updated price for {}: {}", normalizedSymbol, currentPrice);
         return saved;
     }
 
@@ -223,40 +252,40 @@ public class MarketService {
     }
 
     public synchronized void initializeDefaultPrices() {
-        if (!cryptoPriceRepository.existsBySymbol("BTCUSDT")) {
-            updateOrCreatePrice("BTCUSDT",
-                    BigDecimal.valueOf(43250.50),
-                    BigDecimal.valueOf(44000.00),
-                    BigDecimal.valueOf(42500.00),
-                    BigDecimal.valueOf(43100.00),
-                    BigDecimal.valueOf(1250.50),
-                    BigDecimal.valueOf(2.97),
-                    BigDecimal.valueOf(28_000_000_000L),
-                    BigDecimal.valueOf(850_000_000_000L));
+        // Clean up stale or unsupported symbols from the database
+        List<CryptoPrice> allExisting = cryptoPriceRepository.findAll();
+        for (CryptoPrice p : allExisting) {
+            if (!ALLOWED_SYMBOLS.contains(p.getSymbol())) {
+                try {
+                    cryptoPriceRepository.delete(p);
+                    log.info("Deleted unsupported market price entry from database: {}", p.getSymbol());
+                } catch (Exception e) {
+                    log.error("Failed to delete unsupported market price: {}", p.getSymbol(), e);
+                }
+            }
         }
 
-        if (!cryptoPriceRepository.existsBySymbol("ETHUSDT")) {
-            updateOrCreatePrice("ETHUSDT",
-                    BigDecimal.valueOf(2280.75),
-                    BigDecimal.valueOf(2350.00),
-                    BigDecimal.valueOf(2200.00),
-                    BigDecimal.valueOf(2250.00),
-                    BigDecimal.valueOf(30.75),
-                    BigDecimal.valueOf(1.38),
-                    BigDecimal.valueOf(15_000_000_000L),
-                    BigDecimal.valueOf(273_000_000_000L));
-        }
+        Map<String, Double[]> defaults = new HashMap<>();
+        defaults.put("BTCUSDT", new Double[]{43250.50, 44000.00, 42500.00, 43100.00, 1250.50, 2.97, 28000000000.0, 850000000000.0});
+        defaults.put("ETHUSDT", new Double[]{2280.75, 2350.00, 2200.00, 2250.00, 30.75, 1.38, 15000000000.0, 273000000000.0});
+        defaults.put("BNBUSDT", new Double[]{605.40, 630.00, 580.00, 615.00, 3.50, 0.57, 3000000000.0, 94000000000.0});
+        defaults.put("SOLUSDT", new Double[]{145.20, 150.00, 138.50, 142.10, 3.10, 2.18, 2000000000.0, 65000000000.0});
+        defaults.put("DOTUSDT", new Double[]{6.20, 6.50, 6.00, 6.10, 0.10, 1.61, 350000000.0, 8000000000.0});
 
-        if (!cryptoPriceRepository.existsBySymbol("BNBUSDT")) {
-            updateOrCreatePrice("BNBUSDT",
-                    BigDecimal.valueOf(618.50),
-                    BigDecimal.valueOf(630.00),
-                    BigDecimal.valueOf(610.00),
-                    BigDecimal.valueOf(615.00),
-                    BigDecimal.valueOf(3.50),
-                    BigDecimal.valueOf(0.57),
-                    BigDecimal.valueOf(3_000_000_000L),
-                    BigDecimal.valueOf(94_000_000_000L));
+        for (Map.Entry<String, Double[]> entry : defaults.entrySet()) {
+            String symbol = entry.getKey();
+            if (!cryptoPriceRepository.existsBySymbol(symbol)) {
+                Double[] v = entry.getValue();
+                updateOrCreatePrice(symbol,
+                        BigDecimal.valueOf(v[0]),
+                        BigDecimal.valueOf(v[1]),
+                        BigDecimal.valueOf(v[2]),
+                        BigDecimal.valueOf(v[3]),
+                        BigDecimal.valueOf(v[4]),
+                        BigDecimal.valueOf(v[5]),
+                        BigDecimal.valueOf(v[6]),
+                        BigDecimal.valueOf(v[7]));
+            }
         }
     }
 
@@ -350,7 +379,16 @@ public class MarketService {
     }
 
     private String normalizeSymbol(String symbol) {
-        return symbol == null ? "BTCUSDT" : symbol.trim().toUpperCase();
+        if (symbol == null) {
+            return "BTCUSDT";
+        }
+        String clean = symbol.trim().toUpperCase();
+        if (clean.equals("BTC") || clean.equals("BTCUSDT")) return "BTCUSDT";
+        if (clean.equals("ETH") || clean.equals("ETHUSDT")) return "ETHUSDT";
+        if (clean.equals("BNB") || clean.equals("BNBUSDT")) return "BNBUSDT";
+        if (clean.equals("SOL") || clean.equals("SOLUSDT")) return "SOLUSDT";
+        if (clean.equals("DOT") || clean.equals("DOTUSDT")) return "DOTUSDT";
+        return "BTCUSDT";
     }
 
     private int resolveIntervalMinutes(String interval) {

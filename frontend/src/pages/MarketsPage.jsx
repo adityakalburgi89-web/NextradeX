@@ -9,6 +9,23 @@ import { TradingChartPanel } from "../components/ui/TradingChartPanel";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { formatCompactNumber, formatCurrency, formatPercent } from "../lib/utils";
 
+const getCryptoIcon = (symbol) => {
+  const base = (symbol?.endsWith("USDT") ? symbol.slice(0, -4) : symbol)?.toUpperCase();
+  const mapper = {
+    BTC: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg",
+    ETH: "https://cryptologos.cc/logos/ethereum-eth-logo.svg",
+    BNB: "https://cryptologos.cc/logos/bnb-bnb-logo.svg",
+    SOL: "https://cryptologos.cc/logos/solana-sol-logo.svg",
+    LTC: "https://cryptologos.cc/logos/litecoin-ltc-logo.svg",
+    LINK: "https://cryptologos.cc/logos/chainlink-link-logo.svg",
+    XRP: "https://cryptologos.cc/logos/xrp-xrp-logo.svg",
+    ADA: "https://cryptologos.cc/logos/cardano-ada-logo.svg",
+    DOGE: "https://cryptologos.cc/logos/dogecoin-doge-logo.svg",
+    DOT: "https://cryptologos.cc/logos/polkadot-new-dot-logo.svg"
+  };
+  return mapper[base] || `https://cryptologos.cc/logos/${base?.toLowerCase()}-${base?.toLowerCase()}-logo.svg`;
+};
+
 export default function MarketsPage() {
   const navigate = useNavigate();
   const [prices, setPrices] = useState([]);
@@ -18,6 +35,7 @@ export default function MarketsPage() {
   const [candleData, setCandleData] = useState([]);
   const [chartLoading, setChartLoading] = useState(false);
   const [interval, setInterval] = useState("1h");
+  const [showAllPrices, setShowAllPrices] = useState(false);
 
   const handlePriceUpdate = (payload) => {
     if (Array.isArray(payload)) {
@@ -203,7 +221,7 @@ export default function MarketsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-hairline-on-dark">
-                    {filteredPrices.map((price) => {
+                    {(showAllPrices ? filteredPrices : filteredPrices.slice(0, 5)).map((price) => {
                       const isUp = Number(price.percentChange24h) >= 0;
                       const isSelected = selectedSymbol === price.symbol;
                       return (
@@ -216,8 +234,19 @@ export default function MarketsPage() {
                         >
                           <td className="py-4 px-6 font-mono text-sm text-white">
                             <div className="flex items-center gap-3">
-                              <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs font-mono">
-                                {price.symbol?.slice(0, 1)}
+                              <div className="relative w-7 h-7 flex-shrink-0 flex items-center justify-center">
+                                <img 
+                                  src={getCryptoIcon(price.symbol)} 
+                                  alt={price.symbol} 
+                                  className="w-7 h-7 object-contain rounded-full bg-white/5 p-0.5" 
+                                  onError={(e) => {
+                                    e.target.style.display = 'none';
+                                    e.target.nextSibling.style.display = 'flex';
+                                  }}
+                                />
+                                <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-[8px] font-mono hidden">
+                                  {price.symbol?.replace("USDT", "")}
+                                </div>
                               </div>
                               <div>
                                 <span className="group-hover:text-primary transition-colors text-white font-bold">{price.symbol}</span>
@@ -267,6 +296,17 @@ export default function MarketsPage() {
                     ) : null}
                   </tbody>
                 </table>
+                {filteredPrices.length > 5 && (
+                  <div className="border-t border-hairline-on-dark bg-canvas-dark/10 py-3 text-center">
+                    <button
+                      type="button"
+                      onClick={() => setShowAllPrices(!showAllPrices)}
+                      className="text-xs font-bold font-mono text-primary hover:text-white transition-colors"
+                    >
+                      {showAllPrices ? "▲ VIEW LESS" : "▼ VIEW MORE"}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>

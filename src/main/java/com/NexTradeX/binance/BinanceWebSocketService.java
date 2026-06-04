@@ -42,7 +42,9 @@ public class BinanceWebSocketService {
                 "wss://stream.binance.com:9443/stream?streams="
                 + "btcusdt@ticker/"
                 + "ethusdt@ticker/"
-                + "bnbusdt@ticker";
+                + "bnbusdt@ticker/"
+                + "solusdt@ticker/"
+                + "dotusdt@ticker";
 
         System.out.println("[Binance WS] Connecting to: " + socketUrl);
 
