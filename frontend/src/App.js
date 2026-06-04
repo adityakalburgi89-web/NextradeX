@@ -36,12 +36,13 @@ import EarnPage from "./pages/EarnPage";
 import FundingPage from "./pages/FundingPage";
 import SubAccountsPage from "./pages/SubAccountsPage";
 import { hasAuthToken, clearAuthToken, fetchUserProfile } from "./api";
-import xIcon from "./assets/x.com_icon.png";
-import linkedInIcon from "./assets/LinkedIn_icon.svg.png";
-import githubIcon from "./assets/github_icon.png";
-import gmailIcon from "./assets/Gmail_icon_svg.webp";
+import xIcon from "./assets/Icons/x.com_icon.png";
+import linkedInIcon from "./assets/Icons/LinkedIn_icon.svg.png";
+import githubIcon from "./assets/Icons/github_icon.png";
+import gmailIcon from "./assets/Icons/Gmail_icon_svg.webp";
 import Chatbot from "./components/Chatbot";
 import tradingVideo from "./assets/videos/TradingVid.mp4";
+import qrCodeImg from "./assets/QrCode/QrCode.png";
 
 /* ═══════════════════════════════════════════
    HOME PAGE
@@ -51,7 +52,7 @@ function HomePage() {
     <PageTransition>
       <main className="w-full text-white bg-canvas-dark">
         {/* HERO SECTION BAND (Full-Bleed bg-canvas-dark) */}
-        <section className="relative overflow-hidden py-20 md:py-28 border-b border-hairline-on-dark bg-canvas-dark min-h-[75vh] flex items-center">
+        <section className="relative overflow-hidden py-20 md:py-32 border-b border-hairline-on-dark bg-canvas-dark min-h-[calc(100vh-64px)] flex items-center">
           {/* Video Background */}
           <video
             autoPlay
@@ -254,29 +255,9 @@ function HomePage() {
                 </div>
               </div>
               
-              {/* CSS QR Code Mock */}
-              <div className="w-48 h-48 bg-white p-4 rounded-xl border border-hairline-on-dark flex items-center justify-center flex-shrink-0 relative shadow-elevation-lg">
-                <div className="absolute inset-2 border-2 border-dashed border-[#1e2329]/10 rounded-lg pointer-events-none" />
-                <div className="w-full h-full flex flex-col justify-between p-1 bg-white relative">
-                  {/* Mock QR Block Grid Pattern */}
-                  <div className="w-full h-full grid grid-cols-6 gap-1 opacity-90">
-                    {[...Array(36)].map((_, i) => {
-                      const isSolid = (i % 3 === 0 || i % 4 === 1 || i < 6 || i > 30 || i % 6 === 0 || i % 6 === 5) && !(i > 8 && i < 15) && !(i > 20 && i < 27);
-                      return (
-                        <div
-                          key={i}
-                          className={`w-full h-full rounded-[2px] transition-colors ${
-                            isSolid ? "bg-[#181a20]" : "bg-transparent"
-                          }`}
-                        />
-                      );
-                    })}
-                  </div>
-                  {/* Brand Badge inside QR center */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-[#1e2329]/15 rounded-md p-1 shadow-md w-9 h-9 flex items-center justify-center font-bold text-xs text-[#1e2329]">
-                    NTX
-                  </div>
-                </div>
+              {/* Actual QR Code Image */}
+              <div className="w-48 h-48 bg-white p-2 rounded-xl border border-hairline-on-dark flex items-center justify-center flex-shrink-0 relative shadow-elevation-lg">
+                <img src={qrCodeImg} alt="QR Code" className="w-full h-full object-contain" />
               </div>
             </div>
           </div>
