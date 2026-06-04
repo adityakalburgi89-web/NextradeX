@@ -46,8 +46,8 @@ public class JwtFilter extends OncePerRequestFilter {
                 log.debug("[JwtFilter] No token found for path: {}", requestPath);
             }
             
-            // ✅ FIX #1: Only process if token exists and authentication is not already set
-            if (jwt != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            // ✅ FIX #1: Only process if token exists (always override session/OAuth2 authentication with JWT)
+            if (jwt != null) {
                 try {
                     String username = jwtService.extractUsername(jwt);
                     Long userId = jwtService.extractUserId(jwt);

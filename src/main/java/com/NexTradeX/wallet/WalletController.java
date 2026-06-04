@@ -3,6 +3,9 @@ package com.NexTradeX.wallet;
 import com.NexTradeX.auth.JwtService;
 import com.NexTradeX.common.ApiResponse;
 import com.NexTradeX.dto.WalletResponse;
+import com.NexTradeX.dto.DepositRequest;
+import com.NexTradeX.dto.TransferRequest;
+import com.NexTradeX.dto.WithdrawRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -60,6 +63,58 @@ public class WalletController {
         }
     }
     
+    @PostMapping("/deposit")
+    public ResponseEntity<ApiResponse<WalletResponse>> deposit(
+            @RequestBody DepositRequest request,
+            Authentication authentication) {
+        try {
+            Long userId = extractUserIdFromAuth(authentication);
+            WalletType type = WalletType.valueOf(request.getWalletType().toUpperCase());
+            Wallet wallet = walletService.deposit(userId, type, request.getAmount());
+            return ResponseEntity.ok()
+                    .body(new ApiResponse<>(200, "Deposit successful", toWalletResponse(wallet)));
+        } catch (Exception e) {
+            log.error("Error performing deposit: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        }
+    }
+
+    @PostMapping("/transfer")
+    public ResponseEntity<ApiResponse<Void>> transfer(
+            @RequestBody TransferRequest request,
+            Authentication authentication) {
+        try {
+            Long userId = extractUserIdFromAuth(authentication);
+            WalletType from = WalletType.valueOf(request.getFromWalletType().toUpperCase());
+            WalletType to = WalletType.valueOf(request.getToWalletType().toUpperCase());
+            walletService.transfer(userId, from, to, request.getAmount());
+            return ResponseEntity.ok()
+                    .body(new ApiResponse<>(200, "Transfer completed successfully", null));
+        } catch (Exception e) {
+            log.error("Error performing transfer: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        }
+    }
+
+    @PostMapping("/withdraw")
+    public ResponseEntity<ApiResponse<WalletResponse>> withdraw(
+            @RequestBody WithdrawRequest request,
+            Authentication authentication) {
+        try {
+            Long userId = extractUserIdFromAuth(authentication);
+            WalletType type = WalletType.valueOf(request.getWalletType().toUpperCase());
+            Wallet wallet = walletService.withdraw(userId, type, request.getAmount());
+            return ResponseEntity.ok()
+                    .body(new ApiResponse<>(200, "Withdrawal successful", toWalletResponse(wallet)));
+        } catch (Exception e) {
+            log.error("Error performing withdrawal: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        }
+    }
+
     @PostMapping("/reset")
     public ResponseEntity<ApiResponse<Void>> resetWallets(Authentication authentication) {
         try {

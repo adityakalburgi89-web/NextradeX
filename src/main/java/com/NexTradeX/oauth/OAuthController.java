@@ -44,8 +44,9 @@ public class OAuthController {
             @RequestBody Map<String, String> profileData) {
         try {
             // ✅ FIX #1: Use Spring Security Authentication object (JWT filter populates this)
-            if (authentication == null || !authentication.isAuthenticated()) {
-                log.warn("complete-profile: Authentication is null or not authenticated");
+            if (authentication == null || !authentication.isAuthenticated() || 
+                authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
+                log.warn("complete-profile: Authentication is null, not authenticated, or anonymous");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(new ApiResponse<>(401, "User is not authenticated. JWT token missing or invalid.", null));
             }
@@ -57,6 +58,17 @@ public class OAuthController {
             } else {
                 // Fallback: try to extract from principal
                 userId = jwtService.extractUserIdFromAuthentication(authentication);
+            }
+            
+            // Fallback #2: Extract from OAuth2AuthenticationToken principal email if session-based
+            if (userId == null && authentication instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
+                org.springframework.security.oauth2.core.user.OAuth2User oauth2User = 
+                        ((org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) authentication).getPrincipal();
+                String email = oauth2User.getAttribute("email");
+                if (email != null) {
+                    userId = userService.findByEmail(email).map(com.NexTradeX.user.User::getId).orElse(null);
+                    log.info("complete-profile: Extracted userId {} from OAuth2 session email: {}", userId, email);
+                }
             }
             
             if (userId == null) {

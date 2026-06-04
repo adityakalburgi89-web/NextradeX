@@ -42,7 +42,11 @@ public class WalletService {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return walletRepository.findByUserAndWalletType(user, walletType)
-                .orElseThrow(() -> new RuntimeException("Wallet not found"));
+                .orElseGet(() -> {
+                    initializeUserWallets(user);
+                    return walletRepository.findByUserAndWalletType(user, walletType)
+                            .orElseThrow(() -> new RuntimeException("Wallet not found even after initialization"));
+                });
     }
     
     public Wallet getWalletById(Long walletId) {
@@ -53,7 +57,12 @@ public class WalletService {
     public List<Wallet> getUserWallets(Long userId) {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return walletRepository.findAllByUser(user);
+        List<Wallet> wallets = walletRepository.findAllByUser(user);
+        if (wallets.isEmpty()) {
+            initializeUserWallets(user);
+            wallets = walletRepository.findAllByUser(user);
+        }
+        return wallets;
     }
     
     public Wallet updateBalance(Long walletId, BigDecimal amount) {
@@ -94,6 +103,56 @@ public class WalletService {
     public boolean hasEnoughBalance(Long walletId, BigDecimal amount) {
         Wallet wallet = getWalletById(walletId);
         return wallet.getAvailableBalance().compareTo(amount) >= 0;
+    }
+
+    public Wallet deposit(Long userId, WalletType walletType, BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Deposit amount must be positive");
+        }
+        Wallet wallet = getWallet(userId, walletType);
+        wallet.setBalance(wallet.getBalance().add(amount));
+        Wallet saved = walletRepository.save(wallet);
+        log.info("Deposited {} into wallet {} for user: {}", amount, walletType, userId);
+        return saved;
+    }
+
+    public void transfer(Long userId, WalletType fromType, WalletType toType, BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Transfer amount must be positive");
+        }
+        if (fromType == toType) {
+            throw new IllegalArgumentException("Source and target wallets must be different");
+        }
+        
+        Wallet fromWallet = getWallet(userId, fromType);
+        if (fromWallet.getAvailableBalance().compareTo(amount) < 0) {
+            throw new RuntimeException("Insufficient available balance in " + fromType + " wallet");
+        }
+        
+        Wallet toWallet = getWallet(userId, toType);
+        
+        fromWallet.setBalance(fromWallet.getBalance().subtract(amount));
+        toWallet.setBalance(toWallet.getBalance().add(amount));
+        
+        walletRepository.save(fromWallet);
+        walletRepository.save(toWallet);
+        log.info("Transferred {} from {} to {} for user: {}", amount, fromType, toType, userId);
+    }
+    
+    public Wallet withdraw(Long userId, WalletType walletType, BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Withdrawal amount must be positive");
+        }
+        
+        Wallet wallet = getWallet(userId, walletType);
+        if (wallet.getAvailableBalance().compareTo(amount) < 0) {
+            throw new RuntimeException("Insufficient available balance in " + walletType + " wallet");
+        }
+        
+        wallet.setBalance(wallet.getBalance().subtract(amount));
+        Wallet saved = walletRepository.save(wallet);
+        log.info("Withdrew {} from wallet {} for user: {}", amount, walletType, userId);
+        return saved;
     }
 
     public void resetUserWallets(Long userId) {

@@ -30,7 +30,7 @@ export default function FuturesTradingPage() {
   const [candleData, setCandleData] = useState([]);
   const [chartLoading, setChartLoading] = useState(false);
   const [priceSnapshot, setPriceSnapshot] = useState(null);
-  const [interval, setInterval] = useState("1h");
+  const [chartInterval, setChartInterval] = useState("1h");
   const [activeBottomTab, setActiveBottomTab] = useState("POSITIONS");
   const [usdtWalletBalance, setUsdtWalletBalance] = useState(1248.59);
   
@@ -46,13 +46,10 @@ export default function FuturesTradingPage() {
   // Simulated live prices tick
   useEffect(() => {
     const timer = setInterval(() => {
-      if (priceSnapshot?.currentPrice) {
+      setPriceSnapshot(prev => {
+        if (!prev?.currentPrice) return prev;
         const delta = (Math.random() - 0.5) * 5;
-        const nextPrice = Number(priceSnapshot.currentPrice) + delta;
-        setPriceSnapshot(prev => ({
-          ...prev,
-          currentPrice: nextPrice
-        }));
+        const nextPrice = Number(prev.currentPrice) + delta;
 
         // Add a new row to recent trades
         const newTrade = {
@@ -62,18 +59,23 @@ export default function FuturesTradingPage() {
           time: new Date().toTimeString().split(" ")[0],
           side: Math.random() > 0.48 ? "BUY" : "SELL"
         };
-        setRecentTrades(prev => [newTrade, ...prev.slice(0, 12)]);
-      }
+        setRecentTrades(trades => [newTrade, ...trades.slice(0, 12)]);
+
+        return {
+          ...prev,
+          currentPrice: nextPrice
+        };
+      });
     }, 2000);
     return () => clearInterval(timer);
-  }, [priceSnapshot]);
+  }, []);
 
   // Load wallet balance
   useEffect(() => {
     const loadWallet = async () => {
       try {
         const walletsRes = await fetchWallets();
-        const usdtWallet = walletsRes?.data?.find(w => w.currency === "USDT");
+        const usdtWallet = walletsRes?.data?.find(w => w.walletType === "FUTURES");
         if (usdtWallet) {
           setUsdtWalletBalance(Number(usdtWallet.balance || 0));
         }
@@ -119,7 +121,7 @@ export default function FuturesTradingPage() {
     const loadCandles = async () => {
       setChartLoading(true);
       try {
-        const data = await fetchCandlestickData(symbol, interval, 120);
+        const data = await fetchCandlestickData(symbol, chartInterval, 120);
         setCandleData(data);
       } catch {
         setCandleData([]);
@@ -128,7 +130,7 @@ export default function FuturesTradingPage() {
       }
     };
     loadCandles();
-  }, [symbol, interval]);
+  }, [symbol, chartInterval]);
 
   const handleSubmitOrder = async (orderSide) => {
     setLoading(true);
@@ -277,8 +279,8 @@ export default function FuturesTradingPage() {
                 title="Futures Real-Time Workspace"
                 description="High-fidelity futures execution engine featuring real-time candle matching and leverage modifiers."
                 symbol={symbol}
-                interval={interval}
-                onIntervalChange={setInterval}
+                interval={chartInterval}
+                onIntervalChange={setChartInterval}
                 loading={chartLoading}
                 data={candleData}
                 status={{ label: "Active", tone: "active" }}

@@ -36,6 +36,15 @@ public class UserController {
         }
 
         Long userId = jwtService.extractUserIdFromAuthentication(authentication);
+        if (userId == null && authentication instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
+            org.springframework.security.oauth2.core.user.OAuth2User oauth2User = 
+                    ((org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) authentication).getPrincipal();
+            String email = oauth2User.getAttribute("email");
+            if (email != null) {
+                userId = userService.findByEmail(email).map(User::getId).orElse(null);
+            }
+        }
+        
         if (userId == null) {
             log.warn("[WARNING] /user/profile - Could not extract userId from authentication");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -69,6 +78,15 @@ public class UserController {
             Authentication authentication,
             @RequestBody UpdateProfileRequest request) {
         Long userId = jwtService.extractUserIdFromAuthentication(authentication);
+        if (userId == null && authentication instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
+            org.springframework.security.oauth2.core.user.OAuth2User oauth2User = 
+                    ((org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) authentication).getPrincipal();
+            String email = oauth2User.getAttribute("email");
+            if (email != null) {
+                userId = userService.findByEmail(email).map(User::getId).orElse(null);
+            }
+        }
+        
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ApiResponse<>(401, "Invalid authentication: userId not found", null));

@@ -31,6 +31,15 @@ function authHeaders() {
   return headers;
 }
 
+export class ApiError extends Error {
+  constructor(message, status, data) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.data = data;
+  }
+}
+
 async function handleResponse(res) {
   const text = await res.text();
   let data = null;
@@ -46,7 +55,7 @@ async function handleResponse(res) {
   if (!res.ok) {
     const message = data?.message || data?.error || "Request failed";
     console.error("[API] ❌ Response error:", message, "Status:", res.status);
-    throw new Error(message);
+    throw new ApiError(message, res.status, data);
   }
 
   console.log("[API] ✅ Response received successfully");
@@ -206,6 +215,30 @@ export async function fetchWallet(walletType) {
   console.log("[API] GET /wallets/:type");
   const res = await fetch(`${API_BASE_URL}/wallets/${walletType}`,
     createFetchOptions("GET", null, authHeaders())
+  );
+  return handleResponse(res);
+}
+
+export async function depositToWallet(walletType, amount) {
+  console.log("[API] POST /wallets/deposit", walletType, amount);
+  const res = await fetch(`${API_BASE_URL}/wallets/deposit`,
+    createFetchOptions("POST", { walletType, amount }, authHeaders())
+  );
+  return handleResponse(res);
+}
+
+export async function transferBetweenWallets(fromWalletType, toWalletType, amount) {
+  console.log("[API] POST /wallets/transfer", fromWalletType, toWalletType, amount);
+  const res = await fetch(`${API_BASE_URL}/wallets/transfer`,
+    createFetchOptions("POST", { fromWalletType, toWalletType, amount }, authHeaders())
+  );
+  return handleResponse(res);
+}
+
+export async function withdrawFromWallet(walletType, amount, address, network) {
+  console.log("[API] POST /wallets/withdraw", walletType, amount, address, network);
+  const res = await fetch(`${API_BASE_URL}/wallets/withdraw`,
+    createFetchOptions("POST", { walletType, amount, address, network }, authHeaders())
   );
   return handleResponse(res);
 }

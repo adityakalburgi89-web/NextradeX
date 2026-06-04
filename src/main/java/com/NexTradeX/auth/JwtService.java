@@ -60,53 +60,78 @@ public class JwtService {
     }
     
     public String extractUsername(String token) {
-        return extractClaims(token).getSubject();
+        if (token == null || token.isBlank()) {
+            return null;
+        }
+        try {
+            Claims claims = extractClaims(token);
+            return claims != null ? claims.getSubject() : null;
+        } catch (Exception e) {
+            log.warn("Failed to extract username from token: {}", e.getMessage());
+            return null;
+        }
     }
     
     public Long extractUserId(String token) {
-        Claims claims = extractClaims(token);
-        Object userId = claims.get("userId");
-        if (userId == null) {
+        if (token == null || token.isBlank()) {
             return null;
         }
-        if (userId instanceof Integer) {
-            return ((Integer) userId).longValue();
-        }
-        if (userId instanceof Number) {
-            return ((Number) userId).longValue();
-        }
         try {
+            Claims claims = extractClaims(token);
+            if (claims == null) {
+                return null;
+            }
+            Object userId = claims.get("userId");
+            if (userId == null) {
+                return null;
+            }
+            if (userId instanceof Integer) {
+                return ((Integer) userId).longValue();
+            }
+            if (userId instanceof Number) {
+                return ((Number) userId).longValue();
+            }
             return Long.parseLong(userId.toString());
-        } catch (NumberFormatException e) {
-            log.warn("Failed to parse userId: {}", userId);
+        } catch (Exception e) {
+            log.warn("Failed to parse userId: {}", e.getMessage());
             return null;
         }
     }
     
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        return username != null && username.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
     
     public boolean isTokenValid(String token, String username) {
         final String tokenUsername = extractUsername(token);
-        return (tokenUsername.equals(username)) && !isTokenExpired(token);
+        return tokenUsername != null && tokenUsername.equals(username) && !isTokenExpired(token);
     }
     
     private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        Date expiration = extractExpiration(token);
+        return expiration != null && expiration.before(new Date());
     }
     
     private Date extractExpiration(String token) {
-        return extractClaims(token).getExpiration();
+        Claims claims = extractClaims(token);
+        return claims != null ? claims.getExpiration() : null;
     }
     
     private Claims extractClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        if (token == null || token.isBlank()) {
+            return null;
+        }
+        try {
+            return Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (Exception e) {
+            log.warn("Failed to parse signed claims: {}", e.getMessage());
+            return null;
+        }
     }
     
     private SecretKey getSigningKey() {
@@ -125,7 +150,7 @@ public class JwtService {
             return ((JwtAuthenticationToken) authentication).getUserId();
         }
         Object credentials = authentication.getCredentials();
-        if (credentials instanceof String) {
+        if (credentials instanceof String && !((String) credentials).isBlank()) {
             return extractUserId((String) credentials);
         }
         return null;

@@ -682,8 +682,12 @@ function App() {
             setUser(res.data);
             setIsLoggedIn(true);
           }
-        } catch {
-          clearAuthToken();
+        } catch (err) {
+          if (err.status === 401 || err.status === 403) {
+            clearAuthToken();
+          } else {
+            console.error("[App] Failed to fetch user profile:", err.message);
+          }
         }
       }
     };

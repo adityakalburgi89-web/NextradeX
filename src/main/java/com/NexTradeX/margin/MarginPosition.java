@@ -56,29 +56,46 @@ public class MarginPosition {
     @Column(nullable = false, precision = 19, scale = 8)
     private BigDecimal collateral;
     
+    @Builder.Default
     @Column(precision = 19, scale = 8)
     private BigDecimal interestAccrued = BigDecimal.ZERO;
     
+    @Builder.Default
     @Column(precision = 5, scale = 2)
     private BigDecimal interestRate = new BigDecimal("0.0005"); // 0.05% per day
     
+    @Builder.Default
     @Column(precision = 19, scale = 8)
     private BigDecimal unrealizedPnL = BigDecimal.ZERO;
     
+    @Builder.Default
     @Column(precision = 19, scale = 8)
     private BigDecimal realizedPnL = BigDecimal.ZERO;
     
+    @Builder.Default
     @Column(precision = 5, scale = 2)
     private BigDecimal marginRatio = BigDecimal.ZERO;
     
+    @Builder.Default
     @Column(nullable = false, updatable = false)
     private LocalDateTime openedAt = LocalDateTime.now();
     
+    @Builder.Default
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
     
     private LocalDateTime closedAt;
     
+    @PrePersist
+    protected void onCreate() {
+        if (openedAt == null) {
+            openedAt = LocalDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
+    }
+
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();

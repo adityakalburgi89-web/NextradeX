@@ -38,10 +38,12 @@ public class Order {
     @Column(nullable = false)
     private OrderSide side;
     
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OrderType orderType;
+    private OrderType orderType = OrderType.MARKET;
     
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status = OrderStatus.OPEN;
@@ -59,21 +61,27 @@ public class Order {
     @Column(precision = 19, scale = 8)
     private BigDecimal stopPrice;
     
+    @Builder.Default
     @Column(precision = 19, scale = 8)
     private BigDecimal filledQuantity = BigDecimal.ZERO;
     
+    @Builder.Default
     @Column(precision = 19, scale = 8)
     private BigDecimal averagePrice = BigDecimal.ZERO;
     
+    @Builder.Default
     @Column(precision = 19, scale = 8)
     private BigDecimal commission = BigDecimal.ZERO;
     
+    @Builder.Default
     @Column(precision = 19, scale = 2)
     private BigDecimal leverage = BigDecimal.ONE;
     
+    @Builder.Default
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
     
+    @Builder.Default
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
     
@@ -81,6 +89,16 @@ public class Order {
     
     private String remarks;
     
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
+    }
+
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
