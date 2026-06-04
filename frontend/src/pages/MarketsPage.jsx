@@ -225,20 +225,19 @@ export default function MarketsPage() {
                       const isUp = Number(price.percentChange24h) >= 0;
                       const isSelected = selectedSymbol === price.symbol;
                       return (
-                        <tr 
+                        <tr
                           key={price.id || price.symbol}
-                          className={`group transition-all hover:bg-canvas-dark/25 cursor-pointer ${
-                            isSelected ? "bg-primary/[0.04] border-l-2 border-l-primary" : ""
-                          }`}
+                          className={`group transition-all hover:bg-canvas-dark/25 cursor-pointer ${isSelected ? "bg-primary/[0.04] border-l-2 border-l-primary" : ""
+                            }`}
                           onClick={() => setSelectedSymbol(price.symbol)}
                         >
                           <td className="py-4 px-6 font-mono text-sm text-white">
                             <div className="flex items-center gap-3">
                               <div className="relative w-7 h-7 flex-shrink-0 flex items-center justify-center">
-                                <img 
-                                  src={getCryptoIcon(price.symbol)} 
-                                  alt={price.symbol} 
-                                  className="w-7 h-7 object-contain rounded-full bg-white/5 p-0.5" 
+                                <img
+                                  src={getCryptoIcon(price.symbol)}
+                                  alt={price.symbol}
+                                  className="w-7 h-7 object-contain rounded-full bg-white/5 p-0.5"
                                   onError={(e) => {
                                     e.target.style.display = 'none';
                                     e.target.nextSibling.style.display = 'flex';
@@ -257,9 +256,8 @@ export default function MarketsPage() {
                           <td className="py-4 px-6 text-right font-mono text-sm font-semibold text-white">
                             {formatCurrency(price.currentPrice)}
                           </td>
-                          <td className={`py-4 px-6 text-right font-mono text-sm font-semibold ${
-                            isUp ? "text-trading-up" : "text-trading-down"
-                          }`}>
+                          <td className={`py-4 px-6 text-right font-mono text-sm font-semibold ${isUp ? "text-trading-up" : "text-trading-down"
+                            }`}>
                             <div className="flex items-center justify-end gap-1.5">
                               <span>{isUp ? "▲" : "▼"}</span>
                               <span>{isUp ? "+" : ""}{formatPercent(price.percentChange24h)}</span>

@@ -93,10 +93,10 @@ export default function DashboardPage() {
     <PageTransition>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* LEFT COLLAPSIBLE ACCORDION SIDEBAR NAV */}
           <div className="lg:col-span-3 space-y-2 bg-surface-card-dark border border-hairline-on-dark rounded-2xl p-4 font-sans text-sm select-none">
-            
+
             <Link
               to="/dashboard"
               className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-on-primary font-bold transition-all shadow-glow-primary"
@@ -196,7 +196,7 @@ export default function DashboardPage() {
 
           {/* MAIN PREMIUM BINANCE DASHBOARD PANEL */}
           <div className="lg:col-span-9 space-y-6">
-            
+
             {/* USER IDENTITY HEADER SECTION */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface-card-dark border border-hairline-on-dark rounded-2xl p-6 shadow-elevation-md">
               <div className="flex items-center gap-4">

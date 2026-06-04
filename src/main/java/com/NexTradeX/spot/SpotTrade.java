@@ -44,11 +44,20 @@ public class SpotTrade {
     @Column(nullable = false, precision = 19, scale = 8)
     private BigDecimal totalValue;
     
+    @Builder.Default
     @Column(precision = 19, scale = 8)
     private BigDecimal commission = BigDecimal.ZERO;
     
+    @Builder.Default
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
     
     private String remarks;
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }

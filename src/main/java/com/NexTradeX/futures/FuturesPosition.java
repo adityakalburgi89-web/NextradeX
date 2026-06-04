@@ -29,8 +29,7 @@ import lombok.NoArgsConstructor;
     indexes = {
         @Index(
             name = "idx_user_symbol_mode",
-            columnList = "user_id,symbol,position_mode",
-            unique = true
+            columnList = "user_id,symbol,position_mode"
         ),
         @Index(
             name = "idx_futures_user_status",
