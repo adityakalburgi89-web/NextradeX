@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "./components/ui/Button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./components/ui/Card";
 import { Input } from "./components/ui/Input";
@@ -47,6 +48,44 @@ import qrCodeImg from "./assets/QrCode/QrCode.png";
 /* ═══════════════════════════════════════════
    HOME PAGE
    ═══════════════════════════════════════════ */
+// Framer Motion Animation Variants for a Pro UX Look
+const fadeInUpSpring = {
+  hidden: { opacity: 0, y: 35 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 55,
+      damping: 14,
+      mass: 0.9
+    }
+  }
+};
+
+const textReveal = {
+  hidden: { opacity: 0, y: 50 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 1.2,
+      ease: [0.16, 1, 0.3, 1] // Custom easeOutExpo
+    }
+  }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.05
+    }
+  }
+};
+
 function HomePage() {
   return (
     <PageTransition>
@@ -69,134 +108,228 @@ function HomePage() {
           {/* Subtle background ambient mesh (no heavy gradients as per elevation guidelines) */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/[0.05] blur-[160px] pointer-events-none z-0" />
           
-          <div className="max-w-7xl mx-auto px-6 relative z-10 w-full text-left stagger-children">
+          <motion.div 
+            className="max-w-7xl mx-auto px-6 relative z-10 w-full text-left"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+          >
 
-            {/* Display Headline */}
-            <h1 className="font-heading text-4xl sm:text-5xl md:text-[60px] lg:text-[72px] font-bold leading-[1.1] mb-6 tracking-tight">
-              TRADE WITH. <br />
-              <span className="text-primary">MATHEMATICAL PRECISION</span>
-            </h1>
+            {/* Display Headline - Text Reveal */}
+            <div className="overflow-hidden">
+              <motion.h1 
+                variants={textReveal}
+                className="font-heading text-4xl sm:text-5xl md:text-[60px] lg:text-[72px] font-bold leading-[1.1] mb-6 tracking-tight"
+              >
+                TRADE WITH. <br />
+                <span className="text-primary">MATHEMATICAL PRECISION</span>
+              </motion.h1>
+            </div>
 
             {/* Subtext */}
-            <p className="text-muted text-base md:text-lg max-w-2xl mb-10 leading-relaxed font-sans">
+            <motion.p 
+              variants={{
+                hidden: { opacity: 0, y: 25 },
+                visible: { 
+                  opacity: 1, 
+                  y: 0,
+                  transition: { duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.15 } 
+                }
+              }}
+              className="text-muted text-base md:text-lg max-w-2xl mb-10 leading-relaxed font-sans"
+            >
               Experience high-density simulated trading, real-time depth visualizations, and custom order matching. Zero risk, professional-grade tools.
-            </p>
+            </motion.p>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center gap-4 justify-start">
+            <motion.div 
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { 
+                  opacity: 1, 
+                  y: 0, 
+                  transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 } 
+                }
+              }}
+              className="flex flex-col sm:flex-row items-center gap-4 justify-start"
+            >
               <Button variant="primaryPill" className="w-full sm:w-auto" asChild>
                 <Link to="/auth">Start Trading</Link>
               </Button>
               <Button variant="outline" className="w-full sm:w-auto text-body hover:bg-surface-card-dark" asChild>
                 <Link to="/markets">View Markets</Link>
               </Button>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </section>
 
         {/* TRUST BADGES GRID (Flat surface cards) */}
         <section className="bg-canvas-dark py-12 border-b border-hairline-on-dark">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <motion.div 
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            >
               {[
                 { badge: "No.1", label: "Simulated Volume", desc: "Highest simulated trades routed daily" },
                 { badge: "24/7", label: "Customer Service", desc: "Live chat with simulated desk agents" },
                 { badge: "100%", label: "Reserves (SAFU)", desc: "All simulation assets collateralized 1:1" },
                 { badge: "0.0%", label: "Slip Guarantee", desc: "Precise matching for simulation execution" },
               ].map((item, idx) => (
-                <div key={idx} className="bg-surface-card-dark rounded-lg border border-hairline-on-dark p-5 flex flex-col gap-2">
+                <motion.div 
+                  key={idx} 
+                  variants={fadeInUpSpring}
+                  className="bg-surface-card-dark rounded-lg border border-hairline-on-dark p-5 flex flex-col gap-2 hover:border-primary/30 transition-all duration-300 interactive-surface"
+                >
                   <div className="text-primary font-mono text-2xl font-bold tracking-tight">{item.badge}</div>
                   <div className="text-white text-sm font-semibold tracking-tight">{item.label}</div>
                   <div className="text-muted text-xs font-sans leading-relaxed">{item.desc}</div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         </section>
 
         {/* HERO USER STAT BANDS */}
         <section className="py-20 bg-canvas-dark border-b border-hairline-on-dark text-center relative overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-primary/[0.02] blur-[130px] pointer-events-none" />
-          <div className="max-w-7xl mx-auto px-6 relative z-10 stagger-children">
+          <motion.div 
+            variants={fadeInUpSpring}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="max-w-7xl mx-auto px-6 relative z-10"
+          >
             <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block">Platform Metric</span>
             <h2 className="font-heading text-5xl md:text-7xl font-bold tracking-tight text-white mb-6">316,258,026</h2>
             <h3 className="font-heading text-lg md:text-2xl font-semibold tracking-tight text-muted max-w-2xl mx-auto">
               Simulated Users Trust NexTradeX Platform Ecosystem
             </h3>
-          </div>
+          </motion.div>
         </section>
 
         {/* PRO TRADING FEATURES */}
         <section className="py-20 relative bg-canvas-dark border-b border-hairline-on-dark">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-16 stagger-children">
+            <motion.div 
+              variants={fadeInUpSpring}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="text-center mb-16"
+            >
               <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block">Best in Class</span>
               <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-white">Pro Trading Features For Everyone</h2>
-            </div>
+            </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 stagger-children">
-              <FeatureRow
-                icon={<Package size={22} className="text-primary" />}
-                title="Basket Orders With Margin Benefits"
-                description="Place multiple simulated orders together as a basket to enjoy custom margin offsetting."
-              />
-              <FeatureRow
-                icon={<Target size={22} className="text-primary" />}
-                title="Strategy Builder"
-                description="Build and analyse virtual trading strategies comprising group of futures and options contracts."
-              />
-              <FeatureRow
-                icon={<Layers size={22} className="text-primary" />}
-                title="Deep OTM/ITM Strikes"
-                description="Trade simulated deep OTM/ITM options strikes with customizable daily and weekly expiry terms."
-              />
-              <FeatureRow
-                icon={<BarChart3 size={22} className="text-primary" />}
-                title="PnL Analytics"
-                description="Conveniently track and analyse your simulated trading history with advanced visual indices."
-              />
-            </div>
+            <motion.div 
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            >
+              <motion.div variants={fadeInUpSpring}>
+                <FeatureRow
+                  icon={<Package size={22} className="text-primary" />}
+                  title="Basket Orders With Margin Benefits"
+                  description="Place multiple simulated orders together as a basket to enjoy custom margin offsetting."
+                />
+              </motion.div>
+              <motion.div variants={fadeInUpSpring}>
+                <FeatureRow
+                  icon={<Target size={22} className="text-primary" />}
+                  title="Strategy Builder"
+                  description="Build and analyse virtual trading strategies comprising group of futures and options contracts."
+                />
+              </motion.div>
+              <motion.div variants={fadeInUpSpring}>
+                <FeatureRow
+                  icon={<Layers size={22} className="text-primary" />}
+                  title="Deep OTM/ITM Strikes"
+                  description="Trade simulated deep OTM/ITM options strikes with customizable daily and weekly expiry terms."
+                />
+              </motion.div>
+              <motion.div variants={fadeInUpSpring}>
+                <FeatureRow
+                  icon={<BarChart3 size={22} className="text-primary" />}
+                  title="PnL Analytics"
+                  description="Conveniently track and analyse your simulated trading history with advanced visual indices."
+                />
+              </motion.div>
+            </motion.div>
           </div>
         </section>
 
         {/* FUNDS SAFU BAND (reserves stats) */}
         <section className="py-20 bg-canvas-dark border-b border-hairline-on-dark">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="mb-12 stagger-children text-center lg:text-left">
+            <motion.div 
+              variants={fadeInUpSpring}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="mb-12 text-center lg:text-left"
+            >
               <span className="font-mono text-xs text-primary uppercase tracking-widest mb-3 block">Security Guarantee</span>
               <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">Simulated Reserves You Can Trust</h2>
               <p className="text-muted text-sm md:text-base max-w-2xl font-sans">
                 All mock balances are backed 1:1 on our virtual ledger. Verified proof of simulated reserves protects all users.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <motion.div 
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            >
               {[
                 { value: "$1,248,592,932", label: "Simulated reserves", desc: "Total paper balance allocated to user accounts" },
                 { value: "100.00%", label: "Collateralized ratio", desc: "Virtual funds fully collateralized by central simulated vaults" },
                 { value: "0.0001 BTC", label: "Min Lot Execution", desc: "Hyper-precise allocation for simulated matching engines" }
               ].map((item, idx) => (
-                <div key={idx} className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-6 stagger-children">
+                <motion.div 
+                  key={idx} 
+                  variants={fadeInUpSpring}
+                  className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-6 hover:border-primary/20 transition-all duration-300"
+                >
                   <div className="font-mono text-2xl sm:text-3xl font-bold text-primary mb-2 tracking-tight">{item.value}</div>
                   <div className="text-white text-sm font-semibold tracking-tight mb-1">{item.label}</div>
                   <div className="text-muted text-xs leading-relaxed font-sans">{item.desc}</div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         </section>
 
         {/* CRYPTOCURRENCIES LIST (Binance-Inspired markets-table-card) */}
         <section className="py-20 bg-canvas-dark border-b border-hairline-on-dark">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-16 stagger-children">
+            <motion.div 
+              variants={fadeInUpSpring}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="text-center mb-16"
+            >
               <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">Supported Simulation Cryptocurrencies</h2>
               <p className="text-muted text-sm md:text-base max-w-xl mx-auto font-sans">
                 Discover virtual currencies, lot restrictions, and tick rules routed through our simulation engine.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="max-w-4xl mx-auto stagger-children">
+            <motion.div 
+              variants={fadeInUpSpring}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="max-w-4xl mx-auto"
+            >
               <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden p-6 shadow-elevation-md">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
@@ -227,15 +360,21 @@ function HomePage() {
                   </table>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
 
         {/* QR PROMO & APP DOWNLOAD SECTION */}
         <section className="py-20 bg-canvas-dark border-b border-hairline-on-dark">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-8 md:p-12 flex flex-col lg:flex-row items-center justify-between gap-12 shadow-elevation-md">
-              <div className="flex-1 space-y-6 stagger-children text-center lg:text-left">
+            <motion.div 
+              variants={fadeInUpSpring}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-8 md:p-12 flex flex-col lg:flex-row items-center justify-between gap-12 shadow-elevation-md"
+            >
+              <div className="flex-1 space-y-6 text-center lg:text-left">
                 <h2 className="font-heading text-3xl md:text-4xl font-bold text-white tracking-tight leading-tight">
                   Trade On The Go. <br />Anytime, Anywhere.
                 </h2>
@@ -259,7 +398,7 @@ function HomePage() {
               <div className="w-48 h-48 bg-white p-2 rounded-xl border border-hairline-on-dark flex items-center justify-center flex-shrink-0 relative shadow-elevation-lg">
                 <img src={qrCodeImg} alt="QR Code" className="w-full h-full object-contain" />
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
 
@@ -268,7 +407,13 @@ function HomePage() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16">
               {/* Support Card */}
-              <div className="lg:col-span-2">
+              <motion.div 
+                variants={fadeInUpSpring}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-100px" }}
+                className="lg:col-span-2"
+              >
                 <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-8 relative overflow-hidden h-full flex flex-col justify-between shadow-elevation-md">
                   <div className="space-y-6 relative z-10">
                     <h3 className="font-heading text-2xl md:text-3xl font-bold leading-tight text-white">24x7 Customer<br />Support</h3>
@@ -305,30 +450,44 @@ function HomePage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* FAQ */}
-              <div className="lg:col-span-3">
+              <motion.div 
+                variants={staggerContainer}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-100px" }}
+                className="lg:col-span-3"
+              >
                 <h3 className="font-heading text-2xl md:text-3xl font-bold mb-8 tracking-tight text-white">Frequently Asked Questions</h3>
                 <div className="divide-y divide-hairline-on-dark font-sans">
-                  <FAQItem
-                    question="Is NexTradeX a regulated trading platform?"
-                    answer="NexTradeX operates strictly as a paper trading simulation platform for educational purposes. All trades, orders, funds, and positions are entirely simulated."
-                  />
-                  <FAQItem
-                    question="Do I need actual crypto to use NexTradeX?"
-                    answer="No. All accounts receive immediate mock balances upon login. No credit cards or deposits are required."
-                  />
-                  <FAQItem
-                    question="What simulated contracts are available?"
-                    answer="We support spot trading pairs, leveraged futures with configurable margin structures, and European-style options contracts."
-                  />
-                  <FAQItem
-                    question="How does simulated market data stream?"
-                    answer="Our backend aggregates tick snapshots and streams updates via high-frequency WebSockets to emulate live market dynamics."
-                  />
+                  <motion.div variants={fadeInUpSpring}>
+                    <FAQItem
+                      question="Is NexTradeX a regulated trading platform?"
+                      answer="NexTradeX operates strictly as a paper trading simulation platform for educational purposes. All trades, orders, funds, and positions are entirely simulated."
+                    />
+                  </motion.div>
+                  <motion.div variants={fadeInUpSpring}>
+                    <FAQItem
+                      question="Do I need actual crypto to use NexTradeX?"
+                      answer="No. All accounts receive immediate mock balances upon login. No credit cards or deposits are required."
+                    />
+                  </motion.div>
+                  <motion.div variants={fadeInUpSpring}>
+                    <FAQItem
+                      question="What simulated contracts are available?"
+                      answer="We support spot trading pairs, leveraged futures with configurable margin structures, and European-style options contracts."
+                    />
+                  </motion.div>
+                  <motion.div variants={fadeInUpSpring}>
+                    <FAQItem
+                      question="How does simulated market data stream?"
+                      answer="Our backend aggregates tick snapshots and streams updates via high-frequency WebSockets to emulate live market dynamics."
+                    />
+                  </motion.div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </section>
@@ -336,7 +495,13 @@ function HomePage() {
         {/* CTA BAND (Pre-Footer Banner) */}
         <section className="py-20 bg-canvas-dark">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-elevation-md">
+            <motion.div 
+              variants={fadeInUpSpring}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-elevation-md"
+            >
               <div className="space-y-2 text-center md:text-left">
                 <h2 className="font-heading text-2xl md:text-3xl font-bold text-white tracking-tight">
                   Secure, Low-Fee Trading on NexTradeX
@@ -348,7 +513,7 @@ function HomePage() {
               <Button variant="default" className="w-full md:w-auto h-12 px-8 text-base font-semibold" asChild>
                 <Link to="/auth">Sign Up Now</Link>
               </Button>
-            </div>
+            </motion.div>
           </div>
         </section>
       </main>
