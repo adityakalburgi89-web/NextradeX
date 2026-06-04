@@ -73,8 +73,8 @@ function HomePage() {
 
             {/* Display Headline */}
             <h1 className="font-heading text-4xl sm:text-5xl md:text-[60px] lg:text-[72px] font-bold leading-[1.1] mb-6 tracking-tight">
-              Trade with <br />
-              <span className="text-primary">Mathematical Precision</span>
+              TRADE WITH. <br />
+              <span className="text-primary">MATHEMATICAL PRECISION</span>
             </h1>
 
             {/* Subtext */}
