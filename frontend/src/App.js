@@ -1070,12 +1070,20 @@ function App() {
     checkAuth();
   }, []);
 
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
   const handleLogout = () => {
     clearAuthToken();
     setIsLoggedIn(false);
     setUser(null);
     setUserMenuOpen(false);
+    setShowLogoutConfirm(false);
     navigate("/auth");
+  };
+
+  const triggerLogoutConfirm = () => {
+    setShowLogoutConfirm(true);
+    setUserMenuOpen(false);
   };
 
   return (
@@ -1188,7 +1196,7 @@ function App() {
                       </Link>
                       <div className={`border-t my-1 ${theme === 'dark' ? 'border-hairline-on-dark' : 'border-hairline-on-light'}`} />
                       <button
-                        onClick={handleLogout}
+                        onClick={triggerLogoutConfirm}
                         className="flex items-center gap-3 px-4 py-2 text-xs w-full text-left hover:bg-white/[0.04] hover:text-trading-down transition-colors font-semibold"
                       >
                         <LogOut size={14} />
@@ -1242,7 +1250,7 @@ function App() {
               <>
                 <div className={`h-[1px] my-3 ${theme === 'dark' ? 'bg-hairline-on-dark' : 'bg-hairline-on-light'}`} />
                 <Link to="/profile" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Profile</Link>
-                <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-trading-down transition-colors w-full text-left">Logout</button>
+                <button onClick={() => { triggerLogoutConfirm(); setMobileMenuOpen(false); }} className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-trading-down transition-colors w-full text-left">Logout</button>
               </>
             ) : (
               <>
@@ -1290,6 +1298,43 @@ function App() {
 
         {/* Search Modal */}
         <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} query={searchQuery} setQuery={setSearchQuery} isLoggedIn={isLoggedIn} />
+
+        {/* Custom Logout Confirmation Modal */}
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+            <div className="bg-[#1e2329] border border-white/[0.08] p-6 rounded-2xl max-w-sm w-full shadow-elevation-lg text-center space-y-5 animate-scale-up">
+              <div className="flex justify-center">
+                <div className="rounded-full bg-trading-down/10 p-3 text-trading-down">
+                  <LogOut size={24} />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="font-heading text-lg font-bold text-white">Confirm Logout</h3>
+                <p className="text-xs text-muted font-sans">
+                  Are you sure you want to log out of NexTradeX? All active sessions on this device will be ended.
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg text-xs font-bold transition-all border border-white/5"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex-1 py-2.5 bg-trading-down hover:bg-trading-down/80 text-white rounded-lg text-xs font-bold transition-all"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Floating Chatbot Assistant Trixie */}
         <Chatbot />

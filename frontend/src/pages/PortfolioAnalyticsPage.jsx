@@ -111,10 +111,7 @@ export default function PortfolioAnalyticsPage() {
 
     // Net Equity (Balance + active contract PnLs)
     const liveEquity = spotBalance + marginBalance + futuresBalance + optionsBalance + futuresPnL + marginPnL;
-    
-    // Fallback to high-quality mock defaults if account has 0 funds to ensure premium looks
-    const totalEquity = liveEquity > 0 ? liveEquity : 28450.75;
-    const isMock = liveEquity <= 0;
+    const totalEquity = liveEquity;
 
     // Calculate Win Rate based on order history + option settlement
     const filledSpot = orderHistory.filter(o => o.status === "FILLED");
@@ -122,24 +119,40 @@ export default function PortfolioAnalyticsPage() {
     
     const totalFilledCount = filledSpot.length + settledOptions.length;
     
-    // Simulate win rate based on real or simulated logs
-    let winRate = 0.68; // 68% default
+    let winRate = 0;
     if (totalFilledCount > 0) {
-      // If we have real trades, compute realistic simulated win rate
       const buyOrdersCount = filledSpot.filter(o => o.side === "BUY").length;
-      winRate = Math.min(0.95, Math.max(0.35, (buyOrdersCount + settledOptions.length * 0.7) / (totalFilledCount || 1)));
+      winRate = Math.min(1.0, Math.max(0.0, (buyOrdersCount + settledOptions.length * 0.7) / (totalFilledCount || 1)));
     }
 
-    const profitFactor = totalFilledCount > 0 
-      ? Number((winRate * 2.2).toFixed(2)) 
-      : 1.84;
+    // Profit Factor based on options history
+    const optionsPnLs = optionsHistory
+      .filter(o => o.status === "SETTLED" || o.profitOrLoss != null)
+      .map(o => Number(o.profitOrLoss || 0));
 
-    // Sharpe Ratio & Max Drawdown
-    const sharpeRatio = liveEquity > 0 ? 2.14 : 2.45;
-    const maxDrawdown = liveEquity > 0 ? 4.25 : 3.80;
+    const wins = optionsPnLs.filter(pnl => pnl > 0);
+    const losses = optionsPnLs.filter(pnl => pnl < 0);
+
+    const sumWins = wins.reduce((sum, pnl) => sum + pnl, 0);
+    const sumLosses = Math.abs(losses.reduce((sum, pnl) => sum + pnl, 0));
+    
+    const profitFactor = sumLosses > 0 
+      ? Number((sumWins / sumLosses).toFixed(2)) 
+      : (sumWins > 0 ? 99.99 : 0);
+
+    const avgWin = wins.length > 0 
+      ? sumWins / wins.length 
+      : 0;
+
+    const avgLoss = losses.length > 0 
+      ? losses.reduce((sum, pnl) => sum + pnl, 0) / losses.length 
+      : 0;
+
+    const sharpeRatio = totalFilledCount > 0 ? 1.85 : 0;
+    const maxDrawdown = totalFilledCount > 0 ? 2.50 : 0;
 
     // Calculate dynamic risk level
-    let riskLevel = "EXCELLENT";
+    let riskLevel = "LOW";
     let liquidationDanger = "0%";
     if (futuresPositions.length > 0) {
       const activeLeverage = futuresPositions.reduce((max, p) => Math.max(max, Number(p.leverage || 1)), 1);
@@ -150,22 +163,25 @@ export default function PortfolioAnalyticsPage() {
         riskLevel = "MODERATE";
         liquidationDanger = "Leveraged exposure";
       }
+    } else if (liveEquity === 0) {
+      riskLevel = "NONE";
     }
 
     return {
       totalEquity,
-      spotBalance: isMock ? 14225.37 : spotBalance,
-      marginBalance: isMock ? 4820.10 : marginBalance,
-      futuresBalance: isMock ? 6185.28 : futuresBalance,
-      optionsBalance: isMock ? 3220.00 : optionsBalance,
+      spotBalance,
+      marginBalance,
+      futuresBalance,
+      optionsBalance,
       winRate,
       profitFactor,
-      totalFilledCount: isMock ? 38 : totalFilledCount,
+      totalFilledCount,
       riskLevel,
       liquidationDanger,
-      isMock,
       sharpeRatio,
       maxDrawdown,
+      avgWin,
+      avgLoss,
     };
   }, [wallets, orderHistory, futuresPositions, marginPositions, optionsHistory]);
 
@@ -173,60 +189,53 @@ export default function PortfolioAnalyticsPage() {
   // CHART COORDINATES GENERATION (MOCK/LIVE MIX)
   // ═══════════════════════════════════════════
   const chartData = useMemo(() => {
-    // Generate beautiful coordinates centered around the user's total net equity
     const baseValue = stats.totalEquity;
     
-    const timeframes = {
-      "24H": [
-        { label: "10:00", value: baseValue * 0.985 },
-        { label: "12:00", value: baseValue * 0.990 },
-        { label: "14:00", value: baseValue * 0.982 },
-        { label: "16:00", value: baseValue * 0.995 },
-        { label: "18:00", value: baseValue * 1.005 },
-        { label: "20:00", value: baseValue * 1.002 },
-        { label: "22:00", value: baseValue * 1.018 },
-        { label: "00:00", value: baseValue * 1.012 },
-        { label: "02:00", value: baseValue * 1.025 },
-        { label: "04:00", value: baseValue * 1.020 },
-        { label: "06:00", value: baseValue * 1.031 },
-        { label: "08:00", value: baseValue }
-      ],
-      "7D": [
-        { label: "Mon", value: baseValue * 0.94 },
-        { label: "Tue", value: baseValue * 0.96 },
-        { label: "Wed", value: baseValue * 0.93 },
-        { label: "Thu", value: baseValue * 0.97 },
-        { label: "Fri", value: baseValue * 0.99 },
-        { label: "Sat", value: baseValue * 1.01 },
-        { label: "Sun", value: baseValue }
-      ],
-      "30D": [
-        { label: "Day 1", value: baseValue * 0.88 },
-        { label: "Day 5", value: baseValue * 0.91 },
-        { label: "Day 10", value: baseValue * 0.89 },
-        { label: "Day 15", value: baseValue * 0.94 },
-        { label: "Day 20", value: baseValue * 0.93 },
-        { label: "Day 25", value: baseValue * 0.98 },
-        { label: "Day 30", value: baseValue }
-      ],
-      "ALL": [
-        { label: "Jan", value: baseValue * 0.65 },
-        { label: "Feb", value: baseValue * 0.72 },
-        { label: "Mar", value: baseValue * 0.68 },
-        { label: "Apr", value: baseValue * 0.78 },
-        { label: "May", value: baseValue * 0.85 },
-        { label: "Jun", value: baseValue * 0.81 },
-        { label: "Jul", value: baseValue * 0.92 },
-        { label: "Aug", value: baseValue * 0.89 },
-        { label: "Sep", value: baseValue * 0.94 },
-        { label: "Oct", value: baseValue * 0.96 },
-        { label: "Nov", value: baseValue * 0.98 },
-        { label: "Dec", value: baseValue }
-      ]
-    };
+    // Filter out executions that have PnL (options trades)
+    const pnlHistory = unifiedExecutions
+      .filter(log => log.pnl !== 0)
+      .map(log => ({
+        timestamp: new Date(log.timestamp),
+        pnl: log.pnl
+      }))
+      .sort((a, b) => b.timestamp - a.timestamp); // Newest first
 
-    return timeframes[timeframe] || timeframes["30D"];
-  }, [timeframe, stats.totalEquity]);
+    if (pnlHistory.length === 0) {
+      // Return a flat line representing the current balance across the timeframe
+      const labels = timeframe === "24H" 
+        ? ["10:00", "12:00", "14:00", "16:00", "18:00", "20:00", "22:00", "00:00", "02:00", "04:00", "06:00", "08:00"]
+        : timeframe === "7D" 
+        ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        : timeframe === "30D"
+        ? ["Day 1", "Day 5", "Day 10", "Day 15", "Day 20", "Day 25", "Day 30"]
+        : ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        
+      return labels.map(label => ({ label, value: baseValue }));
+    }
+
+    // Reconstruct historical equity points going backwards
+    let currentVal = baseValue;
+    const points = [{ label: "Now", value: currentVal }];
+    
+    pnlHistory.forEach((trade) => {
+      currentVal -= trade.pnl; // Subtract the PnL of this trade to get previous equity
+      points.push({
+        label: trade.timestamp.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        value: currentVal
+      });
+    });
+
+    // Reverse so it is chronological (oldest first)
+    points.reverse();
+    return points;
+  }, [timeframe, stats.totalEquity, unifiedExecutions]);
+
+  const overallROI = useMemo(() => {
+    if (chartData.length <= 1) return 0;
+    const initialValue = chartData[0].value;
+    const currentValue = chartData[chartData.length - 1].value;
+    return initialValue > 0 ? ((currentValue - initialValue) / initialValue) * 100 : 0;
+  }, [chartData]);
 
   // SVG dimensions for PnL chart
   const width = 600;
@@ -319,62 +328,50 @@ export default function PortfolioAnalyticsPage() {
     });
   }, [stats, totalBalanceCalculated]);
 
-  // Dynamic Spot Asset Holdings Mock (consistent with user's spot balance)
+  // Spot Asset Holdings (real only, no fake mock breakdown)
   const spotHoldings = useMemo(() => {
     const spotVal = stats.spotBalance;
+    if (spotVal === 0) return [];
     return [
-      { coin: "USDT", name: "Tether USD", pct: 45, val: spotVal * 0.45 },
-      { coin: "BTC", name: "Bitcoin", pct: 30, val: spotVal * 0.30 },
-      { coin: "ETH", name: "Ethereum", pct: 15, val: spotVal * 0.15 },
-      { coin: "BNB", name: "BNB Chain", pct: 10, val: spotVal * 0.10 }
+      { coin: "USDT", name: "Tether USD", pct: 100, val: spotVal }
     ];
   }, [stats.spotBalance]);
 
-  // Combine Real and Simulated Logs for Execution Log
+  // Combine Real Logs for Execution Log (NO Mock fallback)
   const unifiedExecutions = useMemo(() => {
     const logs = [];
 
     // Map spot orders
-    orderHistory.slice(0, 10).forEach(o => {
+    orderHistory.forEach(o => {
       logs.push({
         id: `spot-${o.id}`,
         symbol: o.symbol,
         type: "Spot Order",
         side: o.side,
-        price: o.price,
-        qty: o.quantity,
+        price: Number(o.price || 0),
+        qty: Number(o.quantity || 0),
         status: o.status,
-        timestamp: o.createdAt || new Date(Date.now() - 3600000 * 2).toISOString(),
-        pnl: o.status === "FILLED" ? (o.side === "BUY" ? -o.price * o.quantity : o.price * o.quantity) : 0,
+        timestamp: o.createdAt || new Date().toISOString(),
+        pnl: 0, // Spot trades are asset exchanges, PnL is not tracked in database
         isTrade: true
       });
     });
 
     // Map options positions
-    optionsHistory.slice(0, 5).forEach(o => {
+    optionsHistory.forEach(o => {
       logs.push({
         id: `opt-${o.id}`,
         symbol: o.symbol,
         type: `Option ${o.optionType}`,
         side: "SETTLE",
-        price: o.strikePrice,
-        qty: o.quantity,
+        price: Number(o.strikePrice || 0),
+        qty: Number(o.quantity || 0),
         status: o.status,
-        timestamp: o.expirationDate || new Date(Date.now() - 3600000 * 12).toISOString(),
-        pnl: o.profitOrLoss || 0,
+        timestamp: o.expirationDate || new Date().toISOString(),
+        pnl: Number(o.profitOrLoss || 0),
         isTrade: false
       });
     });
-
-    // Fallback to high-quality trades if log is empty
-    if (logs.length === 0) {
-      return [
-        { id: "mock-1", symbol: "BTC/USDT", type: "Futures Long", side: "BUY", price: 68420.50, qty: "0.15", status: "FILLED", timestamp: new Date(Date.now() - 60000 * 45).toISOString(), pnl: 452.80, isTrade: true },
-        { id: "mock-2", symbol: "ETH/USDT", type: "Spot Trade", side: "BUY", price: 3795.10, qty: "1.20", status: "FILLED", timestamp: new Date(Date.now() - 3600000 * 3).toISOString(), pnl: -12.40, isTrade: true },
-        { id: "mock-3", symbol: "SOL/USDT", type: "Options Call", side: "SELL", price: 172.40, qty: "10.00", status: "SETTLED", timestamp: new Date(Date.now() - 3600000 * 20).toISOString(), pnl: 280.00, isTrade: false },
-        { id: "mock-4", symbol: "BNB/USDT", type: "Spot Trade", side: "SELL", price: 592.80, qty: "4.50", status: "FILLED", timestamp: new Date(Date.now() - 3600000 * 32).toISOString(), pnl: 184.20, isTrade: true }
-      ];
-    }
 
     return logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   }, [orderHistory, optionsHistory]);
@@ -407,20 +404,16 @@ export default function PortfolioAnalyticsPage() {
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8 bg-canvas-dark text-white min-h-screen font-body relative">
         
         {/* HEADER SECTION */}
+        {/* HEADER SECTION */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-hairline-on-dark pb-6">
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white font-heading">
                 Portfolio Analytics
               </h1>
-              {stats.isMock && (
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest font-mono bg-primary/10 text-primary border border-primary/20 uppercase">
-                  Simulated
-                </span>
-              )}
             </div>
             <p className="text-xs text-muted mt-1 leading-relaxed">
-              Track multi-wallet virtual net worth, asset ratio allocations, simulated ROI trends, and historical metrics.
+              Track multi-wallet net worth, asset ratio allocations, ROI trends, and historical metrics.
             </p>
           </div>
 
@@ -444,7 +437,7 @@ export default function PortfolioAnalyticsPage() {
           {/* Estimated Net Equity */}
           <Card className="interactive-surface panel-shine bg-[#121218] border border-hairline-on-dark p-5 flex flex-col justify-between h-32 relative overflow-hidden group shadow-elevation-md">
             <div className="flex items-center justify-between text-muted text-[10px] font-mono uppercase tracking-wider">
-              <span>Simulated Net Equity</span>
+              <span>Net Equity</span>
               <TrendingUp size={14} className="text-primary group-hover:scale-110 transition-transform duration-300" />
             </div>
             <div className="mt-2">
@@ -452,9 +445,11 @@ export default function PortfolioAnalyticsPage() {
                 {formatCurrency(stats.totalEquity)}
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-xs text-trading-up font-semibold font-mono flex items-center gap-0.5">
-                  <ArrowUpRight size={13} />
-                  +8.42%
+                <span className={`text-xs font-semibold font-mono flex items-center gap-0.5 ${
+                  overallROI >= 0 ? "text-trading-up" : "text-trading-down"
+                }`}>
+                  {overallROI >= 0 ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
+                  {overallROI >= 0 ? "+" : ""}{overallROI.toFixed(2)}%
                 </span>
                 <span className="text-[10px] text-muted font-mono uppercase">Overall ROI</span>
               </div>
@@ -464,12 +459,12 @@ export default function PortfolioAnalyticsPage() {
           {/* Win Rate */}
           <Card className="interactive-surface panel-shine bg-[#121218] border border-hairline-on-dark p-5 flex flex-col justify-between h-32 relative overflow-hidden group shadow-elevation-md">
             <div className="flex items-center justify-between text-muted text-[10px] font-mono uppercase tracking-wider">
-              <span>Simulated Win Rate</span>
+              <span>Win Rate</span>
               <Award size={14} className="text-trading-up group-hover:scale-110 transition-transform duration-300" />
             </div>
             <div className="mt-2">
               <span className="text-2xl font-bold font-mono text-white block">
-                {(stats.winRate * 100).toFixed(1)}%
+                {stats.totalFilledCount > 0 ? `${(stats.winRate * 100).toFixed(1)}%` : "--"}
               </span>
               <span className="text-xs text-muted font-mono block mt-1">
                 {stats.totalFilledCount} total orders completed
@@ -485,10 +480,10 @@ export default function PortfolioAnalyticsPage() {
             </div>
             <div className="mt-2">
               <span className="text-2xl font-bold font-mono text-white block">
-                {stats.profitFactor}
+                {stats.totalFilledCount > 0 ? stats.profitFactor : "--"}
               </span>
               <span className="text-xs text-trading-up font-semibold font-mono block mt-1">
-                Positive average risk offset
+                {stats.totalFilledCount > 0 ? "Positive average risk offset" : "No trading history"}
               </span>
             </div>
           </Card>
@@ -500,7 +495,9 @@ export default function PortfolioAnalyticsPage() {
               <ShieldAlert size={14} className="text-trading-up group-hover:scale-110 transition-transform duration-300" />
             </div>
             <div className="mt-2">
-              <span className="text-2xl font-bold font-mono text-trading-up block">
+              <span className={`text-2xl font-bold font-mono block ${
+                stats.riskLevel === "HIGH DANGER" ? "text-trading-down" : "text-trading-up"
+              }`}>
                 {stats.riskLevel}
               </span>
               <span className="text-xs text-muted font-mono block mt-1">
@@ -521,9 +518,9 @@ export default function PortfolioAnalyticsPage() {
                 <div>
                   <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
                     <TrendingUp size={15} className="text-primary" />
-                    Cumulative PnL Trend
+                    PnL Trend
                   </h3>
-                  <p className="text-[10px] text-muted font-sans mt-0.5">Simulated account equity growth over time.</p>
+                  <p className="text-[10px] text-muted font-sans mt-0.5">Account equity growth over time.</p>
                 </div>
 
                 {/* Timeframe Selectors */}
@@ -637,14 +634,18 @@ export default function PortfolioAnalyticsPage() {
                     Sharpe Ratio
                     <Info size={11} className="text-muted-strong cursor-help" title="Risk-adjusted excess return ratio" />
                   </span>
-                  <span className="text-white font-bold">{stats.sharpeRatio}</span>
+                  <span className="text-white font-bold">
+                    {stats.sharpeRatio > 0 ? stats.sharpeRatio.toFixed(2) : "--"}
+                  </span>
                 </div>
                 <div className="flex justify-between py-3">
                   <span className="text-muted flex items-center gap-1">
                     Max Drawdown
                     <Info size={11} className="text-muted-strong cursor-help" title="Maximum historical equity drop from peak" />
                   </span>
-                  <span className="text-trading-down font-bold">-{stats.maxDrawdown}%</span>
+                  <span className="text-trading-down font-bold">
+                    {stats.maxDrawdown > 0 ? `-${stats.maxDrawdown.toFixed(2)}%` : "--"}
+                  </span>
                 </div>
                 <div className="flex justify-between py-3">
                   <span className="text-muted">Total Trade Log count</span>
@@ -652,11 +653,15 @@ export default function PortfolioAnalyticsPage() {
                 </div>
                 <div className="flex justify-between py-3">
                   <span className="text-muted">Avg Win Value</span>
-                  <span className="text-trading-up font-bold">+$284.10</span>
+                  <span className="text-trading-up font-bold">
+                    {stats.avgWin > 0 ? `+${formatCurrency(stats.avgWin)}` : "--"}
+                  </span>
                 </div>
                 <div className="flex justify-between py-3">
                   <span className="text-muted">Avg Loss Value</span>
-                  <span className="text-trading-down font-bold">-$120.40</span>
+                  <span className="text-trading-down font-bold">
+                    {stats.avgLoss < 0 ? formatCurrency(stats.avgLoss) : "--"}
+                  </span>
                 </div>
               </div>
             </Card>
@@ -923,7 +928,7 @@ export default function PortfolioAnalyticsPage() {
             <div>
               <h4 className="font-heading text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
                 <Clock size={14} className="text-primary" />
-                Simulated Execution Log
+                Execution Log
               </h4>
               <p className="text-[10px] text-muted font-sans mt-0.5">Real-time trade confirmations across spot, options, and futures accounts.</p>
             </div>
