@@ -20,7 +20,7 @@ public class WalletService {
     private final WalletRepository walletRepository;
     private final UserService userService;
     
-    private static final BigDecimal INITIAL_PAPER_CAPITAL = new BigDecimal("100000.00");
+    private static final BigDecimal INITIAL_PAPER_CAPITAL = BigDecimal.ZERO;
     
     public void initializeUserWallets(User user) {
         for (WalletType type : WalletType.values()) {
