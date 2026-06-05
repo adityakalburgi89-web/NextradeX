@@ -94,7 +94,7 @@ export function TradingChartPanel({
               return (
                 <div
                   key={stat.label}
-                  className="rounded-lg border border-hairline-on-dark bg-surface-card-dark px-4 py-3"
+                  className="rounded-lg border border-hairline-on-dark bg-surface-card-dark px-4 py-3 min-w-0 w-full"
                 >
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-xs tracking-wider text-muted font-heading uppercase">{stat.label}</span>
@@ -106,7 +106,7 @@ export function TradingChartPanel({
                     {formatStatValue(stat)}
                   </div>
                   {stat.hint ? (
-                    <div className="mt-1 text-[11px] text-muted font-heading">{stat.hint}</div>
+                    <div className="mt-1 text-[11px] text-muted font-heading truncate" title={stat.hint}>{stat.hint}</div>
                   ) : null}
                 </div>
               );

@@ -178,7 +178,7 @@ export default function MarketsPage() {
       value: selectedMarket.percentChange24h,
       kind: "percent",
       icon: "change",
-      hint: `${formatCurrency(selectedMarket.priceChange24h || 0)} net move`,
+      hint: `${formatCurrency(selectedMarket.priceChange24h || 0)} move`,
     },
     {
       label: "24H volume",

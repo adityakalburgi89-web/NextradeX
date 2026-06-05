@@ -355,29 +355,29 @@ export default function MarginTradingPage() {
 
             {priceSnapshot && (
               <div className="flex flex-wrap items-center gap-8 font-mono text-muted">
-                <div>
+                <div className="min-w-[80px]">
                   <span className="block uppercase text-[9px] tracking-wider">24h Change</span>
                   <span className={`text-sm font-bold ${Number(priceSnapshot.percentChange24h) >= 0 ? "text-trading-up" : "text-trading-down"}`}>
                     {Number(priceSnapshot.percentChange24h) >= 0 ? "+" : ""}{priceSnapshot.percentChange24h}%
                   </span>
                 </div>
 
-                <div>
+                <div className="min-w-[100px]">
                   <span className="block uppercase text-[9px] tracking-wider">24H High</span>
                   <span className="text-sm font-bold text-white">{formatCurrency(priceSnapshot.highPrice || priceSnapshot.currentPrice)}</span>
                 </div>
 
-                <div>
+                <div className="min-w-[100px]">
                   <span className="block uppercase text-[9px] tracking-wider">24H Low</span>
                   <span className="text-sm font-bold text-white">{formatCurrency(priceSnapshot.lowPrice || priceSnapshot.currentPrice)}</span>
                 </div>
 
-                <div>
+                <div className="min-w-[110px]">
                   <span className="block uppercase text-[9px] tracking-wider">Collateral Ratio</span>
                   <span className="text-sm font-bold text-primary">{(marginDetails.collateral / (marginDetails.totalCost || 1) * 100).toFixed(1)}%</span>
                 </div>
 
-                <div>
+                <div className="min-w-[130px]">
                   <span className="block uppercase text-[9px] tracking-wider">Daily Borrow Interest</span>
                   <span className="text-sm font-bold text-white">0.05%</span>
                 </div>

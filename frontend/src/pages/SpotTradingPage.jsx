@@ -262,7 +262,7 @@ export default function SpotTradingPage() {
       value: priceSnapshot?.percentChange24h || 0,
       kind: "percent",
       icon: "change",
-      hint: `${formatCurrency(priceSnapshot?.priceChange24h || 0)} session move`,
+      hint: `${formatCurrency(priceSnapshot?.priceChange24h || 0)} move`,
     },
     {
       label: "Session high",
@@ -308,24 +308,24 @@ export default function SpotTradingPage() {
 
             {priceSnapshot && (
               <div className="flex flex-wrap items-center gap-8 font-mono text-muted">
-                <div>
+                <div className="min-w-[80px]">
                   <span className="block uppercase text-[9px] tracking-wider">24h Change</span>
                   <span className={`text-sm font-bold ${Number(priceSnapshot.percentChange24h) >= 0 ? "text-trading-up" : "text-trading-down"}`}>
                     {Number(priceSnapshot.percentChange24h) >= 0 ? "+" : ""}{priceSnapshot.percentChange24h}%
                   </span>
                 </div>
 
-                <div>
+                <div className="min-w-[100px]">
                   <span className="block uppercase text-[9px] tracking-wider">24h High</span>
                   <span className="text-sm font-bold text-white">{formatCurrency(priceSnapshot.highPrice || currentPrice)}</span>
                 </div>
 
-                <div>
+                <div className="min-w-[100px]">
                   <span className="block uppercase text-[9px] tracking-wider">24h Low</span>
                   <span className="text-sm font-bold text-white">{formatCurrency(priceSnapshot.lowPrice || currentPrice)}</span>
                 </div>
 
-                <div>
+                <div className="min-w-[160px]">
                   <span className="block uppercase text-[9px] tracking-wider">24h Volume</span>
                   <span className="text-sm font-bold text-white">
                     {priceSnapshot.volume24h
