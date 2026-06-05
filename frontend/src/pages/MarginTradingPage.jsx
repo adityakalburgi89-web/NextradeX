@@ -345,8 +345,8 @@ export default function MarginTradingPage() {
 
               {priceSnapshot && (
                 <div className="border-l border-hairline-on-dark pl-4 flex flex-col justify-center">
-                  <span className="text-[10px] text-muted font-mono uppercase tracking-wider block">Index Price</span>
-                  <span className="text-base font-bold font-mono text-trading-up animate-pulse">
+                  <span className="text-[10px] text-muted font-mono font-bold uppercase tracking-wider block">Index Price</span>
+                  <span className="text-base font-extrabold font-mono text-trading-up">
                     {formatCurrency(priceSnapshot.currentPrice)}
                   </span>
                 </div>
@@ -354,39 +354,32 @@ export default function MarginTradingPage() {
             </div>
 
             {priceSnapshot && (
-              <div className="flex flex-wrap items-center gap-8 font-mono text-[10px] text-muted">
+              <div className="flex flex-wrap items-center gap-8 font-mono text-muted">
                 <div>
-                  <span className="block uppercase text-[9px]">24h Change</span>
-                  <span className={`text-xs font-bold ${Number(priceSnapshot.percentChange24h) >= 0 ? "text-trading-up" : "text-trading-down"}`}>
+                  <span className="block uppercase text-[9px] tracking-wider">24h Change</span>
+                  <span className={`text-sm font-bold ${Number(priceSnapshot.percentChange24h) >= 0 ? "text-trading-up" : "text-trading-down"}`}>
                     {Number(priceSnapshot.percentChange24h) >= 0 ? "+" : ""}{priceSnapshot.percentChange24h}%
                   </span>
                 </div>
 
                 <div>
-                  <span className="block uppercase text-[9px]">24H High</span>
-                  <span className="text-xs font-semibold text-white">{formatCurrency(priceSnapshot.highPrice || priceSnapshot.currentPrice)}</span>
+                  <span className="block uppercase text-[9px] tracking-wider">24H High</span>
+                  <span className="text-sm font-bold text-white">{formatCurrency(priceSnapshot.highPrice || priceSnapshot.currentPrice)}</span>
                 </div>
 
                 <div>
-                  <span className="block uppercase text-[9px]">24H Low</span>
-                  <span className="text-xs font-semibold text-white">{formatCurrency(priceSnapshot.lowPrice || priceSnapshot.currentPrice)}</span>
+                  <span className="block uppercase text-[9px] tracking-wider">24H Low</span>
+                  <span className="text-sm font-bold text-white">{formatCurrency(priceSnapshot.lowPrice || priceSnapshot.currentPrice)}</span>
                 </div>
 
                 <div>
-                  <span className="block uppercase text-[9px]">Collateral Ratio</span>
-                  <span className="text-xs font-bold text-primary">{(marginDetails.collateral / (marginDetails.totalCost || 1) * 100).toFixed(1)}%</span>
+                  <span className="block uppercase text-[9px] tracking-wider">Collateral Ratio</span>
+                  <span className="text-sm font-bold text-primary">{(marginDetails.collateral / (marginDetails.totalCost || 1) * 100).toFixed(1)}%</span>
                 </div>
 
                 <div>
-                  <span className="block uppercase text-[9px]">Daily Borrow Interest</span>
-                  <span className="text-xs font-semibold text-white">0.05%</span>
-                </div>
-
-                <div>
-                  <span className="block uppercase text-[9px]">Websocket status</span>
-                  <span className={`text-xs font-bold ${connected ? "text-trading-up" : "text-muted"}`}>
-                    {connected ? "CONNECTED" : "DISCONNECTED"}
-                  </span>
+                  <span className="block uppercase text-[9px] tracking-wider">Daily Borrow Interest</span>
+                  <span className="text-sm font-bold text-white">0.05%</span>
                 </div>
               </div>
             )}

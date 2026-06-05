@@ -329,58 +329,58 @@ export default function FuturesTradingPage() {
 
               {priceSnapshot && (
                 <div className="border-l border-hairline-on-dark pl-4 flex flex-col justify-center">
-                  <span className="text-[10px] text-muted font-mono uppercase tracking-wider block">Mark Price</span>
-                  <span className="text-base font-bold font-mono text-trading-up animate-pulse">
+                  <span className="text-[10px] text-muted font-mono font-bold uppercase tracking-wider block">Mark Price</span>
+                  <span className="text-base font-extrabold font-mono text-trading-up">
                     {formatCurrency(priceSnapshot.currentPrice)}
                   </span>
                 </div>
               )}
             </div>
 
-            {/* Other high-fidelity ticker blocks */}
             {priceSnapshot && (
-              <div className="flex flex-wrap items-center gap-8 font-mono text-[10px] text-muted">
+              <div className="flex flex-wrap items-center gap-8 font-mono text-muted">
                 <div>
-                  <span className="block uppercase text-[9px]">Index Price</span>
-                  <span className="text-xs font-semibold text-white">{(Number(priceSnapshot.currentPrice) * 1.0005).toFixed(2)}</span>
+                  <span className="block uppercase text-[9px] tracking-wider">Index Price</span>
+                  <span className="text-sm font-bold text-white">{(Number(priceSnapshot.currentPrice) * 1.0005).toFixed(2)}</span>
                 </div>
 
                 <div>
-                  <span className="block uppercase text-[9px] text-primary">Funding (8h) / Countdown</span>
-                  <span className="text-xs font-bold text-primary">0.0055% / 07:49:10</span>
+                  <span className="block uppercase text-[9px] tracking-wider text-primary">Funding (8h) / Countdown</span>
+                  <span className="text-sm font-bold text-primary">0.0055% / 07:49:10</span>
                 </div>
 
                 <div>
-                  <span className="block uppercase text-[9px]">24h Change</span>
-                  <span className={`text-xs font-bold ${Number(priceSnapshot.percentChange24h) >= 0 ? "text-trading-up" : "text-trading-down"}`}>
+                  <span className="block uppercase text-[9px] tracking-wider">24h Change</span>
+                  <span className={`text-sm font-bold ${Number(priceSnapshot.percentChange24h) >= 0 ? "text-trading-up" : "text-trading-down"}`}>
                     {Number(priceSnapshot.percentChange24h) >= 0 ? "+" : ""}{priceSnapshot.percentChange24h}%
                   </span>
                 </div>
 
                 <div>
-                  <span className="block uppercase text-[9px]">24h High</span>
-                  <span className="text-xs font-semibold text-white">{(Number(priceSnapshot.currentPrice) * 1.025).toFixed(2)}</span>
+                  <span className="block uppercase text-[9px] tracking-wider">24h High</span>
+                  <span className="text-sm font-bold text-white">{(Number(priceSnapshot.currentPrice) * 1.025).toFixed(2)}</span>
                 </div>
 
                 <div>
-                  <span className="block uppercase text-[9px]">24h Low</span>
-                  <span className="text-xs font-semibold text-white">{(Number(priceSnapshot.currentPrice) * 0.975).toFixed(2)}</span>
+                  <span className="block uppercase text-[9px] tracking-wider">24h Low</span>
+                  <span className="text-sm font-bold text-white">{(Number(priceSnapshot.currentPrice) * 0.975).toFixed(2)}</span>
                 </div>
 
                 <div>
-                  <span className="block uppercase text-[9px]">24h Vol(BTC)</span>
-                  <span className="text-xs font-semibold text-white">246,500.27</span>
+                  <span className="block uppercase text-[9px] tracking-wider">24h Vol({symbol.replace("USDT", "").toUpperCase()})</span>
+                  <span className="text-sm font-bold text-white">
+                    {priceSnapshot.volume24h
+                      ? new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(priceSnapshot.volume24h)
+                      : "246,500.27"}
+                  </span>
                 </div>
 
                 <div>
-                  <span className="block uppercase text-[9px]">24h Vol(USDT)</span>
-                  <span className="text-xs font-semibold text-white">1.72B</span>
-                </div>
-
-                <div>
-                  <span className="block uppercase text-[9px]">Websocket status</span>
-                  <span className={`text-xs font-bold ${connected ? "text-trading-up" : "text-muted"}`}>
-                    {connected ? "CONNECTED" : "DISCONNECTED"}
+                  <span className="block uppercase text-[9px] tracking-wider">24h Vol(USDT)</span>
+                  <span className="text-sm font-bold text-white">
+                    {priceSnapshot.volume24h
+                      ? new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(priceSnapshot.volume24h) * Number(priceSnapshot.currentPrice))
+                      : "15,286,470,643.58"}
                   </span>
                 </div>
               </div>
