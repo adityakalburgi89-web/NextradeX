@@ -40,6 +40,7 @@ export default function FuturesTradingPage() {
   const [chartInterval, setChartInterval] = useState("1h");
   const [activeBottomTab, setActiveBottomTab] = useState("POSITIONS");
   const [usdtWalletBalance, setUsdtWalletBalance] = useState(0.00);
+  const [pricesMap, setPricesMap] = useState({});
   
   // Real-time streaming mock recent trades
   const [recentTrades, setRecentTrades] = useState([
@@ -51,6 +52,20 @@ export default function FuturesTradingPage() {
   ]);
 
   const handlePriceUpdate = (data) => {
+    if (data) {
+      setPricesMap((prev) => {
+        const next = { ...prev };
+        if (Array.isArray(data)) {
+          data.forEach((p) => {
+            next[p.symbol.toUpperCase()] = Number(p.currentPrice);
+          });
+        } else if (data.symbol) {
+          next[data.symbol.toUpperCase()] = Number(data.currentPrice);
+        }
+        return next;
+      });
+    }
+
     let update = null;
     const currentSymbol = symbol.toUpperCase();
 
@@ -449,7 +464,17 @@ export default function FuturesTradingPage() {
                           </thead>
                           <tbody className="divide-y divide-hairline-on-dark">
                             {positions.map((p) => {
-                              const pnlVal = parseFloat(p.unrealizedPnL || "0");
+                              const currentPrice = pricesMap[p.symbol.toUpperCase()] || Number(p.markPrice || p.entryPrice);
+                              const entryPrice = Number(p.entryPrice);
+                              const qty = Number(p.quantity);
+                              
+                              let pnlVal;
+                              if (p.positionMode === "LONG") {
+                                pnlVal = (currentPrice - entryPrice) * qty;
+                              } else { // SHORT
+                                pnlVal = (entryPrice - currentPrice) * qty;
+                              }
+                              
                               const isProfit = pnlVal >= 0;
                               return (
                                 <tr key={p.id} className="hover:bg-white/[0.01] transition-colors">
@@ -465,7 +490,7 @@ export default function FuturesTradingPage() {
                                   <td className="py-3 px-4 text-right text-muted">{p.entryPrice}</td>
                                   <td className="py-3 px-4 text-right text-primary font-bold">{p.leverage}x</td>
                                   <td className={`py-3 px-4 text-right font-bold text-sm ${isProfit ? "text-trading-up" : "text-trading-down"}`}>
-                                    {isProfit ? "+" : ""}{p.unrealizedPnL} USDT
+                                    {isProfit ? "+" : ""}{pnlVal.toFixed(2)} USDT
                                   </td>
                                   <td className="py-3 px-4 text-center">
                                     <div className="flex flex-col items-center gap-0.5">

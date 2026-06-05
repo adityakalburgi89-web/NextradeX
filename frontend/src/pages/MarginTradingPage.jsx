@@ -50,6 +50,7 @@ export default function MarginTradingPage() {
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [marginWalletBalance, setMarginWalletBalance] = useState(0.00);
   const [loadingWallets, setLoadingWallets] = useState(true);
+  const [pricesMap, setPricesMap] = useState({});
 
   const loadPositions = async () => {
     try {
@@ -133,6 +134,20 @@ export default function MarginTradingPage() {
   }, [form.symbol]);
 
   const handlePriceUpdate = (data) => {
+    if (data) {
+      setPricesMap((prev) => {
+        const next = { ...prev };
+        if (Array.isArray(data)) {
+          data.forEach((p) => {
+            next[p.symbol.toUpperCase()] = Number(p.currentPrice);
+          });
+        } else if (data.symbol) {
+          next[data.symbol.toUpperCase()] = Number(data.currentPrice);
+        }
+        return next;
+      });
+    }
+
     let update = null;
     const currentSymbol = form.symbol.toUpperCase();
 
@@ -467,7 +482,17 @@ export default function MarginTradingPage() {
                           </thead>
                           <tbody className="divide-y divide-hairline-on-dark font-mono text-xs">
                             {positions.map((p) => {
-                              const pnlValue = parseFloat(p.unrealizedPnL || "0");
+                              const currentPrice = pricesMap[p.symbol.toUpperCase()] || Number(p.entryPrice);
+                              const entryPrice = Number(p.entryPrice);
+                              const qty = Number(p.quantity);
+                              
+                              let pnlValue;
+                              if (p.side === "BUY") {
+                                pnlValue = (currentPrice - entryPrice) * qty;
+                              } else { // SELL
+                                pnlValue = (entryPrice - currentPrice) * qty;
+                              }
+                              
                               const isProfit = pnlValue >= 0;
                               return (
                                 <tr key={p.id} className="hover:bg-canvas-dark/25 transition-colors">
