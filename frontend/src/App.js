@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import NumberFlow, { continuous } from '@number-flow/react';
 import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "./components/ui/Button";
@@ -148,6 +149,14 @@ const renderCoinIcon = (symbol) => {
 
 function HomePage() {
   const [activeMarketTab, setActiveMarketTab] = useState("popular");
+  const [userCount, setUserCount] = useState(316258026);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setUserCount(prev => prev + Math.floor(Math.random() * 4) + 1);
+    }, 2500);
+    return () => clearInterval(timer);
+  }, []);
   return (
     <PageTransition>
       <main className="w-full text-white bg-canvas-dark">
@@ -271,7 +280,7 @@ function HomePage() {
             <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block font-semibold">Platform Metric</span>
             <div className="inline-flex items-center gap-2 select-none border border-hairline-on-dark bg-surface-card-dark/30 rounded-2xl px-8 py-6 backdrop-blur-md shadow-elevation-md">
               <h2 className="font-mono text-5xl md:text-8xl font-bold tracking-wider text-primary leading-none">
-                316,258,026
+                <NumberFlow plugins={[continuous]} value={userCount} />
               </h2>
             </div>
             <h3 className="font-heading text-lg md:text-2xl font-semibold tracking-tight text-white/95 max-w-2xl mx-auto mt-6">

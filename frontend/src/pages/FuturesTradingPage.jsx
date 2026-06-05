@@ -254,18 +254,18 @@ export default function FuturesTradingPage() {
 
   return (
     <PageTransition>
-      <div className="w-full bg-[#0a0a0f] text-white py-4 font-sans select-none min-h-screen">
+      <div className="w-full bg-canvas-dark text-white py-4 font-sans select-none min-h-screen">
         <div className="max-w-8xl mx-auto px-4 space-y-4">
           
-          {/* HIGH-DENSITY BINANCE TICKER HEADER PANEL */}
-          <div className="bg-[#121218] border border-hairline-on-dark rounded-xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-6 shadow-elevation-md">
+          {/* HIGH-DENSITY TICKER HEADER PANEL */}
+          <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-6 shadow-elevation-md">
             
             {/* Asset Symbol & Base Stats */}
             <div className="flex items-center gap-4">
               <div>
                 <h1 className="text-base font-extrabold tracking-tight font-heading flex items-center gap-1.5 text-white">
                   {symbol.toUpperCase()}
-                  <span className="text-[9px] font-mono font-bold bg-[#fcd535]/15 text-[#fcd535] px-1 rounded uppercase tracking-wider">Perp</span>
+                  <span className="text-[9px] font-mono font-bold bg-primary/15 text-primary px-1 rounded uppercase tracking-wider">Perp</span>
                 </h1>
                 <span className="text-[10px] font-mono font-semibold text-muted">Binance Futures</span>
               </div>
@@ -289,8 +289,8 @@ export default function FuturesTradingPage() {
                 </div>
 
                 <div>
-                  <span className="block uppercase text-[9px] text-[#fcd535]">Funding (8h) / Countdown</span>
-                  <span className="text-xs font-bold text-[#fcd535]">0.0055% / 07:49:10</span>
+                  <span className="block uppercase text-[9px] text-primary">Funding (8h) / Countdown</span>
+                  <span className="text-xs font-bold text-primary">0.0055% / 07:49:10</span>
                 </div>
 
                 <div>
@@ -341,20 +341,21 @@ export default function FuturesTradingPage() {
               />
 
               {/* HIGH-FIDELITY POSITIONS AND BALANCES BOTTOM TAB GRID */}
-              <Card className="bg-[#121218] border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md">
-                <div className="bg-[#181822] border-b border-hairline-on-dark px-4 flex items-center justify-between">
+              <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md">
+                <div className="bg-canvas-dark/30 border-b border-hairline-on-dark px-4 flex items-center justify-between">
                   <div className="flex gap-4 font-heading text-[10px] font-bold uppercase tracking-wider py-3 select-none">
                     {["Positions", "Open Orders", "Order History", "Trade History", "Assets"].map((tab) => (
                       <button
                         key={tab}
+                        type="button"
                         onClick={() => setActiveBottomTab(tab.toUpperCase())}
                         className={`pb-1.5 relative transition-colors ${
-                          activeBottomTab === tab.toUpperCase() ? "text-[#fcd535]" : "text-muted hover:text-white"
+                          activeBottomTab === tab.toUpperCase() ? "text-primary font-bold" : "text-muted hover:text-white"
                         }`}
                       >
                         {tab} ({tab === "Positions" ? positions.length : 0})
                         {activeBottomTab === tab.toUpperCase() && (
-                          <span className="absolute bottom-[-13px] left-0 right-0 h-[2px] bg-[#fcd535] rounded-full" />
+                          <span className="absolute bottom-[-13px] left-0 right-0 h-[2px] bg-primary rounded-full" />
                         )}
                       </button>
                     ))}
@@ -403,7 +404,7 @@ export default function FuturesTradingPage() {
                                   </td>
                                   <td className="py-3 px-4 text-right font-semibold">{p.quantity}</td>
                                   <td className="py-3 px-4 text-right text-muted">{p.entryPrice}</td>
-                                  <td className="py-3 px-4 text-right text-[#fcd535] font-bold">{p.leverage}x</td>
+                                  <td className="py-3 px-4 text-right text-primary font-bold">{p.leverage}x</td>
                                   <td className={`py-3 px-4 text-right font-bold text-sm ${isProfit ? "text-trading-up" : "text-trading-down"}`}>
                                     {isProfit ? "+" : ""}{p.unrealizedPnL} USDT
                                   </td>
@@ -420,12 +421,14 @@ export default function FuturesTradingPage() {
                                   <td className="py-3 px-4 text-center">
                                     <div className="flex items-center justify-center gap-2">
                                       <button
+                                        type="button"
                                         onClick={() => handleOpenSlTpModal(p)}
-                                        className="px-2 py-1 bg-white/[0.03] hover:bg-[#fcd535]/15 hover:text-[#fcd535] border border-white/[0.05] rounded text-[10px] font-semibold transition-all"
+                                        className="px-2 py-1 bg-white/[0.03] hover:bg-primary/15 hover:text-primary border border-white/[0.05] rounded text-[10px] font-semibold transition-all"
                                       >
                                         Set TP/SL
                                       </button>
                                       <button
+                                        type="button"
                                         onClick={() => handleClosePosition(p.id)}
                                         className="px-2 py-1 bg-trading-down/10 hover:bg-trading-down/25 text-trading-down border border-trading-down/20 rounded text-[10px] font-semibold transition-all"
                                       >
@@ -440,6 +443,23 @@ export default function FuturesTradingPage() {
                         </table>
                       </div>
                     )
+                  ) : activeBottomTab === "ASSETS" ? (
+                    <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
+                      <div className="border border-hairline-on-dark rounded-lg p-3 bg-canvas-dark/20">
+                        <span className="text-muted text-[10px] uppercase block">Total Futures Equity</span>
+                        <span className="text-lg font-bold text-white block mt-1">{formatCurrency(usdtWalletBalance)}</span>
+                      </div>
+                      <div className="border border-hairline-on-dark rounded-lg p-3 bg-canvas-dark/20">
+                        <span className="text-muted text-[10px] uppercase block">Asset Sizing Base</span>
+                        <span className="text-sm font-bold text-primary block mt-1">USDT (Perpetual Margin)</span>
+                      </div>
+                      <div className="border border-hairline-on-dark rounded-lg p-3 bg-canvas-dark/20 flex items-center justify-between">
+                        <div>
+                          <span className="text-muted text-[10px] uppercase block">Wallet Connection</span>
+                          <span className="text-[10px] text-trading-up font-bold block mt-1">● ONLINE (Simulated Perp)</span>
+                        </div>
+                      </div>
+                    </div>
                   ) : (
                     <div className="py-12 text-center text-muted font-mono text-xs">
                       No active {activeBottomTab.toLowerCase()} records.
@@ -460,7 +480,7 @@ export default function FuturesTradingPage() {
               />
 
               {/* Streaming Real-Time matched Trades Panel */}
-              <Card className="bg-[#121218] border border-hairline-on-dark rounded-xl p-4 font-mono text-xs shadow-elevation-md">
+              <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-4 font-mono text-xs shadow-elevation-md">
                 <div className="flex justify-between items-center border-b border-hairline-on-dark pb-2 mb-3">
                   <h4 className="font-heading text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-trading-up animate-ping"></span>
@@ -491,10 +511,10 @@ export default function FuturesTradingPage() {
 
             {/* RIGHT AREA: Full Professional Order Entry Form (col-span-3) */}
             <div className="lg:col-span-3">
-              <Card className="border border-hairline-on-dark bg-[#121218] rounded-xl overflow-hidden shadow-elevation-lg">
+              <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl overflow-hidden shadow-elevation-lg">
                 
                 {/* Isolated/Leverage Config Bar */}
-                <div className="bg-[#181822] px-4 py-2 border-b border-hairline-on-dark flex items-center justify-between text-[10px] font-mono">
+                <div className="bg-canvas-dark/30 px-4 py-2 border-b border-hairline-on-dark flex items-center justify-between text-[10px] font-mono">
                   <div className="flex gap-2">
                     <select
                       value={marginMode}
@@ -508,7 +528,7 @@ export default function FuturesTradingPage() {
                     <select
                       value={leverage}
                       onChange={(e) => setLeverage(e.target.value)}
-                      className="bg-canvas-dark border border-hairline-on-dark rounded px-1.5 py-0.5 text-[#fcd535] font-extrabold outline-none cursor-pointer"
+                      className="bg-canvas-dark border border-hairline-on-dark rounded px-1.5 py-0.5 text-primary font-extrabold outline-none cursor-pointer"
                     >
                       {["1", "3", "5", "7", "10", "20", "50", "100", "125"].map(lvl => (
                         <option key={lvl} value={lvl}>{lvl}x</option>
@@ -527,7 +547,7 @@ export default function FuturesTradingPage() {
                   <button
                     type="button"
                     className={`flex-1 py-2.5 text-center text-xs font-bold tracking-wider rounded transition-all ${
-                      orderMode === "OPEN" ? "bg-[#1e2329]/90 text-white font-bold" : "text-muted hover:text-white"
+                      orderMode === "OPEN" ? "bg-surface-elevated-dark text-white font-bold" : "text-muted hover:text-white"
                     }`}
                     onClick={() => setOrderMode("OPEN")}
                   >
@@ -536,7 +556,7 @@ export default function FuturesTradingPage() {
                   <button
                     type="button"
                     className={`flex-1 py-2.5 text-center text-xs font-bold tracking-wider rounded transition-all ${
-                      orderMode === "CLOSE" ? "bg-[#1e2329]/90 text-white font-bold" : "text-muted hover:text-white"
+                      orderMode === "CLOSE" ? "bg-surface-elevated-dark text-white font-bold" : "text-muted hover:text-white"
                     }`}
                     onClick={() => setOrderMode("CLOSE")}
                   >
@@ -551,7 +571,7 @@ export default function FuturesTradingPage() {
                       key={type}
                       type="button"
                       onClick={() => setOrderType(type)}
-                      className={`font-bold pb-0.5 ${orderType === type ? "text-[#fcd535] border-b border-[#fcd535]" : "hover:text-white"}`}
+                      className={`font-bold pb-0.5 ${orderType === type ? "text-primary border-b border-primary" : "hover:text-white"}`}
                     >
                       {type}
                     </button>
@@ -564,7 +584,7 @@ export default function FuturesTradingPage() {
                     <span>Avbl Wallet Balance</span>
                     <span className="text-white font-semibold flex items-center gap-1">
                       {usdtWalletBalance.toFixed(2)} USDT
-                      <ArrowRightLeft size={10} className="text-[#fcd535] cursor-pointer" />
+                      <ArrowRightLeft size={10} className="text-primary cursor-pointer" />
                     </span>
                   </div>
 
@@ -641,12 +661,12 @@ export default function FuturesTradingPage() {
                     </div>
                     <div className="flex justify-between items-center text-muted">
                       <span>Initial Margin Cost</span>
-                      <span className="text-[#fcd535] font-bold">{formatCurrency(estimatedMargin)}</span>
+                      <span className="text-primary font-bold">{formatCurrency(estimatedMargin)}</span>
                     </div>
                     <div className="flex justify-between items-center text-muted">
                       <span>Liq. Price (Est)</span>
                       <span className="text-trading-down font-bold">
-                        {formatCurrency((priceSnapshot?.currentPrice || 0) * (orderSide => orderSide === "BUY" ? 0.85 : 1.15)(side))}
+                        {formatCurrency((priceSnapshot?.currentPrice || 0) * (side === "BUY" ? 0.85 : 1.15))}
                       </span>
                     </div>
                   </div>
@@ -715,8 +735,8 @@ export default function FuturesTradingPage() {
       {/* GLASSMORPHIC STOP LOSS & TAKE PROFIT PORTAL MODAL */}
       {selectedPositionForSlTp && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-md bg-[#121218] border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-xl">
-            <div className="bg-[#181822] px-6 py-4 border-b border-hairline-on-dark flex justify-between items-center">
+          <div className="relative w-full max-w-md bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-xl">
+            <div className="bg-canvas-dark/30 px-6 py-4 border-b border-hairline-on-dark flex justify-between items-center">
               <h3 className="font-heading font-extrabold text-sm text-white flex items-center gap-2">
                 <span>Manage Trade Risk: {selectedPositionForSlTp.symbol}</span>
                 <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
@@ -726,6 +746,7 @@ export default function FuturesTradingPage() {
                 </span>
               </h3>
               <button
+                type="button"
                 onClick={() => setSelectedPositionForSlTp(null)}
                 className="text-muted hover:text-white font-mono text-lg font-bold"
               >
@@ -742,7 +763,7 @@ export default function FuturesTradingPage() {
                 </div>
                 <div>
                   <span className="text-muted block text-[10px] uppercase">Mark Price</span>
-                  <span className="text-[#fcd535] font-bold">{selectedPositionForSlTp.markPrice || selectedPositionForSlTp.entryPrice} USDT</span>
+                  <span className="text-primary font-bold">{selectedPositionForSlTp.markPrice || selectedPositionForSlTp.entryPrice} USDT</span>
                 </div>
               </div>
 
@@ -776,7 +797,7 @@ export default function FuturesTradingPage() {
                         key={pct}
                         type="button"
                         onClick={() => setTpInput(target.toFixed(2))}
-                        className="flex-1 py-1.5 bg-canvas-dark hover:bg-trading-up/10 hover:text-trading-up border border-[#fcd535]/20 hover:border-trading-up/40 text-muted rounded font-mono text-[9px] font-bold transition-all"
+                        className="flex-1 py-1.5 bg-canvas-dark hover:bg-trading-up/10 hover:text-trading-up border border-primary/20 hover:border-trading-up/40 text-muted rounded font-mono text-[9px] font-bold transition-all"
                       >
                         +{pct}% ROE
                       </button>
@@ -815,7 +836,7 @@ export default function FuturesTradingPage() {
                         key={pct}
                         type="button"
                         onClick={() => setSlInput(target.toFixed(2))}
-                        className="flex-1 py-1.5 bg-canvas-dark hover:bg-trading-down/10 hover:text-trading-down border border-[#fcd535]/20 hover:border-trading-down/40 text-muted rounded font-mono text-[9px] font-bold transition-all"
+                        className="flex-1 py-1.5 bg-canvas-dark hover:bg-trading-down/10 hover:text-trading-down border border-primary/20 hover:border-trading-down/40 text-muted rounded font-mono text-[9px] font-bold transition-all"
                       >
                         -{pct}% ROE
                       </button>
@@ -831,7 +852,7 @@ export default function FuturesTradingPage() {
               )}
             </div>
 
-            <div className="bg-[#181822] px-6 py-4 border-t border-hairline-on-dark flex justify-end gap-3">
+            <div className="bg-canvas-dark/30 px-6 py-4 border-t border-hairline-on-dark flex justify-end gap-3">
               <Button
                 type="button"
                 onClick={() => setSelectedPositionForSlTp(null)}
@@ -842,7 +863,7 @@ export default function FuturesTradingPage() {
               <Button
                 type="button"
                 onClick={handleSaveSlTp}
-                className="font-mono text-xs px-4 py-2 bg-[#fcd535] hover:bg-[#fcd535]/90 text-black font-bold rounded shadow-elevation-sm"
+                className="font-mono text-xs px-4 py-2 bg-primary hover:bg-primary-active text-black font-bold rounded shadow-elevation-sm"
                 loading={isUpdatingSlTp}
               >
                 Confirm Targets

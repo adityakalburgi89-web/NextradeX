@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MessageSquare, Send, X, Bot, HelpCircle, Activity, DollarSign, Shield } from "lucide-react";
+import { MessageSquare, Send, X, Bot, HelpCircle, Activity, DollarSign, Shield, Volume2, VolumeX } from "lucide-react";
 import trixieAvatar from "../assets/Chatbot/trixie.png";
 import trixieVideo from "../assets/Chatbot/Audio/Video/Cute_eye_blinking_animation_202605231326.mp4";
 import { fetchAllPrices } from "../api";
@@ -18,12 +18,13 @@ const audioElements = replySounds.map((sound) => {
   return audio;
 });
 
-const playRandomSound = () => {
+const playRandomSound = (isMuted) => {
+  if (isMuted) return;
   try {
     const randomIndex = Math.floor(Math.random() * audioElements.length);
     const audio = audioElements[randomIndex];
     audio.currentTime = 0;
-    audio.volume = 1.0;
+    audio.volume = 0.45; // comfortable volume
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.catch((err) => {
@@ -35,9 +36,90 @@ const playRandomSound = () => {
   }
 };
 
+// Rich Markdown Text Formatting Parser
+function formatMessageText(text) {
+  if (!text) return "";
+  const lines = text.split("\n");
+  return lines.map((line, idx) => {
+    let content = line;
+    
+    // Handle list item
+    const isList = content.startsWith("• ") || content.startsWith("•");
+    if (isList) {
+      content = content.replace(/^•\s*/, "");
+    }
+    
+    // Parse bold **text**
+    const boldRegex = /\*\*(.*?)\*\*/g;
+    // Parse inline code `code`
+    const codeRegex = /`(.*?)`/g;
+    
+    let parts = [content];
+    
+    // Process bold
+    parts = parts.flatMap(part => {
+      if (typeof part !== 'string') return part;
+      const bits = [];
+      let lastIndex = 0;
+      boldRegex.lastIndex = 0;
+      let match;
+      while ((match = boldRegex.exec(part)) !== null) {
+        if (match.index > lastIndex) {
+          bits.push(part.substring(lastIndex, match.index));
+        }
+        bits.push(<strong key={match.index} className="text-primary font-bold">{match[1]}</strong>);
+        lastIndex = boldRegex.lastIndex;
+      }
+      if (lastIndex < part.length) {
+        bits.push(part.substring(lastIndex));
+      }
+      return bits;
+    });
+
+    // Process inline code
+    parts = parts.flatMap((part, pIdx) => {
+      if (typeof part !== 'string') return part;
+      const bits = [];
+      let lastIndex = 0;
+      codeRegex.lastIndex = 0;
+      let match;
+      while ((match = codeRegex.exec(part)) !== null) {
+        if (match.index > lastIndex) {
+          bits.push(part.substring(lastIndex, match.index));
+        }
+        bits.push(
+          <code key={match.index} className="bg-canvas-dark px-1.5 py-0.5 rounded font-mono text-[10px] text-primary font-semibold border border-white/5 mx-0.5">
+            {match[1]}
+          </code>
+        );
+        lastIndex = codeRegex.lastIndex;
+      }
+      if (lastIndex < part.length) {
+        bits.push(part.substring(lastIndex));
+      }
+      return bits;
+    });
+
+    if (isList) {
+      return (
+        <div key={idx} className="flex items-start gap-1.5 my-1 pl-2">
+          <span className="text-primary mt-1.5 flex-shrink-0 size-1.5 rounded-full bg-primary" />
+          <span className="text-foreground">{parts}</span>
+        </div>
+      );
+    }
+
+    return <p key={idx} className={line.trim() === "" ? "h-2" : "my-0.5 text-foreground"}>{parts}</p>;
+  });
+}
+
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  
+  // Persistent mute state
+  const [isMuted, setIsMuted] = useState(() => localStorage.getItem("trixie_chatbot_muted") === "true");
+
   const [messages, setMessages] = useState([
     {
       id: "welcome",
@@ -50,6 +132,14 @@ export default function Chatbot() {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const videoRef = useRef(null);
+
+  const toggleMute = () => {
+    setIsMuted((prev) => {
+      const next = !prev;
+      localStorage.setItem("trixie_chatbot_muted", String(next));
+      return next;
+    });
+  };
 
   const handleVideoEnded = () => {
     if (videoRef.current) {
@@ -150,17 +240,23 @@ export default function Chatbot() {
 
     setMessages((prev) => [...prev, trixieMsg]);
     setIsTyping(false);
-    playRandomSound();
+    playRandomSound(isMuted);
   };
 
   return (
     <>
       {/* Floating Chat Trigger Bubble */}
       <div className="fixed bottom-6 right-6 z-50">
+        
+        {/* Glow backdrop ring (Antigravity vibe) */}
+        {!isOpen && (
+          <div className="absolute inset-[-4px] rounded-full bg-primary/10 blur-[8px] animate-pulse pointer-events-none" />
+        )}
+
         {/* Tooltip speech bubble */}
         {!isOpen && (
           <div
-            className={`absolute bottom-24 right-2 bg-surface-card-dark text-white border border-hairline-on-dark px-3 py-1.5 rounded-xl text-xs font-semibold shadow-elevation-md transition-all duration-300 pointer-events-none whitespace-nowrap flex items-center gap-1.5 ${
+            className={`absolute bottom-24 right-2 glass-panel text-white border border-hairline-on-dark px-3.5 py-2 rounded-xl text-xs font-semibold shadow-elevation-md transition-all duration-300 pointer-events-none whitespace-nowrap flex items-center gap-1.5 ${
               isHovered
                 ? "opacity-100 translate-y-0 scale-100"
                 : "opacity-0 translate-y-2 scale-95"
@@ -168,7 +264,7 @@ export default function Chatbot() {
           >
             <span className="w-1.5 h-1.5 rounded-full bg-trading-up animate-pulse"></span>
             <span>Chat with Trixie!</span>
-            <div className="absolute bottom-[-5px] right-8 w-2 h-2 bg-surface-card-dark border-r border-b border-hairline-on-dark transform rotate-45"></div>
+            <div className="absolute bottom-[-5px] right-8 w-2 h-2 glass-panel border-r border-b border-hairline-on-dark transform rotate-45"></div>
           </div>
         )}
 
@@ -190,7 +286,7 @@ export default function Chatbot() {
           {isOpen ? (
             <X size={32} className="animate-scale-in text-ink" />
           ) : (
-            <div className="relative size-full rounded-full overflow-hidden flex items-center justify-center p-1.5">
+            <div className="relative size-full rounded-full overflow-hidden flex items-center justify-center p-1 border border-primary/30">
               <video
                 ref={videoRef}
                 src={trixieVideo}
@@ -204,13 +300,14 @@ export default function Chatbot() {
         </button>
       </div>
 
-      {/* Sleek Chat Panel Card */}
+      {/* Sleek Glassmorphic Chat Panel Card */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-96 max-w-[calc(100vw-2rem)] h-[500px] z-50 flex flex-col bg-surface-card-dark rounded-2xl shadow-elevation-lg overflow-hidden border border-hairline-on-dark animate-fade-in-fast font-sans select-text">
+        <div className="fixed bottom-24 right-6 w-96 max-w-[calc(100vw-2rem)] h-[520px] z-50 flex flex-col glass-panel rounded-2xl shadow-elevation-lg overflow-hidden animate-fade-in-fast font-sans select-text border border-white/10">
+          
           {/* Header */}
-          <div className="bg-canvas-dark border-b border-hairline-on-dark px-4 py-3 flex items-center justify-between">
+          <div className="bg-canvas-dark/40 border-b border-hairline-on-dark px-4 py-3.5 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center relative overflow-hidden">
+              <div className="w-11 h-11 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center relative overflow-hidden">
                 <video
                   src={trixieVideo}
                   autoPlay
@@ -222,23 +319,40 @@ export default function Chatbot() {
               </div>
               <div>
                 <h4 className="font-heading text-xs font-bold text-white flex items-center gap-1.5">
-                  Trixie <span className="text-[10px] font-normal text-trading-up font-mono">Copilot</span>
+                  Trixie <span className="text-[9px] font-bold bg-primary/15 text-primary px-1 rounded uppercase tracking-wider font-mono">Copilot</span>
                 </h4>
-                <div className="flex items-center gap-1 text-[10px] text-muted">
-                  <span>Online & ready</span>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-trading-up opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-trading-up"></span>
+                  </span>
+                  <span className="text-[9px] text-muted font-mono uppercase tracking-wider">Online & Ready</span>
                 </div>
               </div>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="p-1 rounded hover:bg-white/5 transition-colors text-muted hover:text-white"
-            >
-              <X size={16} />
-            </button>
+            
+            <div className="flex items-center">
+              {/* Volume Toggle */}
+              <button
+                type="button"
+                onClick={toggleMute}
+                className="p-1.5 rounded hover:bg-white/5 transition-colors text-muted hover:text-white mr-1.5"
+                title={isMuted ? "Unmute Voice Replies" : "Mute Voice Replies"}
+              >
+                {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+              </button>
+              
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-1.5 rounded hover:bg-white/5 transition-colors text-muted hover:text-white"
+              >
+                <X size={16} />
+              </button>
+            </div>
           </div>
 
           {/* Messages Body */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-canvas-dark/20 flex flex-col scrollbar-thin">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-canvas-dark/15 flex flex-col scrollbar-thin">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -246,20 +360,20 @@ export default function Chatbot() {
                   }`}
               >
                 {msg.sender === "trixie" && (
-                  <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 overflow-hidden mt-0.5">
+                  <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center flex-shrink-0 overflow-hidden mt-0.5 shadow-sm">
                     <img src={trixieAvatar} alt="Trixie" className="w-full h-full object-cover" />
                   </div>
                 )}
                 <div className="flex flex-col gap-1">
                   <div
-                    className={`rounded-2xl px-4 py-2.5 text-xs font-sans leading-relaxed whitespace-pre-wrap ${msg.sender === "user"
-                      ? "bg-primary text-on-primary font-semibold rounded-tr-sm"
-                      : "bg-surface-elevated-dark border border-hairline-on-dark text-foreground rounded-tl-sm"
+                    className={`rounded-2xl px-4 py-2.5 text-xs font-sans leading-relaxed whitespace-pre-wrap shadow-elevation-sm ${msg.sender === "user"
+                      ? "bg-gradient-to-r from-primary to-primary-active text-on-primary font-bold rounded-tr-sm hover:brightness-105 transition-all"
+                      : "bg-white/[0.03] backdrop-blur-md border border-white/5 text-foreground rounded-tl-sm"
                       }`}
                   >
-                    {msg.text}
+                    {msg.sender === "trixie" ? formatMessageText(msg.text) : msg.text}
                   </div>
-                  <span className={`text-[9px] text-muted font-mono tracking-wide ${msg.sender === "user" ? "self-end" : "self-start pl-1"
+                  <span className={`text-[8px] text-muted font-mono tracking-wide ${msg.sender === "user" ? "self-end" : "self-start pl-1"
                     }`}>
                     {msg.timestamp}
                   </span>
@@ -270,11 +384,11 @@ export default function Chatbot() {
             {/* Pulsing Typing Indicator */}
             {isTyping && (
               <div className="flex gap-2.5 max-w-[80%] self-start">
-                <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
                   <img src={trixieAvatar} alt="Trixie" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <div className="rounded-2xl px-4 py-3 bg-surface-elevated-dark border border-hairline-on-dark rounded-tl-sm flex items-center gap-1.5 h-[34px]">
+                  <div className="rounded-2xl px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/5 rounded-tl-sm flex items-center gap-1.5 h-[34px] shadow-sm">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }}></span>
                     <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }}></span>
                     <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }}></span>
@@ -287,39 +401,42 @@ export default function Chatbot() {
           </div>
 
           {/* Quick Actions Panel */}
-          <div className="px-4 py-2 border-t border-hairline-on-dark bg-canvas-dark/30 flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth">
+          <div className="px-4 py-2.5 border-t border-white/5 bg-canvas-dark/25 flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth">
             <button
+              type="button"
               onClick={() => handleQuickAction("Check Prices", "price")}
-              className="px-2.5 py-1 text-[10px] font-mono rounded-full border border-hairline-on-dark bg-surface-card-dark text-muted hover:text-primary hover:border-primary/30 transition-all font-semibold"
+              className="px-3 py-1.5 text-[9px] font-mono rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-md text-muted hover:text-primary hover:border-primary/45 hover:bg-primary/5 transition-all font-bold cursor-pointer shadow-sm"
             >
               Live Prices
             </button>
             <button
+              type="button"
               onClick={() => handleQuickAction("Verify Safu", "safu")}
-              className="px-2.5 py-1 text-[10px] font-mono rounded-full border border-hairline-on-dark bg-surface-card-dark text-muted hover:text-primary hover:border-primary/30 transition-all font-semibold"
+              className="px-3 py-1.5 text-[9px] font-mono rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-md text-muted hover:text-primary hover:border-primary/45 hover:bg-primary/5 transition-all font-bold cursor-pointer shadow-sm"
             >
               Reserves SAFU
             </button>
             <button
+              type="button"
               onClick={() => handleQuickAction("Cost and Fees?", "fees")}
-              className="px-2.5 py-1 text-[10px] font-mono rounded-full border border-hairline-on-dark bg-surface-card-dark text-muted hover:text-primary hover:border-primary/30 transition-all font-semibold"
+              className="px-3 py-1.5 text-[9px] font-mono rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-md text-muted hover:text-primary hover:border-primary/45 hover:bg-primary/5 transition-all font-bold cursor-pointer shadow-sm"
             >
               Spot/Futures Fees
             </button>
           </div>
 
           {/* Input Chat Footer */}
-          <form onSubmit={handleSend} className="p-3 border-t border-hairline-on-dark flex gap-2 bg-canvas-dark/40">
+          <form onSubmit={handleSend} className="p-3 border-t border-white/5 flex gap-2 bg-canvas-dark/35 backdrop-blur-md">
             <input
               type="text"
               placeholder="Ask Trixie..."
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              className="flex-1 px-4 py-2.5 h-10 bg-[#15191e] border border-hairline-on-dark rounded-lg text-xs font-mono text-foreground placeholder:text-muted/50 focus:outline-none focus:border-primary transition-all"
+              className="flex-1 px-4 py-2.5 h-10 bg-canvas-dark/65 border border-white/10 rounded-xl text-xs font-mono text-foreground placeholder:text-muted/40 focus:outline-none focus:border-primary/60 transition-all shadow-inner"
             />
             <button
               type="submit"
-              className="h-10 w-10 flex items-center justify-center rounded-lg bg-primary hover:bg-primary-active text-on-primary transition-colors focus:outline-none shadow-glow-primary active:scale-95"
+              className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary hover:bg-primary-active text-on-primary transition-all duration-300 shadow-glow-primary hover:scale-105 active:scale-95 focus:outline-none"
             >
               <Send size={14} className="text-ink" />
             </button>

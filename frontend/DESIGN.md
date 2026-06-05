@@ -329,6 +329,22 @@ components:
     textColor: "{colors.body-on-light}"
     typography: "{typography.body-md}"
     padding: 64px
+  ticker-header:
+    backgroundColor: "{colors.surface-card-dark}"
+    textColor: "{colors.on-dark}"
+    typography: "{typography.number-sm}"
+    rounded: "{rounded.xl}"
+    padding: 14px 20px
+  bottom-tab-panel:
+    backgroundColor: "{colors.surface-card-dark}"
+    textColor: "{colors.on-dark}"
+    rounded: "{rounded.xl}"
+    border: "1px solid {colors.hairline-on-dark}"
+  order-entry-card:
+    backgroundColor: "{colors.surface-card-dark}"
+    textColor: "{colors.on-dark}"
+    rounded: "{rounded.xl}"
+    border: "1px solid {colors.hairline-on-dark}"
 ---
 
 ## Overview
@@ -568,6 +584,14 @@ Binance's radius hierarchy is tighter than typical marketing systems — most su
 
 **`footer-light`** — The light-gray footer that closes every page (including dark-canvas pages). Background `{colors.surface-soft-light}` (#fafafa), text `{colors.body-on-light}`. 6-column link list at desktop covering Community / About Us / Products / Business / Service / Learn columns. Vertical padding 64px. The deliberate light footer on a dark page is one of Binance's most distinctive layout choices — it visually closes the page with a "marketing reset" surface.
 
+### Trading Dashboard Sub-System
+
+**`ticker-header`** — The horizontal asset information bar located at the top of Spot, Margin, and Futures pages. Background `{colors.surface-card-dark}`, border `{colors.hairline-on-dark}`, padding 14px × 20px. Contains the active symbol, primary price (large font in `{colors.trading-up}` / `{colors.trading-down}`), and tabular sub-metrics (Index Price, Funding Rate, Countdown timer, 24h Change, 24h High, 24h Low, 24h Volume) in `{typography.number-sm}` (BinancePlex).
+
+**`bottom-tab-panel`** — The tabbed panel at the bottom of the left column (below the chart workspace) which manages active positions, open orders, historical order logs, and wallet balances. Background `{colors.surface-card-dark}`, border `{colors.hairline-on-dark}`. The active tab shows a yellow underline (`{colors.primary}`) and matches `{typography.button}` styling.
+
+**`order-entry-card`** — The control card on the right-hand panel where users configure and route orders. Background `{colors.surface-card-dark}`, rounded `{rounded.xl}`. Features BUY/SELL or LONG/SHORT side-switch tabs at the top, followed by sub-tabs for Order Type selection, input fields for price/quantity, size percentage shortcuts (25%, 50%, 75%, 100%), margin risk stats, and the main action CTA button.
+
 ## Do's and Don'ts
 
 ### Do
@@ -630,5 +654,4 @@ Binance's radius hierarchy is tighter than typical marketing systems — most su
 - BinanceNova and BinancePlex weight-axis values are not formalized as variable-font tokens — only the static weights observed in screenshots are documented.
 - Animation and transition timings (chart redraws, price-change flashes) are not in scope.
 - Form validation states beyond `{component.text-input-on-light}` defaults are not extracted — error / success input variants would need a sign-up or order-confirmation flow to confirm.
-- The trading dashboard surfaces (Spot / Futures / Margin) were not in the analyzed URL set; their order book, candlestick chart configuration, and position-management cards are not documented here.
 - The light/dark theme toggle behavior (whether transactional pages can be forced dark by user preference) is product behavior, not extracted from the marketing surfaces.
