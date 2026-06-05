@@ -98,10 +98,16 @@ export default function SpotTradingPage() {
 
   const loadActiveOrders = async () => {
     try {
-      const res = await fetchActiveOrders();
-      const spotSymbol = form.symbol.toUpperCase();
-      const filtered = (res?.data || []).filter(o => o.symbol.toUpperCase() === spotSymbol);
-      setActiveOrders(filtered);
+      const activeRes = await fetchActiveOrders();
+      const historyRes = await fetchOrderHistory();
+      
+      const activeFiltered = (activeRes?.data || []).filter(o => o.tradeType === "SPOT");
+      const historyFiltered = (historyRes?.data || []).filter(o => o.tradeType === "SPOT");
+      
+      const combined = [...activeFiltered, ...historyFiltered];
+      combined.sort((a, b) => b.id - a.id);
+      
+      setActiveOrders(combined.slice(0, 50));
     } catch (err) {
       console.warn("Could not retrieve active orders:", err.message);
     } finally {
@@ -112,8 +118,8 @@ export default function SpotTradingPage() {
   const loadOrderHistory = async () => {
     try {
       const res = await fetchOrderHistory();
-      const spotSymbol = form.symbol.toUpperCase();
-      const filtered = (res?.data || []).filter(o => o.symbol.toUpperCase() === spotSymbol);
+      const filtered = (res?.data || []).filter(o => o.tradeType === "SPOT");
+      filtered.sort((a, b) => b.id - a.id);
       setOrderHistory(filtered);
     } catch (err) {
       console.warn("Could not retrieve order history:", err.message);
@@ -200,6 +206,22 @@ export default function SpotTradingPage() {
       loadAllUserData();
     } catch (err) {
       setError(err.message || "Failed to cancel order");
+    }
+  };
+
+  const handleCancelAllOrders = async () => {
+    const ordersToCancel = activeOrders.filter(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED");
+    if (ordersToCancel.length === 0) return;
+    setLoadingOrders(true);
+    setError("");
+    setMessage("");
+    try {
+      await Promise.all(ordersToCancel.map((o) => cancelOrder(o.id)));
+      setMessage("All open orders cancelled successfully");
+      loadAllUserData();
+    } catch (err) {
+      setError(err.message || "Failed to cancel all orders");
+      loadAllUserData();
     }
   };
 
@@ -352,13 +374,23 @@ export default function SpotTradingPage() {
                           activeBottomTab === tab.id ? "text-primary font-bold" : "text-muted hover:text-white"
                         }`}
                       >
-                        {tab.label} {tab.id === "ORDERS" ? `(${activeOrders.length})` : ""}
+                        {tab.label} {tab.id === "ORDERS" ? `(${activeOrders.filter(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED").length})` : ""}
                         {activeBottomTab === tab.id && (
                           <span className="absolute bottom-[-13px] left-0 right-0 h-[2px] bg-primary rounded-full" />
                         )}
                       </button>
                     ))}
                   </div>
+                  {activeBottomTab === "ORDERS" && activeOrders.some(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED") && (
+                    <button
+                      type="button"
+                      onClick={handleCancelAllOrders}
+                      className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all flex items-center gap-1"
+                    >
+                      <Trash2 size={12} />
+                      Cancel All
+                    </button>
+                  )}
                 </div>
 
                 <CardContent className="p-0 min-h-[160px]">
@@ -369,7 +401,7 @@ export default function SpotTradingPage() {
                       </div>
                     ) : activeOrders.length === 0 ? (
                       <div className="py-12 text-center text-muted font-mono text-xs">
-                        No open orders for {form.symbol}.
+                        No orders found.
                       </div>
                     ) : (
                       <div className="overflow-x-auto">
@@ -381,13 +413,13 @@ export default function SpotTradingPage() {
                               <th className="py-2.5 px-4">Type</th>
                               <th className="py-2.5 px-4 text-right">Quantity</th>
                               <th className="py-2.5 px-4 text-right">Price</th>
-                              <th className="py-2.5 px-4 text-center">Action</th>
+                              <th className="py-2.5 px-4 text-center">Action / Status</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-hairline-on-dark">
                             {activeOrders.map((o) => (
                               <tr key={o.id} className="hover:bg-white/[0.01] transition-colors">
-                                <td className="py-3 px-4 font-bold text-white">{o.symbol}</td>
+                                <td className="py-3 px-4 font-bold text-white uppercase">{o.symbol}</td>
                                 <td className="py-3 px-4">
                                   <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
                                     o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
@@ -399,13 +431,21 @@ export default function SpotTradingPage() {
                                 <td className="py-3 px-4 text-right font-semibold">{o.quantity}</td>
                                 <td className="py-3 px-4 text-right font-semibold">{formatCurrency(o.price)}</td>
                                 <td className="py-3 px-4 text-center">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleCancelOrder(o.id)}
-                                    className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all"
-                                  >
-                                    Cancel
-                                  </button>
+                                  {o.status === "OPEN" || o.status === "PARTIALLY_FILLED" ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCancelOrder(o.id)}
+                                      className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all"
+                                    >
+                                      Cancel
+                                    </button>
+                                  ) : (
+                                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                      o.status === "FILLED" ? "bg-trading-up/10 text-trading-up" : "bg-white/10 text-muted"
+                                    }`}>
+                                      {o.status}
+                                    </span>
+                                  )}
                                 </td>
                               </tr>
                             ))}

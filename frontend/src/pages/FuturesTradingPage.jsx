@@ -10,7 +10,7 @@ import { TradingChartPanel } from "../components/ui/TradingChartPanel";
 import { OrderBook } from "../components/ui/OrderBook";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { formatCurrency, formatPercent } from "../lib/utils";
-import { ArrowRightLeft, Info, HelpCircle, Lock } from "lucide-react";
+import { ArrowRightLeft, Info, HelpCircle, Lock, Trash2 } from "lucide-react";
 
 export default function FuturesTradingPage() {
   // Page core states
@@ -193,6 +193,30 @@ export default function FuturesTradingPage() {
       }
     } catch (err) {
       setError(err.message || "Failed to close position");
+    } finally {
+      setLoadingPositions(false);
+    }
+  };
+
+  const handleCloseAllPositions = async () => {
+    if (positions.length === 0) return;
+    setLoadingPositions(true);
+    setError("");
+    setMessage("");
+    try {
+      await Promise.all(positions.map((p) => closeFuturesPosition(p.id)));
+      setMessage("All open positions closed successfully");
+      await loadPositions();
+      
+      // Update balance
+      const walletsRes = await fetchWallets();
+      const usdtWallet = walletsRes?.data?.find(w => w.walletType === "FUTURES");
+      if (usdtWallet) {
+        setUsdtWalletBalance(Number(usdtWallet.balance || 0));
+      }
+    } catch (err) {
+      setError(err.message || "Failed to close all positions");
+      await loadPositions();
     } finally {
       setLoadingPositions(false);
     }
@@ -385,6 +409,16 @@ export default function FuturesTradingPage() {
                       </button>
                     ))}
                   </div>
+                  {activeBottomTab === "POSITIONS" && positions.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleCloseAllPositions}
+                      className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all flex items-center gap-1"
+                    >
+                      <Trash2 size={12} />
+                      Close All
+                    </button>
+                  )}
                 </div>
 
                 <CardContent className="p-0 min-h-[160px]">

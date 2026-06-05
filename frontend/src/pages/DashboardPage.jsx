@@ -269,9 +269,6 @@ export default function DashboardPage() {
                 <Button className="font-mono text-xs font-bold uppercase py-2 px-5 rounded-lg shadow-glow-primary" asChild>
                   <Link to="/wallets">Deposit</Link>
                 </Button>
-                <Button variant="outline" className="font-mono text-xs font-bold uppercase py-2 px-5 rounded-lg border-hairline-on-dark text-body hover:bg-white/[0.04]" asChild>
-                  <Link to="/wallets">Withdraw</Link>
-                </Button>
               </div>
             </div>
 

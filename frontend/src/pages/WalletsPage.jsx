@@ -3,7 +3,6 @@ import {
   fetchWallets, 
   depositToWallet, 
   transferBetweenWallets, 
-  withdrawFromWallet,
   fetchOpenFuturesPositions,
   fetchOrderHistory,
   fetchActiveOrders
@@ -56,7 +55,6 @@ export default function WalletsPage() {
   // Action Modals State
   const [depositModal, setDepositModal] = useState({ open: false, walletType: "SPOT", amount: "" });
   const [transferModal, setTransferModal] = useState({ open: false, from: "SPOT", to: "FUTURES", amount: "" });
-  const [withdrawModal, setWithdrawModal] = useState({ open: false, walletType: "SPOT", amount: "", address: "", network: "TRC20" });
 
   const [copiedText, setCopiedText] = useState(false);
 
@@ -171,44 +169,7 @@ export default function WalletsPage() {
     }
   };
 
-  const executeWithdrawal = async (e) => {
-    e.preventDefault();
-    const amt = parseFloat(withdrawModal.amount);
-    if (isNaN(amt) || amt <= 0) {
-      setError("Please specify a valid withdrawal amount.");
-      return;
-    }
-    if (!withdrawModal.address.trim()) {
-      setError("Please specify a destination address.");
-      return;
-    }
 
-    try {
-      setError("");
-      setSuccessMessage(`Processing withdrawal of ${formatCurrency(amt)} from ${withdrawModal.walletType}...`);
-      setWithdrawModal({ ...withdrawModal, open: false, amount: "", address: "" });
-      await withdrawFromWallet(withdrawModal.walletType, amt, withdrawModal.address, withdrawModal.network);
-      
-      // Add to simulated transaction log
-      const newTx = {
-        id: `tx-${Date.now()}`,
-        type: "WITHDRAWAL",
-        wallet: withdrawModal.walletType,
-        amount: Number(amt),
-        status: "COMPLETED",
-        date: new Date().toISOString(),
-        address: withdrawModal.address
-      };
-      setTxHistory(prev => [newTx, ...prev]);
-
-      setSuccessMessage(`Successfully withdrew ${formatCurrency(amt)} to address ${withdrawModal.address.substring(0, 6)}...!`);
-      await loadData();
-      setTimeout(() => setSuccessMessage(""), 4000);
-    } catch (err) {
-      setError(err.message || "Failed to process withdrawal.");
-      setSuccessMessage("");
-    }
-  };
 
   const walletMap = useMemo(() => {
     return wallets.reduce((acc, w) => {
@@ -307,13 +268,7 @@ export default function WalletsPage() {
               <RefreshCw size={14} />
               TRANSFER
             </button>
-            <button 
-              onClick={() => setWithdrawModal({ open: true, walletType: "SPOT", amount: "", address: "", network: "TRC20" })}
-              className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4.5 py-2.5 text-xs font-bold font-mono tracking-wide rounded border border-hairline-on-dark hover:bg-white/[0.03] text-white hover:border-primary/20 transition-all"
-            >
-              <ArrowUpRight size={14} />
-              WITHDRAW
-            </button>
+
           </div>
         </div>
 
@@ -1029,145 +984,6 @@ export default function WalletsPage() {
           </div>
         )}
 
-        {/* ============================================================== */}
-        {/* SEND / WITHDRAWAL MODAL */}
-        {/* ============================================================== */}
-        {withdrawModal.open && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="bg-[#121218] border border-hairline-on-dark rounded-2xl max-w-md w-full overflow-hidden shadow-elevation-lg animate-slide-up">
-              
-              <div className="bg-[#181822] border-b border-hairline-on-dark px-5 py-4 flex justify-between items-center">
-                <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <ArrowUpRight className="text-primary" size={16} />
-                  Simulated Asset Withdrawal
-                </h3>
-                <button 
-                  onClick={() => setWithdrawModal({ ...withdrawModal, open: false, amount: "", address: "" })}
-                  className="text-muted hover:text-white transition-colors font-bold font-mono text-sm"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              <form onSubmit={executeWithdrawal} className="p-5 space-y-4 font-mono text-xs">
-                
-                <p className="text-[11px] text-muted leading-relaxed font-sans border-b border-hairline-on-dark/30 pb-3">
-                  Instantly process simulated external payouts from your wallets to external chain destination keys.
-                </p>
-
-                {/* Source Wallet select */}
-                <div>
-                  <label className="text-[9px] text-muted uppercase tracking-widest mb-1.5 block">
-                    Source Wallet
-                  </label>
-                  <select
-                    value={withdrawModal.walletType}
-                    onChange={(e) => setWithdrawModal({ ...withdrawModal, walletType: e.target.value })}
-                    className="bg-canvas-dark border border-hairline-on-dark text-xs text-white w-full rounded-xl px-3 py-2 cursor-pointer outline-none focus:border-primary"
-                  >
-                    <option value="SPOT">SPOT WALLET</option>
-                    <option value="MARGIN">MARGIN WALLET</option>
-                    <option value="FUTURES">FUTURES WALLET</option>
-                    <option value="OPTIONS">OPTIONS WALLET</option>
-                  </select>
-                </div>
-
-                {/* Destination Address input */}
-                <div>
-                  <label className="text-[9px] text-muted uppercase tracking-widest mb-1.5 block">
-                    Destination Address
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Enter external network address (e.g. 0x... / T...)"
-                    value={withdrawModal.address}
-                    onChange={(e) => setWithdrawModal({ ...withdrawModal, address: e.target.value })}
-                    className="bg-canvas-dark border border-hairline-on-dark text-xs text-white w-full rounded-xl px-3 py-2.5 outline-none focus:border-primary transition-all"
-                  />
-                </div>
-
-                {/* Network select */}
-                <div>
-                  <label className="text-[9px] text-muted uppercase tracking-widest mb-1.5 block">
-                    Network
-                  </label>
-                  <select
-                    value={withdrawModal.network}
-                    onChange={(e) => setWithdrawModal({ ...withdrawModal, network: e.target.value })}
-                    className="bg-canvas-dark border border-hairline-on-dark text-xs text-white w-full rounded-xl px-3 py-2 cursor-pointer outline-none focus:border-primary"
-                  >
-                    <option value="TRC20">TRON (TRC20) - 2 min</option>
-                    <option value="ERC20">Ethereum (ERC20) - 5 min</option>
-                    <option value="BSC">BNB Smart Chain (BEP20) - 1 min</option>
-                    <option value="Solana">Solana - 1 min</option>
-                  </select>
-                </div>
-
-                {/* Amount input */}
-                <div>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="text-[9px] text-muted uppercase tracking-widest block">
-                      Withdrawal Amount (USD)
-                    </label>
-                    <span className="text-[9px] text-muted">
-                      Avail: {formatCurrency(
-                        walletMap[withdrawModal.walletType] ? Number(walletMap[withdrawModal.walletType].availableBalance) : 0
-                      )}
-                    </span>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      step="0.01"
-                      required
-                      placeholder="0.00"
-                      value={withdrawModal.amount}
-                      onChange={(e) => setWithdrawModal({ ...withdrawModal, amount: e.target.value })}
-                      className="bg-canvas-dark border border-hairline-on-dark text-sm text-white w-full rounded-xl px-3 py-2.5 pr-12 outline-none focus:border-primary transition-all"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-xs">USD</span>
-                  </div>
-                </div>
-
-                {/* Preset balance buttons */}
-                <div className="flex gap-2">
-                  {[25, 50, 100].map((pct) => (
-                    <button
-                      key={pct}
-                      type="button"
-                      onClick={() => {
-                        const w = walletMap[withdrawModal.walletType];
-                        const bal = w ? Number(w.availableBalance) : 0;
-                        setWithdrawModal({ ...withdrawModal, amount: (bal * (pct / 100)).toFixed(2) });
-                      }}
-                      className="flex-1 py-1.5 text-[9px] bg-canvas-dark border border-hairline-on-dark text-muted hover:text-white rounded-lg transition-colors"
-                    >
-                      {pct}%
-                    </button>
-                  ))}
-                </div>
-
-                <div className="pt-2 flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setWithdrawModal({ ...withdrawModal, open: false, amount: "", address: "" })}
-                    className="flex-1 py-2.5 text-xs font-mono font-bold border border-hairline-on-dark text-white rounded-lg hover:bg-white/[0.02] transition-colors"
-                  >
-                    CANCEL
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 py-2.5 text-xs font-mono font-bold bg-primary text-on-primary hover:bg-[#f0b90b] rounded-lg transition-colors"
-                  >
-                    CONFIRM WITHDRAWAL
-                  </button>
-                </div>
-
-              </form>
-            </div>
-          </div>
-        )}
 
       </div>
     </PageTransition>
