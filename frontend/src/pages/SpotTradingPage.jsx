@@ -1,5 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { createSpotOrder, fetchPrice, fetchCandlestickData } from "../api";
+import { Link } from "react-router-dom";
+import { 
+  createSpotOrder, 
+  fetchPrice, 
+  fetchCandlestickData,
+  fetchActiveOrders,
+  fetchOrderHistory,
+  cancelOrder,
+  fetchWallets,
+  hasAuthToken
+} from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
@@ -9,6 +19,7 @@ import { TradingChartPanel } from "../components/ui/TradingChartPanel";
 import { OrderBook } from "../components/ui/OrderBook";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { formatCurrency, formatPercent } from "../lib/utils";
+import { ArrowRightLeft, Info, Trash2, Activity, Coins, ClipboardList, Lock } from "lucide-react";
 
 const initialForm = {
   symbol: "BTCUSDT",
@@ -30,8 +41,16 @@ export default function SpotTradingPage() {
   const [chartLoading, setChartLoading] = useState(false);
   const [interval, setInterval] = useState("1h");
 
+  // Bottom tabs & User account states
+  const [activeBottomTab, setActiveBottomTab] = useState("ORDERS"); // ORDERS, HISTORY, ASSETS
+  const [activeOrders, setActiveOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [orderHistory, setOrderHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [spotWalletBalance, setSpotWalletBalance] = useState(0.00);
+  const [loadingWallets, setLoadingWallets] = useState(true);
+
   const handlePriceUpdate = (data) => {
-    console.log("[WS] 📡 Price update received:", data);
     let update = null;
     const currentSymbol = form.symbol.toUpperCase();
 
@@ -42,7 +61,6 @@ export default function SpotTradingPage() {
     }
 
     if (update) {
-      console.log("[WS] ✅ Match found for", currentSymbol, "Price:", update.currentPrice);
       const newPrice = Number(update.currentPrice);
       setCurrentPrice(newPrice);
       setPriceSnapshot(update);
@@ -78,8 +96,55 @@ export default function SpotTradingPage() {
     }
   };
 
+  const loadActiveOrders = async () => {
+    try {
+      const res = await fetchActiveOrders();
+      const spotSymbol = form.symbol.toUpperCase();
+      const filtered = (res?.data || []).filter(o => o.symbol.toUpperCase() === spotSymbol);
+      setActiveOrders(filtered);
+    } catch (err) {
+      console.warn("Could not retrieve active orders:", err.message);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  const loadOrderHistory = async () => {
+    try {
+      const res = await fetchOrderHistory();
+      const spotSymbol = form.symbol.toUpperCase();
+      const filtered = (res?.data || []).filter(o => o.symbol.toUpperCase() === spotSymbol);
+      setOrderHistory(filtered);
+    } catch (err) {
+      console.warn("Could not retrieve order history:", err.message);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const loadWallet = async () => {
+    try {
+      const res = await fetchWallets();
+      const spotWallet = res?.data?.find(w => w.walletType === "SPOT");
+      if (spotWallet) {
+        setSpotWalletBalance(Number(spotWallet.balance || 0));
+      }
+    } catch (err) {
+      console.warn("Could not retrieve spot wallet balance:", err.message);
+    } finally {
+      setLoadingWallets(false);
+    }
+  };
+
+  const loadAllUserData = () => {
+    loadActiveOrders();
+    loadOrderHistory();
+    loadWallet();
+  };
+
   useEffect(() => {
     loadPrice();
+    loadAllUserData();
   }, [form.symbol]);
 
   useEffect(() => {
@@ -120,10 +185,39 @@ export default function SpotTradingPage() {
       };
       const res = await createSpotOrder(payload);
       setMessage(res?.message || "Spot order created successfully");
+      loadAllUserData();
     } catch (err) {
       setError(err.message || "Failed to create order");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    try {
+      await cancelOrder(orderId);
+      setMessage("Order cancelled successfully");
+      loadAllUserData();
+    } catch (err) {
+      setError(err.message || "Failed to cancel order");
+    }
+  };
+
+  // Sizing percentage handler
+  const handlePercentSelect = (percent) => {
+    const priceToUse = ["LIMIT", "STOP_LIMIT", "TAKE_PROFIT_LIMIT"].includes(form.orderType) && form.price
+      ? Number(form.price)
+      : (currentPrice || priceSnapshot?.currentPrice || 1);
+    
+    if (form.side === "BUY") {
+      const maxBuyQty = spotWalletBalance / priceToUse;
+      const targetQty = maxBuyQty * (percent / 100);
+      setForm(prev => ({ ...prev, quantity: targetQty.toFixed(4) }));
+    } else {
+      // Mock asset holding of 0.05 units for selling percent shortcut
+      const mockAssetHolding = 0.05;
+      const targetQty = mockAssetHolding * (percent / 100);
+      setForm(prev => ({ ...prev, quantity: targetQty.toFixed(4) }));
     }
   };
 
@@ -166,210 +260,432 @@ export default function SpotTradingPage() {
 
   return (
     <PageTransition>
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        {/* Page Header banner */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-hairline-on-dark pb-6">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-white font-heading">Spot Trading</h1>
-            <p className="text-sm text-muted">Execute real-time spot orders with high-density workspace controls and streaming prices.</p>
-          </div>
-          {currentPrice && (
-            <div className="flex items-center gap-4 bg-surface-card-dark px-4 py-2 rounded-lg border border-hairline-on-dark">
+      <div className="w-full bg-canvas-dark text-white py-4 font-sans select-none min-h-screen">
+        <div className="max-w-8xl mx-auto px-4 space-y-4">
+          
+          {/* HIGH-DENSITY HORIZONTAL TICKER BAR */}
+          <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-6 shadow-elevation-md">
+            <div className="flex items-center gap-4">
               <div>
-                <span className="text-[10px] text-muted uppercase tracking-wider block font-mono">BTC/USDT Live</span>
-                <span className="text-lg font-bold font-mono text-white">{formatCurrency(currentPrice)}</span>
+                <h1 className="text-base font-extrabold tracking-tight font-heading flex items-center gap-1.5 text-white">
+                  {form.symbol.toUpperCase()}
+                  <span className="text-[9px] font-mono font-bold bg-primary/15 text-primary px-1 rounded uppercase tracking-wider">Spot</span>
+                </h1>
+                <span className="text-[10px] font-mono font-semibold text-muted">NexTradeX Exchange</span>
               </div>
-              <span className={`text-sm font-mono font-semibold px-2 py-0.5 rounded ${Number(priceSnapshot?.percentChange24h) >= 0 ? "text-trading-up bg-trading-up/10" : "text-trading-down bg-trading-down/10"}`}>
-                {Number(priceSnapshot?.percentChange24h) >= 0 ? "+" : ""}{formatPercent(priceSnapshot?.percentChange24h || 0)}
-              </span>
+
+              {(currentPrice || priceSnapshot?.currentPrice) && (
+                <div className="border-l border-hairline-on-dark pl-4 flex flex-col justify-center">
+                  <span className="text-[10px] text-muted font-mono uppercase tracking-wider block">Price</span>
+                  <span className="text-base font-bold font-mono text-trading-up animate-pulse">
+                    {formatCurrency(currentPrice || priceSnapshot.currentPrice)}
+                  </span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Three-Column Split Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Main Chart Panel (6-cols) */}
-          <div className="lg:col-span-6 space-y-6">
-            <TradingChartPanel
-              title="Spot Workspace"
-              description="Execute clean spot orders with backend candles, live pricing, and a calmer SaaS-grade order entry flow."
-              symbol={form.symbol}
-              interval={interval}
-              onIntervalChange={setInterval}
-              loading={chartLoading}
-              data={candleData}
-              status={{ label: connected ? "Live market" : "Snapshot", tone: connected ? "active" : "neutral" }}
-              stats={chartStats}
-            />
-          </div>
-
-          {/* Order Book Panel (3-cols) */}
-          <div className="lg:col-span-3">
-            <OrderBook 
-              symbol={form.symbol} 
-              currentPrice={currentPrice} 
-              onSelectPrice={(p) => setForm((prev) => ({ ...prev, price: p.toFixed(2), orderType: "LIMIT" }))} 
-            />
-          </div>
-
-          {/* Order Entry Panel (3-cols) */}
-          <div className="lg:col-span-3">
-            <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl overflow-hidden shadow-elevation-md">
-              <form onSubmit={handleSubmit}>
-                {/* Binance Style Side Tabs */}
-                <div className="flex border-b border-hairline-on-dark p-1 bg-canvas-dark/40">
-                  <button
-                    type="button"
-                    className={`flex-1 py-3 text-center text-xs font-bold tracking-wider rounded transition-all ${
-                      form.side === "BUY"
-                        ? "bg-trading-up text-white shadow-sm"
-                        : "text-muted hover:text-white"
-                    }`}
-                    onClick={() => setForm((prev) => ({ ...prev, side: "BUY" }))}
-                  >
-                    BUY
-                  </button>
-                  <button
-                    type="button"
-                    className={`flex-1 py-3 text-center text-xs font-bold tracking-wider rounded transition-all ${
-                      form.side === "SELL"
-                        ? "bg-trading-down text-white shadow-sm"
-                        : "text-muted hover:text-white"
-                    }`}
-                    onClick={() => setForm((prev) => ({ ...prev, side: "SELL" }))}
-                  >
-                    SELL
-                  </button>
+            {priceSnapshot && (
+              <div className="flex flex-wrap items-center gap-8 font-mono text-[10px] text-muted">
+                <div>
+                  <span className="block uppercase text-[9px]">24h Change</span>
+                  <span className={`text-xs font-bold ${Number(priceSnapshot.percentChange24h) >= 0 ? "text-trading-up" : "text-trading-down"}`}>
+                    {Number(priceSnapshot.percentChange24h) >= 0 ? "+" : ""}{priceSnapshot.percentChange24h}%
+                  </span>
                 </div>
 
-                <CardContent className="space-y-4 pt-4">
-                  <div>
-                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
-                      Symbol
-                    </label>
-                    <Input 
-                      name="symbol" 
-                      value={form.symbol} 
-                      onChange={handleChange} 
-                      required 
-                      className="bg-canvas-dark border-hairline-on-dark font-mono text-sm uppercase text-white w-full rounded-md" 
-                    />
+                <div>
+                  <span className="block uppercase text-[9px]">24h High</span>
+                  <span className="text-xs font-semibold text-white">{formatCurrency(priceSnapshot.highPrice || currentPrice)}</span>
+                </div>
+
+                <div>
+                  <span className="block uppercase text-[9px]">24h Low</span>
+                  <span className="text-xs font-semibold text-white">{formatCurrency(priceSnapshot.lowPrice || currentPrice)}</span>
+                </div>
+
+                <div>
+                  <span className="block uppercase text-[9px]">24h Volume</span>
+                  <span className="text-xs font-semibold text-white">{priceSnapshot.volume24h || "148,250.00 BTC"}</span>
+                </div>
+                
+                <div>
+                  <span className="block uppercase text-[9px]">Websocket status</span>
+                  <span className={`text-xs font-bold ${connected ? "text-trading-up" : "text-muted"}`}>
+                    {connected ? "CONNECTED" : "DISCONNECTED"}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Three-Column Split Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+            
+            {/* Main Chart Panel (6-cols) & Bottom Tab Panel */}
+            <div className="lg:col-span-6 space-y-4">
+              <TradingChartPanel
+                title="Spot Workspace"
+                description="Execute clean spot orders with backend candles, live pricing, and a calmer SaaS-grade order entry flow."
+                symbol={form.symbol}
+                interval={interval}
+                onIntervalChange={setInterval}
+                loading={chartLoading}
+                data={candleData}
+                status={{ label: connected ? "Live market" : "Snapshot", tone: connected ? "active" : "neutral" }}
+                stats={chartStats}
+              />
+
+              {/* Bottom Tab Panel */}
+              <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md">
+                <div className="bg-canvas-dark/30 border-b border-hairline-on-dark px-4 flex items-center justify-between">
+                  <div className="flex gap-4 font-heading text-[10px] font-bold uppercase tracking-wider py-3 select-none">
+                    {[
+                      { id: "ORDERS", label: "Open Orders" },
+                      { id: "HISTORY", label: "Order History" },
+                      { id: "ASSETS", label: "Assets" }
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setActiveBottomTab(tab.id)}
+                        className={`pb-1.5 relative transition-colors ${
+                          activeBottomTab === tab.id ? "text-primary font-bold" : "text-muted hover:text-white"
+                        }`}
+                      >
+                        {tab.label} {tab.id === "ORDERS" ? `(${activeOrders.length})` : ""}
+                        {activeBottomTab === tab.id && (
+                          <span className="absolute bottom-[-13px] left-0 right-0 h-[2px] bg-primary rounded-full" />
+                        )}
+                      </button>
+                    ))}
                   </div>
+                </div>
 
-                  <div>
-                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
-                      Order Type
-                    </label>
-                    <Select 
-                      name="orderType" 
-                      value={form.orderType} 
-                      onChange={handleChange} 
-                      className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
-                    >
-                      <option value="MARKET">Market</option>
-                      <option value="LIMIT">Limit</option>
-                      <option value="STOP_MARKET">Stop Market</option>
-                      <option value="STOP_LIMIT">Stop Limit</option>
-                      <option value="TAKE_PROFIT_MARKET">Take Profit Market</option>
-                      <option value="TAKE_PROFIT_LIMIT">Take Profit Limit</option>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
-                      Quantity
-                    </label>
-                    <Input
-                      type="number"
-                      step="0.0001"
-                      name="quantity"
-                      value={form.quantity}
-                      onChange={handleChange}
-                      required
-                      className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
-                    />
-                  </div>
-
-                  {["STOP_LIMIT", "STOP_MARKET", "TAKE_PROFIT_LIMIT", "TAKE_PROFIT_MARKET"].includes(form.orderType) && (
-                    <div className="animate-slide-down">
-                      <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
-                        Trigger Price
-                      </label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        name="stopPrice"
-                        value={form.stopPrice}
-                        onChange={handleChange}
-                        required
-                        className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
-                      />
-                    </div>
+                <CardContent className="p-0 min-h-[160px]">
+                  {activeBottomTab === "ORDERS" && (
+                    loadingOrders ? (
+                      <div className="p-6 space-y-2">
+                        <div className="h-6 bg-white/[0.02] rounded animate-pulse w-full" />
+                      </div>
+                    ) : activeOrders.length === 0 ? (
+                      <div className="py-12 text-center text-muted font-mono text-xs">
+                        No open orders for {form.symbol}.
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse font-mono text-xs">
+                          <thead>
+                            <tr className="border-b border-hairline-on-dark text-[9px] font-bold text-muted uppercase tracking-wider bg-canvas-dark/20 py-2.5">
+                              <th className="py-2.5 px-4">Symbol</th>
+                              <th className="py-2.5 px-4">Side</th>
+                              <th className="py-2.5 px-4">Type</th>
+                              <th className="py-2.5 px-4 text-right">Quantity</th>
+                              <th className="py-2.5 px-4 text-right">Price</th>
+                              <th className="py-2.5 px-4 text-center">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-hairline-on-dark">
+                            {activeOrders.map((o) => (
+                              <tr key={o.id} className="hover:bg-white/[0.01] transition-colors">
+                                <td className="py-3 px-4 font-bold text-white">{o.symbol}</td>
+                                <td className="py-3 px-4">
+                                  <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                                    o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
+                                  }`}>
+                                    {o.side}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 text-muted">{o.orderType}</td>
+                                <td className="py-3 px-4 text-right font-semibold">{o.quantity}</td>
+                                <td className="py-3 px-4 text-right font-semibold">{formatCurrency(o.price)}</td>
+                                <td className="py-3 px-4 text-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCancelOrder(o.id)}
+                                    className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all"
+                                  >
+                                    Cancel
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )
                   )}
 
-                  {["LIMIT", "STOP_LIMIT", "TAKE_PROFIT_LIMIT"].includes(form.orderType) && (
-                    <div className="animate-slide-down">
-                      <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
-                        Limit Price
-                      </label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        name="price"
-                        value={form.price}
-                        onChange={handleChange}
-                        required
-                        className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
-                      />
-                    </div>
+                  {activeBottomTab === "HISTORY" && (
+                    loadingHistory ? (
+                      <div className="p-6 space-y-2">
+                        <div className="h-6 bg-white/[0.02] rounded animate-pulse w-full" />
+                      </div>
+                    ) : orderHistory.length === 0 ? (
+                      <div className="py-12 text-center text-muted font-mono text-xs">
+                        No order logs found.
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse font-mono text-xs">
+                          <thead>
+                            <tr className="border-b border-hairline-on-dark text-[9px] font-bold text-muted uppercase tracking-wider bg-canvas-dark/20 py-2.5">
+                              <th className="py-2.5 px-4">Symbol</th>
+                              <th className="py-2.5 px-4">Side</th>
+                              <th className="py-2.5 px-4">Type</th>
+                              <th className="py-2.5 px-4 text-right">Quantity</th>
+                              <th className="py-2.5 px-4 text-right">Price</th>
+                              <th className="py-2.5 px-4 text-right">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-hairline-on-dark">
+                            {orderHistory.map((o) => (
+                              <tr key={o.id} className="hover:bg-white/[0.01] transition-colors">
+                                <td className="py-3 px-4 font-bold text-white">{o.symbol}</td>
+                                <td className="py-3 px-4">
+                                  <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                                    o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
+                                  }`}>
+                                    {o.side}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 text-muted">{o.orderType}</td>
+                                <td className="py-3 px-4 text-right font-semibold">{o.quantity}</td>
+                                <td className="py-3 px-4 text-right font-semibold">{formatCurrency(o.price)}</td>
+                                <td className="py-3 px-4 text-right">
+                                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                    o.status === "FILLED" ? "bg-trading-up/10 text-trading-up" : o.status === "CANCELED" ? "bg-white/10 text-muted" : "bg-primary/15 text-primary"
+                                  }`}>
+                                    {o.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )
                   )}
 
-                  {/* High/Low/Notional Summary */}
-                  {currentPrice && (
-                    <div className="border border-hairline-on-dark bg-canvas-dark/40 rounded-lg p-3 space-y-2">
-                      <div className="flex justify-between items-center text-xs font-mono">
-                        <span className="text-muted">Current Price</span>
-                        <span className="text-white font-semibold">{formatCurrency(currentPrice)}</span>
+                  {activeBottomTab === "ASSETS" && (
+                    loadingWallets ? (
+                      <div className="p-6 space-y-2">
+                        <div className="h-6 bg-white/[0.02] rounded animate-pulse w-full" />
                       </div>
-                      <div className="flex justify-between items-center text-xs font-mono">
-                        <span className="text-muted font-mono">24H High</span>
-                        <span className="text-white font-semibold">{formatCurrency(priceSnapshot?.highPrice || currentPrice)}</span>
+                    ) : (
+                      <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
+                        <div className="border border-hairline-on-dark rounded-lg p-3 bg-canvas-dark/20">
+                          <span className="text-muted text-[10px] uppercase block">Total Spot USDT Equity</span>
+                          <span className="text-lg font-bold text-white block mt-1">{formatCurrency(spotWalletBalance)}</span>
+                        </div>
+                        <div className="border border-hairline-on-dark rounded-lg p-3 bg-canvas-dark/20">
+                          <span className="text-muted text-[10px] uppercase block">Asset Sizing Base</span>
+                          <span className="text-sm font-bold text-primary block mt-1">USDT (Tether)</span>
+                        </div>
+                        <div className="border border-hairline-on-dark rounded-lg p-3 bg-canvas-dark/20 flex items-center justify-between">
+                          <div>
+                            <span className="text-muted text-[10px] uppercase block">Wallet Connection</span>
+                            <span className="text-[10px] text-trading-up font-bold block mt-1">● ONLINE (Simulated)</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex justify-between items-center text-xs font-mono">
-                        <span className="text-muted font-mono">24H Low</span>
-                        <span className="text-white font-semibold">{formatCurrency(priceSnapshot?.lowPrice || currentPrice)}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-xs font-mono border-t border-hairline-on-dark pt-2">
-                        <span className="text-muted">Est. Notional</span>
-                        <span className="text-white font-semibold font-mono">{formatCurrency(estimatedNotional)}</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {message && (
-                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-trading-up/10 border border-trading-up/20 animate-slide-down">
-                      <p className="text-trading-up text-xs font-mono">{message}</p>
-                    </div>
-                  )}
-                  {error && (
-                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-trading-down/10 border border-trading-down/20 animate-slide-down">
-                      <p className="text-trading-down text-xs font-mono">{error}</p>
-                    </div>
+                    )
                   )}
                 </CardContent>
+              </Card>
+            </div>
 
-                <CardFooter className="pt-2 pb-4">
-                  <Button
-                    type="submit"
-                    className="w-full font-mono text-sm uppercase py-3 font-bold rounded-md"
-                    variant={form.side === "BUY" ? "tradingUp" : "tradingDown"}
-                    loading={loading}
-                  >
-                    {form.side === "BUY" ? "BUY" : "SELL"} {form.symbol}
-                  </Button>
-                </CardFooter>
-              </form>
-            </Card>
+            {/* Order Book Panel (3-cols) */}
+            <div className="lg:col-span-3">
+              <OrderBook 
+                symbol={form.symbol} 
+                currentPrice={currentPrice} 
+                onSelectPrice={(p) => setForm((prev) => ({ ...prev, price: p.toFixed(2), orderType: "LIMIT" }))} 
+              />
+            </div>
+
+            {/* Order Entry Panel (3-cols) */}
+            <div className="lg:col-span-3">
+              <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl overflow-hidden shadow-elevation-md relative">
+                {!hasAuthToken() && (
+                  <div className="absolute inset-0 bg-[#0a0a0f]/85 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6 text-center">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-4">
+                      <Lock size={20} className="text-primary" />
+                    </div>
+                    <h3 className="font-heading text-sm font-bold text-white mb-2 uppercase tracking-wide">Login Required</h3>
+                    <p className="text-xs text-muted leading-relaxed mb-6 max-w-[200px]">
+                      Access your simulated wallet and start trading by connecting your account.
+                    </p>
+                    <Button variant="default" className="w-full text-xs font-semibold py-2.5 rounded-lg shadow-glow-primary" asChild>
+                      <Link to="/auth">Sign In / Connect Wallet</Link>
+                    </Button>
+                  </div>
+                )}
+                <form onSubmit={handleSubmit}>
+                  {/* BUY / SELL Switch Tabs */}
+                  <div className="flex border-b border-hairline-on-dark p-1 bg-canvas-dark/40">
+                    <button
+                      type="button"
+                      className={`flex-1 py-3 text-center text-xs font-bold tracking-wider rounded transition-all ${
+                        form.side === "BUY"
+                          ? "bg-trading-up text-white shadow-sm"
+                          : "text-muted hover:text-white"
+                      }`}
+                      onClick={() => setForm((prev) => ({ ...prev, side: "BUY" }))}
+                    >
+                      BUY
+                    </button>
+                    <button
+                      type="button"
+                      className={`flex-1 py-3 text-center text-xs font-bold tracking-wider rounded transition-all ${
+                        form.side === "SELL"
+                          ? "bg-trading-down text-white shadow-sm"
+                          : "text-muted hover:text-white"
+                      }`}
+                      onClick={() => setForm((prev) => ({ ...prev, side: "SELL" }))}
+                    >
+                      SELL
+                    </button>
+                  </div>
+
+                  <CardContent className="space-y-4 pt-4">
+                    <div>
+                      <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
+                        Symbol
+                      </label>
+                      <Input 
+                        name="symbol" 
+                        value={form.symbol} 
+                        onChange={handleChange} 
+                        required 
+                        className="bg-canvas-dark border-hairline-on-dark font-mono text-sm uppercase text-white w-full rounded-md" 
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
+                        Order Type
+                      </label>
+                      <Select 
+                        name="orderType" 
+                        value={form.orderType} 
+                        onChange={handleChange} 
+                        className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
+                      >
+                        <option value="MARKET">Market</option>
+                        <option value="LIMIT">Limit</option>
+                        <option value="STOP_MARKET">Stop Market</option>
+                        <option value="STOP_LIMIT">Stop Limit</option>
+                        <option value="TAKE_PROFIT_MARKET">Take Profit Market</option>
+                        <option value="TAKE_PROFIT_LIMIT">Take Profit Limit</option>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
+                        Quantity
+                      </label>
+                      <Input
+                        type="number"
+                        step="0.0001"
+                        name="quantity"
+                        value={form.quantity}
+                        onChange={handleChange}
+                        required
+                        className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
+                      />
+                    </div>
+
+                    {/* Sizing Percentage dot-slider chips */}
+                    <div className="flex gap-2">
+                      {[25, 50, 75, 100].map((pct) => (
+                        <button
+                          key={pct}
+                          type="button"
+                          onClick={() => handlePercentSelect(pct)}
+                          className="flex-1 py-1.5 bg-canvas-dark hover:bg-white/[0.04] border border-hairline-on-dark text-muted hover:text-white rounded font-mono text-[9px] font-bold"
+                        >
+                          {pct}%
+                        </button>
+                      ))}
+                    </div>
+
+                    {["STOP_LIMIT", "STOP_MARKET", "TAKE_PROFIT_LIMIT", "TAKE_PROFIT_MARKET"].includes(form.orderType) && (
+                      <div className="animate-slide-down">
+                        <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
+                          Trigger Price
+                        </label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          name="stopPrice"
+                          value={form.stopPrice}
+                          onChange={handleChange}
+                          required
+                          className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
+                        />
+                      </div>
+                    )}
+
+                    {["LIMIT", "STOP_LIMIT", "TAKE_PROFIT_LIMIT"].includes(form.orderType) && (
+                      <div className="animate-slide-down">
+                        <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
+                          Limit Price
+                        </label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          name="price"
+                          value={form.price}
+                          onChange={handleChange}
+                          required
+                          className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
+                        />
+                      </div>
+                    )}
+
+                    {/* High/Low/Notional Summary */}
+                    {(currentPrice || priceSnapshot?.currentPrice) && (
+                      <div className="border border-hairline-on-dark bg-canvas-dark/40 rounded-lg p-3 space-y-2">
+                        <div className="flex justify-between items-center text-xs font-mono">
+                          <span className="text-muted">Available Balance</span>
+                          <span className="text-white font-semibold">{formatCurrency(spotWalletBalance)} USDT</span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs font-mono">
+                          <span className="text-muted">Current Price</span>
+                          <span className="text-white font-semibold">{formatCurrency(currentPrice || priceSnapshot.currentPrice)}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs font-mono border-t border-hairline-on-dark pt-2">
+                          <span className="text-muted">Est. Notional</span>
+                          <span className="text-white font-semibold font-mono">{formatCurrency(estimatedNotional)}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {message && (
+                      <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-trading-up/10 border border-trading-up/20 animate-slide-down">
+                        <p className="text-trading-up text-xs font-mono">{message}</p>
+                      </div>
+                    )}
+                    {error && (
+                      <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-trading-down/10 border border-trading-down/20 animate-slide-down">
+                        <p className="text-trading-down text-xs font-mono">{error}</p>
+                      </div>
+                    )}
+                  </CardContent>
+
+                  <CardFooter className="pt-2 pb-4">
+                    <Button
+                      type="submit"
+                      className="w-full font-mono text-sm uppercase py-3 font-bold rounded-md"
+                      variant={form.side === "BUY" ? "tradingUp" : "tradingDown"}
+                      loading={loading}
+                    >
+                      {form.side === "BUY" ? "BUY" : "SELL"} {form.symbol}
+                    </Button>
+                  </CardFooter>
+                </form>
+              </Card>
+            </div>
           </div>
         </div>
       </div>

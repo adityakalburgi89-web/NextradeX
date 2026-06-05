@@ -61,11 +61,7 @@ export default function WalletsPage() {
   const [copiedText, setCopiedText] = useState(false);
 
   // Simulated Transaction History Log
-  const [txHistory, setTxHistory] = useState([
-    { id: "tx-1", type: "DEPOSIT", wallet: "SPOT", amount: 10000.00, status: "COMPLETED", date: new Date(Date.now() - 3600000 * 2).toISOString(), address: "Simulated System Credit" },
-    { id: "tx-2", type: "TRANSFER", wallet: "SPOT -> FUTURES", amount: 5000.00, status: "COMPLETED", date: new Date(Date.now() - 3600000 * 12).toISOString(), address: "Internal Transfer" },
-    { id: "tx-3", type: "WITHDRAWAL", wallet: "SPOT", amount: 150.00, status: "COMPLETED", date: new Date(Date.now() - 3600000 * 26).toISOString(), address: "0x7a83d...1f9c" }
-  ]);
+  const [txHistory, setTxHistory] = useState([]);
 
   const loadData = async () => {
     try {
@@ -268,11 +264,7 @@ export default function WalletsPage() {
     const lockedUsdt = spotWallet ? Number(spotWallet.lockedFunds) : 0;
 
     const assets = [
-      { symbol: "USDT", name: "Tether USD", balance: usdtBalance, locked: lockedUsdt, price: 1.00, change24h: 0.01, color: "from-[#02c076]/20 to-[#02c076]/5", badgeColor: "#02c076" },
-      { symbol: "BTC", name: "Bitcoin", balance: 0.0825, locked: 0.0, price: 68420.50, change24h: 1.85, color: "from-[#f7931a]/20 to-[#f7931a]/5", badgeColor: "#f7931a" },
-      { symbol: "ETH", name: "Ethereum", balance: 1.48, locked: 0.12, price: 3795.10, change24h: -0.42, color: "from-[#627eea]/20 to-[#627eea]/5", badgeColor: "#627eea" },
-      { symbol: "BNB", name: "BNB", balance: 3.25, locked: 0.0, price: 592.80, change24h: 4.12, color: "from-[#fcd535]/20 to-[#fcd535]/5", badgeColor: "#fcd535" },
-      { symbol: "SOL", name: "Solana", balance: 12.8, locked: 0.0, price: 172.40, change24h: -1.25, color: "from-[#14f195]/20 to-[#14f195]/5", badgeColor: "#14f195" }
+      { symbol: "USDT", name: "Tether USD", balance: usdtBalance, locked: lockedUsdt, price: 1.00, change24h: 0.00, color: "from-[#02c076]/20 to-[#02c076]/5", badgeColor: "#02c076" }
     ];
 
     return assets

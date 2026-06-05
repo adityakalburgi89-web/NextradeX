@@ -68,14 +68,12 @@ export default function DashboardPage() {
   }, [totalUSDEquity]);
 
   const holdingsList = useMemo(() => {
+    const spotWallet = wallets.find(w => w.walletType === "SPOT");
+    const balance = spotWallet ? Number(spotWallet.balance) : 0;
     return [
-      { symbol: "BTC", name: "Bitcoin", amount: 0.00043557, costUSD: 2903.41, priceINR: 6665765.96, change: -3.85, icon: "https://cryptologos.cc/logos/bitcoin-btc-logo.png" },
-      { symbol: "ETH", name: "Ethereum", amount: 0.01493582, costUSD: 2816.74, priceINR: 188589.30, change: 0.11, icon: "https://cryptologos.cc/logos/ethereum-eth-logo.png" },
-      { symbol: "BNB", name: "Binance Coin", amount: 0.12450000, costUSD: 76.80, priceINR: 51205.50, change: 1.25, icon: "https://cryptologos.cc/logos/binance-coin-bnb-logo.png" },
-      { symbol: "USDT", name: "Tether", amount: 1248.59, costUSD: 1248.59, priceINR: 83.00, change: 0.00, icon: "https://cryptologos.cc/logos/tether-usdt-logo.png" },
-      { symbol: "SOL", name: "Solana", amount: 2.45000000, costUSD: 367.50, priceINR: 12450.00, change: -2.48, icon: "https://cryptologos.cc/logos/solana-sol-logo.png" }
+      { symbol: "USDT", name: "Tether", amount: balance, costUSD: balance, priceINR: balance * 83, change: 0.00, icon: "https://cryptologos.cc/logos/tether-usdt-logo.png" }
     ];
-  }, []);
+  }, [wallets]);
 
   if (loading) {
     return (
@@ -153,13 +151,7 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <Link
-              to="/leaderboard"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/[0.04] text-body hover:text-white transition-all"
-            >
-              <Gift size={18} className="text-muted" />
-              <span className="font-semibold">Rewards Hub</span>
-            </Link>
+
 
             <Link
               to="/referral"
@@ -185,13 +177,7 @@ export default function DashboardPage() {
               <span className="font-semibold">Sub Accounts</span>
             </Link>
 
-            <Link
-              to="/admin"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/[0.04] text-body hover:text-white transition-all"
-            >
-              <Settings size={18} className="text-muted" />
-              <span className="font-semibold">Settings</span>
-            </Link>
+
           </div>
 
           {/* MAIN PREMIUM BINANCE DASHBOARD PANEL */}
@@ -209,7 +195,7 @@ export default function DashboardPage() {
                     <span className="text-[10px] font-normal text-primary border border-primary/30 px-2 py-0.5 rounded font-mono uppercase">Regular User</span>
                   </h2>
                   <div className="flex items-center gap-4 text-xs text-muted font-mono mt-1">
-                    <span>UID: <span className="text-body font-semibold">795106254</span></span>
+                    <span>UID: <span className="text-body font-semibold">{user?.id || "—"}</span></span>
                     <span>VIP Level: <span className="text-body font-semibold">Regular User</span></span>
                   </div>
                 </div>
@@ -272,22 +258,19 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="flex items-center gap-1.5 text-xs font-mono">
-                  <span className="text-muted">Today's PnL:</span>
-                  <span className="text-trading-down font-bold flex items-center gap-0.5">
-                    -₹196.84 (-1.31%)
+                  <span className="text-muted">Total Unrealized PnL:</span>
+                  <span className={`${wallets.reduce((sum, w) => sum + Number(w.unrealizedPnL || 0), 0) >= 0 ? "text-trading-up" : "text-trading-down"} font-bold flex items-center gap-0.5`}>
+                    {wallets.reduce((sum, w) => sum + Number(w.unrealizedPnL || 0), 0) >= 0 ? "+" : ""}${wallets.reduce((sum, w) => sum + Number(w.unrealizedPnL || 0), 0).toFixed(2)}
                   </span>
                 </div>
               </div>
 
               <div className="flex flex-wrap md:flex-col lg:flex-row items-center gap-3 relative z-10">
-                <Button className="font-mono text-xs font-bold uppercase py-2 px-5 rounded-lg shadow-glow-primary">
-                  Deposit
+                <Button className="font-mono text-xs font-bold uppercase py-2 px-5 rounded-lg shadow-glow-primary" asChild>
+                  <Link to="/wallets">Deposit</Link>
                 </Button>
-                <Button variant="outline" className="font-mono text-xs font-bold uppercase py-2 px-5 rounded-lg border-hairline-on-dark text-body hover:bg-white/[0.04]">
-                  Withdraw
-                </Button>
-                <Button variant="outline" className="font-mono text-xs font-bold uppercase py-2 px-5 rounded-lg border-hairline-on-dark text-body hover:bg-white/[0.04]">
-                  Cash In
+                <Button variant="outline" className="font-mono text-xs font-bold uppercase py-2 px-5 rounded-lg border-hairline-on-dark text-body hover:bg-white/[0.04]" asChild>
+                  <Link to="/wallets">Withdraw</Link>
                 </Button>
               </div>
             </div>

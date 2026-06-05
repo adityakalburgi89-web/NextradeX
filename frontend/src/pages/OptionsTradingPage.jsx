@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { buyOption, settleOption, fetchOptionsPositions } from "../api";
+import { Link } from "react-router-dom";
+import { buyOption, settleOption, fetchOptionsPositions, hasAuthToken } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
 import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
 import { SkeletonRow } from "../components/ui/Skeleton";
+import { Lock } from "lucide-react";
 
 const initialForm = {
   symbol: "BTCUSDT",
@@ -244,7 +246,21 @@ export default function OptionsTradingPage() {
 
           {/* Right Column (4-cols): Order Entry Form */}
           <div className="lg:col-span-4">
-            <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl overflow-hidden shadow-elevation-md">
+            <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl overflow-hidden shadow-elevation-md relative">
+              {!hasAuthToken() && (
+                <div className="absolute inset-0 bg-[#0a0a0f]/85 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6 text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-4">
+                    <Lock size={20} className="text-primary" />
+                  </div>
+                  <h3 className="font-heading text-sm font-bold text-white mb-2 uppercase tracking-wide">Login Required</h3>
+                  <p className="text-xs text-muted leading-relaxed mb-6 max-w-[200px]">
+                    Access your simulated wallet and start trading by connecting your account.
+                  </p>
+                  <Button variant="default" className="w-full text-xs font-semibold py-2.5 rounded-lg shadow-glow-primary" asChild>
+                    <Link to="/auth">Sign In / Connect Wallet</Link>
+                  </Button>
+                </div>
+              )}
               <form onSubmit={handleSubmit}>
                 {/* CALL/PUT Switcher Tabs */}
                 <div className="flex border-b border-hairline-on-dark p-1 bg-canvas-dark/40">

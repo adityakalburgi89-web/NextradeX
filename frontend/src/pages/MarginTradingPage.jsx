@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { 
   fetchCandlestickData, 
   fetchOpenMarginPositions, 
@@ -8,7 +9,8 @@ import {
   fetchActiveOrders,
   fetchOrderHistory,
   cancelOrder,
-  fetchWallets
+  fetchWallets,
+  hasAuthToken
 } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
@@ -17,8 +19,9 @@ import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
 import { TradingChartPanel } from "../components/ui/TradingChartPanel";
 import { OrderBook } from "../components/ui/OrderBook";
+import { useWebSocket } from "../hooks/useWebSocket";
 import { formatCurrency, formatPercent } from "../lib/utils";
-import { ArrowRightLeft, Info, Trash2, Activity, Coins, ClipboardList } from "lucide-react";
+import { ArrowRightLeft, Info, Trash2, Activity, Coins, ClipboardList, Lock } from "lucide-react";
 
 const initialForm = {
   symbol: "BTCUSDT",
@@ -45,7 +48,7 @@ export default function MarginTradingPage() {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [orderHistory, setOrderHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
-  const [marginWalletBalance, setMarginWalletBalance] = useState(2500.00);
+  const [marginWalletBalance, setMarginWalletBalance] = useState(0.00);
   const [loadingWallets, setLoadingWallets] = useState(true);
 
   const loadPositions = async () => {
@@ -122,6 +125,39 @@ export default function MarginTradingPage() {
 
     loadPrice();
   }, [form.symbol]);
+
+  const handlePriceUpdate = (data) => {
+    let update = null;
+    const currentSymbol = form.symbol.toUpperCase();
+
+    if (Array.isArray(data)) {
+      update = data.find((p) => p.symbol.toUpperCase() === currentSymbol);
+    } else if (data && data.symbol.toUpperCase() === currentSymbol) {
+      update = data;
+    }
+
+    if (update) {
+      const newPrice = Number(update.currentPrice);
+      setPriceSnapshot(update);
+
+      // Real-time chart update: modify the last candle
+      setCandleData((prev) => {
+        if (!prev || prev.length === 0) return prev;
+        const lastIndex = prev.length - 1;
+        const lastCandle = { ...prev[lastIndex] };
+        
+        lastCandle.close = newPrice;
+        if (newPrice > lastCandle.high) lastCandle.high = newPrice;
+        if (newPrice < lastCandle.low) lastCandle.low = newPrice;
+        
+        const next = [...prev];
+        next[lastIndex] = lastCandle;
+        return next;
+      });
+    }
+  };
+
+  const { connected } = useWebSocket("/topic/prices", handlePriceUpdate, true);
 
   useEffect(() => {
     const loadCandles = async () => {
@@ -211,7 +247,7 @@ export default function MarginTradingPage() {
       value: priceSnapshot?.currentPrice || 0,
       kind: "currency",
       icon: "price",
-      hint: "Live margin index reference",
+      hint: connected ? "Live websocket updates" : "Latest REST snapshot",
     },
     {
       label: "24H change",
@@ -289,6 +325,13 @@ export default function MarginTradingPage() {
                   <span className="block uppercase text-[9px]">Daily Borrow Interest</span>
                   <span className="text-xs font-semibold text-white">0.05%</span>
                 </div>
+
+                <div>
+                  <span className="block uppercase text-[9px]">Websocket status</span>
+                  <span className={`text-xs font-bold ${connected ? "text-trading-up" : "text-muted"}`}>
+                    {connected ? "CONNECTED" : "DISCONNECTED"}
+                  </span>
+                </div>
               </div>
             )}
           </div>
@@ -306,7 +349,7 @@ export default function MarginTradingPage() {
                 onIntervalChange={setInterval}
                 loading={chartLoading}
                 data={candleData}
-                status={{ label: "Margin Active", tone: "neutral" }}
+                status={{ label: connected ? "Live market" : "Snapshot", tone: connected ? "active" : "neutral" }}
                 stats={chartStats}
               />
 
@@ -541,7 +584,21 @@ export default function MarginTradingPage() {
 
             {/* Order Entry Form (3-cols) */}
             <div className="lg:col-span-3">
-              <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl overflow-hidden shadow-elevation-md">
+              <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl overflow-hidden shadow-elevation-md relative">
+                {!hasAuthToken() && (
+                  <div className="absolute inset-0 bg-[#0a0a0f]/85 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6 text-center">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-4">
+                      <Lock size={20} className="text-primary" />
+                    </div>
+                    <h3 className="font-heading text-sm font-bold text-white mb-2 uppercase tracking-wide">Login Required</h3>
+                    <p className="text-xs text-muted leading-relaxed mb-6 max-w-[200px]">
+                      Access your simulated wallet and start trading by connecting your account.
+                    </p>
+                    <Button variant="default" className="w-full text-xs font-semibold py-2.5 rounded-lg shadow-glow-primary" asChild>
+                      <Link to="/auth">Sign In / Connect Wallet</Link>
+                    </Button>
+                  </div>
+                )}
                 <form onSubmit={handleSubmit}>
                   <div className="flex border-b border-hairline-on-dark p-1 bg-canvas-dark/40">
                     <button

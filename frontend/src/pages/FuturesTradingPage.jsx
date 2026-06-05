@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { fetchCandlestickData, fetchOpenFuturesPositions, fetchPrice, openFuturesPosition, fetchWallets, closeFuturesPosition, updateFuturesSlTp } from "../api";
+import { Link } from "react-router-dom";
+import { fetchCandlestickData, fetchOpenFuturesPositions, fetchPrice, openFuturesPosition, fetchWallets, closeFuturesPosition, updateFuturesSlTp, hasAuthToken } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
@@ -7,8 +8,9 @@ import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
 import { TradingChartPanel } from "../components/ui/TradingChartPanel";
 import { OrderBook } from "../components/ui/OrderBook";
+import { useWebSocket } from "../hooks/useWebSocket";
 import { formatCurrency, formatPercent } from "../lib/utils";
-import { ArrowRightLeft, Info, HelpCircle } from "lucide-react";
+import { ArrowRightLeft, Info, HelpCircle, Lock } from "lucide-react";
 
 export default function FuturesTradingPage() {
   // Page core states
@@ -37,7 +39,7 @@ export default function FuturesTradingPage() {
   const [priceSnapshot, setPriceSnapshot] = useState(null);
   const [chartInterval, setChartInterval] = useState("1h");
   const [activeBottomTab, setActiveBottomTab] = useState("POSITIONS");
-  const [usdtWalletBalance, setUsdtWalletBalance] = useState(1248.59);
+  const [usdtWalletBalance, setUsdtWalletBalance] = useState(0.00);
   
   // Real-time streaming mock recent trades
   const [recentTrades, setRecentTrades] = useState([
@@ -48,32 +50,48 @@ export default function FuturesTradingPage() {
     { id: 5, price: 69961.5, amount: 0.983, time: "13:40:46", side: "BUY" }
   ]);
 
-  // Simulated live prices tick
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setPriceSnapshot(prev => {
-        if (!prev?.currentPrice) return prev;
-        const delta = (Math.random() - 0.5) * 5;
-        const nextPrice = Number(prev.currentPrice) + delta;
+  const handlePriceUpdate = (data) => {
+    let update = null;
+    const currentSymbol = symbol.toUpperCase();
 
-        // Add a new row to recent trades
-        const newTrade = {
-          id: Date.now(),
-          price: parseFloat(nextPrice.toFixed(1)),
-          amount: parseFloat((Math.random() * 1.5 + 0.01).toFixed(3)),
-          time: new Date().toTimeString().split(" ")[0],
-          side: Math.random() > 0.48 ? "BUY" : "SELL"
-        };
-        setRecentTrades(trades => [newTrade, ...trades.slice(0, 12)]);
+    if (Array.isArray(data)) {
+      update = data.find((p) => p.symbol.toUpperCase() === currentSymbol);
+    } else if (data && data.symbol.toUpperCase() === currentSymbol) {
+      update = data;
+    }
 
-        return {
-          ...prev,
-          currentPrice: nextPrice
-        };
+    if (update) {
+      const newPrice = Number(update.currentPrice);
+      setPriceSnapshot(update);
+
+      // Add a new row to recent trades
+      const newTrade = {
+        id: Date.now(),
+        price: parseFloat(newPrice.toFixed(1)),
+        amount: parseFloat((Math.random() * 1.5 + 0.01).toFixed(3)),
+        time: new Date().toTimeString().split(" ")[0],
+        side: Math.random() > 0.48 ? "BUY" : "SELL"
+      };
+      setRecentTrades((trades) => [newTrade, ...trades.slice(0, 12)]);
+
+      // Real-time chart update: modify the last candle
+      setCandleData((prev) => {
+        if (!prev || prev.length === 0) return prev;
+        const lastIndex = prev.length - 1;
+        const lastCandle = { ...prev[lastIndex] };
+        
+        lastCandle.close = newPrice;
+        if (newPrice > lastCandle.high) lastCandle.high = newPrice;
+        if (newPrice < lastCandle.low) lastCandle.low = newPrice;
+        
+        const next = [...prev];
+        next[lastIndex] = lastCandle;
+        return next;
       });
-    }, 2000);
-    return () => clearInterval(timer);
-  }, []);
+    }
+  };
+
+  const { connected } = useWebSocket("/topic/prices", handlePriceUpdate, true);
 
   // Load wallet balance
   useEffect(() => {
@@ -219,7 +237,7 @@ export default function FuturesTradingPage() {
       value: priceSnapshot?.currentPrice || 0,
       kind: "currency",
       icon: "price",
-      hint: "Live futures reference",
+      hint: connected ? "Live websocket updates" : "Latest REST snapshot",
     },
     {
       label: "24H change",
@@ -319,6 +337,13 @@ export default function FuturesTradingPage() {
                   <span className="block uppercase text-[9px]">24h Vol(USDT)</span>
                   <span className="text-xs font-semibold text-white">1.72B</span>
                 </div>
+
+                <div>
+                  <span className="block uppercase text-[9px]">Websocket status</span>
+                  <span className={`text-xs font-bold ${connected ? "text-trading-up" : "text-muted"}`}>
+                    {connected ? "CONNECTED" : "DISCONNECTED"}
+                  </span>
+                </div>
               </div>
             )}
           </div>
@@ -336,7 +361,7 @@ export default function FuturesTradingPage() {
                 onIntervalChange={setChartInterval}
                 loading={chartLoading}
                 data={candleData}
-                status={{ label: "Active", tone: "active" }}
+                status={{ label: connected ? "Live market" : "Snapshot", tone: connected ? "active" : "neutral" }}
                 stats={chartStats}
               />
 
@@ -511,7 +536,21 @@ export default function FuturesTradingPage() {
 
             {/* RIGHT AREA: Full Professional Order Entry Form (col-span-3) */}
             <div className="lg:col-span-3">
-              <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl overflow-hidden shadow-elevation-lg">
+              <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl overflow-hidden shadow-elevation-lg relative">
+                {!hasAuthToken() && (
+                  <div className="absolute inset-0 bg-[#0a0a0f]/85 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6 text-center">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-4">
+                      <Lock size={20} className="text-primary" />
+                    </div>
+                    <h3 className="font-heading text-sm font-bold text-white mb-2 uppercase tracking-wide">Login Required</h3>
+                    <p className="text-xs text-muted leading-relaxed mb-6 max-w-[200px]">
+                      Access your simulated wallet and start trading by connecting your account.
+                    </p>
+                    <Button variant="default" className="w-full text-xs font-semibold py-2.5 rounded-lg shadow-glow-primary" asChild>
+                      <Link to="/auth">Sign In / Connect Wallet</Link>
+                    </Button>
+                  </div>
+                )}
                 
                 {/* Isolated/Leverage Config Bar */}
                 <div className="bg-canvas-dark/30 px-4 py-2 border-b border-hairline-on-dark flex items-center justify-between text-[10px] font-mono">
