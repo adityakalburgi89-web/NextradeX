@@ -32,6 +32,9 @@ public class SecurityConfig {
     @Value("${cors.allowed.origins}")
     private String corsAllowedOrigins;
     
+    @Value("${oauth.frontend.callback-url}")
+    private String frontendCallbackUrl;
+    
     public SecurityConfig(@Lazy AuthService authService, JwtService jwtService,
                          OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler) {
         this.authService = authService;
@@ -79,14 +82,14 @@ public class SecurityConfig {
                 .successHandler(oAuth2AuthenticationSuccessHandler)
                 .failureHandler((request, response, exception) -> {
                     log.error("[OAuth2] Login failed: {}", exception.getMessage());
-                    response.sendRedirect("http://localhost:3000/auth?error=oauth_failed&message=" +
+                    response.sendRedirect(frontendCallbackUrl + "?error=oauth_failed&message=" +
                         java.net.URLEncoder.encode("OAuth login failed: " + exception.getMessage(),
                         java.nio.charset.StandardCharsets.UTF_8));
                 })
             )
             .logout(logout -> logout
                 .logoutUrl("/auth/logout")
-                .logoutSuccessUrl("http://localhost:3000/auth")
+                .logoutSuccessUrl(frontendCallbackUrl)
                 .permitAll()
             )
             .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
