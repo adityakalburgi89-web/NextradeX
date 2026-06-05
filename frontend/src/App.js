@@ -45,6 +45,18 @@ import Chatbot from "./components/Chatbot";
 import tradingVideo from "./assets/videos/TradingVid.mp4";
 import qrCodeImg from "./assets/QrCode/QrCode.png";
 
+// Cryptocurrency SVG Icons from cryptologos.cc
+import btcIcon from "./assets/Icons/btc.svg";
+import ethIcon from "./assets/Icons/eth.svg";
+import solIcon from "./assets/Icons/sol.svg";
+import linkIcon from "./assets/Icons/link.svg";
+import ltcIcon from "./assets/Icons/ltc.svg";
+import arbIcon from "./assets/Icons/arb.svg";
+import opIcon from "./assets/Icons/op.svg";
+import suiIcon from "./assets/Icons/sui.svg";
+import tiaIcon from "./assets/Icons/tia.svg";
+import seiIcon from "./assets/Icons/sei.svg";
+
 /* ═══════════════════════════════════════════
    HOME PAGE
    ═══════════════════════════════════════════ */
@@ -86,7 +98,56 @@ const staggerContainer = {
   }
 };
 
+const marketTabs = {
+  popular: [
+    { pair: "BTC / USDT", price: "$96,482.50", change: "+3.45%", isUp: true, vol: "$12.8B" },
+    { pair: "ETH / USDT", price: "$3,584.20", change: "+1.85%", isUp: true, vol: "$5.4B" },
+    { pair: "SOL / USDT", price: "$184.65", change: "+5.12%", isUp: true, vol: "$2.9B" },
+    { pair: "LINK / USDT", price: "$18.25", change: "-0.75%", isUp: false, vol: "$420M" },
+    { pair: "LTC / USDT", price: "$86.40", change: "+0.25%", isUp: true, vol: "$310M" },
+  ],
+  new: [
+    { pair: "ARB / USDT", price: "$1.12", change: "+12.45%", isUp: true, vol: "$180M" },
+    { pair: "OP / USDT", price: "$2.45", change: "+8.20%", isUp: true, vol: "$120M" },
+    { pair: "SUI / USDT", price: "$1.95", change: "+15.30%", isUp: true, vol: "$220M" },
+    { pair: "TIA / USDT", price: "$5.82", change: "-4.15%", isUp: false, vol: "$95M" },
+    { pair: "SEI / USDT", price: "$0.54", change: "-2.85%", isUp: false, vol: "$80M" },
+  ],
+  gainers: [
+    { pair: "SUI / USDT", price: "$1.95", change: "+15.30%", isUp: true, vol: "$220M" },
+    { pair: "ARB / USDT", price: "$1.12", change: "+12.45%", isUp: true, vol: "$180M" },
+    { pair: "OP / USDT", price: "$2.45", change: "+8.20%", isUp: true, vol: "$120M" },
+    { pair: "SOL / USDT", price: "$184.65", change: "+5.12%", isUp: true, vol: "$2.9B" },
+    { pair: "BTC / USDT", price: "$96,482.50", change: "+3.45%", isUp: true, vol: "$12.8B" },
+  ]
+};
+
+const renderCoinIcon = (symbol) => {
+  const iconMap = {
+    "BTC / USDT": btcIcon,
+    "ETH / USDT": ethIcon,
+    "SOL / USDT": solIcon,
+    "LINK / USDT": linkIcon,
+    "LTC / USDT": ltcIcon,
+    "ARB / USDT": arbIcon,
+    "OP / USDT": opIcon,
+    "SUI / USDT": suiIcon,
+    "TIA / USDT": tiaIcon,
+    "SEI / USDT": seiIcon,
+  };
+  const src = iconMap[symbol];
+  if (src) {
+    return <img src={src} className="w-8 h-8 flex-shrink-0 object-contain" alt={symbol} />;
+  }
+  return (
+    <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white font-mono text-sm font-bold">
+      {symbol.charAt(0)}
+    </div>
+  );
+};
+
 function HomePage() {
+  const [activeMarketTab, setActiveMarketTab] = useState("popular");
   return (
     <PageTransition>
       <main className="w-full text-white bg-canvas-dark">
@@ -175,18 +236,22 @@ function HomePage() {
             >
               {[
                 { badge: "No.1", label: "Simulated Volume", desc: "Highest simulated trades routed daily" },
-                { badge: "24/7", label: "Customer Service", desc: "Live chat with simulated desk agents" },
-                { badge: "100%", label: "Reserves (SAFU)", desc: "All simulation assets collateralized 1:1" },
-                { badge: "0.0%", label: "Slip Guarantee", desc: "Precise matching for simulation execution" },
+                { badge: "24/7", label: "Customer Support", desc: "Support with simulated desk agents" },
+                { badge: "100%", label: "Reserves (SAFU)", desc: "All simulated assets collateralized 1:1" },
+                { badge: "0.0%", label: "Slippage Guarantee", desc: "Precise simulated matching execution" },
               ].map((item, idx) => (
                 <motion.div 
                   key={idx} 
                   variants={fadeInUpSpring}
-                  className="bg-surface-card-dark rounded-lg border border-hairline-on-dark p-5 flex flex-col gap-2 hover:border-primary/30 transition-all duration-300 interactive-surface"
+                  className="bg-surface-card-dark rounded-lg border border-hairline-on-dark p-5 flex items-center gap-4 hover:border-primary/30 transition-all duration-300 interactive-surface"
                 >
-                  <div className="text-primary font-mono text-2xl font-bold tracking-tight">{item.badge}</div>
-                  <div className="text-white text-sm font-semibold tracking-tight">{item.label}</div>
-                  <div className="text-muted text-xs font-sans leading-relaxed">{item.desc}</div>
+                  <span className="text-primary font-mono text-xl font-bold px-3 py-1 bg-primary/10 border border-primary/20 rounded flex-shrink-0">
+                    {item.badge}
+                  </span>
+                  <div>
+                    <div className="text-white text-sm font-semibold tracking-tight font-heading">{item.label}</div>
+                    <div className="text-muted text-xs font-sans leading-relaxed mt-0.5">{item.desc}</div>
+                  </div>
                 </motion.div>
               ))}
             </motion.div>
@@ -203,11 +268,18 @@ function HomePage() {
             viewport={{ once: true, margin: "-100px" }}
             className="max-w-7xl mx-auto px-6 relative z-10"
           >
-            <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block">Platform Metric</span>
-            <h2 className="font-heading text-5xl md:text-7xl font-bold tracking-tight text-white mb-6">316,258,026</h2>
-            <h3 className="font-heading text-lg md:text-2xl font-semibold tracking-tight text-muted max-w-2xl mx-auto">
+            <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block font-semibold">Platform Metric</span>
+            <div className="inline-flex items-center gap-2 select-none border border-hairline-on-dark bg-surface-card-dark/30 rounded-2xl px-8 py-6 backdrop-blur-md shadow-elevation-md">
+              <h2 className="font-mono text-5xl md:text-8xl font-bold tracking-wider text-primary leading-none">
+                316,258,026
+              </h2>
+            </div>
+            <h3 className="font-heading text-lg md:text-2xl font-semibold tracking-tight text-white/95 max-w-2xl mx-auto mt-6">
               Simulated Users Trust NexTradeX Platform Ecosystem
             </h3>
+            <p className="text-muted text-xs font-sans mt-2 max-w-md mx-auto">
+              Simulated platform metrics updated in real-time under high-stress system conditions.
+            </p>
           </motion.div>
         </section>
 
@@ -221,7 +293,7 @@ function HomePage() {
               viewport={{ once: true, margin: "-100px" }}
               className="text-center mb-16"
             >
-              <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block">Best in Class</span>
+              <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block font-semibold">Best in Class</span>
               <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-white">Pro Trading Features For Everyone</h2>
             </motion.div>
 
@@ -232,34 +304,22 @@ function HomePage() {
               viewport={{ once: true, margin: "-100px" }}
               className="grid grid-cols-1 md:grid-cols-2 gap-6"
             >
-              <motion.div variants={fadeInUpSpring}>
-                <FeatureRow
-                  icon={<Package size={22} className="text-primary" />}
-                  title="Basket Orders With Margin Benefits"
-                  description="Place multiple simulated orders together as a basket to enjoy custom margin offsetting."
-                />
-              </motion.div>
-              <motion.div variants={fadeInUpSpring}>
-                <FeatureRow
-                  icon={<Target size={22} className="text-primary" />}
-                  title="Strategy Builder"
-                  description="Build and analyse virtual trading strategies comprising group of futures and options contracts."
-                />
-              </motion.div>
-              <motion.div variants={fadeInUpSpring}>
-                <FeatureRow
-                  icon={<Layers size={22} className="text-primary" />}
-                  title="Deep OTM/ITM Strikes"
-                  description="Trade simulated deep OTM/ITM options strikes with customizable daily and weekly expiry terms."
-                />
-              </motion.div>
-              <motion.div variants={fadeInUpSpring}>
-                <FeatureRow
-                  icon={<BarChart3 size={22} className="text-primary" />}
-                  title="PnL Analytics"
-                  description="Conveniently track and analyse your simulated trading history with advanced visual indices."
-                />
-              </motion.div>
+              {[
+                { icon: <Package size={22} />, title: "Basket Orders With Margin Benefits", desc: "Place multiple simulated orders together as a basket to enjoy custom margin offsetting." },
+                { icon: <Target size={22} />, title: "Strategy Builder", desc: "Build and analyse virtual trading strategies comprising groups of futures and options contracts." },
+                { icon: <Layers size={22} />, title: "Deep OTM/ITM Strikes", desc: "Trade simulated deep OTM/ITM options strikes with customizable daily and weekly expiry terms." },
+                { icon: <BarChart3 size={22} />, title: "PnL Analytics", desc: "Conveniently track and analyse your simulated trading history with advanced visual indices." }
+              ].map((feature, idx) => (
+                <motion.div key={idx} variants={fadeInUpSpring} className="flex items-start gap-5 p-6 rounded-xl border border-hairline-on-dark bg-surface-card-dark hover:border-primary/30 transition-all duration-300 group interactive-surface">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 text-primary group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
+                    {feature.icon}
+                  </div>
+                  <div>
+                    <h4 className="font-heading text-base font-semibold text-white mb-1.5">{feature.title}</h4>
+                    <p className="text-sm text-muted leading-relaxed font-sans">{feature.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
             </motion.div>
           </div>
         </section>
@@ -274,8 +334,8 @@ function HomePage() {
               viewport={{ once: true, margin: "-100px" }}
               className="mb-12 text-center lg:text-left"
             >
-              <span className="font-mono text-xs text-primary uppercase tracking-widest mb-3 block">Security Guarantee</span>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">Simulated Reserves You Can Trust</h2>
+              <span className="font-mono text-xs text-primary uppercase tracking-widest mb-3 block font-semibold">Security Guarantee</span>
+              <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-primary mb-4 uppercase">FUNDS ARE SAFU</h2>
               <p className="text-muted text-sm md:text-base max-w-2xl font-sans">
                 All mock balances are backed 1:1 on our virtual ledger. Verified proof of simulated reserves protects all users.
               </p>
@@ -286,21 +346,23 @@ function HomePage() {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+              className="grid grid-cols-1 md:grid-cols-3 gap-8"
             >
               {[
-                { value: "$1,248,592,932", label: "Simulated reserves", desc: "Total paper balance allocated to user accounts" },
-                { value: "100.00%", label: "Collateralized ratio", desc: "Virtual funds fully collateralized by central simulated vaults" },
-                { value: "0.0001 BTC", label: "Min Lot Execution", desc: "Hyper-precise allocation for simulated matching engines" }
+                { value: "185,248 BTC", label: "Total Simulated Reserves", desc: "Equivalent to ~$12.4B paper balance allocated to user accounts" },
+                { value: "100.00%", label: "Collateralized Ratio", desc: "Virtual funds fully collateralized by simulated vaults" },
+                { value: "45,290 BTC", label: "Simulated Funds Recovered", desc: "Mock trading volume protection system recovery pool" }
               ].map((item, idx) => (
                 <motion.div 
                   key={idx} 
                   variants={fadeInUpSpring}
-                  className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-6 hover:border-primary/20 transition-all duration-300"
+                  className="border-l border-hairline-on-dark pl-6 flex flex-col justify-between"
                 >
                   <div className="font-mono text-2xl sm:text-3xl font-bold text-primary mb-2 tracking-tight">{item.value}</div>
-                  <div className="text-white text-sm font-semibold tracking-tight mb-1">{item.label}</div>
-                  <div className="text-muted text-xs leading-relaxed font-sans">{item.desc}</div>
+                  <div>
+                    <div className="text-white text-sm font-semibold tracking-tight mb-1">{item.label}</div>
+                    <div className="text-muted text-xs leading-relaxed font-sans">{item.desc}</div>
+                  </div>
                 </motion.div>
               ))}
             </motion.div>
@@ -315,9 +377,10 @@ function HomePage() {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
-              className="text-center mb-16"
+              className="text-center mb-12"
             >
-              <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">Supported Simulation Cryptocurrencies</h2>
+              <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block font-semibold">Simulation Markets</span>
+              <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">Supported Cryptocurrencies</h2>
               <p className="text-muted text-sm md:text-base max-w-xl mx-auto font-sans">
                 Discover virtual currencies, lot restrictions, and tick rules routed through our simulation engine.
               </p>
@@ -328,32 +391,56 @@ function HomePage() {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
-              className="max-w-4xl mx-auto"
+              className="max-w-5xl mx-auto"
             >
               <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden p-6 shadow-elevation-md">
+                {/* Tab Header */}
+                <div className="flex items-center gap-2 border-b border-hairline-on-dark pb-4 mb-6">
+                  {Object.keys(marketTabs).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveMarketTab(tab)}
+                      className={`px-4 py-2 text-xs font-semibold rounded-md transition-all duration-200 capitalize ${
+                        activeMarketTab === tab
+                          ? "bg-primary text-on-primary font-bold shadow-glow-primary"
+                          : "text-muted hover:text-white bg-transparent"
+                      }`}
+                    >
+                      {tab === "popular" ? "Popular Pairs" : tab === "new" ? "New Listings" : "Top Gainers"}
+                    </button>
+                  ))}
+                </div>
+
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
                     <thead className="bg-[#15191e] border-b border-hairline-on-dark font-heading text-white">
                       <tr>
                         <th className="px-6 py-4 font-semibold">Token Pair</th>
-                        <th className="px-6 py-4 font-semibold text-center">Min Trade Size</th>
-                        <th className="px-6 py-4 font-semibold text-center">Max Trade Size</th>
-                        <th className="px-6 py-4 font-semibold text-center text-primary">Tick Size</th>
+                        <th className="px-6 py-4 font-semibold text-right">Last Price</th>
+                        <th className="px-6 py-4 font-semibold text-right">24h Change</th>
+                        <th className="px-6 py-4 font-semibold text-right">24h Volume</th>
+                        <th className="px-6 py-4 font-semibold text-center">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-hairline-on-dark font-mono text-muted">
-                      {[
-                        { token: "BTC / USDT", min: "0.0001", max: "10.00", tick: "0.25" },
-                        { token: "ETH / USDT", min: "0.002", max: "135.00", tick: "0.05" },
-                        { token: "LTC / USDT", min: "0.05", max: "3,759.00", tick: "0.01" },
-                        { token: "LINK / USDT", min: "0.40", max: "33,277.00", tick: "0.01" },
-                        { token: "SOL / USDT", min: "0.00000001", max: "1,800.00", tick: "0.01" },
-                      ].map((coin, index) => (
-                        <tr key={index} className="hover:bg-[#20262d] transition-colors duration-150">
-                          <td className="px-6 py-4 text-white font-semibold flex items-center gap-2">{coin.token}</td>
-                          <td className="px-6 py-4 text-center">{coin.min}</td>
-                          <td className="px-6 py-4 text-center">{coin.max}</td>
-                          <td className="px-6 py-4 text-center text-primary">{coin.tick}</td>
+                      {marketTabs[activeMarketTab].map((coin, index) => (
+                        <tr key={index} className="hover:bg-surface-elevated-dark/30 transition-colors duration-150 group">
+                          <td className="px-6 py-4 text-white font-semibold flex items-center gap-3">
+                            {renderCoinIcon(coin.pair)}
+                            <span className="group-hover:text-primary transition-colors">{coin.pair}</span>
+                          </td>
+                          <td className="px-6 py-4 text-right text-white font-medium">{coin.price}</td>
+                          <td className={`px-6 py-4 text-right font-medium ${coin.isUp ? "text-trading-up" : "text-trading-down"}`}>
+                            <span className="inline-flex items-center gap-1 justify-end">
+                              {coin.isUp ? "▲" : "▼"} {coin.change}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">{coin.vol}</td>
+                          <td className="px-6 py-4 text-center">
+                            <Button size="sm" className="h-[28px] px-4 font-semibold text-xs text-on-primary bg-primary rounded-sm hover:bg-primary-active transition-all" asChild>
+                              <Link to="/trade/spot">Trade</Link>
+                            </Button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -382,21 +469,60 @@ function HomePage() {
                   Scan the mock code with your browser simulator to run the trading terminal on mobile devices. Full support for custom lot sizing, tickers, and profile tracking.
                 </p>
                 <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-                  <div className="px-4 py-2 bg-[#15191e] border border-hairline-on-dark rounded-md text-xs font-mono text-muted">
-                    iOS / iPadOS
-                  </div>
-                  <div className="px-4 py-2 bg-[#15191e] border border-hairline-on-dark rounded-md text-xs font-mono text-muted">
-                    Android / APK
-                  </div>
-                  <div className="px-4 py-2 bg-[#15191e] border border-hairline-on-dark rounded-md text-xs font-mono text-muted">
-                    macOS / Desktop
-                  </div>
+                  <a href="#download-ios" className="flex items-center gap-3 px-5 py-2 bg-[#15191e] border border-hairline-on-dark rounded-lg text-left hover:border-primary/45 transition-all duration-300">
+                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,22C14.32,22.05 13.89,21.23 12.37,21.23C10.84,21.23 10.37,22 9.09,22.05C7.79,22.1 6.8,20.78 5.96,19.58C4.26,17.12 2.97,12.59 4.71,9.58C5.58,8.08 7.13,7.13 8.81,7.1C10.09,7.08 11.3,7.96 12.08,7.96C12.86,7.96 14.3,6.92 15.82,7.08C16.46,7.1 18.26,7.34 19.46,9.1C19.36,9.16 17.25,10.39 17.27,12.87C17.3,15.84 19.9,16.83 19.93,16.84C19.91,16.91 19.5,18.3 18.71,19.5M15.97,4.17C16.63,3.37 17.07,2.28 16.95,1C16,1.04 14.9,1.6 14.24,2.38C13.68,3.04 13.19,4.14 13.34,5.39C14.39,5.47 15.4,4.88 15.97,4.17Z" />
+                    </svg>
+                    <div>
+                      <p className="text-[8px] uppercase tracking-wider text-muted font-sans leading-none">Download on the</p>
+                      <p className="text-xs font-semibold text-white font-heading mt-1 leading-tight">App Store</p>
+                    </div>
+                  </a>
+                  <a href="#download-android" className="flex items-center gap-3 px-5 py-2 bg-[#15191e] border border-hairline-on-dark rounded-lg text-left hover:border-primary/45 transition-all duration-300">
+                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M3,5.27V18.73L16.55,12L3,5.27M17.87,11.33L19.5,12.15C19.82,12.31 19.82,12.69 19.5,12.85L17.87,13.67L15,12.24L17.87,11.33M4.24,6.47L14.28,11.5L4.24,16.53V6.47M4.24,17.47L14.28,12.5L4.24,7.53V17.47Z" />
+                    </svg>
+                    <div>
+                      <p className="text-[8px] uppercase tracking-wider text-muted font-sans leading-none">Get it on</p>
+                      <p className="text-xs font-semibold text-white font-heading mt-1 leading-tight">Google Play</p>
+                    </div>
+                  </a>
+                  <a href="#download-apk" className="flex items-center gap-3 px-5 py-2 bg-[#15191e] border border-hairline-on-dark rounded-lg text-left hover:border-primary/45 transition-all duration-300">
+                    <Globe size={18} className="text-white" />
+                    <div>
+                      <p className="text-[8px] uppercase tracking-wider text-muted font-sans leading-none">Download APK for</p>
+                      <p className="text-xs font-semibold text-white font-heading mt-1 leading-tight">macOS / Windows</p>
+                    </div>
+                  </a>
                 </div>
               </div>
               
               {/* Actual QR Code Image */}
-              <div className="w-48 h-48 bg-white p-2 rounded-xl border border-hairline-on-dark flex items-center justify-center flex-shrink-0 relative shadow-elevation-lg">
-                <img src={qrCodeImg} alt="QR Code" className="w-full h-full object-contain" />
+              <div className="relative group bg-white p-3 rounded-xl border border-hairline-on-dark flex flex-col items-center justify-center flex-shrink-0 shadow-elevation-lg overflow-hidden">
+                <style dangerouslySetInnerHTML={{__html: `
+                  @keyframes scan-line {
+                    0% { top: 0%; opacity: 0; }
+                    5% { opacity: 1; }
+                    95% { opacity: 1; }
+                    100% { top: 100%; opacity: 0; }
+                  }
+                  .qr-scan-line {
+                    position: absolute;
+                    left: 0;
+                    width: 100%;
+                    height: 3px;
+                    background: linear-gradient(90deg, transparent, #fcd535, transparent);
+                    box-shadow: 0 0 10px #fcd535;
+                    animation: scan-line 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+                    z-index: 20;
+                  }
+                `}} />
+                <div className="qr-scan-line" />
+                <img src={qrCodeImg} alt="QR Code" className="w-40 h-40 object-contain relative z-10" />
+                <div className="mt-3 text-center">
+                  <span className="text-[10px] text-[#181a20] font-bold tracking-wider font-mono uppercase block">Scan to Download</span>
+                  <span className="text-[8px] text-[#707a8a] font-sans block mt-0.5">iOS & Android App</span>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -414,23 +540,38 @@ function HomePage() {
                 viewport={{ once: true, margin: "-100px" }}
                 className="lg:col-span-2"
               >
-                <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-8 relative overflow-hidden h-full flex flex-col justify-between shadow-elevation-md">
+                <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-8 relative overflow-hidden h-full flex flex-col justify-between shadow-elevation-md interactive-surface">
                   <div className="space-y-6 relative z-10">
-                    <h3 className="font-heading text-2xl md:text-3xl font-bold leading-tight text-white">24x7 Customer<br />Support</h3>
-                    <div className="space-y-4 font-sans">
-                      <div>
-                        <p className="font-mono text-[10px] text-primary uppercase tracking-widest mb-1">Have a question?</p>
-                        <p className="text-sm text-body">Visit our simulated Support Centre for quick documentation answers.</p>
+                    <h3 className="font-heading text-2xl md:text-3xl font-bold leading-tight text-white">24x7 Customer Support</h3>
+                    <p className="text-muted text-sm leading-relaxed font-sans">
+                      Got questions or issues? Our simulated help center is active around the clock with real-time simulated agents.
+                    </p>
+
+                    <div className="space-y-4 font-sans border-t border-hairline-on-dark pt-6">
+                      <div className="flex gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+                          <Headphones size={16} />
+                        </div>
+                        <div>
+                          <p className="font-mono text-[10px] text-primary uppercase tracking-widest leading-none mb-1">Help Center</p>
+                          <p className="text-xs text-muted leading-relaxed">Visit our support database for documentation answers.</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-mono text-[10px] text-primary uppercase tracking-widest mb-1">Need help?</p>
-                        <p className="text-sm text-body">Raise a virtual support ticket with our developer team.</p>
+
+                      <div className="flex gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+                          <Mail size={16} />
+                        </div>
+                        <div>
+                          <p className="font-mono text-[10px] text-primary uppercase tracking-widest leading-none mb-1">Support Ticket</p>
+                          <p className="text-xs text-muted leading-relaxed">Raise a virtual ticket to consult with developer desk agents.</p>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-8 relative z-10">
-                    <p className="font-mono text-[10px] text-muted uppercase tracking-widest mb-3">Connect with us</p>
+                  <div className="mt-8 relative z-10 border-t border-hairline-on-dark pt-6">
+                    <p className="font-mono text-[10px] text-muted uppercase tracking-widest mb-3">Connect with our Creator</p>
                     <div className="flex flex-wrap items-center gap-3">
                       <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-md bg-[#15191e] border border-hairline-on-dark flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
                         <img src={xIcon} alt="X" className="w-4 h-4 object-contain brightness-0 invert" />
@@ -458,10 +599,10 @@ function HomePage() {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
-                className="lg:col-span-3"
+                className="lg:col-span-3 font-sans"
               >
                 <h3 className="font-heading text-2xl md:text-3xl font-bold mb-8 tracking-tight text-white">Frequently Asked Questions</h3>
-                <div className="divide-y divide-hairline-on-dark font-sans">
+                <div className="border-t border-hairline-on-dark divide-y divide-hairline-on-dark">
                   <motion.div variants={fadeInUpSpring}>
                     <FAQItem
                       question="Is NexTradeX a regulated trading platform?"
@@ -522,45 +663,32 @@ function HomePage() {
 }
 
 /* ═══════════════════════════════════════════
-   PRO FEATURE ROW
-   ═══════════════════════════════════════════ */
-function FeatureRow({ icon, title, description }) {
-  return (
-    <div className="flex items-start gap-5 p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/20 transition-all duration-300 group">
-      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0 shadow-glow-primary group-hover:shadow-glow-primary-hover transition-shadow duration-500">
-        <span className="text-white">{icon}</span>
-      </div>
-      <div>
-        <h4 className="font-heading text-base font-semibold text-white mb-1.5">{title}</h4>
-        <p className="text-sm text-muted leading-relaxed">{description}</p>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════
    FAQ ACCORDION ITEM
    ═══════════════════════════════════════════ */
 function FAQItem({ question, answer }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="rounded-xl border border-white/[0.06] overflow-hidden transition-all duration-300 hover:border-white/[0.1]">
+    <div className="border-b border-hairline-on-dark py-5 transition-all duration-200">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-6 py-4 text-left group"
+        className="w-full flex items-center justify-between text-left group"
       >
-        <span className="font-body text-sm font-medium text-white pr-4">{question}</span>
-        <div className={`w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>
-          <ChevronDown size={16} className="text-white" />
-        </div>
+        <span className="font-heading text-sm md:text-base font-semibold text-white group-hover:text-primary transition-colors pr-4">
+          {question}
+        </span>
+        <ChevronDown 
+          size={18} 
+          className={`text-muted transition-transform duration-300 ${open ? 'rotate-180 text-primary' : 'group-hover:text-white'}`} 
+        />
       </button>
       <div
-        className={`overflow-hidden transition-all duration-300 ease-spring ${open ? 'max-h-60 opacity-100' : 'max-h-0 opacity-0'
-          }`}
+        className={`overflow-hidden transition-all duration-300 ease-spring ${
+          open ? 'max-h-60 opacity-100 mt-4' : 'max-h-0 opacity-0'
+        }`}
       >
-        <div className="px-6 pb-5 text-sm text-muted leading-relaxed border-t border-white/[0.04] pt-4">
+        <p className="text-sm text-muted leading-relaxed font-sans pr-6">
           {answer}
-        </div>
+        </p>
       </div>
     </div>
   );

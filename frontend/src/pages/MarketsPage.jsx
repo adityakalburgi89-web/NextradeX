@@ -9,8 +9,36 @@ import { TradingChartPanel } from "../components/ui/TradingChartPanel";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { formatCompactNumber, formatCurrency, formatPercent } from "../lib/utils";
 
+// Offline Cryptocurrency SVG Icons
+import btcIcon from "../assets/Icons/btc.svg";
+import ethIcon from "../assets/Icons/eth.svg";
+import solIcon from "../assets/Icons/sol.svg";
+import linkIcon from "../assets/Icons/link.svg";
+import ltcIcon from "../assets/Icons/ltc.svg";
+import arbIcon from "../assets/Icons/arb.svg";
+import opIcon from "../assets/Icons/op.svg";
+import suiIcon from "../assets/Icons/sui.svg";
+import tiaIcon from "../assets/Icons/tia.svg";
+import seiIcon from "../assets/Icons/sei.svg";
+
+const localIconMap = {
+  BTC: btcIcon,
+  ETH: ethIcon,
+  SOL: solIcon,
+  LINK: linkIcon,
+  LTC: ltcIcon,
+  ARB: arbIcon,
+  OP: opIcon,
+  SUI: suiIcon,
+  TIA: tiaIcon,
+  SEI: seiIcon,
+};
+
 const getCryptoIcon = (symbol) => {
   const base = (symbol?.endsWith("USDT") ? symbol.slice(0, -4) : symbol)?.toUpperCase();
+  if (localIconMap[base]) {
+    return localIconMap[base];
+  }
   const mapper = {
     BTC: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg",
     ETH: "https://cryptologos.cc/logos/ethereum-eth-logo.svg",
