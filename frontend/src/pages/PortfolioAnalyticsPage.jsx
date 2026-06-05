@@ -91,6 +91,45 @@ export default function PortfolioAnalyticsPage() {
     loadData();
   };
 
+  // Combine Real Logs for Execution Log (NO Mock fallback)
+  const unifiedExecutions = useMemo(() => {
+    const logs = [];
+
+    // Map spot orders
+    orderHistory.forEach(o => {
+      logs.push({
+        id: `spot-${o.id}`,
+        symbol: o.symbol,
+        type: "Spot Order",
+        side: o.side,
+        price: Number(o.price || 0),
+        qty: Number(o.quantity || 0),
+        status: o.status,
+        timestamp: o.createdAt || new Date().toISOString(),
+        pnl: 0, // Spot trades are asset exchanges, PnL is not tracked in database
+        isTrade: true
+      });
+    });
+
+    // Map options positions
+    optionsHistory.forEach(o => {
+      logs.push({
+        id: `opt-${o.id}`,
+        symbol: o.symbol,
+        type: `Option ${o.optionType}`,
+        side: "SETTLE",
+        price: Number(o.strikePrice || 0),
+        qty: Number(o.quantity || 0),
+        status: o.status,
+        timestamp: o.expirationDate || new Date().toISOString(),
+        pnl: Number(o.profitOrLoss || 0),
+        isTrade: false
+      });
+    });
+
+    return logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  }, [orderHistory, optionsHistory]);
+
   // ═══════════════════════════════════════════
   // CALCULATIONS & METRICS
   // ═══════════════════════════════════════════
@@ -337,44 +376,7 @@ export default function PortfolioAnalyticsPage() {
     ];
   }, [stats.spotBalance]);
 
-  // Combine Real Logs for Execution Log (NO Mock fallback)
-  const unifiedExecutions = useMemo(() => {
-    const logs = [];
 
-    // Map spot orders
-    orderHistory.forEach(o => {
-      logs.push({
-        id: `spot-${o.id}`,
-        symbol: o.symbol,
-        type: "Spot Order",
-        side: o.side,
-        price: Number(o.price || 0),
-        qty: Number(o.quantity || 0),
-        status: o.status,
-        timestamp: o.createdAt || new Date().toISOString(),
-        pnl: 0, // Spot trades are asset exchanges, PnL is not tracked in database
-        isTrade: true
-      });
-    });
-
-    // Map options positions
-    optionsHistory.forEach(o => {
-      logs.push({
-        id: `opt-${o.id}`,
-        symbol: o.symbol,
-        type: `Option ${o.optionType}`,
-        side: "SETTLE",
-        price: Number(o.strikePrice || 0),
-        qty: Number(o.quantity || 0),
-        status: o.status,
-        timestamp: o.expirationDate || new Date().toISOString(),
-        pnl: Number(o.profitOrLoss || 0),
-        isTrade: false
-      });
-    });
-
-    return logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  }, [orderHistory, optionsHistory]);
 
   if (loading) {
     return (
