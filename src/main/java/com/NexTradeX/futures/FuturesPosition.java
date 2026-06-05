@@ -92,6 +92,12 @@ public class FuturesPosition {
     @Column(precision = 5, scale = 2)
     private BigDecimal marginRatio = BigDecimal.ZERO;
 
+    @Column(precision = 19, scale = 8)
+    private BigDecimal stopLoss;
+
+    @Column(precision = 19, scale = 8)
+    private BigDecimal takeProfit;
+
     @Builder.Default
     @Column(nullable = false, updatable = false)
     private LocalDateTime openedAt = LocalDateTime.now();

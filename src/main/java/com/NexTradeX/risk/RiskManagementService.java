@@ -106,6 +106,34 @@ public class RiskManagementService {
         
         position.setMarginRatio(marginRatio);
         
+        // Check SL/TP triggers
+        boolean triggered = false;
+        String triggerRemark = "";
+        
+        if (position.getPositionMode().toString().equals("LONG")) {
+            if (position.getStopLoss() != null && currentPrice.compareTo(position.getStopLoss()) <= 0) {
+                triggered = true;
+                triggerRemark = "Closed via Stop Loss at " + currentPrice;
+            } else if (position.getTakeProfit() != null && currentPrice.compareTo(position.getTakeProfit()) >= 0) {
+                triggered = true;
+                triggerRemark = "Closed via Take Profit at " + currentPrice;
+            }
+        } else { // SHORT
+            if (position.getStopLoss() != null && currentPrice.compareTo(position.getStopLoss()) >= 0) {
+                triggered = true;
+                triggerRemark = "Closed via Stop Loss at " + currentPrice;
+            } else if (position.getTakeProfit() != null && currentPrice.compareTo(position.getTakeProfit()) <= 0) {
+                triggered = true;
+                triggerRemark = "Closed via Take Profit at " + currentPrice;
+            }
+        }
+
+        if (triggered) {
+            log.info("Triggering SL/TP for position {}: {}", position.getId(), triggerRemark);
+            futuresTradingService.closeFuturesPosition(position.getId(), position.getUser().getId(), triggerRemark);
+            return;
+        }
+        
         futuresPositionRepository.save(position);
         
         // Check liquidation condition

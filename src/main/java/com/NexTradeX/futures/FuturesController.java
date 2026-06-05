@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import com.NexTradeX.auth.JwtService;
 import com.NexTradeX.common.ApiResponse;
 import com.NexTradeX.dto.FuturesOrderRequest;
 import com.NexTradeX.dto.OrderResponse;
+import com.NexTradeX.dto.SlTpUpdateRequest;
 import com.NexTradeX.order.OrderSide;
 
 import jakarta.validation.Valid;
@@ -70,6 +72,40 @@ public class FuturesController {
                     .body(new ApiResponse<>(400, e.getMessage(), null));
         }
     }
+
+    @PostMapping("/close/{positionId}")
+    public ResponseEntity<ApiResponse<Void>> closePosition(
+            @PathVariable Long positionId,
+            Authentication authentication) {
+        try {
+            Long userId = extractUserIdFromAuth(authentication);
+            futuresTradingService.closeFuturesPosition(positionId, userId);
+            return ResponseEntity.ok()
+                    .body(new ApiResponse<>(200, "Futures position closed successfully", null));
+        } catch (Exception e) {
+            log.error("Error closing futures position: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        }
+    }
+
+    @PostMapping("/update-sl-tp/{positionId}")
+    public ResponseEntity<ApiResponse<FuturesPositionDTO>> updateSlTp(
+            @PathVariable Long positionId,
+            @RequestBody SlTpUpdateRequest request,
+            Authentication authentication) {
+        try {
+            Long userId = extractUserIdFromAuth(authentication);
+            FuturesPosition updatedPosition = futuresTradingService.updateSlTp(
+                    positionId, userId, request.getStopLoss(), request.getTakeProfit());
+            return ResponseEntity.ok()
+                    .body(new ApiResponse<>(200, "Stop Loss and Take Profit updated", toDTO(updatedPosition)));
+        } catch (Exception e) {
+            log.error("Error updating SL/TP for position: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        }
+    }
     
     private OrderResponse toOrderResponse(com.NexTradeX.order.Order order) {
         return OrderResponse.builder()
@@ -94,6 +130,9 @@ public class FuturesController {
                 .unrealizedPnL(position.getUnrealizedPnL())
                 .leverage(position.getLeverage())
                 .marginRatio(position.getMarginRatio())
+                .stopLoss(position.getStopLoss())
+                .takeProfit(position.getTakeProfit())
+                .remarks(position.getRemarks())
                 .build();
     }
     

@@ -131,6 +131,10 @@ public class FuturesTradingService {
     }
     
     public void closeFuturesPosition(Long positionId, Long userId) {
+        closeFuturesPosition(positionId, userId, "Position closed manually");
+    }
+
+    public void closeFuturesPosition(Long positionId, Long userId, String remarks) {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
@@ -156,18 +160,50 @@ public class FuturesTradingService {
         position.setRealizedPnL(realizedPnL);
         position.setStatus(PositionStatus.CLOSED);
         position.setClosedAt(LocalDateTime.now());
+        position.setRemarks(remarks);
         
         // Unlock collateral and add PnL
         var wallet = walletService.getWallet(userId, WalletType.FUTURES);
         walletService.unlockFunds(wallet.getId(), position.getCollateral());
-        if (realizedPnL.compareTo(BigDecimal.ZERO) > 0) {
-            walletService.updateBalance(wallet.getId(), realizedPnL);
-        } else {
-            walletService.updateBalance(wallet.getId(), realizedPnL);
-        }
+        walletService.updateBalance(wallet.getId(), realizedPnL);
         
         futuresPositionRepository.save(position);
-        log.info("Futures position closed: {} PnL: {}", positionId, realizedPnL);
+        log.info("Futures position closed ({}): {} PnL: {}", remarks, positionId, realizedPnL);
+    }
+
+    public FuturesPosition updateSlTp(Long positionId, Long userId, BigDecimal stopLoss, BigDecimal takeProfit) {
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        FuturesPosition position = futuresPositionRepository.findByIdAndUser(positionId, user)
+                .orElseThrow(() -> new RuntimeException("Position not found"));
+        
+        if (position.getStatus() != PositionStatus.OPEN) {
+            throw new InvalidOrderException("Position is not open");
+        }
+        
+        BigDecimal currentPrice = position.getMarkPrice() != null ? position.getMarkPrice() : position.getEntryPrice();
+        
+        if (position.getPositionMode() == PositionMode.LONG) {
+            if (stopLoss != null && stopLoss.compareTo(BigDecimal.ZERO) > 0 && stopLoss.compareTo(currentPrice) >= 0) {
+                throw new InvalidOrderException("Stop Loss for Long position must be below current price (" + currentPrice + ")");
+            }
+            if (takeProfit != null && takeProfit.compareTo(BigDecimal.ZERO) > 0 && takeProfit.compareTo(currentPrice) <= 0) {
+                throw new InvalidOrderException("Take Profit for Long position must be above current price (" + currentPrice + ")");
+            }
+        } else { // SHORT
+            if (stopLoss != null && stopLoss.compareTo(BigDecimal.ZERO) > 0 && stopLoss.compareTo(currentPrice) <= 0) {
+                throw new InvalidOrderException("Stop Loss for Short position must be above current price (" + currentPrice + ")");
+            }
+            if (takeProfit != null && takeProfit.compareTo(BigDecimal.ZERO) > 0 && takeProfit.compareTo(currentPrice) >= 0) {
+                throw new InvalidOrderException("Take Profit for Short position must be below current price (" + currentPrice + ")");
+            }
+        }
+        
+        position.setStopLoss(stopLoss != null && stopLoss.compareTo(BigDecimal.ZERO) > 0 ? stopLoss : null);
+        position.setTakeProfit(takeProfit != null && takeProfit.compareTo(BigDecimal.ZERO) > 0 ? takeProfit : null);
+        
+        return futuresPositionRepository.save(position);
     }
     
     public void liquidatePosition(Long positionId) {

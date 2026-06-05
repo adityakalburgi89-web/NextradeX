@@ -276,6 +276,22 @@ export async function fetchOpenFuturesPositions() {
   return handleResponse(res);
 }
 
+export async function closeFuturesPosition(positionId) {
+  console.log("[API] POST /futures/close/:id", positionId);
+  const res = await fetch(`${API_BASE_URL}/futures/close/${positionId}`,
+    createFetchOptions("POST", null, authHeaders())
+  );
+  return handleResponse(res);
+}
+
+export async function updateFuturesSlTp(positionId, payload) {
+  console.log("[API] POST /futures/update-sl-tp/:id", positionId, payload);
+  const res = await fetch(`${API_BASE_URL}/futures/update-sl-tp/${positionId}`,
+    createFetchOptions("POST", payload, authHeaders())
+  );
+  return handleResponse(res);
+}
+
 // MARGIN
 export async function openMarginPosition(payload) {
   console.log("[API] POST /margin/open");

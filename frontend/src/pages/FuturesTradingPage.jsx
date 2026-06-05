@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { fetchCandlestickData, fetchOpenFuturesPositions, fetchPrice, openFuturesPosition, fetchWallets } from "../api";
+import { fetchCandlestickData, fetchOpenFuturesPositions, fetchPrice, openFuturesPosition, fetchWallets, closeFuturesPosition, updateFuturesSlTp } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
@@ -27,6 +27,11 @@ export default function FuturesTradingPage() {
   const [error, setError] = useState("");
   const [positions, setPositions] = useState([]);
   const [loadingPositions, setLoadingPositions] = useState(true);
+  const [selectedPositionForSlTp, setSelectedPositionForSlTp] = useState(null);
+  const [slInput, setSlInput] = useState("");
+  const [tpInput, setTpInput] = useState("");
+  const [isUpdatingSlTp, setIsUpdatingSlTp] = useState(false);
+  const [slTpError, setSlTpError] = useState("");
   const [candleData, setCandleData] = useState([]);
   const [chartLoading, setChartLoading] = useState(false);
   const [priceSnapshot, setPriceSnapshot] = useState(null);
@@ -150,6 +155,54 @@ export default function FuturesTradingPage() {
       setError(err.message || "Failed to open position");
     } finally {
       setLoading(false);
+    }
+  };
+  
+  const handleClosePosition = async (positionId) => {
+    setLoadingPositions(true);
+    setError("");
+    setMessage("");
+    try {
+      const res = await closeFuturesPosition(positionId);
+      setMessage(res?.message || "Position closed successfully");
+      await loadPositions();
+      
+      // Update balance
+      const walletsRes = await fetchWallets();
+      const usdtWallet = walletsRes?.data?.find(w => w.walletType === "FUTURES");
+      if (usdtWallet) {
+        setUsdtWalletBalance(Number(usdtWallet.balance || 0));
+      }
+    } catch (err) {
+      setError(err.message || "Failed to close position");
+    } finally {
+      setLoadingPositions(false);
+    }
+  };
+
+  const handleOpenSlTpModal = (position) => {
+    setSelectedPositionForSlTp(position);
+    setSlInput(position.stopLoss ? position.stopLoss.toString() : "");
+    setTpInput(position.takeProfit ? position.takeProfit.toString() : "");
+    setSlTpError("");
+  };
+
+  const handleSaveSlTp = async () => {
+    if (!selectedPositionForSlTp) return;
+    setIsUpdatingSlTp(true);
+    setSlTpError("");
+    try {
+      const payload = {
+        stopLoss: slInput ? parseFloat(slInput) : null,
+        takeProfit: tpInput ? parseFloat(tpInput) : null
+      };
+      await updateFuturesSlTp(selectedPositionForSlTp.id, payload);
+      await loadPositions();
+      setSelectedPositionForSlTp(null);
+    } catch (err) {
+      setSlTpError(err.message || "Failed to update Stop Loss / Take Profit");
+    } finally {
+      setIsUpdatingSlTp(false);
     }
   };
 
@@ -330,6 +383,8 @@ export default function FuturesTradingPage() {
                               <th className="py-2.5 px-4 text-right">Entry Price</th>
                               <th className="py-2.5 px-4 text-right">Leverage</th>
                               <th className="py-2.5 px-4 text-right">Unrealized PnL</th>
+                              <th className="py-2.5 px-4 text-center">TP / SL</th>
+                              <th className="py-2.5 px-4 text-center">Actions</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-hairline-on-dark">
@@ -351,6 +406,32 @@ export default function FuturesTradingPage() {
                                   <td className="py-3 px-4 text-right text-[#fcd535] font-bold">{p.leverage}x</td>
                                   <td className={`py-3 px-4 text-right font-bold text-sm ${isProfit ? "text-trading-up" : "text-trading-down"}`}>
                                     {isProfit ? "+" : ""}{p.unrealizedPnL} USDT
+                                  </td>
+                                  <td className="py-3 px-4 text-center">
+                                    <div className="flex flex-col items-center gap-0.5">
+                                      <span className={p.takeProfit ? "text-trading-up text-[10px]" : "text-muted text-[10px]"}>
+                                        TP: {p.takeProfit ? `${p.takeProfit}` : "---"}
+                                      </span>
+                                      <span className={p.stopLoss ? "text-trading-down text-[10px]" : "text-muted text-[10px]"}>
+                                        SL: {p.stopLoss ? `${p.stopLoss}` : "---"}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4 text-center">
+                                    <div className="flex items-center justify-center gap-2">
+                                      <button
+                                        onClick={() => handleOpenSlTpModal(p)}
+                                        className="px-2 py-1 bg-white/[0.03] hover:bg-[#fcd535]/15 hover:text-[#fcd535] border border-white/[0.05] rounded text-[10px] font-semibold transition-all"
+                                      >
+                                        Set TP/SL
+                                      </button>
+                                      <button
+                                        onClick={() => handleClosePosition(p.id)}
+                                        className="px-2 py-1 bg-trading-down/10 hover:bg-trading-down/25 text-trading-down border border-trading-down/20 rounded text-[10px] font-semibold transition-all"
+                                      >
+                                        Close
+                                      </button>
+                                    </div>
                                   </td>
                                 </tr>
                               );
@@ -630,6 +711,146 @@ export default function FuturesTradingPage() {
           </div>
         </div>
       </div>
+
+      {/* GLASSMORPHIC STOP LOSS & TAKE PROFIT PORTAL MODAL */}
+      {selectedPositionForSlTp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-md bg-[#121218] border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-xl">
+            <div className="bg-[#181822] px-6 py-4 border-b border-hairline-on-dark flex justify-between items-center">
+              <h3 className="font-heading font-extrabold text-sm text-white flex items-center gap-2">
+                <span>Manage Trade Risk: {selectedPositionForSlTp.symbol}</span>
+                <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                  selectedPositionForSlTp.positionMode === "LONG" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
+                }`}>
+                  {selectedPositionForSlTp.positionMode} {selectedPositionForSlTp.leverage}x
+                </span>
+              </h3>
+              <button
+                onClick={() => setSelectedPositionForSlTp(null)}
+                className="text-muted hover:text-white font-mono text-lg font-bold"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Entry Price & Current Mark Price Display */}
+              <div className="grid grid-cols-2 gap-4 text-xs font-mono bg-canvas-dark/40 p-3 rounded-lg border border-white/[0.02]">
+                <div>
+                  <span className="text-muted block text-[10px] uppercase">Entry Price</span>
+                  <span className="text-white font-bold">{selectedPositionForSlTp.entryPrice} USDT</span>
+                </div>
+                <div>
+                  <span className="text-muted block text-[10px] uppercase">Mark Price</span>
+                  <span className="text-[#fcd535] font-bold">{selectedPositionForSlTp.markPrice || selectedPositionForSlTp.entryPrice} USDT</span>
+                </div>
+              </div>
+
+              {/* Take Profit Inputs */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="font-heading text-[10px] text-muted uppercase tracking-widest font-bold">Take Profit (TP)</label>
+                  <span className="text-[10px] text-trading-up font-mono">Trigger profit target</span>
+                </div>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={tpInput}
+                    onChange={(e) => setTpInput(e.target.value)}
+                    placeholder="e.g. 75000.00"
+                    className="bg-canvas-dark border-hairline-on-dark text-white font-mono text-xs rounded w-full pr-12"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">USDT</span>
+                </div>
+                {/* Preset Buttons */}
+                <div className="flex gap-2">
+                  {[5, 10, 25].map((pct) => {
+                    const entry = Number(selectedPositionForSlTp.entryPrice);
+                    const isLong = selectedPositionForSlTp.positionMode === "LONG";
+                    const target = isLong 
+                      ? entry * (1 + (pct / 100) / Number(selectedPositionForSlTp.leverage))
+                      : entry * (1 - (pct / 100) / Number(selectedPositionForSlTp.leverage));
+                    return (
+                      <button
+                        key={pct}
+                        type="button"
+                        onClick={() => setTpInput(target.toFixed(2))}
+                        className="flex-1 py-1.5 bg-canvas-dark hover:bg-trading-up/10 hover:text-trading-up border border-[#fcd535]/20 hover:border-trading-up/40 text-muted rounded font-mono text-[9px] font-bold transition-all"
+                      >
+                        +{pct}% ROE
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Stop Loss Inputs */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="font-heading text-[10px] text-muted uppercase tracking-widest font-bold">Stop Loss (SL)</label>
+                  <span className="text-[10px] text-trading-down font-mono">Trigger stop exit</span>
+                </div>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={slInput}
+                    onChange={(e) => setSlInput(e.target.value)}
+                    placeholder="e.g. 65000.00"
+                    className="bg-canvas-dark border-hairline-on-dark text-white font-mono text-xs rounded w-full pr-12"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">USDT</span>
+                </div>
+                {/* Preset Buttons */}
+                <div className="flex gap-2">
+                  {[2, 5, 10].map((pct) => {
+                    const entry = Number(selectedPositionForSlTp.entryPrice);
+                    const isLong = selectedPositionForSlTp.positionMode === "LONG";
+                    const target = isLong 
+                      ? entry * (1 - (pct / 100) / Number(selectedPositionForSlTp.leverage))
+                      : entry * (1 + (pct / 100) / Number(selectedPositionForSlTp.leverage));
+                    return (
+                      <button
+                        key={pct}
+                        type="button"
+                        onClick={() => setSlInput(target.toFixed(2))}
+                        className="flex-1 py-1.5 bg-canvas-dark hover:bg-trading-down/10 hover:text-trading-down border border-[#fcd535]/20 hover:border-trading-down/40 text-muted rounded font-mono text-[9px] font-bold transition-all"
+                      >
+                        -{pct}% ROE
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {slTpError && (
+                <div className="p-3 rounded bg-trading-down/10 border border-trading-down/20 text-center animate-slide-down">
+                  <p className="text-trading-down text-xs font-semibold">{slTpError}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-[#181822] px-6 py-4 border-t border-hairline-on-dark flex justify-end gap-3">
+              <Button
+                type="button"
+                onClick={() => setSelectedPositionForSlTp(null)}
+                className="font-mono text-xs px-4 py-2 border border-hairline-on-dark bg-transparent text-muted hover:text-white rounded"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSaveSlTp}
+                className="font-mono text-xs px-4 py-2 bg-[#fcd535] hover:bg-[#fcd535]/90 text-black font-bold rounded shadow-elevation-sm"
+                loading={isUpdatingSlTp}
+              >
+                Confirm Targets
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </PageTransition>
   );
 }

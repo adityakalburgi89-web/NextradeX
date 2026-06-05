@@ -21,4 +21,7 @@ public class FuturesPositionDTO {
     private BigDecimal unrealizedPnL;
     private BigDecimal leverage;
     private BigDecimal marginRatio;
+    private BigDecimal stopLoss;
+    private BigDecimal takeProfit;
+    private String remarks;
 }
