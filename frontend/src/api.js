@@ -181,6 +181,14 @@ export async function fetchPrice(symbol) {
   return handleResponse(res);
 }
 
+export async function fetchBinanceSymbols() {
+  console.log("[API] GET /market/binance/symbols");
+  const res = await fetch(`${API_BASE_URL}/market/binance/symbols`,
+    createFetchOptions("GET")
+  );
+  return handleResponse(res);
+}
+
 // SPOT ORDERS
 export async function createSpotOrder(payload) {
   console.log("[API] POST /orders/spot");

@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { fetchCandlestickData, fetchOpenFuturesPositions, fetchPrice, openFuturesPosition, fetchWallets, closeFuturesPosition, updateFuturesSlTp, hasAuthToken } from "../api";
+import React, { useEffect, useMemo, useState, useRef } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { fetchCandlestickData, fetchOpenFuturesPositions, fetchPrice, openFuturesPosition, fetchWallets, closeFuturesPosition, updateFuturesSlTp, hasAuthToken, fetchBinanceSymbols } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
@@ -10,11 +10,43 @@ import { TradingChartPanel } from "../components/ui/TradingChartPanel";
 import { OrderBook } from "../components/ui/OrderBook";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { formatCurrency, formatPercent } from "../lib/utils";
-import { ArrowRightLeft, Info, HelpCircle, Lock, Trash2 } from "lucide-react";
+import { ArrowRightLeft, Info, HelpCircle, Lock, Trash2, Search, ChevronDown } from "lucide-react";
+
+const FALLBACK_SYMBOLS = [
+  "BTCUSDT", "ETHUSDT", "SOLUSDT", "LINKUSDT", "LTCUSDT",
+  "ARBUSDT", "OPUSDT", "SUIUSDT", "TIAUSDT", "SEIUSDT"
+];
 
 export default function FuturesTradingPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Set initial symbol from URL if present
+  const getInitialSymbol = () => {
+    const urlSym = searchParams.get("symbol");
+    return urlSym ? urlSym.toUpperCase() : "BTCUSDT";
+  };
+
   // Page core states
-  const [symbol, setSymbol] = useState("BTCUSDT");
+  const [symbol, setSymbol] = useState(getInitialSymbol());
+  const [symbolsList, setSymbolsList] = useState([]);
+  const [symbolSearch, setSymbolSearch] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Read symbol from URL search parameters on URL change
+  useEffect(() => {
+    const urlSym = searchParams.get("symbol");
+    if (urlSym && urlSym.toUpperCase() !== symbol) {
+      setSymbol(urlSym.toUpperCase());
+    }
+  }, [searchParams]);
+
+  // Update URL search parameters when symbol changes
+  useEffect(() => {
+    if (symbol) {
+      setSearchParams({ symbol: symbol });
+    }
+  }, [symbol]);
   const [side, setSide] = useState("BUY"); // BUY = LONG, SELL = SHORT
   const [orderMode, setOrderMode] = useState("OPEN"); // OPEN or CLOSE tab
   const [orderType, setOrderType] = useState("LIMIT"); // LIMIT, MARKET, CONDITIONAL
@@ -41,6 +73,45 @@ export default function FuturesTradingPage() {
   const [activeBottomTab, setActiveBottomTab] = useState("POSITIONS");
   const [usdtWalletBalance, setUsdtWalletBalance] = useState(0.00);
   const [pricesMap, setPricesMap] = useState({});
+
+  // Load available trading symbols
+  useEffect(() => {
+    const getSymbols = async () => {
+      try {
+        const res = await fetchBinanceSymbols();
+        if (res?.data && res.data.length > 0) {
+          const usdtSymbols = res.data.filter(s => s.toUpperCase().endsWith("USDT"));
+          setSymbolsList(usdtSymbols.length > 0 ? usdtSymbols : res.data);
+        } else {
+          setSymbolsList(FALLBACK_SYMBOLS);
+        }
+      } catch (err) {
+        console.warn("[Futures] Failed to fetch symbols, using fallback:", err.message);
+        setSymbolsList(FALLBACK_SYMBOLS);
+      }
+    };
+    getSymbols();
+  }, []);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const filteredSymbols = useMemo(() => {
+    if (!symbolSearch.trim()) return symbolsList;
+    return symbolsList.filter((s) =>
+      s.toLowerCase().includes(symbolSearch.toLowerCase())
+    );
+  }, [symbolsList, symbolSearch]);
   
   // Real-time streaming mock recent trades
   const [recentTrades, setRecentTrades] = useState([
@@ -318,14 +389,68 @@ export default function FuturesTradingPage() {
           <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-6 shadow-elevation-md">
             
             {/* Asset Symbol & Base Stats */}
-            <div className="flex items-center gap-4">
-              <div>
-                <h1 className="text-base font-extrabold tracking-tight font-heading flex items-center gap-1.5 text-white">
-                  {symbol.toUpperCase()}
-                  <span className="text-[9px] font-mono font-bold bg-primary/15 text-primary px-1 rounded uppercase tracking-wider">Perp</span>
-                </h1>
-                <span className="text-[10px] font-mono font-semibold text-muted">Binance Futures</span>
-              </div>
+            <div className="flex items-center gap-4 relative" ref={dropdownRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDropdownOpen(!isDropdownOpen);
+                  setSymbolSearch("");
+                }}
+                className="text-left group flex items-center gap-3 px-3 py-1.5 rounded-lg border border-white/[0.06] bg-canvas-dark/40 hover:bg-canvas-dark/80 hover:border-primary/30 transition-all duration-200"
+              >
+                <div>
+                  <h1 className="text-base font-extrabold tracking-tight font-heading flex items-center gap-1.5 text-white">
+                    {symbol.toUpperCase()}
+                    <span className="text-[9px] font-mono font-bold bg-primary/15 text-primary px-1 rounded uppercase tracking-wider">Perp</span>
+                    <ChevronDown size={14} className="text-muted group-hover:text-primary transition-transform duration-200 group-hover:translate-y-0.5" />
+                  </h1>
+                  <span className="text-[10px] font-mono font-semibold text-muted">Binance Futures</span>
+                </div>
+              </button>
+
+              {/* Glassmorphic Dropdown Popover */}
+              {isDropdownOpen && (
+                <div className="absolute left-0 top-[110%] w-72 bg-[#0c0d12]/95 backdrop-blur-md border border-hairline-on-dark rounded-xl shadow-elevation-xl overflow-hidden z-50 animate-fade-in-fast font-sans">
+                  {/* Search input header */}
+                  <div className="p-3 border-b border-white/[0.05] flex items-center gap-2">
+                    <Search size={14} className="text-muted" />
+                    <input
+                      type="text"
+                      value={symbolSearch}
+                      onChange={(e) => setSymbolSearch(e.target.value)}
+                      placeholder="Search pair..."
+                      className="bg-transparent text-white placeholder-muted text-xs outline-none w-full font-mono"
+                      autoFocus
+                    />
+                  </div>
+                  {/* Scrollable list */}
+                  <div className="overflow-y-auto max-h-64 divide-y divide-white/[0.02]">
+                    {filteredSymbols.length === 0 ? (
+                      <div className="p-4 text-center text-xs text-muted">No symbols found</div>
+                    ) : (
+                      filteredSymbols.map((sym) => {
+                        const isSelected = sym.toUpperCase() === symbol.toUpperCase();
+                        return (
+                          <button
+                            key={sym}
+                            type="button"
+                            onClick={() => {
+                              setSymbol(sym.toUpperCase());
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-mono font-semibold flex items-center justify-between hover:bg-white/[0.04] transition-colors ${
+                              isSelected ? "text-primary bg-primary/[0.05]" : "text-body"
+                            }`}
+                          >
+                            <span>{sym.toUpperCase()}</span>
+                            {isSelected && <span className="text-[9px] font-bold bg-primary/20 px-1.5 py-0.5 rounded text-primary uppercase">Active</span>}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
 
               {priceSnapshot && (
                 <div className="border-l border-hairline-on-dark pl-4 flex flex-col justify-center">

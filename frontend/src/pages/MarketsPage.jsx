@@ -325,7 +325,7 @@ export default function MarketsPage() {
                               className="px-4 py-1.5 text-xs font-bold font-mono tracking-wide rounded bg-primary text-on-primary hover:bg-[#f0b90b] transition-all"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/spot?symbol=${price.symbol}`);
+                                navigate(`/trade/spot?symbol=${price.symbol}`);
                               }}
                             >
                               TRADE

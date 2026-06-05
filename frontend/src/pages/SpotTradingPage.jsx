@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { 
   createSpotOrder, 
   fetchPrice, 
@@ -32,7 +32,33 @@ const initialForm = {
 };
 
 export default function SpotTradingPage() {
-  const [form, setForm] = useState(initialForm);
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Set initial symbol from URL if present
+  const getInitialSymbol = () => {
+    const urlSym = searchParams.get("symbol");
+    return urlSym ? urlSym.toUpperCase() : "BTCUSDT";
+  };
+
+  const [form, setForm] = useState({
+    ...initialForm,
+    symbol: getInitialSymbol()
+  });
+
+  // Read symbol from URL search parameters on URL change
+  useEffect(() => {
+    const urlSym = searchParams.get("symbol");
+    if (urlSym && urlSym.toUpperCase() !== form.symbol) {
+      setForm(prev => ({ ...prev, symbol: urlSym.toUpperCase() }));
+    }
+  }, [searchParams]);
+
+  // Update URL search parameters when form.symbol changes
+  useEffect(() => {
+    if (form.symbol) {
+      setSearchParams({ symbol: form.symbol });
+    }
+  }, [form.symbol]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -757,13 +783,18 @@ export default function SpotTradingPage() {
                       <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
                         Symbol
                       </label>
-                      <Input 
-                        name="symbol" 
-                        value={form.symbol} 
-                        onChange={handleChange} 
-                        required 
-                        className="bg-canvas-dark border-hairline-on-dark font-mono text-sm uppercase text-white w-full rounded-md" 
-                      />
+                      <Select
+                        name="symbol"
+                        value={form.symbol}
+                        onChange={handleChange}
+                        className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
+                      >
+                        <option value="BTCUSDT">BTC/USDT</option>
+                        <option value="ETHUSDT">ETH/USDT</option>
+                        <option value="BNBUSDT">BNB/USDT</option>
+                        <option value="SOLUSDT">SOL/USDT</option>
+                        <option value="DOTUSDT">DOT/USDT</option>
+                      </Select>
                     </div>
 
                     <div>
