@@ -8,7 +8,8 @@ import {
   fetchOrderHistory,
   cancelOrder,
   fetchWallets,
-  hasAuthToken
+  hasAuthToken,
+  fetchAllPrices
 } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
@@ -42,15 +43,30 @@ export default function SpotTradingPage() {
   const [interval, setInterval] = useState("1h");
 
   // Bottom tabs & User account states
-  const [activeBottomTab, setActiveBottomTab] = useState("ORDERS"); // ORDERS, HISTORY, ASSETS
+  const [activeBottomTab, setActiveBottomTab] = useState("POSITIONS"); // POSITIONS, ORDERS, HISTORY, ASSETS
   const [activeOrders, setActiveOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [orderHistory, setOrderHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [spotWalletBalance, setSpotWalletBalance] = useState(0.00);
   const [loadingWallets, setLoadingWallets] = useState(true);
+  const [pricesMap, setPricesMap] = useState({});
 
   const handlePriceUpdate = (data) => {
+    if (data) {
+      setPricesMap((prev) => {
+        const next = { ...prev };
+        if (Array.isArray(data)) {
+          data.forEach((p) => {
+            next[p.symbol.toUpperCase()] = Number(p.currentPrice);
+          });
+        } else if (data.symbol) {
+          next[data.symbol.toUpperCase()] = Number(data.currentPrice);
+        }
+        return next;
+      });
+    }
+
     let update = null;
     const currentSymbol = form.symbol.toUpperCase();
 
@@ -93,6 +109,21 @@ export default function SpotTradingPage() {
       }
     } catch {
       // ignore
+    }
+  };
+
+  const loadPricesMap = async () => {
+    try {
+      const res = await fetchAllPrices();
+      if (res?.data) {
+        const pMap = {};
+        res.data.forEach((p) => {
+          pMap[p.symbol.toUpperCase()] = Number(p.currentPrice);
+        });
+        setPricesMap(pMap);
+      }
+    } catch (err) {
+      console.warn("Could not retrieve all prices:", err.message);
     }
   };
 
@@ -150,6 +181,7 @@ export default function SpotTradingPage() {
 
   useEffect(() => {
     loadPrice();
+    loadPricesMap();
     loadAllUserData();
   }, [form.symbol]);
 
@@ -225,6 +257,73 @@ export default function SpotTradingPage() {
     }
   };
 
+  // Calculate spot positions dynamically from order history
+  const spotPositions = useMemo(() => {
+    const allOrdersMap = new Map();
+    activeOrders.forEach(o => {
+      if (o.tradeType === "SPOT") {
+        allOrdersMap.set(o.id, o);
+      }
+    });
+    orderHistory.forEach(o => {
+      if (o.tradeType === "SPOT") {
+        allOrdersMap.set(o.id, o);
+      }
+    });
+
+    const uniqueOrders = Array.from(allOrdersMap.values());
+    uniqueOrders.sort((a, b) => a.id - b.id);
+
+    const posMap = {};
+
+    uniqueOrders.forEach((o) => {
+      const filledQty = Number(o.filledQuantity || 0);
+      const avgPrice = Number(o.averagePrice || o.price || 0);
+      if (filledQty <= 0) return;
+
+      const symbol = o.symbol.toUpperCase();
+      if (!posMap[symbol]) {
+        posMap[symbol] = {
+          symbol,
+          quantity: 0,
+          averageEntryPrice: 0,
+          totalCost: 0,
+        };
+      }
+
+      const pos = posMap[symbol];
+      if (o.side === "BUY") {
+        const newQty = pos.quantity + filledQty;
+        const newCost = pos.totalCost + (filledQty * avgPrice);
+        pos.averageEntryPrice = newQty > 0 ? newCost / newQty : 0;
+        pos.quantity = newQty;
+        pos.totalCost = newCost;
+      } else if (o.side === "SELL") {
+        const newQty = Math.max(0, pos.quantity - filledQty);
+        pos.quantity = newQty;
+        pos.totalCost = newQty * pos.averageEntryPrice;
+      }
+    });
+
+    return Object.values(posMap).filter(pos => pos.quantity > 0.00001);
+  }, [activeOrders, orderHistory]);
+
+  const handleCloseSpotPosition = (pos) => {
+    setForm({
+      symbol: pos.symbol,
+      side: "SELL",
+      orderType: "MARKET",
+      quantity: pos.quantity.toString(),
+      price: "",
+      stopPrice: "",
+    });
+    
+    const formCard = document.querySelector("form");
+    if (formCard) {
+      formCard.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   // Sizing percentage handler
   const handlePercentSelect = (percent) => {
     const priceToUse = ["LIMIT", "STOP_LIMIT", "TAKE_PROFIT_LIMIT"].includes(form.orderType) && form.price
@@ -236,9 +335,9 @@ export default function SpotTradingPage() {
       const targetQty = maxBuyQty * (percent / 100);
       setForm(prev => ({ ...prev, quantity: targetQty.toFixed(4) }));
     } else {
-      // Mock asset holding of 0.05 units for selling percent shortcut
-      const mockAssetHolding = 0.05;
-      const targetQty = mockAssetHolding * (percent / 100);
+      const currentPos = spotPositions.find(p => p.symbol.toUpperCase() === form.symbol.toUpperCase());
+      const holdingQty = currentPos ? currentPos.quantity : 0;
+      const targetQty = holdingQty * (percent / 100);
       setForm(prev => ({ ...prev, quantity: targetQty.toFixed(4) }));
     }
   };
@@ -359,6 +458,7 @@ export default function SpotTradingPage() {
                 <div className="bg-canvas-dark/30 border-b border-hairline-on-dark px-4 flex items-center justify-between">
                   <div className="flex gap-4 font-heading text-[10px] font-bold uppercase tracking-wider py-3 select-none">
                     {[
+                      { id: "POSITIONS", label: "Positions" },
                       { id: "ORDERS", label: "Open Orders" },
                       { id: "HISTORY", label: "Order History" },
                       { id: "ASSETS", label: "Assets" }
@@ -371,7 +471,12 @@ export default function SpotTradingPage() {
                           activeBottomTab === tab.id ? "text-primary font-bold" : "text-muted hover:text-white"
                         }`}
                       >
-                        {tab.label} {tab.id === "ORDERS" ? `(${activeOrders.filter(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED").length})` : ""}
+                        {tab.label}{" "}
+                        {tab.id === "POSITIONS"
+                          ? `(${spotPositions.length})`
+                          : tab.id === "ORDERS"
+                          ? `(${activeOrders.filter(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED").length})`
+                          : ""}
                         {activeBottomTab === tab.id && (
                           <span className="absolute bottom-[-13px] left-0 right-0 h-[2px] bg-primary rounded-full" />
                         )}
@@ -391,6 +496,69 @@ export default function SpotTradingPage() {
                 </div>
 
                 <CardContent className="p-0 min-h-[160px]">
+                  {activeBottomTab === "POSITIONS" && (
+                    spotPositions.length === 0 ? (
+                      <div className="py-12 text-center text-muted font-mono text-xs">
+                        No active spot positions. Buy assets to open a position.
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="border-b border-hairline-on-dark text-[10px] font-bold text-muted uppercase tracking-wider font-mono bg-canvas-dark/10">
+                              <th className="py-3 px-5">Symbol</th>
+                              <th className="py-3 px-5 text-right">Holdings (Size)</th>
+                              <th className="py-3 px-5 text-right">Avg Entry Price</th>
+                              <th className="py-3 px-5 text-right">Current Price</th>
+                              <th className="py-3 px-5 text-right">Market Value</th>
+                              <th className="py-3 px-5 text-right">Unrealized PnL</th>
+                              <th className="py-3 px-5 text-center">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-hairline-on-dark font-mono text-xs">
+                            {spotPositions.map((pos) => {
+                              const currentPrice = pricesMap[pos.symbol.toUpperCase()] || Number(pos.averageEntryPrice);
+                              const entryPrice = Number(pos.averageEntryPrice);
+                              const qty = Number(pos.quantity);
+                              
+                              const marketValue = qty * currentPrice;
+                              const pnlValue = (currentPrice - entryPrice) * qty;
+                              const pnlPercent = entryPrice > 0 ? (pnlValue / (entryPrice * qty)) * 100 : 0;
+                              
+                              const isProfit = pnlValue >= 0;
+                              const baseAsset = pos.symbol.replace("USDT", "").toUpperCase();
+                              
+                              return (
+                                <tr key={pos.symbol} className="hover:bg-canvas-dark/25 transition-colors">
+                                  <td className="py-3 px-5 font-bold text-white uppercase">{pos.symbol}</td>
+                                  <td className="py-3 px-5 text-right font-semibold text-white">
+                                    {qty.toFixed(4)} <span className="text-[10px] text-muted">{baseAsset}</span>
+                                  </td>
+                                  <td className="py-3 px-5 text-right text-muted">{formatCurrency(entryPrice)}</td>
+                                  <td className="py-3 px-5 text-right text-white font-semibold">{formatCurrency(currentPrice)}</td>
+                                  <td className="py-3 px-5 text-right text-white font-semibold">{formatCurrency(marketValue)}</td>
+                                  <td className={`py-3 px-5 text-right font-bold text-sm ${isProfit ? "text-trading-up" : "text-trading-down"}`}>
+                                    {isProfit ? "+" : ""}{formatCurrency(pnlValue)} ({isProfit ? "+" : ""}{pnlPercent.toFixed(2)}%)
+                                  </td>
+                                  <td className="py-3 px-5 text-center">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleCloseSpotPosition(pos)}
+                                      className="text-[10px] h-7 px-2 border-trading-down hover:bg-trading-down text-trading-down hover:text-white transition-all font-bold"
+                                    >
+                                      SELL / CLOSE
+                                    </Button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )
+                  )}
+
                   {activeBottomTab === "ORDERS" && (
                     loadingOrders ? (
                       <div className="p-6 space-y-2">
