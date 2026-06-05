@@ -43,4 +43,3 @@ Thumbs.db
 *.log
 
 # Sensitive properties
-src/main/resources/application.properties
