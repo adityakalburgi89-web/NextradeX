@@ -6,17 +6,34 @@ const WS_URL = process.env.REACT_APP_WS_URL || "http://localhost:8080/api/ws";
 class WebSocketService {
   constructor() {
     this.client = null;
-    this.connected = false;
+    this.connectionState = "DISCONNECTED"; // "DISCONNECTED", "CONNECTING", "CONNECTED"
     this.subscriptions = new Map();
     this.reconnectDelay = 3000;
     this.subscriptionSequence = 0;
+    this.connectCallbacks = [];
+    this.errorCallbacks = [];
   }
 
   connect(onConnect, onError) {
-    if (this.client && this.connected) {
+    // If already connected, trigger callback immediately
+    if (this.client && this.connectionState === "CONNECTED" && this.client.connected) {
       if (onConnect) onConnect();
       return;
     }
+
+    // If currently connecting, queue the callbacks
+    if (this.connectionState === "CONNECTING") {
+      if (onConnect) this.connectCallbacks.push(onConnect);
+      if (onError) this.errorCallbacks.push(onError);
+      return;
+    }
+
+    // If disconnected, start the connection process
+    this.connectionState = "CONNECTING";
+    if (onConnect) this.connectCallbacks.push(onConnect);
+    if (onError) this.errorCallbacks.push(onError);
+
+    console.log("[WS] Connecting to:", WS_URL);
 
     this.client = new Client({
       webSocketFactory: () => new SockJS(WS_URL),
@@ -24,23 +41,61 @@ class WebSocketService {
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       onConnect: () => {
-        this.connected = true;
-        console.log("WebSocket connected");
+        this.connectionState = "CONNECTED";
+        console.log("[WS] WebSocket connected successfully");
+        
+        // Reset and establish all subscriptions
         this.resubscribeAll();
-        if (onConnect) onConnect();
+
+        // Invoke and clear all queued connect callbacks
+        const callbacks = [...this.connectCallbacks];
+        this.connectCallbacks = [];
+        callbacks.forEach((cb) => {
+          try {
+            cb();
+          } catch (err) {
+            console.error("[WS] Error in onConnect callback:", err);
+          }
+        });
       },
       onDisconnect: () => {
-        this.connected = false;
-        console.log("WebSocket disconnected");
+        this.connectionState = "DISCONNECTED";
+        console.log("[WS] WebSocket disconnected");
+        this.clearStaleSubscriptions();
       },
       onStompError: (frame) => {
-        console.error("STOMP error:", frame);
-        if (onError) onError(frame);
+        this.connectionState = "DISCONNECTED";
+        console.error("[WS] STOMP error:", frame);
+        this.clearStaleSubscriptions();
+        
+        const callbacks = [...this.errorCallbacks];
+        callbacks.forEach((cb) => {
+          try {
+            cb(frame);
+          } catch (err) {
+            console.error("[WS] Error in onError callback:", err);
+          }
+        });
       },
       onWebSocketError: (event) => {
-        console.error("WebSocket error:", event);
-        if (onError) onError(event);
+        this.connectionState = "DISCONNECTED";
+        console.error("[WS] WebSocket error:", event);
+        this.clearStaleSubscriptions();
+        
+        const callbacks = [...this.errorCallbacks];
+        callbacks.forEach((cb) => {
+          try {
+            cb(event);
+          } catch (err) {
+            console.error("[WS] Error in onError callback:", err);
+          }
+        });
       },
+      onWebSocketClose: () => {
+        this.connectionState = "DISCONNECTED";
+        console.log("[WS] WebSocket connection closed");
+        this.clearStaleSubscriptions();
+      }
     });
 
     this.client.activate();
@@ -50,11 +105,11 @@ class WebSocketService {
     if (this.client) {
       this.client.deactivate();
       this.client = null;
-      this.connected = false;
-      this.subscriptions.forEach((entry) => {
-        entry.stompSubscription = null;
-      });
     }
+    this.connectionState = "DISCONNECTED";
+    this.connectCallbacks = [];
+    this.errorCallbacks = [];
+    this.clearStaleSubscriptions();
   }
 
   subscribe(destination, callback) {
@@ -67,10 +122,10 @@ class WebSocketService {
 
     this.subscriptions.set(id, entry);
 
-    if (this.client && this.connected) {
+    if (this.client && this.connectionState === "CONNECTED" && this.client.connected) {
       this.attachSubscription(entry);
     } else {
-      console.warn("WebSocket not connected. Subscription queued.");
+      console.warn("[WS] Not connected. Subscription queued for destination:", destination);
     }
 
     return id;
@@ -79,33 +134,53 @@ class WebSocketService {
   unsubscribe(id) {
     const entry = this.subscriptions.get(id);
     if (entry?.stompSubscription) {
-      entry.stompSubscription.unsubscribe();
+      try {
+        entry.stompSubscription.unsubscribe();
+      } catch (err) {
+        console.warn("[WS] Failed to unsubscribe subscription:", id, err.message);
+      }
     }
     this.subscriptions.delete(id);
   }
 
   attachSubscription(entry) {
-    entry.stompSubscription = this.client.subscribe(entry.destination, (message) => {
-      try {
-        const data = JSON.parse(message.body);
-        entry.callback(data);
-      } catch (error) {
-        console.error("Error parsing WebSocket message:", error);
-      }
+    if (!this.client || !this.client.connected) {
+      console.warn("[WS] Cannot attach subscription: STOMP client not connected.");
+      return;
+    }
+    try {
+      entry.stompSubscription = this.client.subscribe(entry.destination, (message) => {
+        try {
+          const data = JSON.parse(message.body);
+          entry.callback(data);
+        } catch (error) {
+          console.error("[WS] Error parsing WebSocket message:", error);
+        }
+      });
+      console.log("[WS] Subscribed successfully to destination:", entry.destination);
+    } catch (err) {
+      console.error("[WS] Failed to subscribe to destination:", entry.destination, err);
+      entry.stompSubscription = null;
+    }
+  }
+
+  clearStaleSubscriptions() {
+    this.subscriptions.forEach((entry) => {
+      entry.stompSubscription = null;
     });
   }
 
   resubscribeAll() {
     this.subscriptions.forEach((entry) => {
-      if (!entry.stompSubscription && this.client && this.connected) {
+      if (this.client && this.client.connected) {
         this.attachSubscription(entry);
       }
     });
   }
 
   send(destination, body) {
-    if (!this.client || !this.connected) {
-      console.warn("WebSocket not connected. Message not sent.");
+    if (!this.client || !this.client.connected) {
+      console.warn("[WS] WebSocket not connected. Message not sent.");
       return;
     }
     this.client.publish({ destination, body: JSON.stringify(body) });

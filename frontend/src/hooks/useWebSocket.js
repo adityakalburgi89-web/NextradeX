@@ -6,24 +6,43 @@ export function useWebSocket(destination, callback, autoConnect = true) {
   const [error, setError] = useState(null);
   const subscriptionRef = useRef(null);
   const callbackRef = useRef(callback);
+  const isMountedRef = useRef(true);
 
+  // Keep callback up to date
   useEffect(() => {
     callbackRef.current = callback;
   }, [callback]);
 
+  // Track mount status
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const onConnect = useCallback(() => {
+    if (!isMountedRef.current) return;
     setConnected(true);
     setError(null);
     if (destination) {
+      // Unsubscribe existing ref first if it exists
+      if (subscriptionRef.current) {
+        websocketService.unsubscribe(subscriptionRef.current);
+        subscriptionRef.current = null;
+      }
       subscriptionRef.current = websocketService.subscribe(destination, (data) => {
-        callbackRef.current(data);
+        if (isMountedRef.current) {
+          callbackRef.current(data);
+        }
       });
     }
   }, [destination]);
 
   const onError = useCallback((err) => {
+    if (!isMountedRef.current) return;
     setError(err);
-    console.error("WebSocket error:", err);
+    console.error("[useWebSocket] Hook error:", err);
   }, []);
 
   useEffect(() => {
@@ -34,6 +53,7 @@ export function useWebSocket(destination, callback, autoConnect = true) {
     return () => {
       if (subscriptionRef.current) {
         websocketService.unsubscribe(subscriptionRef.current);
+        subscriptionRef.current = null;
       }
     };
   }, [autoConnect, onConnect, onError]);

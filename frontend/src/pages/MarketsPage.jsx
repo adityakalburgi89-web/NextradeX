@@ -66,12 +66,13 @@ export default function MarketsPage() {
   const [showAllPrices, setShowAllPrices] = useState(false);
 
   const handlePriceUpdate = (payload) => {
+    let update = null;
     if (Array.isArray(payload)) {
       setPrices(payload);
-      return;
-    }
-
-    if (payload?.symbol) {
+      if (selectedSymbol) {
+        update = payload.find((p) => p.symbol === selectedSymbol);
+      }
+    } else if (payload?.symbol) {
       setPrices((previousPrices) => {
         const existingIndex = previousPrices.findIndex((price) => price.symbol === payload.symbol);
         if (existingIndex >= 0) {
@@ -81,6 +82,27 @@ export default function MarketsPage() {
         }
 
         return [...previousPrices, payload];
+      });
+
+      if (payload.symbol === selectedSymbol) {
+        update = payload;
+      }
+    }
+
+    if (update) {
+      const newPrice = Number(update.currentPrice);
+      setCandleData((prev) => {
+        if (!prev || prev.length === 0) return prev;
+        const lastIndex = prev.length - 1;
+        const lastCandle = { ...prev[lastIndex] };
+        
+        lastCandle.close = newPrice;
+        if (newPrice > lastCandle.high) lastCandle.high = newPrice;
+        if (newPrice < lastCandle.low) lastCandle.low = newPrice;
+        
+        const next = [...prev];
+        next[lastIndex] = lastCandle;
+        return next;
       });
     }
   };

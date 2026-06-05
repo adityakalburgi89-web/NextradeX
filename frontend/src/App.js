@@ -16,8 +16,7 @@ import FuturesTradingPage from "./pages/FuturesTradingPage";
 import OptionsTradingPage from "./pages/OptionsTradingPage";
 import MarginTradingPage from "./pages/MarginTradingPage";
 import PortfolioAnalyticsPage from "./pages/PortfolioAnalyticsPage";
-import LeaderboardPage from "./pages/LeaderboardPage";
-import AdminDashboardPage from "./pages/AdminDashboardPage";
+
 import WalletsPage from "./pages/WalletsPage";
 import OrdersPage from "./pages/OrdersPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -37,7 +36,8 @@ import ReferralPage from "./pages/resources/ReferralPage";
 import EarnPage from "./pages/EarnPage";
 import FundingPage from "./pages/FundingPage";
 import SubAccountsPage from "./pages/SubAccountsPage";
-import { hasAuthToken, clearAuthToken, fetchUserProfile } from "./api";
+import { hasAuthToken, clearAuthToken, fetchUserProfile, fetchAllPrices } from "./api";
+import { useWebSocket } from "./hooks/useWebSocket";
 import xIcon from "./assets/Icons/x.com_icon.png";
 import linkedInIcon from "./assets/Icons/LinkedIn_icon.svg.png";
 import githubIcon from "./assets/Icons/github_icon.png";
@@ -150,6 +150,7 @@ const renderCoinIcon = (symbol) => {
 function HomePage() {
   const [activeMarketTab, setActiveMarketTab] = useState("popular");
   const [userCount, setUserCount] = useState(316258026);
+  const [prices, setPrices] = useState([]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -157,6 +158,99 @@ function HomePage() {
     }, 2500);
     return () => clearInterval(timer);
   }, []);
+
+  const handlePriceUpdate = (payload) => {
+    if (Array.isArray(payload)) {
+      setPrices(payload);
+      return;
+    }
+    if (payload?.symbol) {
+      setPrices((prev) => {
+        const idx = prev.findIndex((p) => p.symbol === payload.symbol);
+        if (idx >= 0) {
+          const next = [...prev];
+          next[idx] = payload;
+          return next;
+        }
+        return [...prev, payload];
+      });
+    }
+  };
+
+  useWebSocket("/topic/prices", handlePriceUpdate, true);
+
+  useEffect(() => {
+    const loadPrices = async () => {
+      try {
+        const res = await fetchAllPrices();
+        if (res?.data) {
+          setPrices(res.data);
+        }
+      } catch (err) {
+        console.error("[App] Failed to fetch prices on homepage:", err);
+      }
+    };
+    loadPrices();
+  }, []);
+
+  const formatVol = (val) => {
+    if (val === undefined || val === null) return "$0";
+    if (val >= 1e9) return `$${(val / 1e9).toFixed(1)}B`;
+    if (val >= 1e6) return `$${(val / 1e6).toFixed(1)}M`;
+    return `$${val.toLocaleString()}`;
+  };
+
+  const getMappedTab = (pairs) => {
+    return pairs.map(symbol => {
+      const match = prices.find(p => p.symbol === symbol);
+      if (match) {
+        const isUp = Number(match.percentChange24h) >= 0;
+        return {
+          pair: `${match.symbol.replace("USDT", "")} / USDT`,
+          price: `$${Number(match.currentPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          change: `${isUp ? "+" : ""}${Number(match.percentChange24h).toFixed(2)}%`,
+          isUp,
+          vol: formatVol(Number(match.volume24h)),
+          rawSymbol: match.symbol
+        };
+      }
+      // Fallback to static values if not found in live prices
+      const defaultMap = {
+        BTCUSDT: { pair: "BTC / USDT", price: "$96,482.50", change: "+3.45%", isUp: true, vol: "$12.8B", rawSymbol: "BTCUSDT" },
+        ETHUSDT: { pair: "ETH / USDT", price: "$3,584.20", change: "+1.85%", isUp: true, vol: "$5.4B", rawSymbol: "ETHUSDT" },
+        SOLUSDT: { pair: "SOL / USDT", price: "$184.65", change: "+5.12%", isUp: true, vol: "$2.9B", rawSymbol: "SOLUSDT" },
+        LINKUSDT: { pair: "LINK / USDT", price: "$18.25", change: "-0.75%", isUp: false, vol: "$420M", rawSymbol: "LINKUSDT" },
+        LTCUSDT: { pair: "LTC / USDT", price: "$86.40", change: "+0.25%", isUp: true, vol: "$310M", rawSymbol: "LTCUSDT" },
+        ARBUSDT: { pair: "ARB / USDT", price: "$1.12", change: "+12.45%", isUp: true, vol: "$180M", rawSymbol: "ARBUSDT" },
+        OPUSDT: { pair: "OP / USDT", price: "$2.45", change: "+8.20%", isUp: true, vol: "$120M", rawSymbol: "OPUSDT" },
+        SUIUSDT: { pair: "SUI / USDT", price: "$1.95", change: "+15.30%", isUp: true, vol: "$220M", rawSymbol: "SUIUSDT" },
+        TIAUSDT: { pair: "TIA / USDT", price: "$5.82", change: "-4.15%", isUp: false, vol: "$95M", rawSymbol: "TIAUSDT" },
+        SEIUSDT: { pair: "SEI / USDT", price: "$0.54", change: "-2.85%", isUp: false, vol: "$80M", rawSymbol: "SEIUSDT" },
+      };
+      return defaultMap[symbol] || { pair: symbol, price: "—", change: "0.00%", isUp: true, vol: "—", rawSymbol: symbol };
+    });
+  };
+
+  const dynamicTabs = {
+    popular: getMappedTab(["BTCUSDT", "ETHUSDT", "SOLUSDT", "LINKUSDT", "LTCUSDT"]),
+    new: getMappedTab(["ARBUSDT", "OPUSDT", "SUIUSDT", "TIAUSDT", "SEIUSDT"]),
+    gainers: prices.length > 0 
+      ? [...prices]
+          .sort((a, b) => Number(b.percentChange24h) - Number(a.percentChange24h))
+          .slice(0, 5)
+          .map(match => {
+            const isUp = Number(match.percentChange24h) >= 0;
+            return {
+              pair: `${match.symbol.replace("USDT", "")} / USDT`,
+              price: `$${Number(match.currentPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              change: `${isUp ? "+" : ""}${Number(match.percentChange24h).toFixed(2)}%`,
+              isUp,
+              vol: formatVol(Number(match.volume24h)),
+              rawSymbol: match.symbol
+            };
+          })
+      : getMappedTab(["SUIUSDT", "ARBUSDT", "OPUSDT", "SOLUSDT", "BTCUSDT"])
+  };
   return (
     <PageTransition>
       <main className="w-full text-white bg-canvas-dark">
@@ -292,46 +386,6 @@ function HomePage() {
           </motion.div>
         </section>
 
-        {/* PRO TRADING FEATURES */}
-        <section className="py-20 relative bg-canvas-dark border-b border-hairline-on-dark">
-          <div className="max-w-7xl mx-auto px-6">
-            <motion.div 
-              variants={fadeInUpSpring}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              className="text-center mb-16"
-            >
-              <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block font-semibold">Best in Class</span>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-white">Pro Trading Features For Everyone</h2>
-            </motion.div>
-
-            <motion.div 
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-6"
-            >
-              {[
-                { icon: <Package size={22} />, title: "Basket Orders With Margin Benefits", desc: "Place multiple simulated orders together as a basket to enjoy custom margin offsetting." },
-                { icon: <Target size={22} />, title: "Strategy Builder", desc: "Build and analyse virtual trading strategies comprising groups of futures and options contracts." },
-                { icon: <Layers size={22} />, title: "Deep OTM/ITM Strikes", desc: "Trade simulated deep OTM/ITM options strikes with customizable daily and weekly expiry terms." },
-                { icon: <BarChart3 size={22} />, title: "PnL Analytics", desc: "Conveniently track and analyse your simulated trading history with advanced visual indices." }
-              ].map((feature, idx) => (
-                <motion.div key={idx} variants={fadeInUpSpring} className="flex items-start gap-5 p-6 rounded-xl border border-hairline-on-dark bg-surface-card-dark hover:border-primary/30 transition-all duration-300 group interactive-surface">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 text-primary group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
-                    {feature.icon}
-                  </div>
-                  <div>
-                    <h4 className="font-heading text-base font-semibold text-white mb-1.5">{feature.title}</h4>
-                    <p className="text-sm text-muted leading-relaxed font-sans">{feature.desc}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
 
         {/* FUNDS SAFU BAND (reserves stats) */}
         <section className="py-20 bg-canvas-dark border-b border-hairline-on-dark">
@@ -432,7 +486,7 @@ function HomePage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-hairline-on-dark font-mono text-muted">
-                      {marketTabs[activeMarketTab].map((coin, index) => (
+                      {dynamicTabs[activeMarketTab].map((coin, index) => (
                         <tr key={index} className="hover:bg-surface-elevated-dark/30 transition-colors duration-150 group">
                           <td className="px-6 py-4 text-white font-semibold flex items-center gap-3">
                             {renderCoinIcon(coin.pair)}
@@ -447,7 +501,7 @@ function HomePage() {
                           <td className="px-6 py-4 text-right">{coin.vol}</td>
                           <td className="px-6 py-4 text-center">
                             <Button size="sm" className="h-[28px] px-4 font-semibold text-xs text-on-primary bg-primary rounded-sm hover:bg-primary-active transition-all" asChild>
-                              <Link to="/trade/spot">Trade</Link>
+                              <Link to={`/trade/spot?symbol=${coin.rawSymbol || "BTCUSDT"}`}>Trade</Link>
                             </Button>
                           </td>
                         </tr>
@@ -703,7 +757,7 @@ function FAQItem({ question, answer }) {
   );
 }
 
-function SearchModal({ open, onClose, query, setQuery }) {
+function SearchModal({ open, onClose, query, setQuery, isLoggedIn }) {
   const navigate = useNavigate();
   const inputRef = useRef(null);
 
@@ -718,15 +772,16 @@ function SearchModal({ open, onClose, query, setQuery }) {
     { label: "Spot Trading", path: "/trade/spot", description: "Trade spot pairs" },
     { label: "Futures Trading", path: "/trade/futures", description: "Trade futures contracts" },
     { label: "Options Trading", path: "/trade/options", description: "Trade options" },
-    { label: "Wallets", path: "/wallets", description: "Manage your wallets" },
-    { label: "Orders", path: "/orders", description: "View order history" },
-    { label: "Profile", path: "/profile", description: "Your profile" },
+    isLoggedIn && { label: "Wallets", path: "/wallets", description: "Manage your wallets" },
+    isLoggedIn && { label: "Orders", path: "/orders", description: "View order history" },
+    isLoggedIn && { label: "Profile", path: "/profile", description: "Your profile" },
     { label: "Careers", path: "/careers", description: "Join our team" },
     { label: "API Docs", path: "/api-docs", description: "API documentation" },
     { label: "Support", path: "/support", description: "Get help" },
     { label: "User Guide", path: "/user-guide", description: "Learn how to trade" },
     { label: "Referral Program", path: "/referral", description: "Earn rewards" },
-  ].filter(item => 
+  ].filter(Boolean)
+   .filter(item => 
     item.label.toLowerCase().includes(query.toLowerCase()) ||
     item.description.toLowerCase().includes(query.toLowerCase())
   );
@@ -954,8 +1009,26 @@ function TradeDropdown({ theme }) {
 /* ═══════════════════════════════════════════
     APP SHELL
     ═══════════════════════════════════════════ */
+// A wrapper component to protect routes that require authentication
+function ProtectedRoute({ isLoggedIn, children }) {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoggedIn && !hasAuthToken()) {
+      navigate("/auth");
+    }
+  }, [isLoggedIn, navigate]);
+
+  if (!isLoggedIn && !hasAuthToken()) {
+    return null;
+  }
+
+  return children;
+}
+
 function App() {
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
@@ -987,6 +1060,7 @@ function App() {
         } catch (err) {
           if (err.status === 401 || err.status === 403) {
             clearAuthToken();
+            setIsLoggedIn(false);
           } else {
             console.error("[App] Failed to fetch user profile:", err.message);
           }
@@ -1001,6 +1075,7 @@ function App() {
     setIsLoggedIn(false);
     setUser(null);
     setUserMenuOpen(false);
+    navigate("/auth");
   };
 
   return (
@@ -1026,11 +1101,13 @@ function App() {
             <div className="hidden md:flex items-center gap-6 font-mono text-xs tracking-wider">
               <TradeDropdown theme={theme} />
               <NavLink to="/markets">Markets</NavLink>
-              <NavLink to="/wallets">Wallets</NavLink>
-              <NavLink to="/orders">Orders</NavLink>
-              <NavLink to="/analytics">Analytics</NavLink>
-              <NavLink to="/leaderboard">Leaderboard</NavLink>
-              <NavLink to="/admin">Admin</NavLink>
+              {isLoggedIn && (
+                <>
+                  <NavLink to="/wallets">Wallets</NavLink>
+                  <NavLink to="/orders">Orders</NavLink>
+                  <NavLink to="/analytics">Analytics</NavLink>
+                </>
+              )}
             </div>
           </div>
 
@@ -1154,8 +1231,13 @@ function App() {
             <Link to="/trade/options" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Options Trading</Link>
             <div className={`h-[1px] my-3 ${theme === 'dark' ? 'bg-hairline-on-dark' : 'bg-hairline-on-light'}`} />
             <Link to="/markets" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Markets</Link>
-            <Link to="/wallets" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Wallets</Link>
-            <Link to="/orders" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Orders</Link>
+            {isLoggedIn && (
+              <>
+                <Link to="/wallets" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Wallets</Link>
+                <Link to="/orders" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Orders</Link>
+                <Link to="/analytics" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Analytics</Link>
+              </>
+            )}
             {isLoggedIn ? (
               <>
                 <div className={`h-[1px] my-3 ${theme === 'dark' ? 'bg-hairline-on-dark' : 'bg-hairline-on-light'}`} />
@@ -1176,21 +1258,20 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/auth" element={<AuthPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/dashboard" element={<ProtectedRoute isLoggedIn={isLoggedIn}><DashboardPage /></ProtectedRoute>} />
           <Route path="/markets" element={<MarketsPage />} />
           <Route path="/trade/spot" element={<SpotTradingPage />} />
           <Route path="/trade/futures" element={<FuturesTradingPage />} />
           <Route path="/trade/options" element={<OptionsTradingPage />} />
           <Route path="/trade/margin" element={<MarginTradingPage />} />
-          <Route path="/analytics" element={<PortfolioAnalyticsPage />} />
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
-          <Route path="/admin" element={<AdminDashboardPage />} />
-          <Route path="/wallets" element={<WalletsPage />} />
-          <Route path="/orders" element={<OrdersPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/earn" element={<EarnPage />} />
-          <Route path="/funding" element={<FundingPage />} />
-          <Route path="/sub-accounts" element={<SubAccountsPage />} />
+          <Route path="/analytics" element={<ProtectedRoute isLoggedIn={isLoggedIn}><PortfolioAnalyticsPage /></ProtectedRoute>} />
+
+          <Route path="/wallets" element={<ProtectedRoute isLoggedIn={isLoggedIn}><WalletsPage /></ProtectedRoute>} />
+          <Route path="/orders" element={<ProtectedRoute isLoggedIn={isLoggedIn}><OrdersPage /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute isLoggedIn={isLoggedIn}><ProfilePage /></ProtectedRoute>} />
+          <Route path="/earn" element={<ProtectedRoute isLoggedIn={isLoggedIn}><EarnPage /></ProtectedRoute>} />
+          <Route path="/funding" element={<ProtectedRoute isLoggedIn={isLoggedIn}><FundingPage /></ProtectedRoute>} />
+          <Route path="/sub-accounts" element={<ProtectedRoute isLoggedIn={isLoggedIn}><SubAccountsPage /></ProtectedRoute>} />
           <Route path="/careers" element={<CareersPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/terms" element={<TermsPage />} />
@@ -1204,11 +1285,11 @@ function App() {
           <Route path="/user-guide" element={<UserGuidePage />} />
           <Route path="/referral" element={<ReferralPage />} />
           <Route path="*" element={<NotFoundPage />} />
-</Routes>
+        </Routes>
         </div>
 
         {/* Search Modal */}
-        <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} query={searchQuery} setQuery={setSearchQuery} />
+        <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} query={searchQuery} setQuery={setSearchQuery} isLoggedIn={isLoggedIn} />
 
         {/* Floating Chatbot Assistant Trixie */}
         <Chatbot />
