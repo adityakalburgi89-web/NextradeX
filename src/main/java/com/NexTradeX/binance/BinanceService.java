@@ -35,7 +35,6 @@ public class BinanceService {
     public boolean isTickerFetchAllowed(String symbol) {
         long now = System.currentTimeMillis();
         if (now < globalCooldownUntil) {
-            log.warn("[Binance] 🚫 Global cooldown active until {}. Skipping REST fetch.", new java.util.Date(globalCooldownUntil));
             return false;
         }
         String sym = symbol.toUpperCase();
@@ -43,11 +42,19 @@ public class BinanceService {
         return (now - lastRequest) >= TICKER_COOLDOWN_MS;
     }
 
+    public synchronized boolean checkAndRecordTickerFetch(String symbol) {
+        if (!isTickerFetchAllowed(symbol)) {
+            return false;
+        }
+        recordTickerFetch(symbol);
+        return true;
+    }
+
     public void recordTickerFetch(String symbol) {
         lastTickerRequestTimes.put(symbol.toUpperCase(), System.currentTimeMillis());
     }
 
-    public void triggerGlobalCooldown() {
+    public synchronized void triggerGlobalCooldown() {
         globalCooldownUntil = System.currentTimeMillis() + GLOBAL_COOLDOWN_MS;
         log.warn("[Binance] 🚫 Global ban protection cooldown activated for 5 minutes (until {}).", new java.util.Date(globalCooldownUntil));
     }
@@ -87,12 +94,10 @@ public class BinanceService {
 
     public Map<String, Object> getTicker24h(String symbol) {
         String sym = symbol.toUpperCase();
-        if (!isTickerFetchAllowed(sym)) {
+        if (!checkAndRecordTickerFetch(sym)) {
             log.debug("[Binance] ⏳ Fetch ticker for {} is on cooldown. Returning null to protect API limit.", sym);
             return null;
         }
-        
-        recordTickerFetch(sym);
         
         try {
             String url = BASE_URL + "/api/v3/ticker/24hr?symbol=" + sym;

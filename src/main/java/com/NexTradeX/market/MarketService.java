@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -34,10 +35,14 @@ public class MarketService {
     private static final java.util.Set<String> ALLOWED_SYMBOLS = java.util.Set.of("BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "DOTUSDT");
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
+    private static final long DB_WRITE_DEBOUNCE_MS = 3000; // 3 seconds debounce for database writes
 
     private final CryptoPriceRepository cryptoPriceRepository;
     private final RestTemplate restTemplate;
     private final BinanceService binanceService;
+
+    private final Map<String, CryptoPrice> l1Cache = new ConcurrentHashMap<>();
+    private final Map<String, Long> lastDbWriteTimes = new ConcurrentHashMap<>();
 
     @Value("${coinmarketcap.api.key}")
     private String coinMarketCapApiKey;
@@ -45,11 +50,20 @@ public class MarketService {
     public CryptoPrice getPrice(String symbol) {
         String normalizedSymbol = normalizeSymbol(symbol);
 
+        // 1. Try to find fresh price in memory L1 cache first
+        CryptoPrice cachedL1 = l1Cache.get(normalizedSymbol);
+        if (cachedL1 != null && cachedL1.getUpdatedAt() != null && 
+            cachedL1.getUpdatedAt().isAfter(LocalDateTime.now().minusSeconds(30))) {
+            return cachedL1;
+        }
+
         try {
-            // 1. Try to find the cached price in our database first
+            // 2. Try to find the cached price in our database
             Optional<CryptoPrice> cachedOpt = cryptoPriceRepository.findBySymbol(normalizedSymbol);
             if (cachedOpt.isPresent()) {
                 CryptoPrice cached = cachedOpt.get();
+                l1Cache.put(normalizedSymbol, cached); // Update L1 Cache
+                
                 // Check if it is fresh (updated in the last 30 seconds)
                 if (cached.getUpdatedAt() != null && 
                     cached.getUpdatedAt().isAfter(LocalDateTime.now().minusSeconds(30))) {
@@ -64,19 +78,21 @@ public class MarketService {
                 }
             }
 
-            // 2. If not present or stale, try fetching from Binance REST API
+            // 3. If not present or stale, try fetching from Binance REST API
             Map<String, Object> ticker = binanceService.getTicker24h(normalizedSymbol);
             if (ticker != null) {
                 return updateOrCreatePriceFromBinance(normalizedSymbol, ticker);
             }
 
-            // 3. Fallback to existing fetchLivePrice (CMC) if Binance REST fails
+            // 4. Fallback to existing fetchLivePrice (CMC) if Binance REST fails
             CryptoPrice livePrice = fetchLivePrice(normalizedSymbol);
             return persistPrice(livePrice);
         } catch (Exception exception) {
             log.warn("Falling back to cached market price for {}: {}", normalizedSymbol, exception.getMessage());
-            return cryptoPriceRepository.findBySymbol(normalizedSymbol)
+            CryptoPrice fallback = cryptoPriceRepository.findBySymbol(normalizedSymbol)
                     .orElseGet(() -> createFallbackPrice(normalizedSymbol));
+            l1Cache.put(normalizedSymbol, fallback);
+            return fallback;
         }
     }
 
@@ -211,9 +227,13 @@ public class MarketService {
             BigDecimal percentChange24h, BigDecimal volume24h,
             BigDecimal marketCap) {
         String normalizedSymbol = normalizeSymbol(symbol);
-        Optional<CryptoPrice> existing = cryptoPriceRepository.findBySymbol(normalizedSymbol);
+        
+        // Retrieve from L1 cache or fallback to database
+        CryptoPrice price = l1Cache.get(normalizedSymbol);
+        if (price == null) {
+            price = cryptoPriceRepository.findBySymbol(normalizedSymbol).orElse(new CryptoPrice());
+        }
 
-        CryptoPrice price = existing.orElse(new CryptoPrice());
         price.setSymbol(normalizedSymbol);
         price.setCurrentPrice(currentPrice);
         price.setHighPrice(highPrice);
@@ -225,9 +245,21 @@ public class MarketService {
         price.setMarketCap(marketCap);
         price.setUpdatedAt(LocalDateTime.now());
 
-        CryptoPrice saved = cryptoPriceRepository.save(price);
-        log.info("Updated price for {}: {}", normalizedSymbol, currentPrice);
-        return saved;
+        // Update in-memory L1 cache immediately
+        l1Cache.put(normalizedSymbol, price);
+
+        // Check if database write is debounced
+        long now = System.currentTimeMillis();
+        long lastWrite = lastDbWriteTimes.getOrDefault(normalizedSymbol, 0L);
+        if (now - lastWrite >= DB_WRITE_DEBOUNCE_MS) {
+            lastDbWriteTimes.put(normalizedSymbol, now);
+            CryptoPrice saved = cryptoPriceRepository.save(price);
+            log.info("[MarketService] 💾 Saved price update to DB for {}: {}", normalizedSymbol, currentPrice);
+            return saved;
+        } else {
+            log.trace("[MarketService] ⏳ Debounced DB write for {} (last write {} ms ago)", normalizedSymbol, (now - lastWrite));
+            return price;
+        }
     }
 
     private CryptoPrice updateOrCreatePriceFromBinance(String symbol, Map<String, Object> ticker) {
