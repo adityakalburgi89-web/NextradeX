@@ -4,9 +4,11 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import com.NexTradeX.config.BinanceProperties;
@@ -20,10 +22,35 @@ import lombok.extern.slf4j.Slf4j;
 public class BinanceService {
 
     private static final String BASE_URL = "https://api.binance.com";
+    private static final long TICKER_COOLDOWN_MS = 60000; // 60 seconds
+    private static final long GLOBAL_COOLDOWN_MS = 300000; // 5 minutes (300 seconds)
 
     private final BinanceProperties binanceProperties;
     private final RestTemplate restTemplate;
     private final RestClient restClient = RestClient.create();
+
+    private final Map<String, Long> lastTickerRequestTimes = new ConcurrentHashMap<>();
+    private volatile long globalCooldownUntil = 0L;
+
+    public boolean isTickerFetchAllowed(String symbol) {
+        long now = System.currentTimeMillis();
+        if (now < globalCooldownUntil) {
+            log.warn("[Binance] 🚫 Global cooldown active until {}. Skipping REST fetch.", new java.util.Date(globalCooldownUntil));
+            return false;
+        }
+        String sym = symbol.toUpperCase();
+        long lastRequest = lastTickerRequestTimes.getOrDefault(sym, 0L);
+        return (now - lastRequest) >= TICKER_COOLDOWN_MS;
+    }
+
+    public void recordTickerFetch(String symbol) {
+        lastTickerRequestTimes.put(symbol.toUpperCase(), System.currentTimeMillis());
+    }
+
+    public void triggerGlobalCooldown() {
+        globalCooldownUntil = System.currentTimeMillis() + GLOBAL_COOLDOWN_MS;
+        log.warn("[Binance] 🚫 Global ban protection cooldown activated for 5 minutes (until {}).", new java.util.Date(globalCooldownUntil));
+    }
 
     public BigDecimal getPrice(String symbol) {
         try {
@@ -59,18 +86,33 @@ public class BinanceService {
     }
 
     public Map<String, Object> getTicker24h(String symbol) {
+        String sym = symbol.toUpperCase();
+        if (!isTickerFetchAllowed(sym)) {
+            log.debug("[Binance] ⏳ Fetch ticker for {} is on cooldown. Returning null to protect API limit.", sym);
+            return null;
+        }
+        
+        recordTickerFetch(sym);
+        
         try {
-            String url = BASE_URL + "/api/v3/ticker/24hr?symbol=" + symbol.toUpperCase();
-            log.info("[Binance] 🌐 Fetching 24h ticker for {} from: {}", symbol, url);
+            String url = BASE_URL + "/api/v3/ticker/24hr?symbol=" + sym;
+            log.info("[Binance] 🌐 Fetching 24h ticker for {} from: {}", sym, url);
+            @SuppressWarnings("unchecked")
             Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
             if (response != null) {
-                log.info("[Binance] ✅ Successfully fetched ticker for {}. Last Price: {}", symbol, response.get("lastPrice"));
+                log.info("[Binance] ✅ Successfully fetched ticker for {}. Last Price: {}", sym, response.get("lastPrice"));
             } else {
-                log.warn("[Binance] ⚠️ Received empty response for {}", symbol);
+                log.warn("[Binance] ⚠️ Received empty response for {}", sym);
             }
             return response;
+        } catch (RestClientResponseException e) {
+            log.error("[Binance] ❌ HTTP error fetching 24h ticker for {}: Status={}, Body={}", sym, e.getStatusCode(), e.getResponseBodyAsString());
+            if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
+                triggerGlobalCooldown();
+            }
+            return null;
         } catch (Exception e) {
-            log.error("[Binance] ❌ Failed to fetch 24h ticker for {}: {}", symbol, e.getMessage());
+            log.error("[Binance] ❌ Failed to fetch 24h ticker for {}: {}", sym, e.getMessage());
             return null;
         }
     }

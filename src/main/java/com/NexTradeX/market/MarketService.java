@@ -50,9 +50,16 @@ public class MarketService {
             Optional<CryptoPrice> cachedOpt = cryptoPriceRepository.findBySymbol(normalizedSymbol);
             if (cachedOpt.isPresent()) {
                 CryptoPrice cached = cachedOpt.get();
-                // Check if it is fresh (updated in the last 10 seconds)
+                // Check if it is fresh (updated in the last 30 seconds)
                 if (cached.getUpdatedAt() != null && 
-                    cached.getUpdatedAt().isAfter(LocalDateTime.now().minusSeconds(10))) {
+                    cached.getUpdatedAt().isAfter(LocalDateTime.now().minusSeconds(30))) {
+                    return cached;
+                }
+                
+                // If it is stale, check if we are allowed to fetch from the REST API.
+                // If the REST API is on cooldown, return the stale cached price directly.
+                if (!binanceService.isTickerFetchAllowed(normalizedSymbol)) {
+                    log.debug("[MarketService] ⏳ Ticker fetch for {} is on cooldown. Returning stale cached DB price.", normalizedSymbol);
                     return cached;
                 }
             }
@@ -85,23 +92,27 @@ public class MarketService {
         List<CryptoPrice> prices = cryptoPriceRepository.findAll();
         boolean needsSave = false;
         for (CryptoPrice price : prices) {
-            // Check if price is stale (older than 10 seconds) and sync from Binance
-            if (price.getUpdatedAt() == null || price.getUpdatedAt().isBefore(LocalDateTime.now().minusSeconds(10))) {
-                try {
-                    Map<String, Object> ticker = binanceService.getTicker24h(price.getSymbol());
-                    if (ticker != null) {
-                        price.setCurrentPrice(new BigDecimal(ticker.get("lastPrice").toString()));
-                        price.setHighPrice(new BigDecimal(ticker.get("highPrice").toString()));
-                        price.setLowPrice(new BigDecimal(ticker.get("lowPrice").toString()));
-                        price.setOpenPrice(new BigDecimal(ticker.get("openPrice").toString()));
-                        price.setPriceChange24h(new BigDecimal(ticker.get("priceChange").toString()));
-                        price.setPercentChange24h(new BigDecimal(ticker.get("priceChangePercent").toString()));
-                        price.setVolume24h(new BigDecimal(ticker.get("volume").toString()));
-                        price.setUpdatedAt(LocalDateTime.now());
-                        needsSave = true;
+            // Check if price is stale (older than 30 seconds) and sync from Binance if allowed
+            if (price.getUpdatedAt() == null || price.getUpdatedAt().isBefore(LocalDateTime.now().minusSeconds(30))) {
+                if (binanceService.isTickerFetchAllowed(price.getSymbol())) {
+                    try {
+                        Map<String, Object> ticker = binanceService.getTicker24h(price.getSymbol());
+                        if (ticker != null) {
+                            price.setCurrentPrice(new BigDecimal(ticker.get("lastPrice").toString()));
+                            price.setHighPrice(new BigDecimal(ticker.get("highPrice").toString()));
+                            price.setLowPrice(new BigDecimal(ticker.get("lowPrice").toString()));
+                            price.setOpenPrice(new BigDecimal(ticker.get("openPrice").toString()));
+                            price.setPriceChange24h(new BigDecimal(ticker.get("priceChange").toString()));
+                            price.setPercentChange24h(new BigDecimal(ticker.get("priceChangePercent").toString()));
+                            price.setVolume24h(new BigDecimal(ticker.get("volume").toString()));
+                            price.setUpdatedAt(LocalDateTime.now());
+                            needsSave = true;
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed to sync price for {}: {}", price.getSymbol(), e.getMessage());
                     }
-                } catch (Exception e) {
-                    log.warn("Failed to sync price for {}: {}", price.getSymbol(), e.getMessage());
+                } else {
+                    log.debug("[MarketService] ⏳ Ticker sync for {} skipped (on cooldown)", price.getSymbol());
                 }
             }
         }
@@ -153,20 +164,24 @@ public class MarketService {
         log.debug("Syncing market prices from Binance for {} symbols", trackedPrices.size());
 
         for (CryptoPrice price : trackedPrices) {
-            try {
-                Map<String, Object> ticker = binanceService.getTicker24h(price.getSymbol());
-                if (ticker != null) {
-                    price.setCurrentPrice(new BigDecimal(ticker.get("lastPrice").toString()));
-                    price.setHighPrice(new BigDecimal(ticker.get("highPrice").toString()));
-                    price.setLowPrice(new BigDecimal(ticker.get("lowPrice").toString()));
-                    price.setOpenPrice(new BigDecimal(ticker.get("openPrice").toString()));
-                    price.setPriceChange24h(new BigDecimal(ticker.get("priceChange").toString()));
-                    price.setPercentChange24h(new BigDecimal(ticker.get("priceChangePercent").toString()));
-                    price.setVolume24h(new BigDecimal(ticker.get("volume").toString()));
-                    price.setUpdatedAt(LocalDateTime.now());
+            if (binanceService.isTickerFetchAllowed(price.getSymbol())) {
+                try {
+                    Map<String, Object> ticker = binanceService.getTicker24h(price.getSymbol());
+                    if (ticker != null) {
+                        price.setCurrentPrice(new BigDecimal(ticker.get("lastPrice").toString()));
+                        price.setHighPrice(new BigDecimal(ticker.get("highPrice").toString()));
+                        price.setLowPrice(new BigDecimal(ticker.get("lowPrice").toString()));
+                        price.setOpenPrice(new BigDecimal(ticker.get("openPrice").toString()));
+                        price.setPriceChange24h(new BigDecimal(ticker.get("priceChange").toString()));
+                        price.setPercentChange24h(new BigDecimal(ticker.get("priceChangePercent").toString()));
+                        price.setVolume24h(new BigDecimal(ticker.get("volume").toString()));
+                        price.setUpdatedAt(LocalDateTime.now());
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to sync price for {}: {}", price.getSymbol(), e.getMessage());
                 }
-            } catch (Exception e) {
-                log.warn("Failed to sync price for {}: {}", price.getSymbol(), e.getMessage());
+            } else {
+                log.debug("[MarketService] ⏳ Ticker sync for {} skipped (on cooldown)", price.getSymbol());
             }
         }
 
