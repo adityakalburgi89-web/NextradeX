@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { PageTransition } from "../components/ui/PageTransition";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -15,6 +15,9 @@ export default function EarnPage() {
   const [stakeSymbol, setStakeSymbol] = useState("USDT");
   const [stakeDuration, setStakeDuration] = useState("Flexible");
   const [message, setMessage] = useState("");
+
+  const timeoutsRef = useRef([]);
+  useEffect(() => () => timeoutsRef.current.forEach(clearTimeout), []);
 
   const products = [
     { symbol: "USDT", name: "Tether", apy: 11.5, min: 10, category: "Stablecoin" },
@@ -42,7 +45,7 @@ export default function EarnPage() {
     setStakedList([newStake, ...stakedList]);
     setMessage(`Staked ${stakeAmount} ${stakeSymbol} successfully!`);
     setStakeAmount("");
-    setTimeout(() => setMessage(""), 4000);
+    timeoutsRef.current.push(setTimeout(() => setMessage(""), 4000));
   };
 
   return (

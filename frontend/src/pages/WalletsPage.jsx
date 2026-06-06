@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { 
   fetchWallets, 
   depositToWallet, 
@@ -61,6 +61,9 @@ export default function WalletsPage() {
   // Simulated Transaction History Log
   const [txHistory, setTxHistory] = useState([]);
 
+  const timeoutsRef = useRef([]);
+  useEffect(() => () => timeoutsRef.current.forEach(clearTimeout), []);
+
   const loadData = async () => {
     try {
       setLoading(true);
@@ -89,7 +92,7 @@ export default function WalletsPage() {
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
     setCopiedText(true);
-    setTimeout(() => setCopiedText(false), 2000);
+    timeoutsRef.current.push(setTimeout(() => setCopiedText(false), 2000));
   };
 
   // Quick Deposit function
@@ -113,7 +116,7 @@ export default function WalletsPage() {
 
       setSuccessMessage(`Successfully deposited $${amount} into your ${walletType} wallet!`);
       await loadData();
-      setTimeout(() => setSuccessMessage(""), 4000);
+      timeoutsRef.current.push(setTimeout(() => setSuccessMessage(""), 4000));
     } catch (e) {
       setError(e.message || "Failed to process deposit.");
       setSuccessMessage("");
@@ -162,7 +165,7 @@ export default function WalletsPage() {
 
       setSuccessMessage(`Successfully transferred ${formatCurrency(amt)} from ${transferModal.from} to ${transferModal.to}!`);
       await loadData();
-      setTimeout(() => setSuccessMessage(""), 4000);
+      timeoutsRef.current.push(setTimeout(() => setSuccessMessage(""), 4000));
     } catch (err) {
       setError(err.message || "Failed to transfer funds.");
       setSuccessMessage("");

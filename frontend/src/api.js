@@ -1,12 +1,22 @@
 import tradeSoundFile from "./assets/audio/TradeSound.mp3";
 
+// Gate verbose request logging behind an env flag so production builds stay quiet
+// and never log auth headers / request payloads.
+const DEBUG = process.env.REACT_APP_API_DEBUG === "true";
+const log = DEBUG ? console.log.bind(console) : () => {};
+
+// Abort requests that hang so the UI never gets stuck on a permanent spinner.
+const REQUEST_TIMEOUT_MS = 20000;
+
 const playTradeSound = () => {
   try {
     const audio = new Audio(tradeSoundFile);
     audio.volume = 0.55;
-    audio.play();
+    // play() returns a promise that rejects under autoplay policies — swallow it.
+    const p = audio.play();
+    if (p && typeof p.catch === "function") p.catch(() => {});
   } catch (e) {
-    console.warn("[API] Play sound failed:", e.message);
+    // Sound is non-critical; never let it break a trade.
   }
 };
 
@@ -15,7 +25,7 @@ export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || DEFAULT_API_BA
 
 export function setAuthToken(token) {
   localStorage.setItem("nextradex_token", token);
-  console.log("[API] Token stored in localStorage");
+  log("[API] Token stored in localStorage");
 }
 
 export function getAuthToken() {
@@ -24,7 +34,7 @@ export function getAuthToken() {
 
 export function clearAuthToken() {
   localStorage.removeItem("nextradex_token");
-  console.log("[API] Token cleared from localStorage");
+  log("[API] Token cleared from localStorage");
 }
 
 export function hasAuthToken() {
@@ -36,9 +46,9 @@ function authHeaders() {
   const headers = { "Content-Type": "application/json" };
   if (token) {
     headers.Authorization = `Bearer ${token}`;
-    console.log("[API] Authorization header set for request");
+    log("[API] Authorization header set for request");
   } else {
-    console.log("[API] No token found for Authorization header");
+    log("[API] No token found for Authorization header");
   }
   return headers;
 }
@@ -70,7 +80,7 @@ async function handleResponse(res) {
     throw new ApiError(message, res.status, data);
   }
 
-  console.log("[API] Response received successfully");
+  log("[API] Response received successfully");
   return data;
 }
 
@@ -87,14 +97,18 @@ function toQueryString(params) {
   return query ? `?${query}` : "";
 }
 
-// FIX: Create fetch options with credentials for CORS
 function createFetchOptions(method = "GET", body = null, headers = {}) {
   const options = {
     method,
     headers,
-    // FIX #1: Include credentials to send Authorization header with CORS requests
+    // Auth uses a Bearer token in the Authorization header; credentials are kept
+    // for the cookie-based OAuth2 authorization-request flow.
     credentials: "include",
   };
+  // Abort hung requests so the UI never gets stuck loading forever.
+  if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
+    options.signal = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
+  }
   if (body) {
     options.body = JSON.stringify(body);
   }
@@ -103,7 +117,7 @@ function createFetchOptions(method = "GET", body = null, headers = {}) {
 
 // AUTH
 export async function registerUser(payload) {
-  console.log("[API] POST /auth/register");
+  log("[API] POST /auth/register");
   const res = await fetch(`${API_BASE_URL}/auth/register`,
     createFetchOptions("POST", payload, { "Content-Type": "application/json" })
   );
@@ -113,7 +127,7 @@ export async function registerUser(payload) {
 }
 
 export async function loginUser(payload) {
-  console.log("[API] POST /auth/login");
+  log("[API] POST /auth/login");
   const res = await fetch(`${API_BASE_URL}/auth/login`,
     createFetchOptions("POST", payload, { "Content-Type": "application/json" })
   );
@@ -123,7 +137,7 @@ export async function loginUser(payload) {
 }
 
 export async function validateToken() {
-  console.log("[API] GET /auth/validate");
+  log("[API] GET /auth/validate");
   const res = await fetch(`${API_BASE_URL}/auth/validate`,
     createFetchOptions("GET", null, authHeaders())
   );
@@ -131,14 +145,13 @@ export async function validateToken() {
 }
 
 export function googleLogin() {
-  console.log("[API] Redirecting to Google OAuth2 login");
+  log("[API] Redirecting to Google OAuth2 login");
   window.location.href = `${API_BASE_URL}/oauth2/authorization/google`;
 }
 
 export async function completeProfile(payload) {
-  console.log("[API] POST /oauth2/complete-profile - Payload:", payload);
+  log("[API] POST /oauth2/complete-profile");
   const headers = authHeaders();
-  console.log("[API] Request headers:", { ...headers, Authorization: headers.Authorization ? "Bearer [REDACTED]" : undefined });
 
   const res = await fetch(`${API_BASE_URL}/oauth2/complete-profile`,
     createFetchOptions("POST", payload, headers)
@@ -149,7 +162,7 @@ export async function completeProfile(payload) {
 }
 
 export async function fetchUserProfile() {
-  console.log("[API] GET /user/profile");
+  log("[API] GET /user/profile");
   const res = await fetch(`${API_BASE_URL}/user/profile`,
     createFetchOptions("GET", null, authHeaders())
   );
@@ -157,7 +170,7 @@ export async function fetchUserProfile() {
 }
 
 export async function updateUserProfile(payload) {
-  console.log("[API] PUT /user/profile");
+  log("[API] PUT /user/profile");
   const res = await fetch(`${API_BASE_URL}/user/profile`,
     createFetchOptions("PUT", payload, authHeaders())
   );
@@ -166,7 +179,7 @@ export async function updateUserProfile(payload) {
 
 // MARKET
 export async function fetchAllPrices() {
-  console.log("[API] GET /market/prices");
+  log("[API] GET /market/prices");
   const res = await fetch(`${API_BASE_URL}/market/prices`,
     createFetchOptions("GET")
   );
@@ -174,7 +187,7 @@ export async function fetchAllPrices() {
 }
 
 export async function fetchPrice(symbol) {
-  console.log("[API] GET /market/price/:symbol");
+  log("[API] GET /market/price/:symbol");
   const res = await fetch(`${API_BASE_URL}/market/price/${encodeURIComponent(symbol)}`,
     createFetchOptions("GET")
   );
@@ -182,7 +195,7 @@ export async function fetchPrice(symbol) {
 }
 
 export async function fetchBinanceSymbols() {
-  console.log("[API] GET /market/binance/symbols");
+  log("[API] GET /market/binance/symbols");
   const res = await fetch(`${API_BASE_URL}/market/binance/symbols`,
     createFetchOptions("GET")
   );
@@ -191,7 +204,7 @@ export async function fetchBinanceSymbols() {
 
 // SPOT ORDERS
 export async function createSpotOrder(payload) {
-  console.log("[API] POST /orders/spot");
+  log("[API] POST /orders/spot");
   const res = await fetch(`${API_BASE_URL}/orders/spot`,
     createFetchOptions("POST", payload, authHeaders())
   );
@@ -201,7 +214,7 @@ export async function createSpotOrder(payload) {
 }
 
 export async function fetchActiveOrders() {
-  console.log("[API] GET /orders/active");
+  log("[API] GET /orders/active");
   const res = await fetch(`${API_BASE_URL}/orders/active`,
     createFetchOptions("GET", null, authHeaders())
   );
@@ -209,7 +222,7 @@ export async function fetchActiveOrders() {
 }
 
 export async function fetchOrderHistory() {
-  console.log("[API] GET /orders/history");
+  log("[API] GET /orders/history");
   const res = await fetch(`${API_BASE_URL}/orders/history`,
     createFetchOptions("GET", null, authHeaders())
   );
@@ -217,7 +230,7 @@ export async function fetchOrderHistory() {
 }
 
 export async function cancelOrder(orderId) {
-  console.log("[API] DELETE /orders/:id");
+  log("[API] DELETE /orders/:id");
   const res = await fetch(`${API_BASE_URL}/orders/${orderId}`,
     createFetchOptions("DELETE", null, authHeaders())
   );
@@ -226,7 +239,7 @@ export async function cancelOrder(orderId) {
 
 // WALLETS
 export async function fetchWallets() {
-  console.log("[API] GET /wallets");
+  log("[API] GET /wallets");
   const res = await fetch(`${API_BASE_URL}/wallets`,
     createFetchOptions("GET", null, authHeaders())
   );
@@ -234,7 +247,7 @@ export async function fetchWallets() {
 }
 
 export async function fetchWallet(walletType) {
-  console.log("[API] GET /wallets/:type");
+  log("[API] GET /wallets/:type");
   const res = await fetch(`${API_BASE_URL}/wallets/${walletType}`,
     createFetchOptions("GET", null, authHeaders())
   );
@@ -242,7 +255,7 @@ export async function fetchWallet(walletType) {
 }
 
 export async function depositToWallet(walletType, amount) {
-  console.log("[API] POST /wallets/deposit", walletType, amount);
+  log("[API] POST /wallets/deposit", walletType, amount);
   const res = await fetch(`${API_BASE_URL}/wallets/deposit`,
     createFetchOptions("POST", { walletType, amount }, authHeaders())
   );
@@ -250,7 +263,7 @@ export async function depositToWallet(walletType, amount) {
 }
 
 export async function transferBetweenWallets(fromWalletType, toWalletType, amount) {
-  console.log("[API] POST /wallets/transfer", fromWalletType, toWalletType, amount);
+  log("[API] POST /wallets/transfer", fromWalletType, toWalletType, amount);
   const res = await fetch(`${API_BASE_URL}/wallets/transfer`,
     createFetchOptions("POST", { fromWalletType, toWalletType, amount }, authHeaders())
   );
@@ -258,7 +271,7 @@ export async function transferBetweenWallets(fromWalletType, toWalletType, amoun
 }
 
 export async function withdrawFromWallet(walletType, amount, address, network) {
-  console.log("[API] POST /wallets/withdraw", walletType, amount, address, network);
+  log("[API] POST /wallets/withdraw", walletType, amount, address, network);
   const res = await fetch(`${API_BASE_URL}/wallets/withdraw`,
     createFetchOptions("POST", { walletType, amount, address, network }, authHeaders())
   );
@@ -267,7 +280,7 @@ export async function withdrawFromWallet(walletType, amount, address, network) {
 
 // FUTURES
 export async function openFuturesPosition(payload) {
-  console.log("[API] POST /futures/open");
+  log("[API] POST /futures/open");
   const res = await fetch(`${API_BASE_URL}/futures/open`,
     createFetchOptions("POST", payload, authHeaders())
   );
@@ -277,7 +290,7 @@ export async function openFuturesPosition(payload) {
 }
 
 export async function fetchOpenFuturesPositions() {
-  console.log("[API] GET /futures/positions/open");
+  log("[API] GET /futures/positions/open");
   const res = await fetch(`${API_BASE_URL}/futures/positions/open`,
     createFetchOptions("GET", null, authHeaders())
   );
@@ -285,7 +298,7 @@ export async function fetchOpenFuturesPositions() {
 }
 
 export async function closeFuturesPosition(positionId) {
-  console.log("[API] POST /futures/close/:id", positionId);
+  log("[API] POST /futures/close/:id", positionId);
   const res = await fetch(`${API_BASE_URL}/futures/close/${positionId}`,
     createFetchOptions("POST", null, authHeaders())
   );
@@ -293,7 +306,7 @@ export async function closeFuturesPosition(positionId) {
 }
 
 export async function updateFuturesSlTp(positionId, payload) {
-  console.log("[API] POST /futures/update-sl-tp/:id", positionId, payload);
+  log("[API] POST /futures/update-sl-tp/:id", positionId, payload);
   const res = await fetch(`${API_BASE_URL}/futures/update-sl-tp/${positionId}`,
     createFetchOptions("POST", payload, authHeaders())
   );
@@ -302,7 +315,7 @@ export async function updateFuturesSlTp(positionId, payload) {
 
 // MARGIN
 export async function openMarginPosition(payload) {
-  console.log("[API] POST /margin/open");
+  log("[API] POST /margin/open");
   const res = await fetch(`${API_BASE_URL}/margin/open`,
     createFetchOptions("POST", payload, authHeaders())
   );
@@ -312,7 +325,7 @@ export async function openMarginPosition(payload) {
 }
 
 export async function fetchOpenMarginPositions() {
-  console.log("[API] GET /margin/positions/open");
+  log("[API] GET /margin/positions/open");
   const res = await fetch(`${API_BASE_URL}/margin/positions/open`,
     createFetchOptions("GET", null, authHeaders())
   );
@@ -320,7 +333,7 @@ export async function fetchOpenMarginPositions() {
 }
 
 export async function closeMarginPosition(positionId) {
-  console.log("[API] POST /margin/close/:id");
+  log("[API] POST /margin/close/:id");
   const res = await fetch(`${API_BASE_URL}/margin/close/${positionId}`,
     createFetchOptions("POST", null, authHeaders())
   );
@@ -329,7 +342,7 @@ export async function closeMarginPosition(positionId) {
 
 // OPTIONS
 export async function buyOption(payload) {
-  console.log("[API] POST /options/buy");
+  log("[API] POST /options/buy");
   const res = await fetch(`${API_BASE_URL}/options/buy`,
     createFetchOptions("POST", payload, authHeaders())
   );
@@ -339,7 +352,7 @@ export async function buyOption(payload) {
 }
 
 export async function settleOption(contractId) {
-  console.log("[API] POST /options/settle/:id");
+  log("[API] POST /options/settle/:id");
   const res = await fetch(`${API_BASE_URL}/options/settle/${contractId}`,
     createFetchOptions("POST", null, authHeaders())
   );
@@ -347,7 +360,7 @@ export async function settleOption(contractId) {
 }
 
 export async function fetchOptionsPositions() {
-  console.log("[API] GET /options/positions");
+  log("[API] GET /options/positions");
   const res = await fetch(`${API_BASE_URL}/options/positions`,
     createFetchOptions("GET", null, authHeaders())
   );
@@ -355,7 +368,7 @@ export async function fetchOptionsPositions() {
 }
 
 export async function fetchOptionsHistory() {
-  console.log("[API] GET /options/positions/history");
+  log("[API] GET /options/positions/history");
   const res = await fetch(`${API_BASE_URL}/options/positions/history`,
     createFetchOptions("GET", null, authHeaders())
   );
@@ -364,7 +377,7 @@ export async function fetchOptionsHistory() {
 
 // CANDLESTICK DATA
 export async function fetchCandlestickData(symbol, interval = "1h", limit = 100) {
-  console.log("[API] GET /market/candles/:symbol");
+  log("[API] GET /market/candles/:symbol");
   const res = await fetch(
     `${API_BASE_URL}/market/candles/${encodeURIComponent(symbol.toUpperCase())}${toQueryString({
       interval,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { fetchActiveOrders, fetchOrderHistory, fetchOptionsHistory, cancelOrder } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/Card";
 import { PageTransition } from "../components/ui/PageTransition";
@@ -55,6 +55,9 @@ export default function OrdersPage() {
   const [sideFilter, setSideFilter] = useState("ALL"); // ALL, BUY, SELL
   const [cancellingOrderId, setCancellingOrderId] = useState(null);
 
+  const timeoutsRef = useRef([]);
+  useEffect(() => () => timeoutsRef.current.forEach(clearTimeout), []);
+
   const loadData = async () => {
     try {
       const [activeRes, historyRes, optionsRes] = await Promise.all([
@@ -92,7 +95,7 @@ export default function OrdersPage() {
       await cancelOrder(orderId);
       setSuccessMessage(`Order #${orderId.toString().substring(0, 8)} cancelled successfully.`);
       await loadData();
-      setTimeout(() => setSuccessMessage(""), 4000);
+      timeoutsRef.current.push(setTimeout(() => setSuccessMessage(""), 4000));
     } catch (e) {
       setError(e.message || "Failed to cancel order.");
     } finally {

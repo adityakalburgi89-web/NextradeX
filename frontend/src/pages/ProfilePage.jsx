@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
@@ -42,6 +42,9 @@ export default function ProfilePage() {
   const [generatedKey, setGeneratedKey] = useState(null);
   const [copiedKey, setCopiedKey] = useState(false);
   const [copiedSecret, setCopiedSecret] = useState(false);
+
+  const timeoutsRef = useRef([]);
+  useEffect(() => () => timeoutsRef.current.forEach(clearTimeout), []);
 
   const [profile, setProfile] = useState({
     username: "",
@@ -138,10 +141,10 @@ export default function ProfilePage() {
     navigator.clipboard.writeText(text);
     if (type === "key") {
       setCopiedKey(true);
-      setTimeout(() => setCopiedKey(false), 2000);
+      timeoutsRef.current.push(setTimeout(() => setCopiedKey(false), 2000));
     } else {
       setCopiedSecret(true);
-      setTimeout(() => setCopiedSecret(false), 2000);
+      timeoutsRef.current.push(setTimeout(() => setCopiedSecret(false), 2000));
     }
   };
 

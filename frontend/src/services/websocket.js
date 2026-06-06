@@ -33,8 +33,6 @@ class WebSocketService {
     if (onConnect) this.connectCallbacks.push(onConnect);
     if (onError) this.errorCallbacks.push(onError);
 
-    console.log("[WS] Connecting to:", WS_URL);
-
     this.client = new Client({
       webSocketFactory: () => new SockJS(WS_URL),
       reconnectDelay: this.reconnectDelay,
@@ -42,14 +40,16 @@ class WebSocketService {
       heartbeatOutgoing: 4000,
       onConnect: () => {
         this.connectionState = "CONNECTED";
-        console.log("[WS] WebSocket connected successfully");
-        
+
         // Reset and establish all subscriptions
         this.resubscribeAll();
 
-        // Invoke and clear all queued connect callbacks
+        // Invoke and clear all queued connect callbacks. Error callbacks that
+        // were queued for this connection attempt are also cleared so they do
+        // not accumulate across SPA navigation and fire on a later, unrelated error.
         const callbacks = [...this.connectCallbacks];
         this.connectCallbacks = [];
+        this.errorCallbacks = [];
         callbacks.forEach((cb) => {
           try {
             cb();
@@ -65,31 +65,15 @@ class WebSocketService {
       },
       onStompError: (frame) => {
         this.connectionState = "DISCONNECTED";
-        console.error("[WS] STOMP error:", frame);
+        console.error("[WS] STOMP error:", frame?.headers?.message || frame);
         this.clearStaleSubscriptions();
-        
-        const callbacks = [...this.errorCallbacks];
-        callbacks.forEach((cb) => {
-          try {
-            cb(frame);
-          } catch (err) {
-            console.error("[WS] Error in onError callback:", err);
-          }
-        });
+        this.notifyError(frame);
       },
       onWebSocketError: (event) => {
         this.connectionState = "DISCONNECTED";
-        console.error("[WS] WebSocket error:", event);
+        console.error("[WS] WebSocket error");
         this.clearStaleSubscriptions();
-        
-        const callbacks = [...this.errorCallbacks];
-        callbacks.forEach((cb) => {
-          try {
-            cb(event);
-          } catch (err) {
-            console.error("[WS] Error in onError callback:", err);
-          }
-        });
+        this.notifyError(event);
       },
       onWebSocketClose: () => {
         this.connectionState = "DISCONNECTED";
@@ -99,6 +83,24 @@ class WebSocketService {
     });
 
     this.client.activate();
+  }
+
+  // Invoke and clear queued error callbacks so they never fire twice or leak
+  // across reconnects / unmounted components.
+  notifyError(err) {
+    const callbacks = [...this.errorCallbacks];
+    this.errorCallbacks = [];
+    callbacks.forEach((cb) => {
+      try {
+        cb(err);
+      } catch (e) {
+        console.error("[WS] Error in onError callback:", e);
+      }
+    });
+  }
+
+  isConnected() {
+    return this.connectionState === "CONNECTED" && Boolean(this.client?.connected);
   }
 
   disconnect() {
@@ -157,7 +159,6 @@ class WebSocketService {
           console.error("[WS] Error parsing WebSocket message:", error);
         }
       });
-      console.log("[WS] Subscribed successfully to destination:", entry.destination);
     } catch (err) {
       console.error("[WS] Failed to subscribe to destination:", entry.destination, err);
       entry.stompSubscription = null;

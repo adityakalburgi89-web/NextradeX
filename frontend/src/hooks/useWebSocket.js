@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback, useState } from "react";
 import websocketService from "../services/websocket";
 
 export function useWebSocket(destination, callback, autoConnect = true) {
-  const [connected, setConnected] = useState(false);
+  const [connected, setConnected] = useState(() => websocketService.isConnected());
   const [error, setError] = useState(null);
   const subscriptionRef = useRef(null);
   const callbackRef = useRef(callback);

@@ -66,7 +66,7 @@ export default function MarginTradingPage() {
   const [candleData, setCandleData] = useState([]);
   const [chartLoading, setChartLoading] = useState(false);
   const [priceSnapshot, setPriceSnapshot] = useState(null);
-  const [interval, setInterval] = useState("1h");
+  const [chartInterval, setChartInterval] = useState("1h");
 
   // Bottom tabs & User account states
   const [activeBottomTab, setActiveBottomTab] = useState("POSITIONS"); // POSITIONS, ORDERS, HISTORY, ASSETS
@@ -210,7 +210,7 @@ export default function MarginTradingPage() {
     const loadCandles = async () => {
       setChartLoading(true);
       try {
-        const data = await fetchCandlestickData(form.symbol, interval, 120);
+        const data = await fetchCandlestickData(form.symbol, chartInterval, 120);
         setCandleData(data);
       } catch {
         setCandleData([]);
@@ -219,7 +219,7 @@ export default function MarginTradingPage() {
       }
     };
     loadCandles();
-  }, [form.symbol, interval]);
+  }, [form.symbol, chartInterval]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -420,8 +420,8 @@ export default function MarginTradingPage() {
                 title="Margin Workspace"
                 description="A leveraged Spot-Margin simulator that borrows capital from the pool to amplify trading outcomes."
                 symbol={form.symbol}
-                interval={interval}
-                onIntervalChange={setInterval}
+                interval={chartInterval}
+                onIntervalChange={setChartInterval}
                 loading={chartLoading}
                 data={candleData}
                 status={{ label: connected ? "Live market" : "Snapshot", tone: connected ? "active" : "neutral" }}

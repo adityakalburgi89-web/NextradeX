@@ -6,7 +6,10 @@ export function cn(...inputs) {
 }
 
 export function formatCurrency(value, options = {}) {
-    const numericValue = Number(value ?? 0);
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue)) {
+        return options.fallback ?? "--";
+    }
 
     return new Intl.NumberFormat("en-US", {
         style: "currency",
@@ -18,7 +21,8 @@ export function formatCurrency(value, options = {}) {
 }
 
 export function formatCompactNumber(value) {
-    const numericValue = Number(value ?? 0);
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue)) return "--";
 
     return new Intl.NumberFormat("en-US", {
         notation: "compact",
@@ -27,7 +31,8 @@ export function formatCompactNumber(value) {
 }
 
 export function formatPercent(value) {
-    const numericValue = Number(value ?? 0);
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue)) return "0.00%";
     const prefix = numericValue > 0 ? "+" : "";
     return `${prefix}${numericValue.toFixed(2)}%`;
 }

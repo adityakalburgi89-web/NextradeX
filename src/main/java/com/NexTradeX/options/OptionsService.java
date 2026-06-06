@@ -59,10 +59,19 @@ public class OptionsService {
         return saved;
     }
     
-    public void settleOption(Long contractId) {
+    public void settleOption(Long userId, Long contractId) {
         OptionsContract contract = optionsContractRepository.findById(contractId)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
-        
+
+        // Authorization: a user may only settle their own contracts (prevents IDOR).
+        if (contract.getUser() == null || !contract.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Contract not found");
+        }
+
+        if (contract.getStatus() != OptionStatus.ACTIVE) {
+            throw new RuntimeException("Contract is not active");
+        }
+
         if (LocalDateTime.now().isBefore(contract.getExpiryDate())) {
             throw new RuntimeException("Contract has not expired yet");
         }

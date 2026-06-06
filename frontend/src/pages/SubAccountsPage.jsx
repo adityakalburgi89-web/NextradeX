@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { PageTransition } from "../components/ui/PageTransition";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -15,6 +15,9 @@ export default function SubAccountsPage() {
   const [newName, setNewName] = useState("");
   const [newBalance, setNewBalance] = useState("");
   const [message, setMessage] = useState("");
+
+  const timeoutsRef = useRef([]);
+  useEffect(() => () => timeoutsRef.current.forEach(clearTimeout), []);
 
   const handleCreate = (e) => {
     e.preventDefault();
@@ -34,7 +37,7 @@ export default function SubAccountsPage() {
     setNewEmail("");
     setNewName("");
     setNewBalance("");
-    setTimeout(() => setMessage(""), 4000);
+    timeoutsRef.current.push(setTimeout(() => setMessage(""), 4000));
   };
 
   return (

@@ -62,7 +62,7 @@ export default function MarketsPage() {
   const [selectedSymbol, setSelectedSymbol] = useState("BTCUSDT");
   const [candleData, setCandleData] = useState([]);
   const [chartLoading, setChartLoading] = useState(false);
-  const [interval, setInterval] = useState("1h");
+  const [chartInterval, setChartInterval] = useState("1h");
   const [showAllPrices, setShowAllPrices] = useState(false);
 
   const handlePriceUpdate = (payload) => {
@@ -152,7 +152,7 @@ export default function MarketsPage() {
 
       setChartLoading(true);
       try {
-        const nextCandles = await fetchCandlestickData(selectedSymbol, interval, 120);
+        const nextCandles = await fetchCandlestickData(selectedSymbol, chartInterval, 120);
         setCandleData(nextCandles);
       } catch {
         setCandleData([]);
@@ -162,7 +162,7 @@ export default function MarketsPage() {
     };
 
     loadCandles();
-  }, [interval, selectedSymbol]);
+  }, [chartInterval, selectedSymbol]);
 
   const selectedMarket = prices.find((price) => price.symbol === selectedSymbol);
   const marketStats = selectedMarket ? [
@@ -203,8 +203,8 @@ export default function MarketsPage() {
           title="Market Pulse"
           description="Live charting powered by the NexTradeX backend, tuned for paper trading flows and ready for a production-grade trading shell."
           symbol={selectedSymbol}
-          interval={interval}
-          onIntervalChange={setInterval}
+          interval={chartInterval}
+          onIntervalChange={setChartInterval}
           loading={chartLoading}
           data={candleData}
           status={{ label: connected ? "Live feed" : "Snapshot", tone: connected ? "active" : "neutral" }}
@@ -310,7 +310,7 @@ export default function MarketsPage() {
                             }`}>
                             <div className="flex items-center justify-end gap-1.5">
                               <span>{isUp ? "▲" : "▼"}</span>
-                              <span>{isUp ? "+" : ""}{formatPercent(price.percentChange24h)}</span>
+                              <span>{formatPercent(price.percentChange24h)}</span>
                             </div>
                           </td>
                           <td className="py-4 px-6 text-right font-mono text-xs text-muted">

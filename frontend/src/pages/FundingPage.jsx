@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { PageTransition } from "../components/ui/PageTransition";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -20,6 +20,9 @@ export default function FundingPage() {
   });
   const [message, setMessage] = useState("");
 
+  const timeoutsRef = useRef([]);
+  useEffect(() => () => timeoutsRef.current.forEach(clearTimeout), []);
+
   const handleTransfer = (e) => {
     e.preventDefault();
     if (!transferForm.amount || Number(transferForm.amount) <= 0) return;
@@ -37,7 +40,7 @@ export default function FundingPage() {
     setTransfers([newTransfer, ...transfers]);
     setMessage(`Transferred ${transferForm.amount} ${transferForm.symbol} from ${transferForm.from} to ${transferForm.to}!`);
     setTransferForm({ ...transferForm, amount: "" });
-    setTimeout(() => setMessage(""), 4000);
+    timeoutsRef.current.push(setTimeout(() => setMessage(""), 4000));
   };
 
   return (

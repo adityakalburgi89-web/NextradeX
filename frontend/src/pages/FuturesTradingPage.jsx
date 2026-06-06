@@ -142,7 +142,7 @@ export default function FuturesTradingPage() {
 
     if (Array.isArray(data)) {
       update = data.find((p) => p.symbol.toUpperCase() === currentSymbol);
-    } else if (data && data.symbol.toUpperCase() === currentSymbol) {
+    } else if (data && data?.symbol?.toUpperCase() === currentSymbol) {
       update = data;
     }
 

@@ -57,7 +57,8 @@ public class OptionsController {
             @PathVariable Long contractId,
             Authentication authentication) {
         try {
-            optionsService.settleOption(contractId);
+            Long userId = jwtService.extractUserIdFromAuthentication(authentication);
+            optionsService.settleOption(userId, contractId);
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Option settled successfully", null));
         } catch (Exception e) {
