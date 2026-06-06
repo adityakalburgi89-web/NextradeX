@@ -39,14 +39,14 @@ public class JwtFilter extends OncePerRequestFilter {
             String jwt = extractTokenFromRequest(request);
             String requestPath = request.getRequestURI();
             
-            // ✅ DEBUG: Log token extraction
+            // DEBUG: Log token extraction
             if (jwt != null) {
                 log.debug("[JwtFilter] Token found in request for path: {}", requestPath);
             } else {
                 log.debug("[JwtFilter] No token found for path: {}", requestPath);
             }
             
-            // ✅ FIX #1: Only process if token exists (always override session/OAuth2 authentication with JWT)
+            // FIX #1: Only process if token exists (always override session/OAuth2 authentication with JWT)
             if (jwt != null) {
                 try {
                     String username = jwtService.extractUsername(jwt);
@@ -54,12 +54,12 @@ public class JwtFilter extends OncePerRequestFilter {
                     
                     log.debug("[JwtFilter] Extracted username: {}, userId: {} from token", username, userId);
                     
-                    // ✅ FIX #2: Load user details
+                    // FIX #2: Load user details
                     UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
                     
-                    // ✅ FIX #3: Validate token
+                    // FIX #3: Validate token
                     if (jwtService.isTokenValid(jwt, userDetails)) {
-                        // ✅ FIX #4: Create and set authentication with userId
+                        // FIX #4: Create and set authentication with userId
                         JwtAuthenticationToken authToken = 
                             new JwtAuthenticationToken(
                                 username, userId, jwt, userDetails.getAuthorities());
@@ -68,22 +68,22 @@ public class JwtFilter extends OncePerRequestFilter {
                         
                         SecurityContextHolder.getContext().setAuthentication(authToken);
                         
-                        log.debug("[JwtFilter] ✅ JWT Token valid. Authentication set for user: {} (ID: {})", 
+                        log.debug("[JwtFilter] JWT Token valid. Authentication set for user: {} (ID: {})", 
                             username, userId);
                     } else {
-                        log.warn("[JwtFilter] ❌ JWT Token validation failed for user: {}", username);
+                        log.warn("[JwtFilter] JWT Token validation failed for user: {}", username);
                     }
                 } catch (Exception e) {
-                    log.error("[JwtFilter] ❌ Error processing JWT token: {}", e.getMessage());
+                    log.error("[JwtFilter] Error processing JWT token: {}", e.getMessage());
                     // Continue filter chain even if JWT processing fails
                     // Spring Security will handle the 401 if authentication is required
                 }
             }
         } catch (Exception e) {
-            log.error("[JwtFilter] ❌ Unexpected error in JWT filter: {}", e.getMessage());
+            log.error("[JwtFilter] Unexpected error in JWT filter: {}", e.getMessage());
         }
         
-        // ✅ FIX #5: Continue filter chain regardless of JWT processing result
+        // FIX #5: Continue filter chain regardless of JWT processing result
         filterChain.doFilter(request, response);
     }
     

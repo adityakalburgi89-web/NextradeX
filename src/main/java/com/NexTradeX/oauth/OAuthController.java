@@ -43,7 +43,7 @@ public class OAuthController {
             Authentication authentication,
             @RequestBody Map<String, String> profileData) {
         try {
-            // ✅ FIX #1: Use Spring Security Authentication object (JWT filter populates this)
+            // FIX #1: Use Spring Security Authentication object (JWT filter populates this)
             if (authentication == null || !authentication.isAuthenticated() || 
                 authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
                 log.warn("complete-profile: Authentication is null, not authenticated, or anonymous");
@@ -51,7 +51,7 @@ public class OAuthController {
                         .body(new ApiResponse<>(401, "User is not authenticated. JWT token missing or invalid.", null));
             }
             
-            // ✅ FIX #2: Extract userId from JWT token stored in Authentication
+            // FIX #2: Extract userId from JWT token stored in Authentication
             Long userId = null;
             if (authentication instanceof JwtAuthenticationToken) {
                 userId = ((JwtAuthenticationToken) authentication).getUserId();
@@ -84,13 +84,13 @@ public class OAuthController {
             String firstName = profileData.get("firstName");
             String lastName = profileData.get("lastName");
             
-            // ✅ FIX #3: Validate required fields
+            // FIX #3: Validate required fields
             if (usernameVal == null || usernameVal.isBlank()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(new ApiResponse<>(400, "Username is required", null));
             }
             
-            // ✅ FIX #4: Update user profile
+            // FIX #4: Update user profile
             User user = userService.updateProfileSetup(
                     userId,
                     usernameVal,
@@ -100,7 +100,7 @@ public class OAuthController {
             
             log.info("complete-profile: Profile setup completed for user: {}", user.getUsername());
             
-            // ✅ FIX #5: Generate new token with updated username
+            // FIX #5: Generate new token with updated username
             String newToken = jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
             
             AuthResponse authResponse = AuthResponse.builder()

@@ -56,7 +56,7 @@ public class BinanceService {
 
     public synchronized void triggerGlobalCooldown() {
         globalCooldownUntil = System.currentTimeMillis() + GLOBAL_COOLDOWN_MS;
-        log.warn("[Binance] 🚫 Global ban protection cooldown activated for 5 minutes (until {}).", new java.util.Date(globalCooldownUntil));
+        log.warn("[Binance] Global ban protection cooldown activated for 5 minutes (until {}).", new java.util.Date(globalCooldownUntil));
     }
 
     public BigDecimal getPrice(String symbol) {
@@ -95,29 +95,29 @@ public class BinanceService {
     public Map<String, Object> getTicker24h(String symbol) {
         String sym = symbol.toUpperCase();
         if (!checkAndRecordTickerFetch(sym)) {
-            log.debug("[Binance] ⏳ Fetch ticker for {} is on cooldown. Returning null to protect API limit.", sym);
+            log.debug("[Binance] Fetch ticker for {} is on cooldown. Returning null to protect API limit.", sym);
             return null;
         }
         
         try {
             String url = BASE_URL + "/api/v3/ticker/24hr?symbol=" + sym;
-            log.info("[Binance] 🌐 Fetching 24h ticker for {} from: {}", sym, url);
+            log.info("[Binance] Fetching 24h ticker for {} from: {}", sym, url);
             @SuppressWarnings("unchecked")
             Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
             if (response != null) {
-                log.info("[Binance] ✅ Successfully fetched ticker for {}. Last Price: {}", sym, response.get("lastPrice"));
+                log.info("[Binance] Successfully fetched ticker for {}. Last Price: {}", sym, response.get("lastPrice"));
             } else {
-                log.warn("[Binance] ⚠️ Received empty response for {}", sym);
+                log.warn("[Binance] Received empty response for {}", sym);
             }
             return response;
         } catch (RestClientResponseException e) {
-            log.error("[Binance] ❌ HTTP error fetching 24h ticker for {}: Status={}, Body={}", sym, e.getStatusCode(), e.getResponseBodyAsString());
+            log.error("[Binance] HTTP error fetching 24h ticker for {}: Status={}, Body={}", sym, e.getStatusCode(), e.getResponseBodyAsString());
             if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
                 triggerGlobalCooldown();
             }
             return null;
         } catch (Exception e) {
-            log.error("[Binance] ❌ Failed to fetch 24h ticker for {}: {}", sym, e.getMessage());
+            log.error("[Binance] Failed to fetch 24h ticker for {}: {}", sym, e.getMessage());
             return null;
         }
     }
@@ -125,15 +125,15 @@ public class BinanceService {
     public List<List<Object>> getKlines(String symbol, String interval, int limit) {
         try {
             String url = BASE_URL + "/api/v3/klines?symbol=" + symbol.toUpperCase() + "&interval=" + interval + "&limit=" + limit;
-            log.info("[Binance] 📊 Fetching klines for {} from: {}", symbol, url);
+            log.info("[Binance] Fetching klines for {} from: {}", symbol, url);
             @SuppressWarnings("unchecked")
             List<List<Object>> response = restClient.get().uri(url).retrieve().body(List.class);
             if (response != null) {
-                log.info("[Binance] ✅ Successfully fetched {} klines for {}", response.size(), symbol);
+                log.info("[Binance] Successfully fetched {} klines for {}", response.size(), symbol);
             }
             return response;
         } catch (Exception e) {
-            log.error("[Binance] ❌ Failed to fetch klines for {}: {}", symbol, e.getMessage());
+            log.error("[Binance] Failed to fetch klines for {}: {}", symbol, e.getMessage());
             return null;
         }
     }

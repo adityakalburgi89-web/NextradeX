@@ -73,7 +73,7 @@ public class MarketService {
                 // If it is stale, check if we are allowed to fetch from the REST API.
                 // If the REST API is on cooldown, return the stale cached price directly.
                 if (!binanceService.isTickerFetchAllowed(normalizedSymbol)) {
-                    log.debug("[MarketService] ⏳ Ticker fetch for {} is on cooldown. Returning stale cached DB price.", normalizedSymbol);
+                    log.debug("[MarketService] Ticker fetch for {} is on cooldown. Returning stale cached DB price.", normalizedSymbol);
                     return cached;
                 }
             }
@@ -128,7 +128,7 @@ public class MarketService {
                         log.warn("Failed to sync price for {}: {}", price.getSymbol(), e.getMessage());
                     }
                 } else {
-                    log.debug("[MarketService] ⏳ Ticker sync for {} skipped (on cooldown)", price.getSymbol());
+                    log.debug("[MarketService] Ticker sync for {} skipped (on cooldown)", price.getSymbol());
                 }
             }
         }
@@ -197,7 +197,7 @@ public class MarketService {
                     log.warn("Failed to sync price for {}: {}", price.getSymbol(), e.getMessage());
                 }
             } else {
-                log.debug("[MarketService] ⏳ Ticker sync for {} skipped (on cooldown)", price.getSymbol());
+                log.debug("[MarketService] Ticker sync for {} skipped (on cooldown)", price.getSymbol());
             }
         }
 
@@ -254,10 +254,10 @@ public class MarketService {
         if (now - lastWrite >= DB_WRITE_DEBOUNCE_MS) {
             lastDbWriteTimes.put(normalizedSymbol, now);
             CryptoPrice saved = cryptoPriceRepository.save(price);
-            log.info("[MarketService] 💾 Saved price update to DB for {}: {}", normalizedSymbol, currentPrice);
+            log.info("[MarketService] Saved price update to DB for {}: {}", normalizedSymbol, currentPrice);
             return saved;
         } else {
-            log.trace("[MarketService] ⏳ Debounced DB write for {} (last write {} ms ago)", normalizedSymbol, (now - lastWrite));
+            log.trace("[MarketService] Debounced DB write for {} (last write {} ms ago)", normalizedSymbol, (now - lastWrite));
             return price;
         }
     }

@@ -101,14 +101,14 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // ✅ FIX #1: Explicitly set allowed origins (not wildcard with credentials)
+        // FIX #1: Explicitly set allowed origins (not wildcard with credentials)
         String[] allowedOriginArray = corsAllowedOrigins.split(",");
         List<String> allowedOrigins = Arrays.stream(allowedOriginArray)
             .map(String::trim)
             .toList();
         configuration.setAllowedOrigins(allowedOrigins);
         
-        // ✅ FIX #2: Allow Authorization header explicitly for CORS preflight
+        // FIX #2: Allow Authorization header explicitly for CORS preflight
         configuration.setAllowedHeaders(Arrays.asList(
             "Content-Type", 
             "Authorization", 
@@ -116,7 +116,7 @@ public class SecurityConfig {
             "X-Requested-With"
         ));
         
-        // ✅ FIX #3: Allow all HTTP methods
+        // FIX #3: Allow all HTTP methods
         configuration.setAllowedMethods(Arrays.asList(
             HttpMethod.GET.name(),
             HttpMethod.POST.name(),
@@ -126,13 +126,13 @@ public class SecurityConfig {
             HttpMethod.OPTIONS.name()
         ));
         
-        // ✅ FIX #4: Enable credentials for Authorization header
+        // FIX #4: Enable credentials for Authorization header
         configuration.setAllowCredentials(true);
         
-        // ✅ FIX #5: Cache preflight for 1 hour
+        // FIX #5: Cache preflight for 1 hour
         configuration.setMaxAge(3600L);
         
-        // ✅ FIX #6: Expose Authorization and custom headers in response
+        // FIX #6: Expose Authorization and custom headers in response
         configuration.setExposedHeaders(Arrays.asList(
             "Authorization",
             "Content-Type"

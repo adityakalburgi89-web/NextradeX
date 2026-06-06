@@ -24,7 +24,7 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<UserProfileResponse>> getProfile(Authentication authentication) {
-        // ✅ DEBUG ENDPOINT: Check Authentication object
+        // DEBUG ENDPOINT: Check Authentication object
         log.info("[DEBUG] /user/profile - Authentication type: {}",
                 authentication != null ? authentication.getClass().getSimpleName() : "null");
         log.info("[DEBUG] /user/profile - Is authenticated: {}",

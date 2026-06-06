@@ -15,7 +15,7 @@ export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || DEFAULT_API_BA
 
 export function setAuthToken(token) {
   localStorage.setItem("nextradex_token", token);
-  console.log("[API] 📝 Token stored in localStorage");
+  console.log("[API] Token stored in localStorage");
 }
 
 export function getAuthToken() {
@@ -24,7 +24,7 @@ export function getAuthToken() {
 
 export function clearAuthToken() {
   localStorage.removeItem("nextradex_token");
-  console.log("[API] 🗑️ Token cleared from localStorage");
+  console.log("[API] Token cleared from localStorage");
 }
 
 export function hasAuthToken() {
@@ -36,9 +36,9 @@ function authHeaders() {
   const headers = { "Content-Type": "application/json" };
   if (token) {
     headers.Authorization = `Bearer ${token}`;
-    console.log("[API] 🔐 Authorization header set for request");
+    console.log("[API] Authorization header set for request");
   } else {
-    console.log("[API] ⚠️ No token found for Authorization header");
+    console.log("[API] No token found for Authorization header");
   }
   return headers;
 }
@@ -66,11 +66,11 @@ async function handleResponse(res) {
 
   if (!res.ok) {
     const message = data?.message || data?.error || "Request failed";
-    console.error("[API] ❌ Response error:", message, "Status:", res.status);
+    console.error("[API] Response error:", message, "Status:", res.status);
     throw new ApiError(message, res.status, data);
   }
 
-  console.log("[API] ✅ Response received successfully");
+  console.log("[API] Response received successfully");
   return data;
 }
 
@@ -87,12 +87,12 @@ function toQueryString(params) {
   return query ? `?${query}` : "";
 }
 
-// ✅ FIX: Create fetch options with credentials for CORS
+// FIX: Create fetch options with credentials for CORS
 function createFetchOptions(method = "GET", body = null, headers = {}) {
   const options = {
     method,
     headers,
-    // ✅ FIX #1: Include credentials to send Authorization header with CORS requests
+    // FIX #1: Include credentials to send Authorization header with CORS requests
     credentials: "include",
   };
   if (body) {

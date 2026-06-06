@@ -68,13 +68,13 @@ public class MarketWebSocketController {
             marketService.syncMarketPrices();
             List<CryptoPrice> prices = marketService.getAllPrices();
             if (!prices.isEmpty()) {
-                log.debug("[WS] 🚀 Broadcasting prices for {} symbols to /topic/prices", prices.size());
+                log.debug("[WS] Broadcasting prices for {} symbols to /topic/prices", prices.size());
                 messagingTemplate.convertAndSend("/topic/prices", prices);
             } else {
-                log.warn("[WS] ⚠️ No prices to broadcast");
+                log.warn("[WS] No prices to broadcast");
             }
         } catch (Exception e) {
-            log.error("[WS] ❌ Scheduled price broadcast failed: {}", e.getMessage());
+            log.error("[WS] Scheduled price broadcast failed: {}", e.getMessage());
         }
     }
 }
