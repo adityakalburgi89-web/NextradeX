@@ -64,6 +64,9 @@ export default function MarketsPage() {
   const [chartLoading, setChartLoading] = useState(false);
   const [chartInterval, setChartInterval] = useState("1h");
   const [showAllPrices, setShowAllPrices] = useState(false);
+  const [activeTab, setActiveTab] = useState("ALL"); // ALL | GAINERS | LOSERS | HOT
+  const [sortKey, setSortKey] = useState("volume24h"); // symbol | currentPrice | percentChange24h | volume24h
+  const [sortDir, setSortDir] = useState("desc"); // asc | desc
 
   const handlePriceUpdate = (payload) => {
     let update = null;
@@ -129,9 +132,43 @@ export default function MarketsPage() {
     load();
   }, []);
 
-  const filteredPrices = useMemo(() => prices.filter((price) =>
-    !query ? true : price.symbol?.toLowerCase().includes(query.toLowerCase())
-  ), [prices, query]);
+  const filteredPrices = useMemo(() => {
+    const searched = prices.filter((price) =>
+      !query ? true : price.symbol?.toLowerCase().includes(query.toLowerCase())
+    );
+
+    const tabbed = searched.filter((price) => {
+      const change = Number(price.percentChange24h) || 0;
+      if (activeTab === "GAINERS") return change > 0;
+      if (activeTab === "LOSERS") return change < 0;
+      if (activeTab === "HOT") return Math.abs(change) >= 3;
+      return true;
+    });
+
+    const sorted = [...tabbed].sort((a, b) => {
+      let av;
+      let bv;
+      if (sortKey === "symbol") {
+        av = (a.symbol || "").toUpperCase();
+        bv = (b.symbol || "").toUpperCase();
+        return sortDir === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
+      }
+      av = Number(a[sortKey]) || 0;
+      bv = Number(b[sortKey]) || 0;
+      return sortDir === "asc" ? av - bv : bv - av;
+    });
+
+    return sorted;
+  }, [prices, query, activeTab, sortKey, sortDir]);
+
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+  };
 
   useEffect(() => {
     if (!filteredPrices.length) {
@@ -211,36 +248,57 @@ export default function MarketsPage() {
           stats={marketStats}
         />
 
-        {/* Page Header and search */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <h1 className="font-heading text-3xl font-bold tracking-tight text-white">Markets</h1>
-            <p className="text-sm leading-relaxed text-muted">
-              Browse supported pairs, inspect simulated depth, and choose the market you want to route into the trading workspace.
-            </p>
-          </div>
-
-          <div className="w-full sm:w-72">
-            <Input
-              placeholder="Filter by symbol (e.g. BTC)"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              className="bg-surface-card-dark border-hairline-on-dark text-white rounded-lg w-full"
-            />
-          </div>
+        {/* Page Header */}
+        <div>
+          <h1 className="font-heading text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+            Markets
+            <span className="text-[10px] font-mono font-bold bg-primary/15 text-primary px-1.5 py-0.5 rounded uppercase tracking-wider">
+              {connected ? "Live" : "Snapshot"}
+            </span>
+          </h1>
+          <p className="text-sm leading-relaxed text-muted">
+            Browse supported pairs, inspect simulated depth, and route any market straight into the trading workspace.
+          </p>
         </div>
 
         {/* High-density price table board */}
         <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl shadow-elevation-md overflow-hidden">
-          <CardHeader className="border-b border-hairline-on-dark bg-canvas-dark/20 py-4 px-6 flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-lg font-bold text-white">Price Board</CardTitle>
-              <CardDescription className="mt-1 text-xs text-muted">
-                Streaming symbol prices with instant selection, smoother hover states, and backend-driven pricing.
-              </CardDescription>
+          {/* Filter tabs + search toolbar */}
+          <CardHeader className="border-b border-hairline-on-dark bg-canvas-dark/20 py-3 px-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-1 font-heading text-xs font-bold uppercase tracking-wider">
+              {[
+                { id: "ALL", label: "All" },
+                { id: "GAINERS", label: "Gainers" },
+                { id: "LOSERS", label: "Losers" },
+                { id: "HOT", label: "Hot" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-3 py-1.5 rounded-md transition-colors ${
+                    activeTab === tab.id
+                      ? "bg-primary/15 text-primary"
+                      : "text-muted hover:text-white"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
-            <div className={`status-badge text-[10px] font-bold ${connected ? "status-badge--active" : "status-badge--neutral"}`}>
-              {connected ? "LIVE" : "PAUSED"}
+
+            <div className="flex items-center gap-3">
+              <div className={`status-badge text-[10px] font-bold ${connected ? "status-badge--active" : "status-badge--neutral"}`}>
+                {connected ? "LIVE" : "PAUSED"}
+              </div>
+              <div className="w-full sm:w-64">
+                <Input
+                  placeholder="Search pair (e.g. BTC)"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  className="bg-canvas-dark border-hairline-on-dark text-white font-mono text-sm rounded-lg w-full"
+                />
+              </div>
             </div>
           </CardHeader>
 
@@ -261,12 +319,32 @@ export default function MarketsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-hairline-on-dark text-[11px] font-bold text-muted uppercase tracking-wider font-mono bg-canvas-dark/10">
-                      <th className="py-4 px-6">Asset Pair</th>
-                      <th className="py-4 px-6 text-right">Last Price</th>
-                      <th className="py-4 px-6 text-right">24H Change</th>
+                    <tr className="border-b border-hairline-on-dark text-[11px] font-bold text-muted uppercase tracking-wider font-mono bg-canvas-dark/10 select-none">
+                      <th className="py-4 px-6">
+                        <button type="button" onClick={() => handleSort("symbol")} className="inline-flex items-center gap-1 hover:text-white transition-colors uppercase tracking-wider">
+                          Asset Pair
+                          <span className="text-[8px]">{sortKey === "symbol" ? (sortDir === "asc" ? "▲" : "▼") : "↕"}</span>
+                        </button>
+                      </th>
+                      <th className="py-4 px-6 text-right">
+                        <button type="button" onClick={() => handleSort("currentPrice")} className="inline-flex items-center gap-1 hover:text-white transition-colors uppercase tracking-wider">
+                          Last Price
+                          <span className="text-[8px]">{sortKey === "currentPrice" ? (sortDir === "asc" ? "▲" : "▼") : "↕"}</span>
+                        </button>
+                      </th>
+                      <th className="py-4 px-6 text-right">
+                        <button type="button" onClick={() => handleSort("percentChange24h")} className="inline-flex items-center gap-1 hover:text-white transition-colors uppercase tracking-wider">
+                          24H Change
+                          <span className="text-[8px]">{sortKey === "percentChange24h" ? (sortDir === "asc" ? "▲" : "▼") : "↕"}</span>
+                        </button>
+                      </th>
                       <th className="py-4 px-6 text-right">24H High / Low</th>
-                      <th className="py-4 px-6 text-right">24H Volume</th>
+                      <th className="py-4 px-6 text-right">
+                        <button type="button" onClick={() => handleSort("volume24h")} className="inline-flex items-center gap-1 hover:text-white transition-colors uppercase tracking-wider">
+                          24H Volume
+                          <span className="text-[8px]">{sortKey === "volume24h" ? (sortDir === "asc" ? "▲" : "▼") : "↕"}</span>
+                        </button>
+                      </th>
                       <th className="py-4 px-6 text-center">Action</th>
                     </tr>
                   </thead>

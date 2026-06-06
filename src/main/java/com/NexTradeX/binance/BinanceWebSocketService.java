@@ -2,6 +2,7 @@ package com.NexTradeX.binance;
 
 import java.math.BigDecimal;
 import java.net.URI;
+import java.time.LocalDateTime;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -13,6 +14,8 @@ import com.NexTradeX.market.CryptoPrice;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.annotation.PreDestroy;
+
 @Service
 public class BinanceWebSocketService {
 
@@ -21,6 +24,7 @@ public class BinanceWebSocketService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private WebSocketClient client;
     private boolean reconnecting = false;
+    private volatile boolean shuttingDown = false;
 
     public BinanceWebSocketService(
             SimpMessagingTemplate messagingTemplate,
@@ -57,6 +61,9 @@ public class BinanceWebSocketService {
 
             @Override
             public void onMessage(String message) {
+                if (shuttingDown) {
+                    return;
+                }
                 try {
                     JsonNode root = objectMapper.readTree(message);
                     JsonNode data = root.get("data");
@@ -70,21 +77,31 @@ public class BinanceWebSocketService {
                         BigDecimal percentChange = new BigDecimal(data.get("P").asText());
                         BigDecimal volume = new BigDecimal(data.get("v").asText());
 
-                        // Update database
-                        CryptoPrice updatedPrice = marketService.updateOrCreatePrice(
-                            symbol,
-                            price,
-                            high,
-                            low,
-                            open,
-                            priceChange,
-                            percentChange,
-                            volume,
-                            null
-                        );
+                        // Broadcast the live tick FIRST so clients always receive real-time
+                        // prices even if the database is temporarily unavailable (e.g. during
+                        // shutdown or a connection-pool hiccup).
+                        CryptoPrice tick = CryptoPrice.builder()
+                                .symbol(symbol)
+                                .currentPrice(price)
+                                .highPrice(high)
+                                .lowPrice(low)
+                                .openPrice(open)
+                                .priceChange24h(priceChange)
+                                .percentChange24h(percentChange)
+                                .volume24h(volume)
+                                .updatedAt(LocalDateTime.now())
+                                .build();
+                        messagingTemplate.convertAndSend("/topic/prices", tick);
 
-                        // Broadcast updated price
-                        messagingTemplate.convertAndSend("/topic/prices", updatedPrice);
+                        // Best-effort persistence (debounced inside MarketService). A failure
+                        // here must never stop the live stream above.
+                        try {
+                            marketService.updateOrCreatePrice(
+                                symbol, price, high, low, open, priceChange, percentChange, volume, null
+                            );
+                        } catch (Exception persistEx) {
+                            // DB unavailable (often during shutdown) — streaming still works.
+                        }
                     }
                 } catch (Exception e) {
                     System.err.println("[Binance WS] Error parsing stream message: " + e.getMessage());
@@ -107,8 +124,20 @@ public class BinanceWebSocketService {
         client.connect();
     }
 
+    @PreDestroy
+    public synchronized void shutdown() {
+        shuttingDown = true;
+        if (client != null) {
+            try {
+                client.close();
+            } catch (Exception ignored) {
+                // best effort
+            }
+        }
+    }
+
     private synchronized void triggerReconnect() {
-        if (reconnecting) {
+        if (shuttingDown || reconnecting) {
             return;
         }
         reconnecting = true;

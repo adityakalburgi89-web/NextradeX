@@ -86,8 +86,23 @@ public class SpotTradingService {
         if (order.getStatus() != OrderStatus.OPEN) {
             throw new InvalidOrderException("Order is not open");
         }
-        
+
+        // Market-type triggered orders (STOP_MARKET / TAKE_PROFIT_MARKET) carry no
+        // limit price, so resolve the live market price at execution time. This also
+        // guards against a null/zero stored price which previously caused a NPE on
+        // BigDecimal.multiply during scheduled order matching.
         BigDecimal executionPrice = order.getPrice();
+        if (executionPrice == null || executionPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            var marketPrice = marketService.getPrice(order.getSymbol());
+            executionPrice = marketPrice != null ? marketPrice.getCurrentPrice() : null;
+        }
+        if (executionPrice == null || executionPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            order.setStatus(OrderStatus.REJECTED);
+            order.setRemarks("No valid market price available for execution");
+            orderRepository.save(order);
+            throw new InvalidOrderException("No valid market price available for execution");
+        }
+
         BigDecimal totalCost = executionPrice.multiply(order.getQuantity());
         BigDecimal commission = totalCost.multiply(COMMISSION_RATE);
         BigDecimal totalWithCommission = totalCost.add(commission);

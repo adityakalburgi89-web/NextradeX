@@ -9,29 +9,19 @@ import {
 } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/Card";
 import { PageTransition } from "../components/ui/PageTransition";
-import { formatCurrency, formatPercent } from "../lib/utils";
-import { 
-  ArrowUpRight, 
-  ArrowDownLeft, 
-  RefreshCw, 
-  Search, 
-  Copy, 
-  Check, 
-  PieChart, 
-  TrendingUp, 
-  Wallet as WalletIcon, 
-  ChevronRight,
+import { formatCurrency } from "../lib/utils";
+import {
+  RefreshCw,
+  Search,
+  TrendingUp,
+  Wallet as WalletIcon,
   ShieldCheck,
   PlusCircle,
-  FileText,
   X,
   Coins,
   Activity,
-  Info,
-  Layers,
   Sparkles
 } from "lucide-react";
-import { Button } from "../components/ui/Button";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function WalletsPage() {
@@ -247,31 +237,64 @@ export default function WalletsPage() {
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8 bg-canvas-dark text-white min-h-screen font-body relative">
         
         {/* PAGE HEADER */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-hairline-on-dark pb-6">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight font-heading flex items-center gap-2">
-              <WalletIcon className="text-primary" size={26} />
-              Wallet Center
-            </h1>
-            <p className="text-xs text-muted mt-1 leading-relaxed">Redesigned multi-wallet manager: audit simulated equities, allocate holdings, or complete internal routes.</p>
+        <div className="flex flex-col gap-4 border-b border-hairline-on-dark pb-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight font-heading flex items-center gap-2">
+                <WalletIcon className="text-primary" size={26} />
+                Wallet Center
+              </h1>
+              <p className="text-xs text-muted mt-1 leading-relaxed">Redesigned multi-wallet manager: audit simulated equities, allocate holdings, or complete internal routes.</p>
+            </div>
+
+            <div className="flex flex-wrap gap-2 w-full md:w-auto">
+              <button
+                onClick={() => setDepositModal({ open: true, walletType: "SPOT", amount: "" })}
+                className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4.5 py-2.5 text-xs font-bold font-mono tracking-wide rounded bg-primary text-on-primary hover:bg-[#f0b90b] transition-all shadow-glow-primary"
+              >
+                <PlusCircle size={14} />
+                ADD FUNDS
+              </button>
+              <button
+                onClick={() => setTransferModal({ open: true, from: "SPOT", to: "FUTURES", amount: "" })}
+                className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4.5 py-2.5 text-xs font-bold font-mono tracking-wide rounded border border-hairline-on-dark hover:bg-white/[0.03] text-white hover:border-primary/20 transition-all"
+              >
+                <RefreshCw size={14} />
+                TRANSFER
+              </button>
+
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 w-full md:w-auto">
-            <button 
-              onClick={() => setDepositModal({ open: true, walletType: "SPOT", amount: "" })}
-              className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4.5 py-2.5 text-xs font-bold font-mono tracking-wide rounded bg-primary text-on-primary hover:bg-[#f0b90b] transition-all shadow-glow-primary"
-            >
-              <PlusCircle size={14} />
-              ADD FUNDS
-            </button>
-            <button 
-              onClick={() => setTransferModal({ open: true, from: "SPOT", to: "FUTURES", amount: "" })}
-              className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4.5 py-2.5 text-xs font-bold font-mono tracking-wide rounded border border-hairline-on-dark hover:bg-white/[0.03] text-white hover:border-primary/20 transition-all"
-            >
-              <RefreshCw size={14} />
-              TRANSFER
-            </button>
-
+          {/* Total balance summary banner */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-surface-card-dark border border-hairline-on-dark rounded-xl p-5 shadow-elevation-md">
+            <div className="md:border-r border-hairline-on-dark md:pr-4">
+              <span className="font-mono text-[10px] text-muted uppercase tracking-widest block">Total Balance</span>
+              <span className="text-xl md:text-2xl font-extrabold font-mono text-white block mt-1">{formatCurrency(totalPortfolioValue)}</span>
+              <span className="text-[10px] text-muted-strong font-mono block mt-0.5">≈ BTC {(totalPortfolioValue / 68420).toFixed(5)}</span>
+            </div>
+            <div className="md:border-r border-hairline-on-dark md:px-4">
+              <span className="font-mono text-[10px] text-muted uppercase tracking-widest block">Spot Available</span>
+              <span className="text-xl md:text-2xl font-extrabold font-mono text-trading-up block mt-1">
+                {formatCurrency(spotWallet ? Number(spotWallet.availableBalance) : 0)}
+              </span>
+              <span className="text-[10px] text-muted-strong font-mono block mt-0.5">Ready to trade</span>
+            </div>
+            <div className="md:border-r border-hairline-on-dark md:px-4">
+              <span className="font-mono text-[10px] text-muted uppercase tracking-widest block">Futures PnL</span>
+              <span className={`text-xl md:text-2xl font-extrabold font-mono block mt-1 ${
+                (futuresWallet ? Number(futuresWallet.unrealizedPnL) : 0) >= 0 ? "text-trading-up" : "text-trading-down"
+              }`}>
+                {(futuresWallet ? Number(futuresWallet.unrealizedPnL) : 0) >= 0 ? "+" : ""}
+                {formatCurrency(futuresWallet ? Number(futuresWallet.unrealizedPnL) : 0)}
+              </span>
+              <span className="text-[10px] text-muted-strong font-mono block mt-0.5">Unrealized</span>
+            </div>
+            <div className="md:pl-4">
+              <span className="font-mono text-[10px] text-muted uppercase tracking-widest block">Open Positions</span>
+              <span className="text-xl md:text-2xl font-extrabold font-mono text-primary block mt-1">{futuresPositions.length}</span>
+              <span className="text-[10px] text-muted-strong font-mono block mt-0.5">Leveraged contracts</span>
+            </div>
           </div>
         </div>
 
@@ -529,6 +552,25 @@ export default function WalletsPage() {
                           {formatCurrency(marginWallet ? Number(marginWallet.balance) : 0)}
                         </span>
                         <span className="text-[9px] text-muted font-mono block">Locked: {formatCurrency(marginWallet ? Number(marginWallet.lockedFunds) : 0)}</span>
+                      </div>
+                    </div>
+
+                    {/* Options Card */}
+                    <div className="flex justify-between items-center bg-[#121218] border border-hairline-on-dark rounded-2xl p-4 hover:border-primary/10 transition-all shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-[#a370f7]/10 flex items-center justify-center text-[#a370f7]">
+                          <span className="text-xs font-extrabold font-mono">OP</span>
+                        </div>
+                        <div>
+                          <span className="text-xs font-bold block text-white">Options Wallet</span>
+                          <span className="text-[9px] text-muted font-mono uppercase">Vanilla Options</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs font-bold font-mono block">
+                          {formatCurrency(optionsWallet ? Number(optionsWallet.balance) : 0)}
+                        </span>
+                        <span className="text-[9px] text-muted font-mono block">Avail: {formatCurrency(optionsWallet ? Number(optionsWallet.availableBalance) : 0)}</span>
                       </div>
                     </div>
                   </div>

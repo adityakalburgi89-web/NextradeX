@@ -272,47 +272,60 @@ function HomePage() {
           {/* Subtle background ambient mesh (no heavy gradients as per elevation guidelines) */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/[0.05] blur-[160px] pointer-events-none z-0" />
           
-          <motion.div 
+          <motion.div
             className="max-w-7xl mx-auto px-6 relative z-10 w-full text-left"
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
           >
+            {/* Eyebrow badge */}
+            <motion.div
+              variants={fadeInUpSpring}
+              className="inline-flex items-center gap-2 px-3 py-1.5 mb-6 rounded-full border border-hairline-on-dark bg-surface-card-dark/60 backdrop-blur-sm"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-trading-up opacity-75 animate-ping" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-trading-up" />
+              </span>
+              <span className="font-mono text-[11px] uppercase tracking-widest text-muted font-semibold">
+                Live simulation engine
+              </span>
+            </motion.div>
 
             {/* Display Headline - Text Reveal */}
             <div className="overflow-hidden">
-              <motion.h1 
+              <motion.h1
                 variants={textReveal}
-                className="font-heading text-4xl sm:text-5xl md:text-[60px] lg:text-[72px] font-bold leading-[1.1] mb-6 tracking-tight"
+                className="font-heading text-4xl sm:text-5xl md:text-[60px] lg:text-[76px] font-bold leading-[1.05] mb-6 tracking-tight"
               >
-                TRADE WITH. <br />
-                <span className="text-primary">MATHEMATICAL PRECISION</span>
+                Trade with <br className="hidden sm:block" />
+                <span className="text-primary">mathematical precision</span>
               </motion.h1>
             </div>
 
             {/* Subtext */}
-            <motion.p 
+            <motion.p
               variants={{
                 hidden: { opacity: 0, y: 25 },
-                visible: { 
-                  opacity: 1, 
+                visible: {
+                  opacity: 1,
                   y: 0,
-                  transition: { duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.15 } 
+                  transition: { duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.15 }
                 }
               }}
               className="text-muted text-base md:text-lg max-w-2xl mb-10 leading-relaxed font-sans"
             >
-              Experience high-density simulated trading, real-time depth visualizations, and custom order matching. Zero risk, professional-grade tools.
+              High-density paper trading with real-time depth, live order matching, and professional-grade tools. Zero risk, full control.
             </motion.p>
 
             {/* Action Buttons */}
-            <motion.div 
+            <motion.div
               variants={{
                 hidden: { opacity: 0, y: 20 },
-                visible: { 
-                  opacity: 1, 
-                  y: 0, 
-                  transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 } 
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }
                 }
               }}
               className="flex flex-col sm:flex-row items-center gap-4 justify-start"
@@ -323,6 +336,22 @@ function HomePage() {
               <Button variant="outline" className="w-full sm:w-auto text-body hover:bg-surface-card-dark" asChild>
                 <Link to="/markets">View Markets</Link>
               </Button>
+            </motion.div>
+
+            {/* Quick trust line under CTAs */}
+            <motion.div
+              variants={fadeInUpSpring}
+              className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-8 text-xs font-sans text-muted"
+            >
+              <span className="inline-flex items-center gap-2">
+                <Shield size={14} className="text-primary" /> No real funds required
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <Zap size={14} className="text-primary" /> Instant mock balance
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <Activity size={14} className="text-primary" /> Real-time market data
+              </span>
             </motion.div>
           </motion.div>
         </section>
@@ -373,7 +402,7 @@ function HomePage() {
           >
             <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block font-semibold">Platform Metric</span>
             <div className="inline-flex items-center gap-2 select-none border border-hairline-on-dark bg-surface-card-dark/30 rounded-2xl px-8 py-6 backdrop-blur-md shadow-elevation-md">
-              <h2 className="font-mono text-5xl md:text-8xl font-bold tracking-wider text-primary leading-none">
+              <h2 className="font-mono text-5xl md:text-8xl font-bold tracking-tight text-primary leading-none tabular-nums">
                 <NumberFlow plugins={[continuous]} value={userCount} />
               </h2>
             </div>
@@ -456,51 +485,65 @@ function HomePage() {
               viewport={{ once: true, margin: "-100px" }}
               className="max-w-5xl mx-auto"
             >
-              <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden p-6 shadow-elevation-md">
+              <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md">
                 {/* Tab Header */}
-                <div className="flex items-center gap-2 border-b border-hairline-on-dark pb-4 mb-6">
-                  {Object.keys(marketTabs).map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveMarketTab(tab)}
-                      className={`px-4 py-2 text-xs font-semibold rounded-md transition-all duration-200 capitalize ${
-                        activeMarketTab === tab
-                          ? "bg-primary text-on-primary font-bold shadow-glow-primary"
-                          : "text-muted hover:text-white bg-transparent"
-                      }`}
-                    >
-                      {tab === "popular" ? "Popular Pairs" : tab === "new" ? "New Listings" : "Top Gainers"}
-                    </button>
-                  ))}
+                <div className="flex items-center justify-between gap-4 border-b border-hairline-on-dark px-5 sm:px-6 py-4">
+                  <div className="flex items-center gap-1.5">
+                    {Object.keys(marketTabs).map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setActiveMarketTab(tab)}
+                        className={`px-3.5 py-2 text-xs font-semibold rounded-md transition-all duration-200 whitespace-nowrap ${
+                          activeMarketTab === tab
+                            ? "bg-primary text-on-primary font-bold shadow-glow-primary"
+                            : "text-muted hover:text-white hover:bg-surface-elevated-dark/40 bg-transparent"
+                        }`}
+                      >
+                        {tab === "popular" ? "Popular" : tab === "new" ? "New Listings" : "Top Gainers"}
+                      </button>
+                    ))}
+                  </div>
+                  <Link
+                    to="/markets"
+                    className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold text-muted hover:text-primary transition-colors font-sans"
+                  >
+                    View all markets
+                    <ChevronDown size={14} className="-rotate-90" />
+                  </Link>
                 </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
-                    <thead className="bg-[#15191e] border-b border-hairline-on-dark font-heading text-white">
-                      <tr>
-                        <th className="px-6 py-4 font-semibold">Token Pair</th>
-                        <th className="px-6 py-4 font-semibold text-right">Last Price</th>
-                        <th className="px-6 py-4 font-semibold text-right">24h Change</th>
-                        <th className="px-6 py-4 font-semibold text-right">24h Volume</th>
-                        <th className="px-6 py-4 font-semibold text-center">Action</th>
+                    <thead className="border-b border-hairline-on-dark font-sans">
+                      <tr className="text-[11px] uppercase tracking-wider text-muted">
+                        <th className="px-5 sm:px-6 py-3 font-medium">Pair</th>
+                        <th className="px-5 sm:px-6 py-3 font-medium text-right">Last Price</th>
+                        <th className="px-5 sm:px-6 py-3 font-medium text-right">24h Change</th>
+                        <th className="px-5 sm:px-6 py-3 font-medium text-right hidden md:table-cell">24h Volume</th>
+                        <th className="px-5 sm:px-6 py-3 font-medium text-right">Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-hairline-on-dark font-mono text-muted">
+                    <tbody className="divide-y divide-hairline-on-dark font-mono">
                       {dynamicTabs[activeMarketTab].map((coin, index) => (
-                        <tr key={index} className="hover:bg-surface-elevated-dark/30 transition-colors duration-150 group">
-                          <td className="px-6 py-4 text-white font-semibold flex items-center gap-3">
-                            {renderCoinIcon(coin.pair)}
-                            <span className="group-hover:text-primary transition-colors">{coin.pair}</span>
+                        <tr key={index} className="hover:bg-surface-elevated-dark/40 transition-colors duration-150 group">
+                          <td className="px-5 sm:px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              {renderCoinIcon(coin.pair)}
+                              <div className="flex flex-col leading-tight">
+                                <span className="text-white font-semibold font-sans group-hover:text-primary transition-colors">
+                                  {coin.pair.split(" / ")[0]}
+                                  <span className="text-muted font-normal">/{coin.pair.split(" / ")[1]}</span>
+                                </span>
+                              </div>
+                            </div>
                           </td>
-                          <td className="px-6 py-4 text-right text-white font-medium">{coin.price}</td>
-                          <td className={`px-6 py-4 text-right font-medium ${coin.isUp ? "text-trading-up" : "text-trading-down"}`}>
-                            <span className="inline-flex items-center gap-1 justify-end">
-                              {coin.isUp ? "▲" : "▼"} {coin.change}
-                            </span>
+                          <td className="px-5 sm:px-6 py-4 text-right text-white font-medium tabular-nums">{coin.price}</td>
+                          <td className={`px-5 sm:px-6 py-4 text-right font-semibold tabular-nums ${coin.isUp ? "text-trading-up" : "text-trading-down"}`}>
+                            {coin.change}
                           </td>
-                          <td className="px-6 py-4 text-right">{coin.vol}</td>
-                          <td className="px-6 py-4 text-center">
-                            <Button size="sm" className="h-[28px] px-4 font-semibold text-xs text-on-primary bg-primary rounded-sm hover:bg-primary-active transition-all" asChild>
+                          <td className="px-5 sm:px-6 py-4 text-right text-muted tabular-nums hidden md:table-cell">{coin.vol}</td>
+                          <td className="px-5 sm:px-6 py-4 text-right">
+                            <Button size="sm" className="h-[30px] px-4 font-semibold text-xs text-on-primary bg-primary rounded-md hover:bg-primary-active transition-all opacity-90 group-hover:opacity-100" asChild>
                               <Link to={`/trade/spot?symbol=${coin.rawSymbol || "BTCUSDT"}`}>Trade</Link>
                             </Button>
                           </td>

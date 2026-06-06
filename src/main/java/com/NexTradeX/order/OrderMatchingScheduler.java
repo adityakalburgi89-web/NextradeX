@@ -29,7 +29,11 @@ public class OrderMatchingScheduler {
         log.debug("Matching {} open orders against current market prices", openOrders.size());
         for (Order order : openOrders) {
             try {
-                BigDecimal currentPrice = marketService.getPrice(order.getSymbol()).getCurrentPrice();
+                var priceData = marketService.getPrice(order.getSymbol());
+                if (priceData == null || priceData.getCurrentPrice() == null) {
+                    continue; // no price available yet; try again next cycle
+                }
+                BigDecimal currentPrice = priceData.getCurrentPrice();
                 boolean shouldTrigger = false;
 
                 if (order.getOrderType() == OrderType.LIMIT) {
