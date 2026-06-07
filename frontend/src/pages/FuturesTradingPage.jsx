@@ -8,6 +8,9 @@ import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
 import { TradingChartPanel } from "../components/ui/TradingChartPanel";
 import { OrderBook } from "../components/ui/OrderBook";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "../components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../components/ui/dialog";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { formatCurrency, formatPercent } from "../lib/utils";
 import { ArrowRightLeft, Info, HelpCircle, Lock, Trash2, Search, ChevronDown } from "lucide-react";
@@ -530,38 +533,43 @@ export default function FuturesTradingPage() {
               />
 
               {/* HIGH-FIDELITY POSITIONS AND BALANCES BOTTOM TAB GRID */}
-              <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md">
-                <div className="bg-canvas-dark/30 border-b border-hairline-on-dark px-4 flex items-center justify-between">
-                  <div className="flex gap-4 font-heading text-[10px] font-bold uppercase tracking-wider py-3 select-none">
-                    {["Positions", "Open Orders", "Order History", "Trade History", "Assets"].map((tab) => (
+              <Tabs value={activeBottomTab} onValueChange={setActiveBottomTab} className="w-full">
+                <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md">
+                  <div className="bg-canvas-dark/30 border-b border-hairline-on-dark px-4 flex items-center justify-between">
+                    <TabsList className="flex gap-4 bg-transparent border-0 p-0 h-auto rounded-none">
+                      {[
+                        { id: "POSITIONS", label: "Positions" },
+                        { id: "OPEN ORDERS", label: "Open Orders" },
+                        { id: "ORDER HISTORY", label: "Order History" },
+                        { id: "TRADE HISTORY", label: "Trade History" },
+                        { id: "ASSETS", label: "Assets" }
+                      ].map((tab) => (
+                        <TabsTrigger
+                          key={tab.id}
+                          value={tab.id}
+                          className="pb-3 pt-3 bg-transparent border-0 rounded-none relative font-heading text-[10px] font-bold uppercase tracking-wider text-muted hover:text-white data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:font-bold transition-all cursor-pointer"
+                        >
+                          {tab.label}{" "}
+                          {tab.id === "POSITIONS" ? `(${positions.length})` : "(0)"}
+                          {activeBottomTab === tab.id && (
+                            <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full" />
+                          )}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                    {activeBottomTab === "POSITIONS" && positions.length > 0 && (
                       <button
-                        key={tab}
                         type="button"
-                        onClick={() => setActiveBottomTab(tab.toUpperCase())}
-                        className={`pb-1.5 relative transition-colors ${
-                          activeBottomTab === tab.toUpperCase() ? "text-primary font-bold" : "text-muted hover:text-white"
-                        }`}
+                        onClick={handleCloseAllPositions}
+                        className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
                       >
-                        {tab} ({tab === "Positions" ? positions.length : 0})
-                        {activeBottomTab === tab.toUpperCase() && (
-                          <span className="absolute bottom-[-13px] left-0 right-0 h-[2px] bg-primary rounded-full" />
-                        )}
+                        <Trash2 size={12} />
+                        Close All
                       </button>
-                    ))}
+                    )}
                   </div>
-                  {activeBottomTab === "POSITIONS" && positions.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={handleCloseAllPositions}
-                      className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all flex items-center gap-1"
-                    >
-                      <Trash2 size={12} />
-                      Close All
-                    </button>
-                  )}
-                </div>
 
-                <CardContent className="p-0 min-h-[160px]">
+                  <CardContent className="p-0 min-h-[160px]">
                   {activeBottomTab === "POSITIONS" ? (
                     loadingPositions ? (
                       <div className="p-6 space-y-2">
@@ -676,6 +684,7 @@ export default function FuturesTradingPage() {
                   )}
                 </CardContent>
               </Card>
+            </Tabs>
             </div>
 
             {/* CENTER AREA: Order Book & Streaming Recent Trades (col-span-3) */}
@@ -759,10 +768,19 @@ export default function FuturesTradingPage() {
                     </select>
                   </div>
                   
-                  <span className="text-muted flex items-center gap-1">
-                    <Info size={11} className="text-primary" />
-                    Margin Mode
-                  </span>
+                  <TooltipProvider delayDuration={200}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-muted flex items-center gap-1 cursor-pointer hover:text-white transition-colors">
+                          <Info size={11} className="text-primary" />
+                          Margin Mode
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-surface-elevated-dark border border-hairline-on-dark text-xs p-2 text-white max-w-[200px] rounded-lg">
+                        Isolated restricts margin to a single position, while Cross shares margin across all positions to prevent liquidation.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
 
                 {/* Open / Close Order Tabs */}
@@ -877,17 +895,44 @@ export default function FuturesTradingPage() {
                   {/* Financials & Risks summary */}
                   <div className="border border-hairline-on-dark bg-canvas-dark/40 rounded-lg p-2.5 space-y-1.5 text-[10px] font-mono">
                     <div className="flex justify-between items-center text-muted">
-                      <span>Order Value Notional</span>
+                      <TooltipProvider delayDuration={200}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-pointer border-b border-dashed border-white/20 hover:text-white transition-colors">Order Value Notional</span>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-surface-elevated-dark border border-hairline-on-dark text-xs p-2 text-white max-w-[200px] rounded-lg">
+                            Total position size in USDT, calculated as Quantity × Mark Price.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       <span className="text-white font-semibold">
                         {formatCurrency(Number(quantity || 0) * (priceSnapshot?.currentPrice || 0))}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-muted">
-                      <span>Initial Margin Cost</span>
+                      <TooltipProvider delayDuration={200}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-pointer border-b border-dashed border-white/20 hover:text-white transition-colors">Initial Margin Cost</span>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-surface-elevated-dark border border-hairline-on-dark text-xs p-2 text-white max-w-[200px] rounded-lg">
+                            The minimum collateral required to open this leveraged position.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       <span className="text-primary font-bold">{formatCurrency(estimatedMargin)}</span>
                     </div>
                     <div className="flex justify-between items-center text-muted">
-                      <span>Liq. Price (Est)</span>
+                      <TooltipProvider delayDuration={200}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-pointer border-b border-dashed border-white/20 hover:text-white transition-colors">Liq. Price (Est)</span>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-surface-elevated-dark border border-hairline-on-dark text-xs p-2 text-white max-w-[200px] rounded-lg">
+                            The estimated price at which the position's margin is exhausted and liquidation is triggered.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       <span className="text-trading-down font-bold">
                         {formatCurrency((priceSnapshot?.currentPrice || 0) * (side === "BUY" ? 0.85 : 1.15))}
                       </span>
@@ -956,145 +1001,140 @@ export default function FuturesTradingPage() {
       </div>
 
       {/* GLASSMORPHIC STOP LOSS & TAKE PROFIT PORTAL MODAL */}
-      {selectedPositionForSlTp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-md bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-xl">
-            <div className="bg-canvas-dark/30 px-6 py-4 border-b border-hairline-on-dark flex justify-between items-center">
-              <h3 className="font-heading font-extrabold text-sm text-white flex items-center gap-2">
-                <span>Manage Trade Risk: {selectedPositionForSlTp.symbol}</span>
-                <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                  selectedPositionForSlTp.positionMode === "LONG" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
-                }`}>
-                  {selectedPositionForSlTp.positionMode} {selectedPositionForSlTp.leverage}x
-                </span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setSelectedPositionForSlTp(null)}
-                className="text-muted hover:text-white font-mono text-lg font-bold"
-              >
-                &times;
-              </button>
-            </div>
+      <Dialog open={!!selectedPositionForSlTp} onOpenChange={(open) => { if (!open) setSelectedPositionForSlTp(null); }}>
+        <DialogContent className="bg-surface-card-dark border-hairline-on-dark max-w-md w-full p-0 overflow-hidden shadow-elevation-xl text-white">
+          {selectedPositionForSlTp && (
+            <>
+              <DialogHeader className="bg-canvas-dark/30 px-6 py-4 border-b border-hairline-on-dark flex flex-row justify-between items-center space-y-0">
+                <DialogTitle className="font-heading font-extrabold text-sm text-white flex items-center gap-2">
+                  <span>Manage Trade Risk: {selectedPositionForSlTp.symbol}</span>
+                  <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                    selectedPositionForSlTp.positionMode === "LONG" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
+                  }`}>
+                    {selectedPositionForSlTp.positionMode} {selectedPositionForSlTp.leverage}x
+                  </span>
+                </DialogTitle>
+              </DialogHeader>
 
-            <div className="p-6 space-y-6">
-              {/* Entry Price & Current Mark Price Display */}
-              <div className="grid grid-cols-2 gap-4 text-xs font-mono bg-canvas-dark/40 p-3 rounded-lg border border-white/[0.02]">
-                <div>
-                  <span className="text-muted block text-[10px] uppercase">Entry Price</span>
-                  <span className="text-white font-bold">{selectedPositionForSlTp.entryPrice} USDT</span>
+              <div className="p-6 space-y-6">
+                {/* Entry Price & Current Mark Price Display */}
+                <div className="grid grid-cols-2 gap-4 text-xs font-mono bg-canvas-dark/40 p-3 rounded-lg border border-white/[0.02]">
+                  <div>
+                    <span className="text-muted block text-[10px] uppercase">Entry Price</span>
+                    <span className="text-white font-bold">{selectedPositionForSlTp.entryPrice} USDT</span>
+                  </div>
+                  <div>
+                    <span className="text-muted block text-[10px] uppercase">Mark Price</span>
+                    <span className="text-primary font-bold">{selectedPositionForSlTp.markPrice || selectedPositionForSlTp.entryPrice} USDT</span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-muted block text-[10px] uppercase">Mark Price</span>
-                  <span className="text-primary font-bold">{selectedPositionForSlTp.markPrice || selectedPositionForSlTp.entryPrice} USDT</span>
+
+                {/* Take Profit Inputs */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="font-heading text-[10px] text-muted uppercase tracking-widest font-bold">Take Profit (TP)</label>
+                    <span className="text-[10px] text-trading-up font-mono">Trigger profit target</span>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={tpInput}
+                      onChange={(e) => setTpInput(e.target.value)}
+                      placeholder="e.g. 75000.00"
+                      className="bg-canvas-dark border-hairline-on-dark text-white font-mono text-xs rounded w-full pr-12"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">USDT</span>
+                  </div>
+                  {/* Preset Buttons */}
+                  <div className="flex gap-2">
+                    {[5, 10, 25].map((pct) => {
+                      const entry = Number(selectedPositionForSlTp.entryPrice);
+                      const isLong = selectedPositionForSlTp.positionMode === "LONG";
+                      const target = isLong 
+                        ? entry * (1 + (pct / 100) / Number(selectedPositionForSlTp.leverage))
+                        : entry * (1 - (pct / 100) / Number(selectedPositionForSlTp.leverage));
+                      return (
+                        <button
+                          key={pct}
+                          type="button"
+                          onClick={() => setTpInput(target.toFixed(2))}
+                          className="flex-1 py-1.5 bg-canvas-dark hover:bg-trading-up/10 hover:text-trading-up border border-primary/20 hover:border-trading-up/40 text-muted rounded font-mono text-[9px] font-bold transition-all cursor-pointer"
+                        >
+                          +{pct}% ROE
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
+
+                {/* Stop Loss Inputs */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="font-heading text-[10px] text-muted uppercase tracking-widest font-bold">Stop Loss (SL)</label>
+                    <span className="text-[10px] text-trading-down font-mono">Trigger stop exit</span>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={slInput}
+                      onChange={(e) => setSlInput(e.target.value)}
+                      placeholder="e.g. 65000.00"
+                      className="bg-canvas-dark border-hairline-on-dark text-white font-mono text-xs rounded w-full pr-12"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">USDT</span>
+                  </div>
+                  {/* Preset Buttons */}
+                  <div className="flex gap-2">
+                    {[2, 5, 10].map((pct) => {
+                      const entry = Number(selectedPositionForSlTp.entryPrice);
+                      const isLong = selectedPositionForSlTp.positionMode === "LONG";
+                      const target = isLong 
+                        ? entry * (1 - (pct / 100) / Number(selectedPositionForSlTp.leverage))
+                        : entry * (1 + (pct / 100) / Number(selectedPositionForSlTp.leverage));
+                      return (
+                        <button
+                          key={pct}
+                          type="button"
+                          onClick={() => setSlInput(target.toFixed(2))}
+                          className="flex-1 py-1.5 bg-canvas-dark hover:bg-trading-down/10 hover:text-trading-down border border-primary/20 hover:border-trading-down/40 text-muted rounded font-mono text-[9px] font-bold transition-all cursor-pointer"
+                        >
+                          -{pct}% ROE
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {slTpError && (
+                  <div className="p-3 rounded bg-trading-down/10 border border-trading-down/20 text-center animate-slide-down">
+                    <p className="text-trading-down text-xs font-semibold">{slTpError}</p>
+                  </div>
+                )}
               </div>
 
-              {/* Take Profit Inputs */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <label className="font-heading text-[10px] text-muted uppercase tracking-widest font-bold">Take Profit (TP)</label>
-                  <span className="text-[10px] text-trading-up font-mono">Trigger profit target</span>
-                </div>
-                <div className="relative">
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={tpInput}
-                    onChange={(e) => setTpInput(e.target.value)}
-                    placeholder="e.g. 75000.00"
-                    className="bg-canvas-dark border-hairline-on-dark text-white font-mono text-xs rounded w-full pr-12"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">USDT</span>
-                </div>
-                {/* Preset Buttons */}
-                <div className="flex gap-2">
-                  {[5, 10, 25].map((pct) => {
-                    const entry = Number(selectedPositionForSlTp.entryPrice);
-                    const isLong = selectedPositionForSlTp.positionMode === "LONG";
-                    const target = isLong 
-                      ? entry * (1 + (pct / 100) / Number(selectedPositionForSlTp.leverage))
-                      : entry * (1 - (pct / 100) / Number(selectedPositionForSlTp.leverage));
-                    return (
-                      <button
-                        key={pct}
-                        type="button"
-                        onClick={() => setTpInput(target.toFixed(2))}
-                        className="flex-1 py-1.5 bg-canvas-dark hover:bg-trading-up/10 hover:text-trading-up border border-primary/20 hover:border-trading-up/40 text-muted rounded font-mono text-[9px] font-bold transition-all"
-                      >
-                        +{pct}% ROE
-                      </button>
-                    );
-                  })}
-                </div>
+              <div className="bg-canvas-dark/30 px-6 py-4 border-t border-hairline-on-dark flex justify-end gap-3">
+                <Button
+                  type="button"
+                  onClick={() => setSelectedPositionForSlTp(null)}
+                  className="font-mono text-xs px-4 py-2 border border-hairline-on-dark bg-transparent text-muted hover:text-white rounded"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSaveSlTp}
+                  className="font-mono text-xs px-4 py-2 bg-primary hover:bg-primary-active text-black font-bold rounded shadow-elevation-sm"
+                  loading={isUpdatingSlTp}
+                >
+                  Confirm Targets
+                </Button>
               </div>
-
-              {/* Stop Loss Inputs */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <label className="font-heading text-[10px] text-muted uppercase tracking-widest font-bold">Stop Loss (SL)</label>
-                  <span className="text-[10px] text-trading-down font-mono">Trigger stop exit</span>
-                </div>
-                <div className="relative">
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={slInput}
-                    onChange={(e) => setSlInput(e.target.value)}
-                    placeholder="e.g. 65000.00"
-                    className="bg-canvas-dark border-hairline-on-dark text-white font-mono text-xs rounded w-full pr-12"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">USDT</span>
-                </div>
-                {/* Preset Buttons */}
-                <div className="flex gap-2">
-                  {[2, 5, 10].map((pct) => {
-                    const entry = Number(selectedPositionForSlTp.entryPrice);
-                    const isLong = selectedPositionForSlTp.positionMode === "LONG";
-                    const target = isLong 
-                      ? entry * (1 - (pct / 100) / Number(selectedPositionForSlTp.leverage))
-                      : entry * (1 + (pct / 100) / Number(selectedPositionForSlTp.leverage));
-                    return (
-                      <button
-                        key={pct}
-                        type="button"
-                        onClick={() => setSlInput(target.toFixed(2))}
-                        className="flex-1 py-1.5 bg-canvas-dark hover:bg-trading-down/10 hover:text-trading-down border border-primary/20 hover:border-trading-down/40 text-muted rounded font-mono text-[9px] font-bold transition-all"
-                      >
-                        -{pct}% ROE
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {slTpError && (
-                <div className="p-3 rounded bg-trading-down/10 border border-trading-down/20 text-center animate-slide-down">
-                  <p className="text-trading-down text-xs font-semibold">{slTpError}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="bg-canvas-dark/30 px-6 py-4 border-t border-hairline-on-dark flex justify-end gap-3">
-              <Button
-                type="button"
-                onClick={() => setSelectedPositionForSlTp(null)}
-                className="font-mono text-xs px-4 py-2 border border-hairline-on-dark bg-transparent text-muted hover:text-white rounded"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                onClick={handleSaveSlTp}
-                className="font-mono text-xs px-4 py-2 bg-primary hover:bg-primary-active text-black font-bold rounded shadow-elevation-sm"
-                loading={isUpdatingSlTp}
-              >
-                Confirm Targets
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </PageTransition>
   );
 }

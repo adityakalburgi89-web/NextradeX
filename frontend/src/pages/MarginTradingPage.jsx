@@ -19,6 +19,7 @@ import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
 import { TradingChartPanel } from "../components/ui/TradingChartPanel";
 import { OrderBook } from "../components/ui/OrderBook";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { formatCurrency, formatPercent } from "../lib/utils";
 import { ArrowRightLeft, Info, Trash2, Activity, Coins, ClipboardList, Lock } from "lucide-react";
@@ -429,51 +430,54 @@ export default function MarginTradingPage() {
               />
 
               {/* Bottom Tab Panel */}
-              <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md">
-                <div className="bg-canvas-dark/30 border-b border-hairline-on-dark px-4 flex items-center justify-between">
-                  <div className="flex gap-4 font-heading text-[10px] font-bold uppercase tracking-wider py-3 select-none">
-                    {[
-                      { id: "POSITIONS", label: "Margin Positions" },
-                      { id: "ORDERS", label: "Open Orders" },
-                      { id: "HISTORY", label: "Order History" },
-                      { id: "ASSETS", label: "Assets" }
-                    ].map((tab) => (
+              <Tabs value={activeBottomTab} onValueChange={setActiveBottomTab} className="w-full">
+                <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md">
+                  <div className="bg-canvas-dark/30 border-b border-hairline-on-dark px-4 flex items-center justify-between">
+                    <TabsList className="flex gap-4 bg-transparent border-0 p-0 h-auto rounded-none">
+                      {[
+                        { id: "POSITIONS", label: "Margin Positions" },
+                        { id: "ORDERS", label: "Open Orders" },
+                        { id: "HISTORY", label: "Order History" },
+                        { id: "ASSETS", label: "Assets" }
+                      ].map((tab) => (
+                        <TabsTrigger
+                          key={tab.id}
+                          value={tab.id}
+                          className="pb-3 pt-3 bg-transparent border-0 rounded-none relative font-heading text-[10px] font-bold uppercase tracking-wider text-muted hover:text-white data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:font-bold transition-all cursor-pointer"
+                        >
+                          {tab.label}{" "}
+                          {tab.id === "POSITIONS"
+                            ? `(${positions.length})`
+                            : tab.id === "ORDERS"
+                            ? `(${activeOrders.filter(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED").length})`
+                            : ""}
+                          {activeBottomTab === tab.id && (
+                            <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full" />
+                          )}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                    {activeBottomTab === "POSITIONS" && positions.length > 0 && (
                       <button
-                        key={tab.id}
                         type="button"
-                        onClick={() => setActiveBottomTab(tab.id)}
-                        className={`pb-1.5 relative transition-colors ${
-                          activeBottomTab === tab.id ? "text-primary font-bold" : "text-muted hover:text-white"
-                        }`}
+                        onClick={handleCloseAllPositions}
+                        className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
                       >
-                        {tab.label} {tab.id === "POSITIONS" ? `(${positions.length})` : tab.id === "ORDERS" ? `(${activeOrders.filter(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED").length})` : ""}
-                        {activeBottomTab === tab.id && (
-                          <span className="absolute bottom-[-13px] left-0 right-0 h-[2px] bg-primary rounded-full" />
-                        )}
+                        <Trash2 size={12} />
+                        Close All
                       </button>
-                    ))}
+                    )}
+                    {activeBottomTab === "ORDERS" && activeOrders.some(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED") && (
+                      <button
+                        type="button"
+                        onClick={handleCancelAllOrders}
+                        className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                      >
+                        <Trash2 size={12} />
+                        Cancel All
+                      </button>
+                    )}
                   </div>
-                  {activeBottomTab === "POSITIONS" && positions.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={handleCloseAllPositions}
-                      className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all flex items-center gap-1"
-                    >
-                      <Trash2 size={12} />
-                      Close All
-                    </button>
-                  )}
-                  {activeBottomTab === "ORDERS" && activeOrders.some(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED") && (
-                    <button
-                      type="button"
-                      onClick={handleCancelAllOrders}
-                      className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all flex items-center gap-1"
-                    >
-                      <Trash2 size={12} />
-                      Cancel All
-                    </button>
-                  )}
-                </div>
 
                 <CardContent className="p-0 min-h-[160px]">
                   {activeBottomTab === "POSITIONS" && (
@@ -682,8 +686,9 @@ export default function MarginTradingPage() {
                       </div>
                     )
                   )}
-                </CardContent>
+                 </CardContent>
               </Card>
+            </Tabs>
             </div>
 
             {/* Order Book (3-cols) */}

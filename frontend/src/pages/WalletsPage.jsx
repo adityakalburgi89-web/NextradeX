@@ -9,6 +9,8 @@ import {
 } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/Card";
 import { PageTransition } from "../components/ui/PageTransition";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
 import { formatCurrency, formatPercent } from "../lib/utils";
 import { 
   ArrowUpRight, 
@@ -285,22 +287,19 @@ export default function WalletsPage() {
         )}
 
         {/* ANIMATED SEGMENTED TAB NAVIGATION */}
-        <div className="relative flex p-1 bg-surface-card-dark border border-hairline-on-dark rounded-xl max-w-sm overflow-hidden">
-          {["OVERVIEW", "SPOT", "FUTURES"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => {
-                setError("");
-                setActiveTab(tab);
-              }}
-              className={`flex-1 py-2 text-center text-xs font-bold tracking-wide rounded-lg z-10 transition-all ${
-                activeTab === tab ? "bg-surface-elevated-dark text-primary border border-hairline-on-dark/50" : "text-muted hover:text-white"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+        <Tabs value={activeTab} onValueChange={(val) => { setError(""); setActiveTab(val); }} className="w-full">
+          <TabsList className="flex p-1 bg-surface-card-dark border border-hairline-on-dark rounded-xl max-w-sm h-auto">
+            {["OVERVIEW", "SPOT", "FUTURES"].map((tab) => (
+              <TabsTrigger
+                key={tab}
+                value={tab}
+                className="flex-1 py-2 text-center text-xs font-bold tracking-wide rounded-lg z-10 transition-all data-[state=active]:bg-surface-elevated-dark data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-hairline-on-dark/50 text-muted hover:text-white bg-transparent border-0 cursor-pointer"
+              >
+                {tab}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
         {/* LOADING STATE */}
         {loading ? (
@@ -761,228 +760,210 @@ export default function WalletsPage() {
         {/* ============================================================== */}
         {/* ADD FUNDS / DEPOSIT MODAL */}
         {/* ============================================================== */}
-        {depositModal.open && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="bg-[#121218] border border-hairline-on-dark rounded-2xl max-w-md w-full overflow-hidden shadow-elevation-lg animate-slide-up">
+        <Dialog open={depositModal.open} onOpenChange={(open) => setDepositModal(prev => ({ ...prev, open, amount: open ? prev.amount : "" }))}>
+          <DialogContent className="bg-[#121218] border-hairline-on-dark max-w-md w-full p-0 overflow-hidden shadow-elevation-lg text-white">
+            <DialogHeader className="bg-[#181822] border-b border-hairline-on-dark px-5 py-4 flex flex-row justify-between items-center space-y-0">
+              <DialogTitle className="font-heading text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                <PlusCircle className="text-primary" size={16} />
+                Deposit Simulated Capital
+              </DialogTitle>
+            </DialogHeader>
+
+            <form onSubmit={(e) => { e.preventDefault(); executeModalDeposit(); }} className="p-5 space-y-4 font-mono text-xs">
               
-              <div className="bg-[#181822] border-b border-hairline-on-dark px-5 py-4 flex justify-between items-center">
-                <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <PlusCircle className="text-primary" size={16} />
-                  Deposit Simulated Capital
-                </h3>
-                <button 
-                  onClick={() => setDepositModal({ ...depositModal, open: false, amount: "" })}
-                  className="text-muted hover:text-white transition-colors font-bold font-mono text-sm"
+              <p className="text-[11px] text-muted leading-relaxed font-sans border-b border-hairline-on-dark/30 pb-3">
+                This is a simulated paper trading platform. You can instantly credit virtual funds to any of your wallets for free.
+              </p>
+
+              {/* Target Wallet selection */}
+              <div>
+                <label className="text-[9px] text-muted uppercase tracking-widest mb-1.5 block">
+                  Destination Wallet
+                </label>
+                <select
+                  value={depositModal.walletType}
+                  onChange={(e) => setDepositModal({ ...depositModal, walletType: e.target.value })}
+                  className="bg-canvas-dark border border-hairline-on-dark text-xs text-white w-full rounded-xl px-3 py-2 cursor-pointer outline-none focus:border-primary"
                 >
-                  <X size={16} />
+                  <option value="SPOT">SPOT WALLET</option>
+                  <option value="MARGIN">MARGIN WALLET</option>
+                  <option value="FUTURES">FUTURES WALLET</option>
+                  <option value="OPTIONS">OPTIONS WALLET</option>
+                </select>
+              </div>
+
+              {/* Amount input */}
+              <div>
+                <label className="text-[9px] text-muted uppercase tracking-widest mb-1.5 block">
+                  Deposit Amount (USD)
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    required
+                    placeholder="0.00"
+                    value={depositModal.amount || ""}
+                    onChange={(e) => setDepositModal({ ...depositModal, amount: e.target.value })}
+                    className="bg-canvas-dark border border-hairline-on-dark text-sm text-white w-full rounded-xl px-3 py-2.5 pr-12 outline-none focus:border-primary transition-all"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-xs font-mono">USD</span>
+                </div>
+              </div>
+
+              {/* Instant Quick Deposit Presets */}
+              <div className="space-y-1.5 border-t border-hairline-on-dark/40 pt-3">
+                <label className="text-[9px] text-muted uppercase tracking-widest block">
+                  Instant One-Click Presets
+                </label>
+                <div className="flex gap-2">
+                  {[1000, 10000, 100000].map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => executeModalDeposit(amt)}
+                      className="flex-1 py-2 text-xs font-mono font-bold bg-primary/10 text-primary hover:bg-primary/20 border border-primary/25 rounded-lg transition-all"
+                    >
+                      +${amt.toLocaleString()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDepositModal({ ...depositModal, open: false, amount: "" })}
+                  className="flex-1 py-2.5 text-xs font-mono font-bold border border-hairline-on-dark text-white rounded-lg hover:bg-white/[0.02] transition-colors"
+                >
+                  CANCEL
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 text-xs font-mono font-bold bg-primary text-on-primary hover:bg-[#f0b90b] rounded-lg transition-colors"
+                >
+                  CONFIRM DEPOSIT
                 </button>
               </div>
 
-              <form onSubmit={(e) => { e.preventDefault(); executeModalDeposit(); }} className="p-5 space-y-4 font-mono text-xs">
-                
-                <p className="text-[11px] text-muted leading-relaxed font-sans border-b border-hairline-on-dark/30 pb-3">
-                  This is a simulated paper trading platform. You can instantly credit virtual funds to any of your wallets for free.
-                </p>
-
-                {/* Target Wallet selection */}
-                <div>
-                  <label className="text-[9px] text-muted uppercase tracking-widest mb-1.5 block">
-                    Destination Wallet
-                  </label>
-                  <select
-                    value={depositModal.walletType}
-                    onChange={(e) => setDepositModal({ ...depositModal, walletType: e.target.value })}
-                    className="bg-canvas-dark border border-hairline-on-dark text-xs text-white w-full rounded-xl px-3 py-2 cursor-pointer outline-none focus:border-primary"
-                  >
-                    <option value="SPOT">SPOT WALLET</option>
-                    <option value="MARGIN">MARGIN WALLET</option>
-                    <option value="FUTURES">FUTURES WALLET</option>
-                    <option value="OPTIONS">OPTIONS WALLET</option>
-                  </select>
-                </div>
-
-                {/* Amount input */}
-                <div>
-                  <label className="text-[9px] text-muted uppercase tracking-widest mb-1.5 block">
-                    Deposit Amount (USD)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      required
-                      placeholder="0.00"
-                      value={depositModal.amount || ""}
-                      onChange={(e) => setDepositModal({ ...depositModal, amount: e.target.value })}
-                      className="bg-canvas-dark border border-hairline-on-dark text-sm text-white w-full rounded-xl px-3 py-2.5 pr-12 outline-none focus:border-primary transition-all"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-xs font-mono">USD</span>
-                  </div>
-                </div>
-
-                {/* Instant Quick Deposit Presets */}
-                <div className="space-y-1.5 border-t border-hairline-on-dark/40 pt-3">
-                  <label className="text-[9px] text-muted uppercase tracking-widest block">
-                    Instant One-Click Presets
-                  </label>
-                  <div className="flex gap-2">
-                    {[1000, 10000, 100000].map((amt) => (
-                      <button
-                        key={amt}
-                        type="button"
-                        onClick={() => executeModalDeposit(amt)}
-                        className="flex-1 py-2 text-xs font-mono font-bold bg-primary/10 text-primary hover:bg-primary/20 border border-primary/25 rounded-lg transition-all"
-                      >
-                        +${amt.toLocaleString()}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="pt-2 flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setDepositModal({ ...depositModal, open: false, amount: "" })}
-                    className="flex-1 py-2.5 text-xs font-mono font-bold border border-hairline-on-dark text-white rounded-lg hover:bg-white/[0.02] transition-colors"
-                  >
-                    CANCEL
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 py-2.5 text-xs font-mono font-bold bg-primary text-on-primary hover:bg-[#f0b90b] rounded-lg transition-colors"
-                  >
-                    CONFIRM DEPOSIT
-                  </button>
-                </div>
-
-              </form>
-            </div>
-          </div>
-        )}
+            </form>
+          </DialogContent>
+        </Dialog>
 
         {/* ============================================================== */}
         {/* TRANSFER MODAL */}
         {/* ============================================================== */}
-        {transferModal.open && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="bg-[#121218] border border-hairline-on-dark rounded-2xl max-w-md w-full overflow-hidden shadow-elevation-lg animate-slide-up">
+        <Dialog open={transferModal.open} onOpenChange={(open) => setTransferModal(prev => ({ ...prev, open, amount: open ? prev.amount : "" }))}>
+          <DialogContent className="bg-[#121218] border-hairline-on-dark max-w-md w-full p-0 overflow-hidden shadow-elevation-lg text-white">
+            <DialogHeader className="bg-[#181822] border-b border-hairline-on-dark px-5 py-4 flex flex-row justify-between items-center space-y-0">
+              <DialogTitle className="font-heading text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                <RefreshCw className="text-primary" size={16} />
+                Transfer Assets Internally
+              </DialogTitle>
+            </DialogHeader>
+
+            <form onSubmit={executeTransfer} className="p-5 space-y-4 font-mono text-xs">
               
-              <div className="bg-[#181822] border-b border-hairline-on-dark px-5 py-4 flex justify-between items-center">
-                <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <RefreshCw className="text-primary" size={16} />
-                  Transfer Assets Internally
-                </h3>
-                <button 
+              {/* Transfer route selects */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[9px] text-muted uppercase tracking-widest mb-1.5 block">
+                    From Wallet
+                  </label>
+                  <select
+                    value={transferModal.from}
+                    onChange={(e) => setTransferModal({ ...transferModal, from: e.target.value })}
+                    className="bg-canvas-dark border border-hairline-on-dark text-xs text-white w-full rounded-xl px-3 py-2 cursor-pointer outline-none focus:border-primary"
+                  >
+                    <option value="SPOT">SPOT</option>
+                    <option value="MARGIN">MARGIN</option>
+                    <option value="FUTURES">FUTURES</option>
+                    <option value="OPTIONS">OPTIONS</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[9px] text-muted uppercase tracking-widest mb-1.5 block">
+                    To Wallet
+                  </label>
+                  <select
+                    value={transferModal.to}
+                    onChange={(e) => setTransferModal({ ...transferModal, to: e.target.value })}
+                    className="bg-canvas-dark border border-hairline-on-dark text-xs text-white w-full rounded-xl px-3 py-2 cursor-pointer outline-none focus:border-primary"
+                  >
+                    <option value="SPOT">SPOT</option>
+                    <option value="MARGIN">MARGIN</option>
+                    <option value="FUTURES">FUTURES</option>
+                    <option value="OPTIONS">OPTIONS</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Amount input */}
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="text-[9px] text-muted uppercase tracking-widest block">
+                    Transfer Amount
+                  </label>
+                  <span className="text-[9px] text-muted">
+                    Avail: {formatCurrency(
+                      walletMap[transferModal.from] ? Number(walletMap[transferModal.from].availableBalance) : 0
+                    )}
+                  </span>
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    placeholder="0.00"
+                    value={transferModal.amount}
+                    onChange={(e) => setTransferModal({ ...transferModal, amount: e.target.value })}
+                    className="bg-canvas-dark border border-hairline-on-dark text-sm text-white w-full rounded-xl px-3 py-2.5 pr-12 outline-none focus:border-primary transition-all"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-xs">USD</span>
+                </div>
+              </div>
+
+              {/* Preset balance buttons */}
+              <div className="flex gap-2">
+                {[25, 50, 100].map((pct) => (
+                  <button
+                    key={pct}
+                    type="button"
+                    onClick={() => {
+                      const w = walletMap[transferModal.from];
+                      const bal = w ? Number(w.availableBalance) : 0;
+                      setTransferModal({ ...transferModal, amount: (bal * (pct / 100)).toFixed(2) });
+                    }}
+                    className="flex-1 py-1.5 text-[9px] bg-canvas-dark border border-hairline-on-dark text-muted hover:text-white rounded-lg transition-colors"
+                  >
+                    {pct}%
+                  </button>
+                ))}
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="button"
                   onClick={() => setTransferModal({ ...transferModal, open: false })}
-                  className="text-muted hover:text-white transition-colors font-bold font-mono text-sm"
+                  className="flex-1 py-2.5 text-xs font-mono font-bold border border-hairline-on-dark text-white rounded-lg hover:bg-white/[0.02] transition-colors"
                 >
-                  <X size={16} />
+                  CANCEL
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 text-xs font-mono font-bold bg-primary text-on-primary hover:bg-[#f0b90b] rounded-lg transition-colors"
+                >
+                  CONFIRM TRANSFER
                 </button>
               </div>
 
-              <form onSubmit={executeTransfer} className="p-5 space-y-4 font-mono text-xs">
-                
-                {/* Transfer route selects */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[9px] text-muted uppercase tracking-widest mb-1.5 block">
-                      From Wallet
-                    </label>
-                    <select
-                      value={transferModal.from}
-                      onChange={(e) => setTransferModal({ ...transferModal, from: e.target.value })}
-                      className="bg-canvas-dark border border-hairline-on-dark text-xs text-white w-full rounded-xl px-3 py-2 cursor-pointer outline-none focus:border-primary"
-                    >
-                      <option value="SPOT">SPOT</option>
-                      <option value="MARGIN">MARGIN</option>
-                      <option value="FUTURES">FUTURES</option>
-                      <option value="OPTIONS">OPTIONS</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-[9px] text-muted uppercase tracking-widest mb-1.5 block">
-                      To Wallet
-                    </label>
-                    <select
-                      value={transferModal.to}
-                      onChange={(e) => setTransferModal({ ...transferModal, to: e.target.value })}
-                      className="bg-canvas-dark border border-hairline-on-dark text-xs text-white w-full rounded-xl px-3 py-2 cursor-pointer outline-none focus:border-primary"
-                    >
-                      <option value="SPOT">SPOT</option>
-                      <option value="MARGIN">MARGIN</option>
-                      <option value="FUTURES">FUTURES</option>
-                      <option value="OPTIONS">OPTIONS</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Amount input */}
-                <div>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="text-[9px] text-muted uppercase tracking-widest block">
-                      Transfer Amount
-                    </label>
-                    <span className="text-[9px] text-muted">
-                      Avail: {formatCurrency(
-                        walletMap[transferModal.from] ? Number(walletMap[transferModal.from].availableBalance) : 0
-                      )}
-                    </span>
-                  </div>
-
-                  <div className="relative">
-                    <input
-                      type="number"
-                      step="0.01"
-                      required
-                      placeholder="0.00"
-                      value={transferModal.amount}
-                      onChange={(e) => setTransferModal({ ...transferModal, amount: e.target.value })}
-                      className="bg-canvas-dark border border-hairline-on-dark text-sm text-white w-full rounded-xl px-3 py-2.5 pr-12 outline-none focus:border-primary transition-all"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-xs">USD</span>
-                  </div>
-                </div>
-
-                {/* Preset balance buttons */}
-                <div className="flex gap-2">
-                  {[25, 50, 100].map((pct) => (
-                    <button
-                      key={pct}
-                      type="button"
-                      onClick={() => {
-                        const w = walletMap[transferModal.from];
-                        const bal = w ? Number(w.availableBalance) : 0;
-                        setTransferModal({ ...transferModal, amount: (bal * (pct / 100)).toFixed(2) });
-                      }}
-                      className="flex-1 py-1.5 text-[9px] bg-canvas-dark border border-hairline-on-dark text-muted hover:text-white rounded-lg transition-colors"
-                    >
-                      {pct}%
-                    </button>
-                  ))}
-                </div>
-
-                <div className="pt-2 flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setTransferModal({ ...transferModal, open: false })}
-                    className="flex-1 py-2.5 text-xs font-mono font-bold border border-hairline-on-dark text-white rounded-lg hover:bg-white/[0.02] transition-colors"
-                  >
-                    CANCEL
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 py-2.5 text-xs font-mono font-bold bg-primary text-on-primary hover:bg-[#f0b90b] rounded-lg transition-colors"
-                  >
-                    CONFIRM TRANSFER
-                  </button>
-                </div>
-
-              </form>
-            </div>
-          </div>
-        )}
+            </form>
+          </DialogContent>
+        </Dialog>
 
 
       </div>

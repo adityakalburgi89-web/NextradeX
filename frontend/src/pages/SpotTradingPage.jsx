@@ -18,6 +18,8 @@ import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
 import { TradingChartPanel } from "../components/ui/TradingChartPanel";
 import { OrderBook } from "../components/ui/OrderBook";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "../components/ui/tooltip";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { formatCurrency, formatPercent } from "../lib/utils";
 import { ArrowRightLeft, Info, Trash2, Activity, Coins, ClipboardList, Lock } from "lucide-react";
@@ -480,46 +482,44 @@ export default function SpotTradingPage() {
               />
 
               {/* Bottom Tab Panel */}
-              <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md">
-                <div className="bg-canvas-dark/30 border-b border-hairline-on-dark px-4 flex items-center justify-between">
-                  <div className="flex gap-4 font-heading text-[10px] font-bold uppercase tracking-wider py-3 select-none">
-                    {[
-                      { id: "POSITIONS", label: "Positions" },
-                      { id: "ORDERS", label: "Open Orders" },
-                      { id: "HISTORY", label: "Order History" },
-                      { id: "ASSETS", label: "Assets" }
-                    ].map((tab) => (
+              <Tabs value={activeBottomTab} onValueChange={setActiveBottomTab} className="w-full">
+                <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md">
+                  <div className="bg-canvas-dark/30 border-b border-hairline-on-dark px-4 flex items-center justify-between">
+                    <TabsList className="flex gap-4 bg-transparent border-0 p-0 h-auto rounded-none">
+                      {[
+                        { id: "POSITIONS", label: "Positions" },
+                        { id: "ORDERS", label: "Open Orders" },
+                        { id: "HISTORY", label: "Order History" },
+                        { id: "ASSETS", label: "Assets" }
+                      ].map((tab) => (
+                        <TabsTrigger
+                          key={tab.id}
+                          value={tab.id}
+                          className="pb-3 pt-3 bg-transparent border-0 rounded-none relative font-heading text-[10px] font-bold uppercase tracking-wider text-muted hover:text-white data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:font-bold transition-all cursor-pointer"
+                        >
+                          {tab.label}{" "}
+                          {tab.id === "POSITIONS"
+                            ? `(${spotPositions.length})`
+                            : tab.id === "ORDERS"
+                            ? `(${activeOrders.filter(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED").length})`
+                            : ""}
+                          {activeBottomTab === tab.id && (
+                            <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full" />
+                          )}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                    {activeBottomTab === "ORDERS" && activeOrders.some(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED") && (
                       <button
-                        key={tab.id}
                         type="button"
-                        onClick={() => setActiveBottomTab(tab.id)}
-                        className={`pb-1.5 relative transition-colors ${
-                          activeBottomTab === tab.id ? "text-primary font-bold" : "text-muted hover:text-white"
-                        }`}
+                        onClick={handleCancelAllOrders}
+                        className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
                       >
-                        {tab.label}{" "}
-                        {tab.id === "POSITIONS"
-                          ? `(${spotPositions.length})`
-                          : tab.id === "ORDERS"
-                          ? `(${activeOrders.filter(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED").length})`
-                          : ""}
-                        {activeBottomTab === tab.id && (
-                          <span className="absolute bottom-[-13px] left-0 right-0 h-[2px] bg-primary rounded-full" />
-                        )}
+                        <Trash2 size={12} />
+                        Cancel All
                       </button>
-                    ))}
+                    )}
                   </div>
-                  {activeBottomTab === "ORDERS" && activeOrders.some(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED") && (
-                    <button
-                      type="button"
-                      onClick={handleCancelAllOrders}
-                      className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all flex items-center gap-1"
-                    >
-                      <Trash2 size={12} />
-                      Cancel All
-                    </button>
-                  )}
-                </div>
 
                 <CardContent className="p-0 min-h-[160px]">
                   {activeBottomTab === "POSITIONS" && (
@@ -723,6 +723,7 @@ export default function SpotTradingPage() {
                   )}
                 </CardContent>
               </Card>
+            </Tabs>
             </div>
 
             {/* Order Book Panel (3-cols) */}
@@ -798,9 +799,21 @@ export default function SpotTradingPage() {
                     </div>
 
                     <div>
-                      <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
-                        Order Type
-                      </label>
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <label className="font-mono text-[10px] text-muted uppercase tracking-widest block">
+                          Order Type
+                        </label>
+                        <TooltipProvider delayDuration={200}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-muted hover:text-white cursor-pointer"><Info size={11} /></span>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-surface-elevated-dark border border-hairline-on-dark text-xs p-2 text-white max-w-[200px] rounded-lg">
+                              Choose Market to buy/sell instantly at current price, or Limit to set a specific target price.
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
                       <Select 
                         name="orderType" 
                         value={form.orderType} 
