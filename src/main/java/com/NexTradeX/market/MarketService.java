@@ -43,9 +43,54 @@ public class MarketService {
 
     private final Map<String, CryptoPrice> l1Cache = new ConcurrentHashMap<>();
     private final Map<String, Long> lastDbWriteTimes = new ConcurrentHashMap<>();
+    private final Map<CandleCacheKey, CachedCandles> candleCache = new ConcurrentHashMap<>();
 
     @Value("${coinmarketcap.api.key}")
     private String coinMarketCapApiKey;
+
+    @Value("${coingecko.api.key}")
+    private String coinGeckoApiKey;
+
+    private static class CandleCacheKey {
+        private final String symbol;
+        private final String interval;
+        private final int limit;
+
+        public CandleCacheKey(String symbol, String interval, int limit) {
+            this.symbol = symbol;
+            this.interval = interval;
+            this.limit = limit;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            CandleCacheKey that = (CandleCacheKey) o;
+            return limit == that.limit &&
+                    symbol.equals(that.symbol) &&
+                    interval.equals(that.interval);
+        }
+
+        @Override
+        public int hashCode() {
+            return java.util.Objects.hash(symbol, interval, limit);
+        }
+    }
+
+    private static class CachedCandles {
+        private final List<CandlestickDataPoint> candles;
+        private final long cachedTime;
+
+        public CachedCandles(List<CandlestickDataPoint> candles) {
+            this.candles = candles;
+            this.cachedTime = System.currentTimeMillis();
+        }
+
+        public boolean isExpired() {
+            return (System.currentTimeMillis() - cachedTime) > 30000; // 30 seconds
+        }
+    }
 
     public CryptoPrice getPrice(String symbol) {
         String normalizedSymbol = normalizeSymbol(symbol);
@@ -145,17 +190,29 @@ public class MarketService {
         int sanitizedLimit = Math.min(Math.max(limit, 1), 1000);
         String binanceInterval = mapToBinanceInterval(interval);
 
+        CandleCacheKey cacheKey = new CandleCacheKey(normalizedSymbol, binanceInterval, sanitizedLimit);
+        CachedCandles cached = candleCache.get(cacheKey);
+
+        if (cached != null && !cached.isExpired()) {
+            log.debug("[MarketService] Serving cached klines for {} ({} interval, limit {})", normalizedSymbol, binanceInterval, sanitizedLimit);
+            return cached.candles;
+        }
+
         log.info("Fetching real klines from Binance for {} ({} interval, limit {})", normalizedSymbol, binanceInterval,
                 sanitizedLimit);
 
         List<List<Object>> klines = binanceService.getKlines(normalizedSymbol, binanceInterval, sanitizedLimit);
 
         if (klines == null || klines.isEmpty()) {
+            if (cached != null) {
+                log.warn("[MarketService] Failed to fetch fresh klines from Binance for {}, returning stale cached data", normalizedSymbol);
+                return cached.candles;
+            }
             log.warn("Failed to fetch klines from Binance for {}, returning empty list", normalizedSymbol);
             return List.of();
         }
 
-        return klines.stream().map(kline -> {
+        List<CandlestickDataPoint> points = klines.stream().map(kline -> {
             // Binance Kline format: [Open time, Open, High, Low, Close, Volume, Close time,
             // ...]
             return CandlestickDataPoint.builder()
@@ -167,6 +224,9 @@ public class MarketService {
                     .volume(new BigDecimal(kline.get(5).toString()))
                     .build();
         }).toList();
+
+        candleCache.put(cacheKey, new CachedCandles(points));
+        return points;
     }
 
     @Transactional
@@ -349,36 +409,114 @@ public class MarketService {
         return response.getBody();
     }
 
-    private CryptoPrice fetchLivePrice(String symbol) throws Exception {
-        if (coinMarketCapApiKey == null
-                || coinMarketCapApiKey.isBlank()
-                || "demo".equalsIgnoreCase(coinMarketCapApiKey)
-                || coinMarketCapApiKey.contains("your_coinmarketcap_api_key_here")) {
-            throw new IllegalStateException("No market data provider key configured");
-        }
+    public String fetchCoinGeckoPrice(String coinId) {
+        String url = "https://api.coingecko.com/api/v3/simple/price?ids=" + coinId 
+            + "&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true"
+            + "&x_cg_demo_api_key=" + coinGeckoApiKey;
+        return restTemplate.getForObject(url, String.class);
+    }
 
-        String providerSymbol = extractProviderSymbol(symbol);
-        String json = fetchCoinMarketCapPrice(providerSymbol);
+    private String mapToCoinGeckoId(String symbol) {
+        String normalized = normalizeSymbol(symbol);
+        return switch (normalized) {
+            case "BTCUSDT" -> "bitcoin";
+            case "ETHUSDT" -> "ethereum";
+            case "BNBUSDT" -> "binancecoin";
+            case "SOLUSDT" -> "solana";
+            case "DOTUSDT" -> "polkadot";
+            default -> "bitcoin";
+        };
+    }
+
+    private CryptoPrice parseCoinGeckoResponse(String symbol, String json) throws Exception {
+        String coinId = mapToCoinGeckoId(symbol);
         JsonNode root = OBJECT_MAPPER.readTree(json);
-        JsonNode data = root.path("data").path(providerSymbol);
-        JsonNode quote = data.path("quote").path("USD");
-
-        if (quote.isMissingNode()) {
-            throw new IllegalStateException("Unexpected provider response for symbol " + providerSymbol);
+        JsonNode data = root.path(coinId);
+        if (data.isMissingNode() || data.path("usd").isMissingNode()) {
+            throw new IllegalStateException("Unexpected CoinGecko response for " + coinId);
         }
+
+        BigDecimal price = new BigDecimal(data.path("usd").asText("0"));
+        BigDecimal marketCap = new BigDecimal(data.path("usd_market_cap").asText("0"));
+        BigDecimal volume = new BigDecimal(data.path("usd_24h_vol").asText("0"));
+        BigDecimal percentChange = new BigDecimal(data.path("usd_24h_change").asText("0"));
+
+        BigDecimal openPrice = price;
+        if (percentChange.compareTo(BigDecimal.ZERO) != 0) {
+            BigDecimal multiplier = BigDecimal.ONE.add(percentChange.divide(BigDecimal.valueOf(100), 8, RoundingMode.HALF_UP));
+            if (multiplier.compareTo(BigDecimal.ZERO) != 0) {
+                openPrice = price.divide(multiplier, 4, RoundingMode.HALF_UP);
+            }
+        }
+        BigDecimal priceChange = price.subtract(openPrice);
 
         return CryptoPrice.builder()
-                .symbol(symbol)
-                .currentPrice(new BigDecimal(quote.path("price").asText("0")))
-                .highPrice(new BigDecimal(quote.path("high_24h").asText("0")))
-                .lowPrice(new BigDecimal(quote.path("low_24h").asText("0")))
-                .openPrice(new BigDecimal(quote.path("open_24h").asText("0")))
-                .priceChange24h(new BigDecimal(quote.path("volume_change_24h").asText("0")))
-                .percentChange24h(new BigDecimal(quote.path("percent_change_24h").asText("0")))
-                .volume24h(new BigDecimal(quote.path("volume_24h").asText("0")))
-                .marketCap(new BigDecimal(quote.path("market_cap").asText("0")))
+                .symbol(normalizeSymbol(symbol))
+                .currentPrice(price)
+                .highPrice(price.max(openPrice))
+                .lowPrice(price.min(openPrice))
+                .openPrice(openPrice)
+                .priceChange24h(priceChange)
+                .percentChange24h(percentChange)
+                .volume24h(volume)
+                .marketCap(marketCap)
                 .updatedAt(LocalDateTime.now())
                 .build();
+    }
+
+    private CryptoPrice fetchLivePrice(String symbol) throws Exception {
+        boolean tryCmcFirst = ThreadLocalRandom.current().nextBoolean();
+        Exception firstException = null;
+
+        for (int i = 0; i < 2; i++) {
+            boolean useCmc = (i == 0) ? tryCmcFirst : !tryCmcFirst;
+            if (useCmc) {
+                try {
+                    log.info("[MarketService] Attempting to fetch live price from CoinMarketCap for {}", symbol);
+                    if (coinMarketCapApiKey == null || coinMarketCapApiKey.isBlank() || "demo".equalsIgnoreCase(coinMarketCapApiKey)) {
+                        throw new IllegalStateException("CoinMarketCap API key not configured");
+                    }
+                    String providerSymbol = extractProviderSymbol(symbol);
+                    String json = fetchCoinMarketCapPrice(providerSymbol);
+                    JsonNode root = OBJECT_MAPPER.readTree(json);
+                    JsonNode data = root.path("data").path(providerSymbol);
+                    JsonNode quote = data.path("quote").path("USD");
+                    if (quote.isMissingNode()) {
+                        throw new IllegalStateException("Unexpected CMC response for symbol " + providerSymbol);
+                    }
+                    return CryptoPrice.builder()
+                            .symbol(normalizeSymbol(symbol))
+                            .currentPrice(new BigDecimal(quote.path("price").asText("0")))
+                            .highPrice(new BigDecimal(quote.path("high_24h").asText("0")))
+                            .lowPrice(new BigDecimal(quote.path("low_24h").asText("0")))
+                            .openPrice(new BigDecimal(quote.path("open_24h").asText("0")))
+                            .priceChange24h(new BigDecimal(quote.path("volume_change_24h").asText("0")))
+                            .percentChange24h(new BigDecimal(quote.path("percent_change_24h").asText("0")))
+                            .volume24h(new BigDecimal(quote.path("volume_24h").asText("0")))
+                            .marketCap(new BigDecimal(quote.path("market_cap").asText("0")))
+                            .updatedAt(LocalDateTime.now())
+                            .build();
+                } catch (Exception e) {
+                    log.warn("[MarketService] CoinMarketCap fetch failed for {}: {}", symbol, e.getMessage());
+                    firstException = e;
+                }
+            } else {
+                try {
+                    log.info("[MarketService] Attempting to fetch live price from CoinGecko for {}", symbol);
+                    if (coinGeckoApiKey == null || coinGeckoApiKey.isBlank() || "demo".equalsIgnoreCase(coinGeckoApiKey)) {
+                        throw new IllegalStateException("CoinGecko API key not configured");
+                    }
+                    String coinId = mapToCoinGeckoId(symbol);
+                    String json = fetchCoinGeckoPrice(coinId);
+                    return parseCoinGeckoResponse(symbol, json);
+                } catch (Exception e) {
+                    log.warn("[MarketService] CoinGecko fetch failed for {}: {}", symbol, e.getMessage());
+                    firstException = e;
+                }
+            }
+        }
+
+        throw new RuntimeException("All live price providers failed. Last exception: " + (firstException != null ? firstException.getMessage() : "unknown"));
     }
 
     private CryptoPrice persistPrice(CryptoPrice nextPrice) {
