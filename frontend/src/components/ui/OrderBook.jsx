@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
 import { formatCurrency } from "../../lib/utils";
 
-export function OrderBook({ symbol, currentPrice, onSelectPrice }) {
+export function OrderBook({ symbol, currentPrice, onSelectPrice, limit = 4 }) {
   // Generate visual mock bids/asks centered around currentPrice
   const data = useMemo(() => {
     const price = currentPrice || 43250.5;
-    const spreads = [0.0005, 0.0012, 0.0018, 0.0025, 0.0032];
+    const spreads = [0.0005, 0.0012, 0.0018, 0.0025, 0.0032].slice(0, limit);
     
     const asks = spreads.map((spread, idx) => {
       const askPrice = price * (1 + spread);
@@ -25,7 +25,7 @@ export function OrderBook({ symbol, currentPrice, onSelectPrice }) {
   }, [currentPrice]);
 
   return (
-    <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-4 font-mono text-xs shadow-elevation-md">
+    <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-4 font-mono text-xs shadow-elevation-md h-full flex flex-col justify-between">
       <div className="flex justify-between items-center border-b border-hairline-on-dark pb-2 mb-3">
         <h4 className="font-heading text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-trading-up animate-pulse"></span>

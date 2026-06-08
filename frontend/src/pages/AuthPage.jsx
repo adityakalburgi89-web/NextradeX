@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
@@ -23,7 +24,11 @@ const AUTH_CONTENT = {
 };
 
 export default function AuthPage() {
-  const [mode, setMode] = useState("login");
+  const location = useLocation();
+  const [mode, setMode] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("mode") === "register" ? "register" : "login";
+  });
   const [form, setForm] = useState(initialForm);
   const [setupForm, setSetupForm] = useState(profileSetupForm);
   const [loading, setLoading] = useState(false);
@@ -32,6 +37,16 @@ export default function AuthPage() {
   const [needsSetup, setNeedsSetup] = useState(false);
 
   const content = AUTH_CONTENT[mode];
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const modeParam = params.get("mode");
+    if (modeParam === "register") {
+      setMode("register");
+    } else if (modeParam === "login") {
+      setMode("login");
+    }
+  }, [location.search]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

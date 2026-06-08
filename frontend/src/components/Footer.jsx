@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Globe } from "lucide-react";
-import xIcon from "../assets/Icons/x.com_icon.png";
+
 import linkedInIcon from "../assets/Icons/LinkedIn_icon.svg.png";
 import githubIcon from "../assets/Icons/github_icon.png";
 import gmailIcon from "../assets/Icons/Gmail_icon_svg.webp";
@@ -73,7 +73,10 @@ export default function Footer() {
             <h4 className="font-heading text-xs font-bold uppercase tracking-widest text-[#181a20] mb-4">Socials</h4>
             <nav className="space-y-3">
               <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
-                <img src={xIcon} alt="X" className="w-4 h-4 object-contain" /> <span>X (Twitter)</span>
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" fill="currentColor">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+                <span>X (Twitter)</span>
               </a>
               <a href="https://www.linkedin.com/in/aditya-kalburgi-080b5b267/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
                 <img src={linkedInIcon} alt="LinkedIn" className="w-4 h-4 object-contain" /> <span>LinkedIn</span>

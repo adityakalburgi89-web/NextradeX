@@ -21,19 +21,6 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
             <Link to="/" className="font-heading font-bold text-xl tracking-tight flex items-center gap-1 hover:opacity-90 transition-opacity">
               <span className="text-primary">NexTradeX</span>
             </Link>
-            
-            {/* Desktop Nav */}
-            <div className="hidden md:flex items-center gap-6 font-mono text-xs tracking-wider">
-              <TradeDropdown theme={theme} />
-              <NavLink to="/markets">Markets</NavLink>
-              {isLoggedIn && (
-                <>
-                  <NavLink to="/wallets">Wallets</NavLink>
-                  <NavLink to="/orders">Orders</NavLink>
-                  <NavLink to="/analytics">Analytics</NavLink>
-                </>
-              )}
-            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -46,31 +33,11 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
               <Search size={18} />
             </button>
 
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-white/[0.06] transition-all duration-300 text-muted hover:text-primary group"
-              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              <div className="relative w-[18px] h-[18px]">
-                <Sun 
-                  size={18} 
-                  className={`absolute inset-0 transition-all duration-500 ${
-                    theme === 'dark' 
-                      ? 'opacity-100 rotate-0 scale-100 text-primary' 
-                      : 'opacity-0 rotate-180 scale-0'
-                  }`}
-                />
-                <Moon 
-                  size={18} 
-                  className={`absolute inset-0 transition-all duration-500 ${
-                    theme === 'light' 
-                      ? 'opacity-100 rotate-0 scale-100 text-primary' 
-                      : 'opacity-0 -rotate-180 scale-0'
-                  }`}
-                />
-              </div>
-            </button>
+            {/* Desktop Nav — moved to right side */}
+            <div className="hidden md:flex items-center gap-6 font-mono text-xs tracking-wider">
+              <TradeDropdown theme={theme} />
+              <NavLink to="/markets">Markets</NavLink>
+            </div>
 
             {isLoggedIn ? (
               <DropdownMenu>
@@ -130,13 +97,39 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
             ) : (
               <>
                 <Button variant="tertiaryText" className="hidden sm:inline-flex text-xs" asChild>
-                  <Link to="/auth">Log In</Link>
+                  <Link to="/auth?mode=login">Log In</Link>
                 </Button>
                 <Button className="hidden sm:inline-flex text-xs h-9" asChild>
-                  <Link to="/auth">Connect Wallet</Link>
+                  <Link to="/auth?mode=register">Sign Up</Link>
                 </Button>
               </>
             )}
+
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-white/[0.06] transition-all duration-300 text-muted hover:text-primary group"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              <div className="relative w-[18px] h-[18px]">
+                <Sun 
+                  size={18} 
+                  className={`absolute inset-0 transition-all duration-500 ${
+                    theme === 'dark' 
+                      ? 'opacity-100 rotate-0 scale-100 text-primary' 
+                      : 'opacity-0 rotate-180 scale-0'
+                  }`}
+                />
+                <Moon 
+                  size={18} 
+                  className={`absolute inset-0 transition-all duration-500 ${
+                    theme === 'light' 
+                      ? 'opacity-100 rotate-0 scale-100 text-primary' 
+                      : 'opacity-0 -rotate-180 scale-0'
+                  }`}
+                />
+              </div>
+            </button>
 
             {/* Mobile hamburger */}
             <button
@@ -176,7 +169,8 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
             ) : (
               <>
                 <div className={`h-[1px] my-3 ${theme === 'dark' ? 'bg-hairline-on-dark' : 'bg-hairline-on-light'}`} />
-                <Link to="/auth" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
+                <Link to="/auth?mode=login" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
+                <Link to="/auth?mode=register" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
               </>
             )}
           </div>

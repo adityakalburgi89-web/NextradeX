@@ -22,7 +22,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs"
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "../components/ui/tooltip";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { formatCurrency, formatPercent } from "../lib/utils";
-import { ArrowRightLeft, Info, Trash2, Activity, Coins, ClipboardList, Lock } from "lucide-react";
+import { ArrowRightLeft, Info, Trash2, Activity, Coins, ClipboardList, Lock, Wallet } from "lucide-react";
 
 const initialForm = {
   symbol: "BTCUSDT",
@@ -79,6 +79,28 @@ export default function SpotTradingPage() {
   const [spotWalletBalance, setSpotWalletBalance] = useState(0.00);
   const [loadingWallets, setLoadingWallets] = useState(true);
   const [pricesMap, setPricesMap] = useState({});
+  const [recentTrades, setRecentTrades] = useState([]);
+
+  // Pre-populate recent trades when currentPrice is loaded or symbol changes
+  useEffect(() => {
+    if (currentPrice) {
+      const basePrice = Number(currentPrice);
+      const initialTrades = Array.from({ length: 6 }).map((_, idx) => {
+        const diff = (Math.random() - 0.5) * (basePrice * 0.002);
+        const tradePrice = basePrice + diff;
+        const timeOffset = idx * 3;
+        const timeStr = new Date(Date.now() - timeOffset * 1000).toTimeString().split(" ")[0];
+        return {
+          id: idx + "_" + form.symbol,
+          price: parseFloat(tradePrice.toFixed(2)),
+          amount: parseFloat((Math.random() * 1.5 + 0.01).toFixed(4)),
+          time: timeStr,
+          side: Math.random() > 0.48 ? "BUY" : "SELL"
+        };
+      });
+      setRecentTrades(initialTrades);
+    }
+  }, [currentPrice, form.symbol]);
 
   const handlePriceUpdate = (data) => {
     if (data) {
@@ -108,6 +130,16 @@ export default function SpotTradingPage() {
       const newPrice = Number(update.currentPrice);
       setCurrentPrice(newPrice);
       setPriceSnapshot(update);
+
+      // Add a new trade to recent trades list
+      const newTrade = {
+        id: Date.now(),
+        price: parseFloat(newPrice.toFixed(2)),
+        amount: parseFloat((Math.random() * 1.5 + 0.01).toFixed(4)),
+        time: new Date().toTimeString().split(" ")[0],
+        side: Math.random() > 0.48 ? "BUY" : "SELL"
+      };
+      setRecentTrades((trades) => [newTrade, ...trades.slice(0, 8)]);
 
       // Real-time chart update: modify the last candle
       setCandleData((prev) => {
@@ -376,6 +408,8 @@ export default function SpotTradingPage() {
     return quantity * price;
   }, [currentPrice, form.orderType, form.price, form.quantity]);
 
+  const baseAsset = useMemo(() => form.symbol.replace("USDT", "").toUpperCase(), [form.symbol]);
+
   const chartStats = [
     {
       label: "Last price",
@@ -467,8 +501,8 @@ export default function SpotTradingPage() {
           {/* Three-Column Split Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
             
-            {/* Main Chart Panel (6-cols) & Bottom Tab Panel */}
-            <div className="lg:col-span-6 space-y-4">
+            {/* Main Chart Panel (9-cols) & Bottom Sub-Grid Layout */}
+            <div className="lg:col-span-9 space-y-4">
               <TradingChartPanel
                 title="Spot Workspace"
                 description="Execute clean spot orders with backend candles, live pricing, and a calmer SaaS-grade order entry flow."
@@ -481,9 +515,11 @@ export default function SpotTradingPage() {
                 stats={chartStats}
               />
 
-              {/* Bottom Tab Panel */}
-              <Tabs value={activeBottomTab} onValueChange={setActiveBottomTab} className="w-full">
-                <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md">
+              {/* Bottom Row Sub-Grid: Tabs (9-cols) + Order Book (3-cols) */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div className="md:col-span-9 h-full">
+                  <Tabs value={activeBottomTab} onValueChange={setActiveBottomTab} className="w-full h-full flex flex-col">
+                    <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md h-full flex flex-col">
                   <div className="bg-canvas-dark/30 border-b border-hairline-on-dark px-4 flex items-center justify-between">
                     <TabsList className="flex gap-4 bg-transparent border-0 p-0 h-auto rounded-none">
                       {[
@@ -521,7 +557,7 @@ export default function SpotTradingPage() {
                     )}
                   </div>
 
-                <CardContent className="p-0 min-h-[160px]">
+                <CardContent className="p-0 min-h-[160px] flex-1 flex flex-col">
                   {activeBottomTab === "POSITIONS" && (
                     spotPositions.length === 0 ? (
                       <div className="py-12 text-center text-muted font-mono text-xs">
@@ -721,22 +757,23 @@ export default function SpotTradingPage() {
                       </div>
                     )
                   )}
-                </CardContent>
-              </Card>
-            </Tabs>
-            </div>
+                </CardContent>                </Card>
+              </Tabs>
+              </div>
 
-            {/* Order Book Panel (3-cols) */}
-            <div className="lg:col-span-3">
-              <OrderBook 
-                symbol={form.symbol} 
-                currentPrice={currentPrice} 
-                onSelectPrice={(p) => setForm((prev) => ({ ...prev, price: p.toFixed(2), orderType: "LIMIT" }))} 
-              />
+              {/* Order Book Panel (3-cols) */}
+              <div className="md:col-span-3 h-full">
+                <OrderBook 
+                  symbol={form.symbol} 
+                  currentPrice={currentPrice} 
+                  onSelectPrice={(p) => setForm((prev) => ({ ...prev, price: p.toFixed(2), orderType: "LIMIT" }))} 
+                />
+              </div>
             </div>
+          </div>
 
             {/* Order Entry Panel (3-cols) */}
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-3 space-y-4">
               <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl overflow-hidden shadow-elevation-md relative">
                 {!hasAuthToken() && (
                   <div className="absolute inset-0 bg-[#0a0a0f]/85 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6 text-center">
@@ -833,15 +870,18 @@ export default function SpotTradingPage() {
                       <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
                         Quantity
                       </label>
-                      <Input
-                        type="number"
-                        step="0.0001"
-                        name="quantity"
-                        value={form.quantity}
-                        onChange={handleChange}
-                        required
-                        className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
-                      />
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          step="0.0001"
+                          name="quantity"
+                          value={form.quantity}
+                          onChange={handleChange}
+                          required
+                          className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md pr-12"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">{baseAsset}</span>
+                      </div>
                     </div>
 
                     {/* Sizing Percentage dot-slider chips */}
@@ -863,15 +903,18 @@ export default function SpotTradingPage() {
                         <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
                           Trigger Price
                         </label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          name="stopPrice"
-                          value={form.stopPrice}
-                          onChange={handleChange}
-                          required
-                          className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
-                        />
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            step="0.01"
+                            name="stopPrice"
+                            value={form.stopPrice}
+                            onChange={handleChange}
+                            required
+                            className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md pr-12"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">USDT</span>
+                        </div>
                       </div>
                     )}
 
@@ -880,15 +923,18 @@ export default function SpotTradingPage() {
                         <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
                           Limit Price
                         </label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          name="price"
-                          value={form.price}
-                          onChange={handleChange}
-                          required
-                          className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
-                        />
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            step="0.01"
+                            name="price"
+                            value={form.price}
+                            onChange={handleChange}
+                            required
+                            className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md pr-12"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">USDT</span>
+                        </div>
                       </div>
                     )}
 
@@ -933,6 +979,108 @@ export default function SpotTradingPage() {
                     </Button>
                   </CardFooter>
                 </form>
+              </Card>
+
+              {/* Spot Assets & Quick Actions Card */}
+              <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl p-4 space-y-4 shadow-elevation-md">
+                <div className="flex justify-between items-center border-b border-white/[0.04] pb-2 mb-1">
+                  <h4 className="font-heading text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                    <Wallet size={14} className="text-primary" />
+                    Spot Assets
+                  </h4>
+                  <span className="text-[9px] font-mono font-bold bg-[#fcd535]/15 text-[#fcd535] px-1 rounded uppercase tracking-wider">Account</span>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[10px] text-muted font-mono uppercase tracking-wider block">Estimated Value</span>
+                  <div className="text-lg font-bold font-mono text-white flex items-baseline gap-1.5">
+                    {spotWalletBalance.toFixed(2)} <span className="text-xs text-muted font-normal">USDT</span>
+                  </div>
+                  <div className="text-[10px] font-mono text-muted">
+                    ≈ ₹{(spotWalletBalance * 83).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                </div>
+
+                {/* Asset holdings mini list */}
+                <div className="border border-hairline-on-dark bg-canvas-dark/40 rounded-lg p-2.5 space-y-2 text-[10px] font-mono">
+                  <div className="flex justify-between items-center text-muted">
+                    <span>Asset</span>
+                    <span className="text-right">Balance</span>
+                  </div>
+                  <div className="flex justify-between items-center border-t border-white/[0.02] pt-1.5">
+                    <span className="text-white font-semibold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#fcd535]"></span>
+                      USDT
+                    </span>
+                    <span className="text-white font-bold">{spotWalletBalance.toFixed(2)}</span>
+                  </div>
+                  {baseAsset !== "USDT" && (
+                    <div className="flex justify-between items-center border-t border-white/[0.02] pt-1.5">
+                      <span className="text-white font-semibold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                        {baseAsset}
+                      </span>
+                      <span className="text-white font-bold">
+                        {(() => {
+                          const pos = spotPositions.find(p => p.symbol.toUpperCase() === form.symbol.toUpperCase());
+                          return pos ? pos.quantity.toFixed(4) : "0.0000";
+                        })()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Quick Actions Buttons */}
+                <div className="grid grid-cols-3 gap-2 pt-1">
+                  <Link to="/wallets" className="flex-1">
+                    <button className="w-full py-2 bg-[#fcd535] hover:bg-[#fcd535]/90 text-[#181a20] rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
+                      DEPOSIT
+                    </button>
+                  </Link>
+                  <Link to="/wallets" className="flex-1">
+                    <button className="w-full py-2 bg-canvas-dark hover:bg-white/[0.04] border border-hairline-on-dark text-white rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
+                      WITHDRAW
+                    </button>
+                  </Link>
+                  <Link to="/wallets" className="flex-1">
+                    <button className="w-full py-2 bg-canvas-dark hover:bg-white/[0.04] border border-hairline-on-dark text-white rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
+                      TRANSFER
+                    </button>
+                  </Link>
+                </div>
+              </Card>
+
+              {/* Streaming Real-Time matched Trades Panel */}
+              <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-4 font-mono text-xs shadow-elevation-md">
+                <div className="flex justify-between items-center border-b border-hairline-on-dark pb-2 mb-3">
+                  <h4 className="font-heading text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-trading-up animate-ping"></span>
+                    Recent Trades
+                  </h4>
+                  <span className="text-[10px] text-muted">{form.symbol} Live</span>
+                </div>
+
+                <div className="flex justify-between text-muted text-[10px] uppercase font-semibold pb-1 border-b border-white/[0.03] mb-1.5">
+                  <span>Price(USDT)</span>
+                  <span>Amount({baseAsset})</span>
+                  <span className="text-right">Time</span>
+                </div>
+
+                <div className="space-y-1">
+                  {recentTrades.length === 0 ? (
+                    <div className="py-4 text-center text-muted text-[10px]">Waiting for market ticks...</div>
+                  ) : (
+                    recentTrades.slice(0, 5).map((t) => (
+                      <div key={t.id} className="flex justify-between items-center h-5 px-1 hover:bg-white/[0.02] rounded transition-colors">
+                        <span className={`font-bold ${t.side === "BUY" ? "text-trading-up" : "text-trading-down"}`}>
+                          {formatCurrency(t.price)}
+                        </span>
+                        <span className="text-body font-medium">{t.amount}</span>
+                        <span className="text-muted text-[10px] text-right">{t.time}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
               </Card>
             </div>
           </div>

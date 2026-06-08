@@ -199,21 +199,21 @@ export default function HomePage() {
   const dynamicTabs = {
     popular: getMappedTab(["BTCUSDT", "ETHUSDT", "SOLUSDT", "LINKUSDT", "LTCUSDT"]),
     new: getMappedTab(["ARBUSDT", "OPUSDT", "SUIUSDT", "TIAUSDT", "SEIUSDT"]),
-    gainers: prices.length > 0 
+    gainers: prices.length > 0
       ? [...prices]
-          .sort((a, b) => Number(b.percentChange24h) - Number(a.percentChange24h))
-          .slice(0, 5)
-          .map(match => {
-            const isUp = Number(match.percentChange24h) >= 0;
-            return {
-              pair: `${match.symbol.replace("USDT", "")} / USDT`,
-              price: `$${Number(match.currentPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-              change: `${isUp ? "+" : ""}${Number(match.percentChange24h).toFixed(2)}%`,
-              isUp,
-              vol: formatVol(Number(match.volume24h)),
-              rawSymbol: match.symbol
-            };
-          })
+        .sort((a, b) => Number(b.percentChange24h) - Number(a.percentChange24h))
+        .slice(0, 5)
+        .map(match => {
+          const isUp = Number(match.percentChange24h) >= 0;
+          return {
+            pair: `${match.symbol.replace("USDT", "")} / USDT`,
+            price: `$${Number(match.currentPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+            change: `${isUp ? "+" : ""}${Number(match.percentChange24h).toFixed(2)}%`,
+            isUp,
+            vol: formatVol(Number(match.volume24h)),
+            rawSymbol: match.symbol
+          };
+        })
       : getMappedTab(["SUIUSDT", "ARBUSDT", "OPUSDT", "SOLUSDT", "BTCUSDT"])
   };
 
@@ -234,11 +234,11 @@ export default function HomePage() {
           </video>
           {/* Dark Overlay Gradient to maintain contrast and blend the video */}
           <div className="absolute inset-0 bg-gradient-to-b from-canvas-dark/10 via-canvas-dark/70 to-canvas-dark z-0" />
-          
+
           {/* Subtle background ambient mesh */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/[0.05] blur-[160px] pointer-events-none z-0" />
-          
-          <motion.div 
+
+          <motion.div
             className="max-w-7xl mx-auto px-6 relative z-10 w-full text-left"
             variants={staggerContainer}
             initial="hidden"
@@ -246,7 +246,7 @@ export default function HomePage() {
           >
             {/* Display Headline - Text Reveal */}
             <div className="overflow-hidden">
-              <motion.h1 
+              <motion.h1
                 variants={textReveal}
                 className="font-heading text-4xl sm:text-5xl md:text-[60px] lg:text-[72px] font-bold leading-[1.1] mb-6 tracking-tight"
               >
@@ -256,13 +256,13 @@ export default function HomePage() {
             </div>
 
             {/* Subtext */}
-            <motion.p 
+            <motion.p
               variants={{
                 hidden: { opacity: 0, y: 25 },
-                visible: { 
-                  opacity: 1, 
+                visible: {
+                  opacity: 1,
                   y: 0,
-                  transition: { duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.15 } 
+                  transition: { duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.15 }
                 }
               }}
               className="text-muted text-base md:text-lg max-w-2xl mb-10 leading-relaxed font-sans"
@@ -271,13 +271,13 @@ export default function HomePage() {
             </motion.p>
 
             {/* Action Buttons */}
-            <motion.div 
+            <motion.div
               variants={{
                 hidden: { opacity: 0, y: 20 },
-                visible: { 
-                  opacity: 1, 
-                  y: 0, 
-                  transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 } 
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }
                 }
               }}
               className="flex flex-col sm:flex-row items-center gap-4 justify-start"
@@ -295,7 +295,7 @@ export default function HomePage() {
         {/* TRUST BADGES GRID (Flat surface cards) */}
         <section className="bg-canvas-dark py-12 border-b border-hairline-on-dark">
           <div className="max-w-7xl mx-auto px-6">
-            <motion.div 
+            <motion.div
               variants={staggerContainer}
               initial="hidden"
               whileInView="visible"
@@ -308,8 +308,8 @@ export default function HomePage() {
                 { badge: "100%", label: "Reserves (SAFU)", desc: "All simulated assets collateralized 1:1" },
                 { badge: "0.0%", label: "Slippage Guarantee", desc: "Precise simulated matching execution" },
               ].map((item, idx) => (
-                <motion.div 
-                  key={idx} 
+                <motion.div
+                  key={idx}
                   variants={fadeInUpSpring}
                   className="bg-surface-card-dark rounded-lg border border-hairline-on-dark p-5 flex items-center gap-4 hover:border-primary/30 transition-all duration-300 interactive-surface"
                 >
@@ -329,7 +329,7 @@ export default function HomePage() {
         {/* HERO USER STAT BANDS */}
         <section className="py-20 bg-canvas-dark border-b border-hairline-on-dark text-center relative overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-primary/[0.02] blur-[130px] pointer-events-none" />
-          <motion.div 
+          <motion.div
             variants={fadeInUpSpring}
             initial="hidden"
             whileInView="visible"
@@ -354,7 +354,7 @@ export default function HomePage() {
         {/* FUNDS SAFU BAND (reserves stats) */}
         <section className="py-20 bg-canvas-dark border-b border-hairline-on-dark">
           <div className="max-w-7xl mx-auto px-6">
-            <motion.div 
+            <motion.div
               variants={fadeInUpSpring}
               initial="hidden"
               whileInView="visible"
@@ -368,7 +368,7 @@ export default function HomePage() {
               </p>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               variants={staggerContainer}
               initial="hidden"
               whileInView="visible"
@@ -380,8 +380,8 @@ export default function HomePage() {
                 { value: "100.00%", label: "Collateralized Ratio", desc: "Virtual funds fully collateralized by simulated vaults" },
                 { value: "45,290 BTC", label: "Simulated Funds Recovered", desc: "Mock trading volume protection system recovery pool" }
               ].map((item, idx) => (
-                <motion.div 
-                  key={idx} 
+                <motion.div
+                  key={idx}
                   variants={fadeInUpSpring}
                   className="border-l border-hairline-on-dark pl-6 flex flex-col justify-between"
                 >
@@ -399,7 +399,7 @@ export default function HomePage() {
         {/* CRYPTOCURRENCIES LIST */}
         <section className="py-20 bg-canvas-dark border-b border-hairline-on-dark">
           <div className="max-w-7xl mx-auto px-6">
-            <motion.div 
+            <motion.div
               variants={fadeInUpSpring}
               initial="hidden"
               whileInView="visible"
@@ -413,7 +413,7 @@ export default function HomePage() {
               </p>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               variants={fadeInUpSpring}
               initial="hidden"
               whileInView="visible"
@@ -427,11 +427,10 @@ export default function HomePage() {
                     <button
                       key={tab}
                       onClick={() => setActiveMarketTab(tab)}
-                      className={`px-4 py-2 text-xs font-semibold rounded-md transition-all duration-200 capitalize ${
-                        activeMarketTab === tab
-                          ? "bg-primary text-on-primary font-bold shadow-glow-primary"
-                          : "text-muted hover:text-white bg-transparent"
-                      }`}
+                      className={`px-4 py-2 text-xs font-semibold rounded-md transition-all duration-200 capitalize ${activeMarketTab === tab
+                        ? "bg-primary text-on-primary font-bold shadow-glow-primary"
+                        : "text-muted hover:text-white bg-transparent"
+                        }`}
                     >
                       {tab === "popular" ? "Popular Pairs" : tab === "new" ? "New Listings" : "Top Gainers"}
                     </button>
@@ -481,7 +480,7 @@ export default function HomePage() {
         {/* QR PROMO & APP DOWNLOAD SECTION */}
         <section className="py-20 bg-canvas-dark border-b border-hairline-on-dark">
           <div className="max-w-7xl mx-auto px-6">
-            <motion.div 
+            <motion.div
               variants={fadeInUpSpring}
               initial="hidden"
               whileInView="visible"
@@ -523,10 +522,11 @@ export default function HomePage() {
                   </a>
                 </div>
               </div>
-              
+
               {/* Actual QR Code Image */}
               <div className="relative group bg-white p-3 rounded-xl border border-hairline-on-dark flex flex-col items-center justify-center flex-shrink-0 shadow-elevation-lg overflow-hidden">
-                <style dangerouslySetInnerHTML={{__html: `
+                <style dangerouslySetInnerHTML={{
+                  __html: `
                   @keyframes scan-line {
                     0% { top: 0%; opacity: 0; }
                     5% { opacity: 1; }
@@ -560,7 +560,7 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16">
               {/* Support Card */}
-              <motion.div 
+              <motion.div
                 variants={fadeInUpSpring}
                 initial="hidden"
                 whileInView="visible"
@@ -621,7 +621,7 @@ export default function HomePage() {
               </motion.div>
 
               {/* FAQ */}
-              <motion.div 
+              <motion.div
                 variants={staggerContainer}
                 initial="hidden"
                 whileInView="visible"
@@ -671,7 +671,7 @@ export default function HomePage() {
         {/* CTA BAND */}
         <section className="py-20 bg-canvas-dark">
           <div className="max-w-7xl mx-auto px-6">
-            <motion.div 
+            <motion.div
               variants={fadeInUpSpring}
               initial="hidden"
               whileInView="visible"
