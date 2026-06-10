@@ -15,6 +15,7 @@ const Input = React.forwardRef(({ className, type, rightIcon, ...props }, ref) =
                     className
                 )}
                 ref={ref}
+                aria-invalid={props['aria-invalid']}
                 {...props}
             />
             {rightIcon && (

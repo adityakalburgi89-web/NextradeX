@@ -130,6 +130,21 @@ export default function HomePage() {
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [activeVideo, setActiveVideo] = useState(0);
 
+  // Reduced motion hook
+  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Motion variants with reduced motion support
+  const getReducedMotionVariants = (variants) => {
+    if (prefersReducedMotion) {
+      // Return visible state without animation
+      return {
+        hidden: { opacity: 0 },
+        visible: { opacity: 1 }
+      };
+    }
+    return variants;
+  };
+
   const platformVideos = [
     { src: vidExplainer,      title: "NexTradeX Overview",        desc: "A complete walkthrough of the NexTradeX simulated trading platform and its core features." },
     { src: vidAboutCrypto,    title: "About Cryptocurrency",       desc: "Understand what cryptocurrency is, how blockchain works, and why it matters for traders." },
@@ -263,14 +278,14 @@ export default function HomePage() {
 
           <motion.div
             className="max-w-7xl mx-auto px-6 relative z-10 w-full text-left"
-            variants={staggerContainer}
+            variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : staggerContainer}
             initial="hidden"
             animate="visible"
           >
             {/* Display Headline - Text Reveal */}
             <div className="overflow-hidden">
               <motion.h1
-                variants={textReveal}
+                variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : textReveal}
                 className="font-heading text-4xl sm:text-5xl md:text-[60px] lg:text-[72px] font-bold leading-[1.1] mb-6 tracking-tight"
               >
                 TRADE WITH. <br />
@@ -280,7 +295,7 @@ export default function HomePage() {
 
             {/* Subtext */}
             <motion.p
-              variants={{
+              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : {
                 hidden: { opacity: 0, y: 25 },
                 visible: {
                   opacity: 1,
@@ -319,7 +334,7 @@ export default function HomePage() {
         <section className="bg-canvas-dark light:bg-canvas-light py-12 border-b border-hairline-on-dark light:border-hairline-on-light">
           <div className="max-w-7xl mx-auto px-6">
             <motion.div
-              variants={staggerContainer}
+              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : staggerContainer}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-50px" }}
@@ -333,7 +348,7 @@ export default function HomePage() {
               ].map((item, idx) => (
                 <motion.div
                   key={idx}
-                  variants={fadeInUpSpring}
+                  variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
                   className="bg-surface-card-dark light:bg-canvas-light rounded-lg border border-hairline-on-dark light:border-hairline-on-light p-5 flex items-center gap-4 hover:border-primary/30 transition-all duration-300 interactive-surface"
                 >
                   <span className="text-primary font-mono text-xl font-bold px-3 py-1 bg-primary/10 border border-primary/20 rounded flex-shrink-0">
@@ -353,7 +368,7 @@ export default function HomePage() {
         <section className="py-20 bg-canvas-dark light:bg-canvas-light border-b border-hairline-on-dark light:border-hairline-on-light text-center relative overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-primary/[0.02] blur-[130px] pointer-events-none" />
           <motion.div
-            variants={fadeInUpSpring}
+            variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -378,7 +393,7 @@ export default function HomePage() {
         <section className="py-20 bg-canvas-dark light:bg-canvas-light border-b border-hairline-on-dark light:border-hairline-on-light">
           <div className="max-w-7xl mx-auto px-6">
             <motion.div
-              variants={fadeInUpSpring}
+              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
@@ -392,7 +407,7 @@ export default function HomePage() {
             </motion.div>
 
             <motion.div
-              variants={staggerContainer}
+              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : staggerContainer}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
@@ -405,7 +420,7 @@ export default function HomePage() {
               ].map((item, idx) => (
                 <motion.div
                   key={idx}
-                  variants={fadeInUpSpring}
+                  variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
                   className="border-l border-hairline-on-dark light:border-hairline-on-light pl-6 flex flex-col justify-between"
                 >
                   <div className="font-mono text-2xl sm:text-3xl font-bold text-primary mb-2 tracking-tight">{item.value}</div>
@@ -423,7 +438,7 @@ export default function HomePage() {
         <section className="py-20 bg-canvas-dark light:bg-canvas-light border-b border-hairline-on-dark light:border-hairline-on-light">
           <div className="max-w-7xl mx-auto px-6">
             <motion.div
-              variants={fadeInUpSpring}
+              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
@@ -437,7 +452,7 @@ export default function HomePage() {
             </motion.div>
 
             <motion.div
-              variants={fadeInUpSpring}
+              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
@@ -505,7 +520,7 @@ export default function HomePage() {
         <section className="py-20 bg-canvas-dark light:bg-canvas-light border-b border-hairline-on-dark light:border-hairline-on-light">
           <div className="max-w-7xl mx-auto px-6">
             <motion.div
-              variants={fadeInUpSpring}
+              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
@@ -520,7 +535,7 @@ export default function HomePage() {
 
             {/* Featured player + full sidebar */}
             <motion.div
-              variants={fadeInUpSpring}
+              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
@@ -580,7 +595,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16">
               {/* Support Card */}
               <motion.div
-                variants={fadeInUpSpring}
+                variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
@@ -641,7 +656,7 @@ export default function HomePage() {
 
               {/* FAQ */}
               <motion.div
-                variants={staggerContainer}
+                variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : staggerContainer}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
@@ -691,7 +706,7 @@ export default function HomePage() {
         <section className="py-20 bg-canvas-dark light:bg-canvas-light">
           <div className="max-w-7xl mx-auto px-6">
             <motion.div
-              variants={fadeInUpSpring}
+              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}

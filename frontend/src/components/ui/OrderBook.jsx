@@ -41,12 +41,16 @@ export function OrderBook({ symbol, currentPrice, onSelectPrice, limit = 4 }) {
       </div>
 
       {/* Asks (Sell Orders - Red) */}
-      <div className="space-y-0.5">
+      <div aria-label="Ask orders (sell orders)" className="space-y-0.5">
         {data.asks.map((ask, idx) => (
           <div
             key={idx}
             onClick={() => onSelectPrice && onSelectPrice(ask.price)}
-            className="relative flex justify-between items-center h-6 hover:bg-white/[0.03] cursor-pointer rounded px-1 group transition-colors"
+            aria-label={`Sell ${formatCurrency(ask.price)}, size ${ask.size}`}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectPrice && onSelectPrice(ask.price); }}
+            className="relative flex justify-between items-center h-6 min-h-[44px] hover:bg-white/[0.03] cursor-pointer rounded px-1 group transition-colors"
           >
             <div
               className="absolute right-0 top-0 bottom-0 bg-trading-down/5 group-hover:bg-trading-down/10 transition-colors"
@@ -64,6 +68,10 @@ export function OrderBook({ symbol, currentPrice, onSelectPrice, limit = 4 }) {
         <span className="text-[10px] text-muted uppercase tracking-wider block">Spread / Mark Price</span>
         <span
           onClick={() => onSelectPrice && onSelectPrice(currentPrice)}
+          role="button"
+          tabIndex={0}
+          aria-label={`Select mark price ${formatCurrency(currentPrice || 0)}`}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectPrice && onSelectPrice(currentPrice); }}
           className="text-lg font-bold text-trading-up cursor-pointer hover:underline"
         >
           {formatCurrency(currentPrice || 0)}
@@ -71,12 +79,16 @@ export function OrderBook({ symbol, currentPrice, onSelectPrice, limit = 4 }) {
       </div>
 
       {/* Bids (Buy Orders - Green) */}
-      <div className="space-y-0.5">
+      <div aria-label="Bid orders (buy orders)" className="space-y-0.5">
         {data.bids.map((bid, idx) => (
           <div
             key={idx}
             onClick={() => onSelectPrice && onSelectPrice(bid.price)}
-            className="relative flex justify-between items-center h-6 hover:bg-white/[0.03] cursor-pointer rounded px-1 group transition-colors"
+            aria-label={`Buy ${formatCurrency(bid.price)}, size ${bid.size}`}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectPrice && onSelectPrice(bid.price); }}
+            className="relative flex justify-between items-center h-6 min-h-[44px] hover:bg-white/[0.03] cursor-pointer rounded px-1 group transition-colors"
           >
             <div
               className="absolute right-0 top-0 bottom-0 bg-trading-up/5 group-hover:bg-trading-up/10 transition-colors"

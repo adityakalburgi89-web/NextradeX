@@ -7,11 +7,23 @@ export default function SearchModal({ open, onClose, query, setQuery, isLoggedIn
   const navigate = useNavigate();
   const inputRef = useRef(null);
 
+  // Focus the search input when modal opens
   useEffect(() => {
     if (open && inputRef.current) {
       inputRef.current.focus();
     }
   }, [open]);
+
+  // Escape key closes the modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && open) {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
 
   const searchResults = [
     { label: "Markets", path: "/markets", description: "View all markets" },
@@ -40,10 +52,16 @@ export default function SearchModal({ open, onClose, query, setQuery, isLoggedIn
 
   return (
     <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
-      <DialogContent className="max-w-xl w-full bg-[#0a0a0f] border-white/10 rounded-2xl p-0 overflow-hidden shadow-2xl text-white">
+      <DialogContent 
+        className="max-w-xl w-full bg-[#0a0a0f] border-white/10 rounded-2xl p-0 overflow-hidden shadow-2xl text-white"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Search"
+      >
         <DialogHeader className="p-0">
+          <DialogTitle className="sr-only">Search</DialogTitle>
           <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
-            <Search size={18} className="text-muted" />
+            <Search size={18} className="text-muted" aria-hidden="true" />
             <input
               ref={inputRef}
               type="text"

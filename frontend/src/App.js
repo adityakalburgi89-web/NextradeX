@@ -40,6 +40,10 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import SearchModal from "./components/SearchModal";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ErrorBoundary from "./components/ErrorBoundary";
+import SkipNav from "./components/SkipNav";
+import { ToastProvider } from "./components/Toast/ToastProvider";
+import ToastContainer from "./components/Toast/ToastContainer";
 
 function App() {
   const { theme, toggleTheme } = useTheme();
@@ -86,100 +90,108 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground relative overflow-hidden font-body">
-      {/* Background Ambient Glows */}
-      <div className={`fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] blur-[150px] rounded-full pointer-events-none animate-drift transition-all duration-500 ${theme === 'dark' ? 'bg-primary/[0.07]' : 'bg-primary/[0.03]'}`} />
-      <div className={`fixed bottom-0 right-0 w-[600px] h-[600px] blur-[180px] rounded-full pointer-events-none animate-drift transition-all duration-500 ${theme === 'dark' ? 'bg-secondary/[0.07]' : 'bg-secondary/[0.03]'}`} style={{ animationDelay: "-10s" }} />
-      <div className={`fixed top-1/2 left-0 w-[400px] h-[400px] blur-[120px] rounded-full pointer-events-none animate-drift transition-all duration-500 ${theme === 'dark' ? 'bg-tertiary/[0.03]' : 'bg-tertiary/[0.01]'}`} style={{ animationDelay: "-5s" }} />
+    <ToastProvider>
+      <div className="min-h-screen bg-background text-foreground relative overflow-hidden font-body">
+        {/* Background Ambient Glows */}
+        <div className={`fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] blur-[150px] rounded-full pointer-events-none animate-drift transition-all duration-500 ${theme === 'dark' ? 'bg-primary/[0.07]' : 'bg-primary/[0.03]'}`} />
+        <div className={`fixed bottom-0 right-0 w-[600px] h-[600px] blur-[180px] rounded-full pointer-events-none animate-drift transition-all duration-500 ${theme === 'dark' ? 'bg-secondary/[0.07]' : 'bg-secondary/[0.03]'}`} style={{ animationDelay: "-10s" }} />
+        <div className={`fixed top-1/2 left-0 w-[400px] h-[400px] blur-[120px] rounded-full pointer-events-none animate-drift transition-all duration-500 ${theme === 'dark' ? 'bg-tertiary/[0.03]' : 'bg-tertiary/[0.01]'}`} style={{ animationDelay: "-5s" }} />
 
-      {/* Navigation */}
-      <Navbar
-        theme={theme}
-        toggleTheme={toggleTheme}
-        isLoggedIn={isLoggedIn}
-        user={user}
-        setSearchOpen={setSearchOpen}
-        triggerLogoutConfirm={triggerLogoutConfirm}
-      />
+        {/* Accessibility Skip Nav */}
+        <SkipNav />
 
-      <div className="relative z-10 w-full">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/dashboard" element={<ProtectedRoute isLoggedIn={isLoggedIn}><DashboardPage /></ProtectedRoute>} />
-          <Route path="/markets" element={<MarketsPage />} />
-          <Route path="/trade/spot" element={<SpotTradingPage />} />
-          <Route path="/trade/futures" element={<FuturesTradingPage />} />
-          <Route path="/trade/options" element={<OptionsTradingPage />} />
-          <Route path="/trade/margin" element={<MarginTradingPage />} />
-          <Route path="/analytics" element={<ProtectedRoute isLoggedIn={isLoggedIn}><PortfolioAnalyticsPage /></ProtectedRoute>} />
+        {/* Navigation */}
+        <Navbar
+          theme={theme}
+          toggleTheme={toggleTheme}
+          isLoggedIn={isLoggedIn}
+          user={user}
+          setSearchOpen={setSearchOpen}
+          triggerLogoutConfirm={triggerLogoutConfirm}
+        />
 
-          <Route path="/wallets" element={<ProtectedRoute isLoggedIn={isLoggedIn}><WalletsPage /></ProtectedRoute>} />
-          <Route path="/orders" element={<ProtectedRoute isLoggedIn={isLoggedIn}><OrdersPage /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute isLoggedIn={isLoggedIn}><ProfilePage /></ProtectedRoute>} />
-          <Route path="/earn" element={<ProtectedRoute isLoggedIn={isLoggedIn}><EarnPage /></ProtectedRoute>} />
-          <Route path="/funding" element={<ProtectedRoute isLoggedIn={isLoggedIn}><FundingPage /></ProtectedRoute>} />
-          <Route path="/sub-accounts" element={<ProtectedRoute isLoggedIn={isLoggedIn}><SubAccountsPage /></ProtectedRoute>} />
-          <Route path="/careers" element={<CareersPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/contract-specs" element={<ContractSpecsPage />} />
-          <Route path="/trading-fees" element={<TradingFeesPage />} />
-          <Route path="/settlement-prices" element={<SettlementPricesPage />} />
-          <Route path="/bug-bounty" element={<BugBountyPage />} />
-          <Route path="/api-docs" element={<APIDocsPage />} />
-          <Route path="/support" element={<SupportPage />} />
-          <Route path="/user-guide" element={<UserGuidePage />} />
-          <Route path="/referral" element={<ReferralPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </div>
+        <ErrorBoundary>
+          <div id="main-content" className="relative z-10 w-full">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/dashboard" element={<ProtectedRoute isLoggedIn={isLoggedIn}><DashboardPage /></ProtectedRoute>} />
+              <Route path="/markets" element={<MarketsPage />} />
+              <Route path="/trade/spot" element={<SpotTradingPage />} />
+              <Route path="/trade/futures" element={<FuturesTradingPage />} />
+              <Route path="/trade/options" element={<OptionsTradingPage />} />
+              <Route path="/trade/margin" element={<MarginTradingPage />} />
+              <Route path="/analytics" element={<ProtectedRoute isLoggedIn={isLoggedIn}><PortfolioAnalyticsPage /></ProtectedRoute>} />
 
-      {/* Search Modal */}
-      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} query={searchQuery} setQuery={setSearchQuery} isLoggedIn={isLoggedIn} />
-
-      {/* Custom Logout Confirmation Modal */}
-      <Dialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
-        <DialogContent className="bg-[#1e2329] border-white/[0.08] p-6 rounded-2xl max-w-sm w-full shadow-elevation-lg text-center space-y-5 text-white">
-          <DialogHeader className="space-y-0">
-            <div className="flex justify-center mb-4">
-              <div className="rounded-full bg-trading-down/10 p-3 text-trading-down">
-                <LogOut size={24} />
-              </div>
-            </div>
-            <DialogTitle className="font-heading text-lg font-bold text-white text-center">Confirm Logout</DialogTitle>
-          </DialogHeader>
-          
-          <p className="text-xs text-muted font-sans -mt-2">
-            Are you sure you want to log out of NexTradeX? All active sessions on this device will be ended.
-          </p>
-
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => setShowLogoutConfirm(false)}
-              className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg text-xs font-bold transition-all border border-white/5"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="flex-1 py-2.5 bg-trading-down hover:bg-trading-down/80 text-white rounded-lg text-xs font-bold transition-all"
-            >
-              Logout
-            </button>
+              <Route path="/wallets" element={<ProtectedRoute isLoggedIn={isLoggedIn}><WalletsPage /></ProtectedRoute>} />
+              <Route path="/orders" element={<ProtectedRoute isLoggedIn={isLoggedIn}><OrdersPage /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute isLoggedIn={isLoggedIn}><ProfilePage /></ProtectedRoute>} />
+              <Route path="/earn" element={<ProtectedRoute isLoggedIn={isLoggedIn}><EarnPage /></ProtectedRoute>} />
+              <Route path="/funding" element={<ProtectedRoute isLoggedIn={isLoggedIn}><FundingPage /></ProtectedRoute>} />
+              <Route path="/sub-accounts" element={<ProtectedRoute isLoggedIn={isLoggedIn}><SubAccountsPage /></ProtectedRoute>} />
+              <Route path="/careers" element={<CareersPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/contract-specs" element={<ContractSpecsPage />} />
+              <Route path="/trading-fees" element={<TradingFeesPage />} />
+              <Route path="/settlement-prices" element={<SettlementPricesPage />} />
+              <Route path="/bug-bounty" element={<BugBountyPage />} />
+              <Route path="/api-docs" element={<APIDocsPage />} />
+              <Route path="/support" element={<SupportPage />} />
+              <Route path="/user-guide" element={<UserGuidePage />} />
+              <Route path="/referral" element={<ReferralPage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
           </div>
-        </DialogContent>
-      </Dialog>
+        </ErrorBoundary>
 
-      {/* Floating Chatbot Assistant Trixie */}
-      <Chatbot />
+        {/* Search Modal */}
+        <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} query={searchQuery} setQuery={setSearchQuery} isLoggedIn={isLoggedIn} />
 
-      {/* Footer */}
-      <Footer />
-    </div>
+        {/* Custom Logout Confirmation Modal */}
+        <Dialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+          <DialogContent className="bg-[#1e2329] border-white/[0.08] p-6 rounded-2xl max-w-sm w-full shadow-elevation-lg text-center space-y-5 text-white">
+            <DialogHeader className="space-y-0">
+              <div className="flex justify-center mb-4">
+                <div className="rounded-full bg-trading-down/10 p-3 text-trading-down">
+                  <LogOut size={24} />
+                </div>
+              </div>
+              <DialogTitle className="font-heading text-lg font-bold text-white text-center">Confirm Logout</DialogTitle>
+            </DialogHeader>
+
+            <p className="text-xs text-muted font-sans -mt-2">
+              Are you sure you want to log out of NexTradeX? All active sessions on this device will be ended.
+            </p>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg text-xs font-bold transition-all border border-white/5"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex-1 py-2.5 bg-trading-down hover:bg-trading-down/80 text-white rounded-lg text-xs font-bold transition-all"
+              >
+                Logout
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Floating Chatbot Assistant Trixie */}
+        <Chatbot />
+
+        {/* Footer */}
+        <Footer />
+      </div>
+      <ToastContainer />
+    </ToastProvider>
   );
 }
 

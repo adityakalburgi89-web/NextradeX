@@ -72,20 +72,20 @@ export default function Footer() {
           <div>
             <h4 className="font-heading text-xs font-bold uppercase tracking-widest text-white light:text-[#181a20] mb-4">Socials</h4>
             <nav className="space-y-3">
-              <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
-                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" fill="currentColor">
+              <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" aria-label="Follow NexTradeX on X (Twitter)" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" fill="currentColor" aria-hidden="true">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
                 <span>X (Twitter)</span>
               </a>
-              <a href="https://www.linkedin.com/in/aditya-kalburgi-080b5b267/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
-                <img src={linkedInIcon} alt="LinkedIn" className="w-4 h-4 object-contain" /> <span>LinkedIn</span>
+              <a href="https://www.linkedin.com/in/aditya-kalburgi-080b5b267/" target="_blank" rel="noopener noreferrer" aria-label="Connect with NexTradeX on LinkedIn" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
+                <img src={linkedInIcon} alt="" className="w-4 h-4 object-contain" aria-hidden="true" /> <span>LinkedIn</span>
               </a>
-              <a href="mailto:contact@nextradex.sim" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
-                <img src={gmailIcon} alt="Email" className="w-4 h-4 object-contain" /> <span>Email</span>
+              <a href="mailto:contact@nextradex.sim" aria-label="Email NexTradeX" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
+                <img src={gmailIcon} alt="" className="w-4 h-4 object-contain" aria-hidden="true" /> <span>Email</span>
               </a>
-              <a href="https://github.com/aditykalburgi" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
-                <img src={githubIcon} alt="GitHub" className="w-4 h-4 object-contain brightness-0 contrast-50" /> <span>GitHub</span>
+              <a href="https://github.com/aditykalburgi" target="_blank" rel="noopener noreferrer" aria-label="View NexTradeX on GitHub" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
+                <img src={githubIcon} alt="" className="w-4 h-4 object-contain brightness-0 contrast-50" aria-hidden="true" /> <span>GitHub</span>
               </a>
             </nav>
           </div>

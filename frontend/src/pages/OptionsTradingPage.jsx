@@ -76,7 +76,7 @@ const OptionsTradingPage = () => {
 
           <div className="mt-12 flex flex-col sm:flex-row gap-6 items-center">
             <Link to="/dashboard">
-              <button className="group relative px-8 py-4 bg-[#ff7a00] rounded-xl font-bold text-black overflow-hidden hover:scale-105 active:scale-95 transition-all">
+              <button className="group relative px-8 py-4 bg-[#ff7a00] rounded-xl font-bold text-black overflow-hidden hover:scale-105 active:scale-95 transition-all min-h-[44px] min-w-[44px]">
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                 <span className="relative flex items-center gap-2">
                    <LayoutGrid size={18} /> Return to Dashboard

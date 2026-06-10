@@ -157,7 +157,12 @@ export default function CandlestickChart({ data = [], options = EMPTY_OPTIONS, h
   return (
     <div className="relative">
       {tooltipData && (
-        <div className="absolute left-4 top-4 z-10 rounded-lg border border-white/10 light:border-hairline-on-light bg-black/80 light:bg-white/95 px-3 py-2 backdrop-blur-sm shadow-elevation-md">
+        <div
+          role="tooltip"
+          aria-live="polite"
+          aria-atomic="true"
+          className="absolute left-4 top-4 z-10 rounded-lg border border-white/10 light:border-hairline-on-light bg-black/80 light:bg-white/95 px-3 py-2 backdrop-blur-sm shadow-elevation-md"
+        >
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
             <span className="text-muted">O</span>
             <span className="text-white light:text-ink">{formatPrice(tooltipData.open)}</span>
@@ -174,6 +179,7 @@ export default function CandlestickChart({ data = [], options = EMPTY_OPTIONS, h
       )}
       <div
         ref={containerRef}
+        aria-label={`Candlestick chart for ${options?.symbol || "trading pair"}`}
         className="chart-shell w-full overflow-hidden rounded-[28px] bg-black/20 light:bg-surface-soft-light"
         style={{ height }}
       />

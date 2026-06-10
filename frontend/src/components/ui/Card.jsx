@@ -26,10 +26,15 @@ const cardVariants = cva(
     }
 )
 
-const Card = React.forwardRef(({ className, variant, ...props }, ref) => (
+const Card = React.forwardRef(({ className, variant, interactive = true, ...props }, ref) => (
     <div
         ref={ref}
-        className={cn(cardVariants({ variant, className }))}
+        className={cn(
+            cardVariants({ variant, className }),
+            interactive && "hover:border-primary/30 hover:shadow-glow-sm transition-all duration-200 cursor-pointer"
+        )}
+        aria-label={props['aria-label']}
+        aria-labelledby={props['aria-labelledby']}
         {...props}
     />
 ))

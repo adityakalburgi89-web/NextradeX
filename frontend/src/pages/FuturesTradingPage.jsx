@@ -774,11 +774,12 @@ export default function FuturesTradingPage() {
                   </TooltipProvider>
                 </div>
 
-                {/* Open / Close Order Tabs */}
+                {/* Open / Close Order Tabs — 44px touch targets */}
                 <div className="flex border-b border-hairline-on-dark p-1 bg-canvas-dark/40">
                   <button
                     type="button"
-                    className={`flex-1 py-2.5 text-center text-xs font-bold tracking-wider rounded transition-all ${
+                    aria-pressed={orderMode === "OPEN"}
+                    className={`flex-1 min-h-[44px] text-center text-xs font-bold tracking-wider rounded transition-all ${
                       orderMode === "OPEN" ? "bg-surface-elevated-dark text-white font-bold" : "text-muted hover:text-white"
                     }`}
                     onClick={() => setOrderMode("OPEN")}
@@ -787,7 +788,8 @@ export default function FuturesTradingPage() {
                   </button>
                   <button
                     type="button"
-                    className={`flex-1 py-2.5 text-center text-xs font-bold tracking-wider rounded transition-all ${
+                    aria-pressed={orderMode === "CLOSE"}
+                    className={`flex-1 min-h-[44px] text-center text-xs font-bold tracking-wider rounded transition-all ${
                       orderMode === "CLOSE" ? "bg-surface-elevated-dark text-white font-bold" : "text-muted hover:text-white"
                     }`}
                     onClick={() => setOrderMode("CLOSE")}
@@ -812,7 +814,7 @@ export default function FuturesTradingPage() {
 
                 <div className="p-4 space-y-4">
                   {/* Available Capital balance */}
-                  <div className="flex justify-between items-center text-[10px] font-mono text-muted">
+                  <div aria-label={`Available wallet balance: ${usdtWalletBalance.toFixed(2)} USDT`} className="flex justify-between items-center text-[10px] font-mono text-muted">
                     <span>Avbl Wallet Balance</span>
                     <span className="text-white font-semibold flex items-center gap-1">
                       {usdtWalletBalance.toFixed(2)} USDT
@@ -869,14 +871,14 @@ export default function FuturesTradingPage() {
                     </div>
                   </div>
 
-                  {/* Sizing Percentage dot-slider chips */}
+                  {/* Sizing Percentage dot-slider chips — 44px touch targets */}
                   <div className="flex gap-2">
                     {[25, 50, 75, 100].map((pct) => (
                       <button
                         key={pct}
                         type="button"
                         onClick={() => handlePercentSelect(pct)}
-                        className="flex-1 py-1 bg-canvas-dark hover:bg-white/[0.04] border border-hairline-on-dark text-muted hover:text-white rounded font-mono text-[9px] font-bold"
+                        className="flex-1 min-h-[44px] min-w-[44px] px-3 py-2 bg-canvas-dark hover:bg-white/[0.04] border border-hairline-on-dark text-muted hover:text-white rounded font-mono text-[10px] font-bold"
                       >
                         {pct}%
                       </button>
@@ -932,23 +934,24 @@ export default function FuturesTradingPage() {
 
                   {/* Feedback overlays */}
                   {message && (
-                    <div className="p-2.5 rounded bg-trading-up/10 border border-trading-up/20 text-center animate-slide-down">
+                    <div role="status" className="p-2.5 rounded bg-trading-up/10 border border-trading-up/20 text-center animate-slide-down">
                       <p className="text-trading-up text-xs font-semibold">{message}</p>
                     </div>
                   )}
                   {error && (
-                    <div className="p-2.5 rounded bg-trading-down/10 border border-trading-down/20 text-center animate-slide-down">
-                      <p className="text-trading-down text-xs font-semibold">{error}</p>
+                    <div role="alert" className="text-trading-down text-xs mt-1 p-2.5 rounded bg-trading-down/10 border border-trading-down/20 text-center animate-slide-down">
+                      {error}
                     </div>
                   )}
 
-                  {/* Side-by-side Buy/Sell Buttons */}
+                  {/* Side-by-side Buy/Sell Buttons — 48px touch targets */}
                   {orderMode === "OPEN" ? (
                     <div className="flex gap-3 pt-2">
                       <Button
                         type="button"
                         onClick={() => handleSubmitOrder("BUY")}
-                        className="flex-1 font-mono text-xs uppercase py-3 font-bold bg-trading-up hover:bg-trading-up/90 text-white rounded-lg shadow-elevation-sm"
+                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-white rounded-lg shadow-elevation-sm"
+                        variant="tradingUp"
                         loading={loading}
                       >
                         Buy / Long
@@ -956,7 +959,8 @@ export default function FuturesTradingPage() {
                       <Button
                         type="button"
                         onClick={() => handleSubmitOrder("SELL")}
-                        className="flex-1 font-mono text-xs uppercase py-3 font-bold bg-trading-down hover:bg-trading-down/90 text-white rounded-lg shadow-elevation-sm"
+                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-white rounded-lg shadow-elevation-sm"
+                        variant="tradingDown"
                         loading={loading}
                       >
                         Sell / Short
@@ -967,7 +971,8 @@ export default function FuturesTradingPage() {
                       <Button
                         type="button"
                         onClick={() => handleSubmitOrder("SELL")}
-                        className="flex-1 font-mono text-xs uppercase py-3 font-bold bg-trading-down hover:bg-trading-down/90 text-white rounded-lg shadow-elevation-sm"
+                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-white rounded-lg shadow-elevation-sm"
+                        variant="tradingDown"
                         loading={loading}
                       >
                         Close Long
@@ -975,7 +980,8 @@ export default function FuturesTradingPage() {
                       <Button
                         type="button"
                         onClick={() => handleSubmitOrder("BUY")}
-                        className="flex-1 font-mono text-xs uppercase py-3 font-bold bg-trading-up hover:bg-trading-up/90 text-white rounded-lg shadow-elevation-sm"
+                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-white rounded-lg shadow-elevation-sm"
+                        variant="tradingUp"
                         loading={loading}
                       >
                         Close Short
@@ -1192,8 +1198,8 @@ export default function FuturesTradingPage() {
                 </div>
 
                 {slTpError && (
-                  <div className="p-3 rounded bg-trading-down/10 border border-trading-down/20 text-center animate-slide-down">
-                    <p className="text-trading-down text-xs font-semibold">{slTpError}</p>
+                  <div role="alert" className="text-trading-down text-xs mt-1 p-3 rounded bg-trading-down/10 border border-trading-down/20 text-center animate-slide-down">
+                    {slTpError}
                   </div>
                 )}
               </div>

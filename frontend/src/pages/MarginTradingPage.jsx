@@ -759,7 +759,8 @@ export default function MarginTradingPage() {
                   <div className="flex border-b border-hairline-on-dark p-1 bg-canvas-dark/40">
                     <button
                       type="button"
-                      className={`flex-1 py-3 text-center text-xs font-bold tracking-wider rounded transition-all ${form.side === "BUY"
+                      aria-pressed={form.side === "BUY"}
+                      className={`flex-1 min-h-[44px] text-center text-xs font-bold tracking-wider rounded transition-all ${form.side === "BUY"
                         ? "bg-trading-up text-white shadow-sm"
                         : "text-muted hover:text-white"
                         }`}
@@ -769,7 +770,8 @@ export default function MarginTradingPage() {
                     </button>
                     <button
                       type="button"
-                      className={`flex-1 py-3 text-center text-xs font-bold tracking-wider rounded transition-all ${form.side === "SELL"
+                      aria-pressed={form.side === "SELL"}
+                      className={`flex-1 min-h-[44px] text-center text-xs font-bold tracking-wider rounded transition-all ${form.side === "SELL"
                         ? "bg-trading-down text-white shadow-sm"
                         : "text-muted hover:text-white"
                         }`}
@@ -841,7 +843,8 @@ export default function MarginTradingPage() {
                             key={lvl}
                             type="button"
                             onClick={() => setForm((prev) => ({ ...prev, leverage: lvl }))}
-                            className={`flex-1 py-1 font-mono text-[10px] font-bold rounded border transition-all ${form.leverage === lvl
+                            aria-pressed={form.leverage === lvl}
+                            className={`flex-1 min-h-[44px] py-2 font-mono text-[10px] font-bold rounded border transition-all ${form.leverage === lvl
                               ? "bg-primary border-primary text-on-primary shadow-sm"
                               : "border-hairline-on-dark text-muted hover:text-white hover:border-muted"
                               }`}
@@ -852,14 +855,14 @@ export default function MarginTradingPage() {
                       </div>
                     </div>
 
-                    {/* Sizing Percentage dot-slider chips */}
+                    {/* Sizing Percentage dot-slider chips — 44px touch targets */}
                     <div className="flex gap-2">
                       {[25, 50, 75, 100].map((pct) => (
                         <button
                           key={pct}
                           type="button"
                           onClick={() => handlePercentSelect(pct)}
-                          className="flex-1 py-1.5 bg-canvas-dark hover:bg-white/[0.04] border border-hairline-on-dark text-muted hover:text-white rounded font-mono text-[9px] font-bold"
+                          className="flex-1 min-h-[44px] min-w-[44px] px-3 py-2 bg-canvas-dark hover:bg-white/[0.04] border border-hairline-on-dark text-muted hover:text-white rounded font-mono text-[10px] font-bold"
                         >
                           {pct}%
                         </button>
@@ -883,13 +886,13 @@ export default function MarginTradingPage() {
                     </div>
 
                     {message && (
-                      <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-trading-up/10 border border-trading-up/20 animate-slide-down">
+                      <div role="status" className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-trading-up/10 border border-trading-up/20 animate-slide-down">
                         <p className="text-trading-up text-xs font-mono">{message}</p>
                       </div>
                     )}
                     {error && (
-                      <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-trading-down/10 border border-trading-down/20 animate-slide-down">
-                        <p className="text-trading-down text-xs font-mono">{error}</p>
+                      <div role="alert" className="text-trading-down text-xs mt-1 px-3 py-2.5 rounded-lg bg-trading-down/10 border border-trading-down/20 animate-slide-down">
+                        {error}
                       </div>
                     )}
                   </CardContent>
@@ -897,7 +900,7 @@ export default function MarginTradingPage() {
                   <CardFooter className="pt-2 pb-4">
                     <Button
                       type="submit"
-                      className="w-full font-mono text-sm uppercase py-3 font-bold rounded-md"
+                      className="w-full font-mono text-sm uppercase py-3 font-bold rounded-md min-h-[48px]"
                       variant={form.side === "BUY" ? "tradingUp" : "tradingDown"}
                       loading={loading}
                     >

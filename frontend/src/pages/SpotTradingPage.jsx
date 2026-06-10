@@ -790,11 +790,12 @@ export default function SpotTradingPage() {
                   </div>
                 )}
                 <form onSubmit={handleSubmit}>
-                  {/* BUY / SELL Switch Tabs */}
+                  {/* BUY / SELL Switch Tabs — 44px touch targets */}
                   <div className="flex border-b border-hairline-on-dark p-1 bg-canvas-dark/40">
                     <button
                       type="button"
-                      className={`flex-1 py-3 text-center text-xs font-bold tracking-wider rounded transition-all ${
+                      aria-pressed={form.side === "BUY"}
+                      className={`flex-1 min-h-[44px] text-center text-xs font-bold tracking-wider rounded transition-all ${
                         form.side === "BUY"
                           ? "bg-trading-up text-white shadow-sm"
                           : "text-muted hover:text-white"
@@ -805,7 +806,8 @@ export default function SpotTradingPage() {
                     </button>
                     <button
                       type="button"
-                      className={`flex-1 py-3 text-center text-xs font-bold tracking-wider rounded transition-all ${
+                      aria-pressed={form.side === "SELL"}
+                      className={`flex-1 min-h-[44px] text-center text-xs font-bold tracking-wider rounded transition-all ${
                         form.side === "SELL"
                           ? "bg-trading-down text-white shadow-sm"
                           : "text-muted hover:text-white"
@@ -884,14 +886,14 @@ export default function SpotTradingPage() {
                       </div>
                     </div>
 
-                    {/* Sizing Percentage dot-slider chips */}
+                    {/* Sizing Percentage dot-slider chips — 44px touch targets */}
                     <div className="flex gap-2">
                       {[25, 50, 75, 100].map((pct) => (
                         <button
                           key={pct}
                           type="button"
                           onClick={() => handlePercentSelect(pct)}
-                          className="flex-1 py-1.5 bg-canvas-dark hover:bg-white/[0.04] border border-hairline-on-dark text-muted hover:text-white rounded font-mono text-[9px] font-bold"
+                          className="flex-1 min-h-[44px] min-w-[44px] px-3 py-2 bg-canvas-dark hover:bg-white/[0.04] border border-hairline-on-dark text-muted hover:text-white rounded font-mono text-[10px] font-bold"
                         >
                           {pct}%
                         </button>
@@ -941,7 +943,7 @@ export default function SpotTradingPage() {
                     {/* High/Low/Notional Summary */}
                     {(currentPrice || priceSnapshot?.currentPrice) && (
                       <div className="border border-hairline-on-dark bg-canvas-dark/40 rounded-lg p-3 space-y-2">
-                        <div className="flex justify-between items-center text-xs font-mono">
+                        <div aria-label={`Available balance: ${formatCurrency(spotWalletBalance)} USDT`} className="flex justify-between items-center text-xs font-mono">
                           <span className="text-muted">Available Balance</span>
                           <span className="text-white font-semibold">{formatCurrency(spotWalletBalance)} USDT</span>
                         </div>
@@ -957,13 +959,13 @@ export default function SpotTradingPage() {
                     )}
 
                     {message && (
-                      <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-trading-up/10 border border-trading-up/20 animate-slide-down">
+                      <div role="status" className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-trading-up/10 border border-trading-up/20 animate-slide-down">
                         <p className="text-trading-up text-xs font-mono">{message}</p>
                       </div>
                     )}
                     {error && (
-                      <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-trading-down/10 border border-trading-down/20 animate-slide-down">
-                        <p className="text-trading-down text-xs font-mono">{error}</p>
+                      <div role="alert" className="text-trading-down text-xs mt-1 px-3 py-2.5 rounded-lg bg-trading-down/10 border border-trading-down/20 animate-slide-down">
+                        {error}
                       </div>
                     )}
                   </CardContent>
@@ -971,7 +973,7 @@ export default function SpotTradingPage() {
                   <CardFooter className="pt-2 pb-4">
                     <Button
                       type="submit"
-                      className="w-full font-mono text-sm uppercase py-3 font-bold rounded-md"
+                      className="w-full font-mono text-sm uppercase py-3 font-bold rounded-md min-h-[48px]"
                       variant={form.side === "BUY" ? "tradingUp" : "tradingDown"}
                       loading={loading}
                     >

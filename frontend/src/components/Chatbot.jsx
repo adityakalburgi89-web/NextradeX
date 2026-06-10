@@ -5,6 +5,19 @@ import trixieVideo from "../assets/Chatbot/Audio/Video/Cute_eye_blinking_animati
 import { fetchAllPrices } from "../api";
 import { formatCurrency, formatPercent } from "../lib/utils";
 
+// Reduced motion hook
+const useReducedMotion = () => {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduced(mq.matches);
+    const handler = (e) => setReduced(e.matches);
+    mq.addEventListener?.('change', handler);
+    return () => mq.removeEventListener?.('change', handler);
+  }, []);
+  return reduced;
+};
+
 // Import audio assets for random chat replies
 import bangSound from "../assets/Chatbot/Audio/bang-anime-wataten.mp3";
 import cuteSound from "../assets/Chatbot/Audio/cute-anime-girl_OpABtug.mp3";
@@ -116,6 +129,7 @@ function formatMessageText(text) {
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
   
   // Persistent mute state
   const [isMuted, setIsMuted] = useState(() => localStorage.getItem("trixie_chatbot_muted") === "true");
@@ -250,7 +264,7 @@ export default function Chatbot() {
         
         {/* Glow backdrop ring (Antigravity vibe) */}
         {!isOpen && (
-          <div className="absolute inset-[-4px] rounded-full bg-primary/10 blur-[8px] animate-pulse pointer-events-none" />
+          <div className={`absolute inset-[-4px] rounded-full bg-primary/10 blur-[8px] ${prefersReducedMotion ? '' : 'animate-pulse'} pointer-events-none`} aria-hidden="true" />
         )}
 
         {/* Tooltip speech bubble */}
@@ -261,8 +275,9 @@ export default function Chatbot() {
                 ? "opacity-100 translate-y-0 scale-100"
                 : "opacity-0 translate-y-2 scale-95"
             }`}
+            aria-hidden="true"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-trading-up animate-pulse"></span>
+            <span className={`w-1.5 h-1.5 rounded-full bg-trading-up ${prefersReducedMotion ? '' : 'animate-pulse'}`}></span>
             <span>Chat with Trixie!</span>
             <div className="absolute bottom-[-5px] right-8 w-2 h-2 glass-panel border-r border-b border-hairline-on-dark transform rotate-45"></div>
           </div>
@@ -284,7 +299,7 @@ export default function Chatbot() {
           className={`size-20 rounded-full flex items-center justify-center bg-primary hover:bg-primary-active text-on-primary transition-all duration-300 shadow-glow-primary hover:shadow-glow-primary-hover hover:scale-110 active:scale-95 border-2 border-background focus:outline-none relative`}
         >
           {isOpen ? (
-            <X size={32} className="animate-scale-in text-ink" />
+            <X size={32} className={prefersReducedMotion ? 'text-ink' : 'animate-scale-in text-ink'} aria-hidden="true" />
           ) : (
             <div className="relative size-full rounded-full overflow-hidden flex items-center justify-center p-1 border border-primary/30">
               <video
@@ -302,7 +317,12 @@ export default function Chatbot() {
 
       {/* Sleek Glassmorphic Chat Panel Card */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-96 max-w-[calc(100vw-2rem)] h-[520px] z-50 flex flex-col glass-panel rounded-2xl shadow-elevation-lg overflow-hidden animate-fade-in-fast font-sans select-text border border-white/10">
+        <div 
+          role="dialog" 
+          aria-label="Trixie chatbot" 
+          aria-modal="false"
+          className={`fixed bottom-24 right-6 w-96 max-w-[calc(100vw-2rem)] h-[520px] z-50 flex flex-col glass-panel rounded-2xl shadow-elevation-lg overflow-hidden ${prefersReducedMotion ? '' : 'animate-fade-in-fast'} font-sans select-text border border-white/10`}>
+        
           
           {/* Header */}
           <div className="bg-canvas-dark/40 border-b border-hairline-on-dark px-4 py-3.5 flex items-center justify-between">
@@ -323,7 +343,7 @@ export default function Chatbot() {
                 </h4>
                 <div className="flex items-center gap-1 mt-0.5">
                   <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-trading-up opacity-75"></span>
+                    <span className={`${prefersReducedMotion ? '' : 'animate-ping'} absolute inline-flex h-full w-full rounded-full bg-trading-up opacity-75`}></span>
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-trading-up"></span>
                   </span>
                   <span className="text-[9px] text-muted font-mono uppercase tracking-wider">Online & Ready</span>

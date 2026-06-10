@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/Button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "./ui/dropdown-menu";
@@ -8,6 +8,35 @@ import NavLink from "./NavLink";
 
 export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearchOpen, triggerLogoutConfirm }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const hamburgerRef = useRef(null);
+  const mobileMenuRef = useRef(null);
+  const firstFocusableRef = useRef(null);
+
+  // Escape key closes mobile menu
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [mobileMenuOpen]);
+
+  // Focus management for mobile menu
+  useEffect(() => {
+    if (mobileMenuOpen && mobileMenuRef.current) {
+      // Focus the first focusable element in the menu
+      const focusable = mobileMenuRef.current.querySelector('a, button');
+      if (focusable) {
+        focusable.focus();
+      }
+    } else if (!mobileMenuOpen && hamburgerRef.current) {
+      // Restore focus to hamburger button when menu closes
+      hamburgerRef.current.focus();
+    }
+  }, [mobileMenuOpen]);
 
   return (
     <>
@@ -41,13 +70,15 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
             </div>
 
             {isLoggedIn ? (
-              <DropdownMenu>
+              <DropdownMenu onOpenChange={setDropdownOpen}>
                 <DropdownMenuTrigger asChild>
                   <button
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all duration-300 focus-visible:outline-none ${theme === 'dark'
                         ? 'bg-surface-card-dark border-hairline-on-dark hover:bg-surface-elevated-dark'
                         : 'bg-white border-hairline-on-light hover:bg-surface-soft-light'
                       }`}
+                    aria-haspopup="true"
+                    aria-expanded={dropdownOpen}
                   >
                     <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                       <User size={12} className="text-on-primary" />
@@ -130,8 +161,12 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
 
             {/* Mobile hamburger */}
             <button
+              ref={hamburgerRef}
               className="md:hidden p-2 rounded-lg hover:bg-white/[0.06] transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -141,8 +176,23 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className={`md:hidden border-t animate-slide-down ${theme === 'dark' ? 'bg-canvas-dark border-hairline-on-dark text-white' : 'bg-canvas-light border-hairline-on-light text-ink'
+        <div
+          ref={mobileMenuRef}
+          id="mobile-menu"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation menu"
+          className={`md:hidden border-t animate-slide-down ${theme === 'dark' ? 'bg-canvas-dark border-hairline-on-dark text-white' : 'bg-canvas-light border-hairline-on-light text-ink'
           }`}>
+          <div className="flex justify-end px-4 pt-3">
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-2 rounded-lg hover:bg-white/[0.06] transition-colors"
+              aria-label="Close menu"
+            >
+              <X size={20} />
+            </button>
+          </div>
           <div className="px-6 py-4 space-y-1 font-mono text-sm">
             <Link to="/trade/spot" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Spot Trading</Link>
             <Link to="/trade/futures" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Futures Trading</Link>

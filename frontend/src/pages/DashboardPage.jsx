@@ -3,7 +3,8 @@ import { fetchAllPrices, fetchWallets, fetchUserProfile } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
-import { SkeletonRow } from "../components/ui/Skeleton";
+import DashboardSkeleton from "../components/DashboardSkeleton";
+import EmptyState from "../components/EmptyState";
 import { formatCurrency, formatPercent } from "../lib/utils";
 import {
   LayoutDashboard,
@@ -20,7 +21,9 @@ import {
   Settings,
   Grid,
   FileText,
-  DollarSign
+  DollarSign,
+  Package,
+  Layers
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -76,15 +79,7 @@ export default function DashboardPage() {
   }, [wallets]);
 
   if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-6 py-12 space-y-6 animate-pulse">
-        <div className="h-10 bg-surface-card-dark rounded w-1/4" />
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="h-32 bg-surface-card-dark rounded col-span-3" />
-          <div className="h-32 bg-surface-card-dark rounded" />
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -273,7 +268,7 @@ export default function DashboardPage() {
             </div>
 
             {/* MARKETS / HOLDINGS TABLE GRID */}
-            <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-2xl shadow-elevation-md overflow-hidden">
+            <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-2xl shadow-elevation-md overflow-hidden" aria-live="polite">
               {/* Binance Tab filter bar */}
               <div className="bg-canvas-dark/20 border-b border-hairline-on-dark px-6 py-4 flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-6 font-heading text-xs font-bold tracking-wider uppercase select-none">
@@ -295,62 +290,76 @@ export default function DashboardPage() {
 
               <CardContent className="p-0">
                 {activeSubTab === "Holding" ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="border-b border-hairline-on-dark text-[10px] font-bold text-muted uppercase tracking-wider font-mono bg-canvas-dark/10">
-                          <th className="py-4 px-6">Coin</th>
-                          <th className="py-4 px-6 text-right">Amount</th>
-                          <th className="py-4 px-6 text-right">Asset Price / Cost Price</th>
-                          <th className="py-4 px-6 text-right">Change (24h)</th>
-                          <th className="py-4 px-6 text-center w-24">Trade</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-hairline-on-dark font-mono text-xs">
-                        {holdingsList.map((coin, index) => {
-                          const isProfit = coin.change >= 0;
-                          return (
-                            <tr key={index} className="hover:bg-canvas-dark/25 transition-colors">
-                              <td className="py-4 px-6">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-7 h-7 rounded-full overflow-hidden bg-white/10 flex items-center justify-center p-0.5">
-                                    <img src={coin.icon} alt={coin.symbol} className="w-full h-full object-contain" onError={(e) => { e.target.src = "https://cryptologos.cc/logos/tether-usdt-logo.png"; }} />
+                  holdingsList.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="border-b border-hairline-on-dark text-[10px] font-bold text-muted uppercase tracking-wider font-mono bg-canvas-dark/10">
+                            <th className="py-4 px-6">Coin</th>
+                            <th className="py-4 px-6 text-right">Amount</th>
+                            <th className="py-4 px-6 text-right">Asset Price / Cost Price</th>
+                            <th className="py-4 px-6 text-right">Change (24h)</th>
+                            <th className="py-4 px-6 text-center w-24">Trade</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-hairline-on-dark font-mono text-xs">
+                          {holdingsList.map((coin, index) => {
+                            const isProfit = coin.change >= 0;
+                            return (
+                              <tr key={index} className="hover:bg-canvas-dark/25 transition-colors">
+                                <td className="py-4 px-6">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-7 h-7 rounded-full overflow-hidden bg-white/10 flex items-center justify-center p-0.5">
+                                      <img src={coin.icon} alt={coin.symbol} className="w-full h-full object-contain" onError={(e) => { e.target.src = "https://cryptologos.cc/logos/tether-usdt-logo.png"; }} />
+                                    </div>
+                                    <div>
+                                      <span className="text-white font-bold block">{coin.symbol}</span>
+                                      <span className="text-[10px] text-muted font-sans font-semibold">{coin.name}</span>
+                                    </div>
                                   </div>
-                                  <div>
-                                    <span className="text-white font-bold block">{coin.symbol}</span>
-                                    <span className="text-[10px] text-muted font-sans font-semibold">{coin.name}</span>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="py-4 px-6 text-right font-semibold">
-                                <span className="text-white block">{coin.amount.toFixed(8)}</span>
-                                <span className="text-[10px] text-muted">≈ ${coin.costUSD.toLocaleString()}</span>
-                              </td>
-                              <td className="py-4 px-6 text-right">
-                                <span className="text-white block">₹{coin.priceINR.toLocaleString()}</span>
-                                <span className="text-[10px] text-muted">≈ ${(coin.priceINR / 83).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                              </td>
-                              <td className={`py-4 px-6 text-right font-bold text-sm ${isProfit ? "text-trading-up" : "text-trading-down"}`}>
-                                {isProfit ? "+" : ""}{coin.change}%
-                              </td>
-                              <td className="py-4 px-6 text-center">
-                                <Link
-                                  to="/trade/spot"
-                                  className="text-xs font-bold text-primary hover:underline font-heading uppercase"
-                                >
-                                  Trade
-                                </Link>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                                </td>
+                                <td className="py-4 px-6 text-right font-semibold">
+                                  <span className="text-white block">{coin.amount.toFixed(8)}</span>
+                                  <span className="text-[10px] text-muted">≈ ${coin.costUSD.toLocaleString()}</span>
+                                </td>
+                                <td className="py-4 px-6 text-right">
+                                  <span className="text-white block">₹{coin.priceINR.toLocaleString()}</span>
+                                  <span className="text-[10px] text-muted">≈ ${(coin.priceINR / 83).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                </td>
+                                <td className={`py-4 px-6 text-right font-bold text-sm ${isProfit ? "text-trading-up" : "text-trading-down"}`}>
+                                  {isProfit ? "+" : ""}{coin.change}%
+                                </td>
+                                <td className="py-4 px-6 text-center">
+                                  <Link
+                                    to="/trade/spot"
+                                    className="text-xs font-bold text-primary hover:underline font-heading uppercase"
+                                  >
+                                    Trade
+                                  </Link>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <EmptyState
+                      icon={Wallet}
+                      title="No Holdings Yet"
+                      description="Start trading to build your portfolio. Make your first deposit and explore the markets."
+                      actionLabel="Go to Markets"
+                      action={() => window.location.href = "/markets"}
+                    />
+                  )
                 ) : (
-                  <div className="py-16 text-center text-muted font-mono text-xs">
-                    No items in {activeSubTab} list yet.
-                  </div>
+                  <EmptyState
+                    icon={Layers}
+                    title={`No ${activeSubTab} Items`}
+                    description={`You're not tracking any ${activeSubTab.toLowerCase()} assets yet.`}
+                    actionLabel="Explore Markets"
+                    action={() => window.location.href = "/markets"}
+                  />
                 )}
               </CardContent>
             </Card>

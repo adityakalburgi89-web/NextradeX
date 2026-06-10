@@ -14,7 +14,7 @@
     --surface-elevated: #2b3139;
     --surface-glass: rgba(30, 35, 41, 0.7);
     --foreground: #eaecef;
-    --muted: #707a8a;
+    --muted: #8c94a0;
     --border: #2b3139;
     --input-bg: #1e2329;
     --card-bg: #1e2329;
@@ -31,6 +31,7 @@
     --border: #eaecef;
     --input-bg: #ffffff;
     --card-bg: #ffffff;
+    scrollbar-color: #d1d5db transparent;
   }
 
   html {
@@ -55,6 +56,8 @@
   body {
     @apply bg-background text-foreground antialiased selection:bg-primary/30 selection:text-primary font-body;
     background-color: var(--background);
+    scrollbar-width: thin;
+    scrollbar-color: #2b3139 transparent;
   }
 
   /* CSS Custom Properties for animation timing */
@@ -413,14 +416,9 @@ input[type="number"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
+  * {
+    animation: none !important;
+    transition: none !important;
   }
 }
 
@@ -472,4 +470,19 @@ input[type="number"] {
 
 .light .bg-surface-elevated {
   background: #f5f5f5;
+}
+
+/* Global focus-visible outline — keyboard navigation indicator */
+@media (prefers-reduced-motion: no-preference) {
+  *:focus-visible {
+    outline: 2px solid #fcd535;
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *:focus-visible {
+    outline: 2px solid #fcd535;
+    outline-offset: 2px;
+  }
 }
