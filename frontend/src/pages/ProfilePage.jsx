@@ -6,21 +6,21 @@ import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../components/ui/dialog";
 import { fetchUserProfile, updateUserProfile, fetchWallets } from "../api";
-import { 
-  User, 
-  Mail, 
-  Shield, 
-  CheckCircle, 
-  XCircle, 
-  Key, 
-  Lock, 
-  Wallet, 
-  Plus, 
-  ArrowUpRight, 
-  Copy, 
-  Check, 
-  Compass, 
-  Activity, 
+import {
+  User,
+  Mail,
+  Shield,
+  CheckCircle,
+  XCircle,
+  Key,
+  Lock,
+  Wallet,
+  Plus,
+  ArrowUpRight,
+  Copy,
+  Check,
+  Compass,
+  Activity,
   AlertTriangle,
   FileCode
 } from "lucide-react";
@@ -33,7 +33,7 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState("");
   const [activeTab, setActiveTab] = useState("dashboard"); // "dashboard" or "settings"
   const [wallets, setWallets] = useState([]);
-  
+
   // API Keys state
   const [apiKeys, setApiKeys] = useState([
     { id: 1, label: "Automated Strategy Bot", access: "Trade & Read", created: "2026-05-18", key: "ntx_pub_392f...81aa" }
@@ -116,7 +116,7 @@ export default function ProfilePage() {
     if (!newKeyLabel) return;
     const randomKey = "ntx_pub_" + Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
     const randomSecret = "ntx_sec_" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    
+
     const newKeyItem = {
       id: Date.now(),
       label: newKeyLabel,
@@ -124,7 +124,7 @@ export default function ProfilePage() {
       created: new Date().toISOString().split("T")[0],
       key: randomKey.substring(0, 12) + "..." + randomKey.substring(randomKey.length - 4)
     };
-    
+
     setApiKeys(prev => [...prev, newKeyItem]);
     setGeneratedKey({ key: randomKey, secret: randomSecret, label: newKeyLabel });
     setShowKeyModal(true);
@@ -200,7 +200,7 @@ export default function ProfilePage() {
             {/* Account Security Status */}
             <div className="p-6 rounded-xl bg-surface-card-dark border border-hairline-on-dark light:bg-canvas-light light:border-hairline-on-light space-y-4">
               <h4 className="text-sm font-semibold text-on-dark light:text-ink uppercase tracking-wider font-mono">Account Security</h4>
-              
+
               <div className="space-y-3">
                 {/* Verification Status */}
                 <div className="flex items-center justify-between p-3 rounded-lg bg-surface-elevated-dark/50 light:bg-surface-soft-light border border-hairline-on-dark light:border-hairline-on-light">
@@ -275,11 +275,10 @@ export default function ProfilePage() {
                   setError("");
                   setSuccess("");
                 }}
-                className={`pb-4 px-6 font-sans text-sm font-bold border-b-2 transition-all ${
-                  activeTab === "dashboard"
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted hover:text-white hover:border-white/20"
-                }`}
+                className={`pb-4 px-6 font-sans text-sm font-bold border-b-2 transition-all ${activeTab === "dashboard"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted hover:text-white hover:border-white/20"
+                  }`}
               >
                 Profile Dashboard
               </button>
@@ -289,11 +288,10 @@ export default function ProfilePage() {
                   setError("");
                   setSuccess("");
                 }}
-                className={`pb-4 px-6 font-sans text-sm font-bold border-b-2 transition-all ${
-                  activeTab === "settings"
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted hover:text-white hover:border-white/20"
-                }`}
+                className={`pb-4 px-6 font-sans text-sm font-bold border-b-2 transition-all ${activeTab === "settings"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted hover:text-white hover:border-white/20"
+                  }`}
               >
                 Personal Details
               </button>
@@ -314,7 +312,7 @@ export default function ProfilePage() {
                       <h4 className="text-xl font-bold font-mono text-white mt-1">${getWalletBalance("SPOT")}</h4>
                     </div>
                     <div className="flex justify-between items-center text-[10px] font-mono mt-4 pt-2 border-t border-white/[0.04]">
-                      <span className="text-[#fcd535] font-semibold">Asset Tier: Premium</span>
+                      <span className="text-primary font-semibold">Asset Tier: Premium</span>
                       <Link to="/trade/spot" className="text-muted hover:text-white flex items-center gap-0.5">
                         Trade Spot <ArrowUpRight size={10} />
                       </Link>
@@ -397,7 +395,7 @@ export default function ProfilePage() {
                     </div>
 
                     <form onSubmit={handleGenerateKey} className="flex gap-2">
-                      <input 
+                      <input
                         type="text"
                         required
                         placeholder="Key label..."
@@ -405,8 +403,8 @@ export default function ProfilePage() {
                         onChange={(e) => setNewKeyLabel(e.target.value)}
                         className="bg-canvas-dark border border-white/[0.08] hover:border-white/20 focus:border-primary/85 rounded px-2.5 py-1.5 text-xs text-white placeholder-muted outline-none font-sans transition-all w-[150px] sm:w-[180px]"
                       />
-                      <button 
-                        type="submit" 
+                      <button
+                        type="submit"
                         className="p-2 bg-primary hover:bg-primary-active text-black rounded transition-colors flex items-center justify-center"
                         title="Generate Key"
                       >
@@ -444,7 +442,7 @@ export default function ProfilePage() {
                                 </span>
                               </td>
                               <td className="py-3 px-4 text-right">
-                                <button 
+                                <button
                                   onClick={() => handleRevokeKey(k.id)}
                                   className="text-trading-down hover:text-white text-[10px] font-bold border border-trading-down/20 bg-trading-down/10 hover:bg-trading-down px-2 py-0.5 rounded transition-all uppercase"
                                 >
@@ -459,73 +457,73 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                 {/* API Key Modal */}
-                 <Dialog open={showKeyModal} onOpenChange={(open) => { setShowKeyModal(open); if (!open) setGeneratedKey(null); }}>
-                   <DialogContent className="bg-[#0a0a0f] border border-white/10 rounded-xl p-6 space-y-4 shadow-2xl text-white max-w-md w-full">
-                     {generatedKey && (
-                       <>
-                         <DialogHeader className="border-b border-white/[0.06] pb-3 flex flex-row justify-between items-center space-y-0 pr-6">
-                           <DialogTitle className="flex items-center gap-2 text-primary font-bold text-sm uppercase font-heading tracking-wider">
-                             <FileCode size={18} />
-                             <span>Key Generated Successfully</span>
-                           </DialogTitle>
-                         </DialogHeader>
- 
-                         <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-lg flex gap-2 text-amber-500 text-xs">
-                           <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-                           <p className="leading-relaxed font-sans">
-                             <strong>Write down your secret key!</strong> It will not be shown again for security reasons. Copy both keys now.
-                           </p>
-                         </div>
- 
-                         <div className="space-y-3 font-mono text-xs">
-                           <div>
-                             <label className="text-muted text-[10px] uppercase block mb-1">Key Label</label>
-                             <div className="bg-canvas-dark border border-white/[0.08] p-2 rounded text-white font-sans">{generatedKey.label}</div>
-                           </div>
- 
-                           <div>
-                             <label className="text-muted text-[10px] uppercase block mb-1">Public API Key</label>
-                             <div className="flex gap-2">
-                               <input 
-                                 type="text" 
-                                 readOnly 
-                                 value={generatedKey.key} 
-                                 className="bg-canvas-dark border border-white/[0.08] p-2 rounded text-white flex-1 overflow-x-auto select-all" 
-                               />
-                               <button 
-                                 type="button"
-                                 onClick={() => copyToClipboard(generatedKey.key, "key")}
-                                 className="p-2 border border-white/[0.08] hover:border-primary bg-white/5 rounded text-white flex items-center justify-center cursor-pointer"
-                               >
-                                 {copiedKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                               </button>
-                             </div>
-                           </div>
- 
-                           <div>
-                             <label className="text-muted text-[10px] uppercase block mb-1">Secret API Key</label>
-                             <div className="flex gap-2">
-                               <input 
-                                 type="text" 
-                                 readOnly 
-                                 value={generatedKey.secret} 
-                                 className="bg-canvas-dark border border-white/[0.08] p-2 rounded text-white flex-1 overflow-x-auto select-all" 
-                               />
-                               <button 
-                                 type="button"
-                                 onClick={() => copyToClipboard(generatedKey.secret, "secret")}
-                                 className="p-2 border border-white/[0.08] hover:border-primary bg-white/5 rounded text-white flex items-center justify-center cursor-pointer"
-                               >
-                                 {copiedSecret ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                               </button>
-                             </div>
-                           </div>
-                         </div>
-                       </>
-                     )}
-                   </DialogContent>
-                 </Dialog>)}
+                {/* API Key Modal */}
+                <Dialog open={showKeyModal} onOpenChange={(open) => { setShowKeyModal(open); if (!open) setGeneratedKey(null); }}>
+                  <DialogContent className="bg-[#0a0a0f] border border-white/10 rounded-xl p-6 space-y-4 shadow-2xl text-white max-w-md w-full">
+                    {generatedKey && (
+                      <>
+                        <DialogHeader className="border-b border-white/[0.06] pb-3 flex flex-row justify-between items-center space-y-0 pr-6">
+                          <DialogTitle className="flex items-center gap-2 text-primary font-bold text-sm uppercase font-heading tracking-wider">
+                            <FileCode size={18} />
+                            <span>Key Generated Successfully</span>
+                          </DialogTitle>
+                        </DialogHeader>
+
+                        <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-lg flex gap-2 text-amber-500 text-xs">
+                          <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                          <p className="leading-relaxed font-sans">
+                            <strong>Write down your secret key!</strong> It will not be shown again for security reasons. Copy both keys now.
+                          </p>
+                        </div>
+
+                        <div className="space-y-3 font-mono text-xs">
+                          <div>
+                            <label className="text-muted text-[10px] uppercase block mb-1">Key Label</label>
+                            <div className="bg-canvas-dark border border-white/[0.08] p-2 rounded text-white font-sans">{generatedKey.label}</div>
+                          </div>
+
+                          <div>
+                            <label className="text-muted text-[10px] uppercase block mb-1">Public API Key</label>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                readOnly
+                                value={generatedKey.key}
+                                className="bg-canvas-dark border border-white/[0.08] p-2 rounded text-white flex-1 overflow-x-auto select-all"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => copyToClipboard(generatedKey.key, "key")}
+                                className="p-2 border border-white/[0.08] hover:border-primary bg-white/5 rounded text-white flex items-center justify-center cursor-pointer"
+                              >
+                                {copiedKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-muted text-[10px] uppercase block mb-1">Secret API Key</label>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                readOnly
+                                value={generatedKey.secret}
+                                className="bg-canvas-dark border border-white/[0.08] p-2 rounded text-white flex-1 overflow-x-auto select-all"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => copyToClipboard(generatedKey.secret, "secret")}
+                                className="p-2 border border-white/[0.08] hover:border-primary bg-white/5 rounded text-white flex items-center justify-center cursor-pointer"
+                              >
+                                {copiedSecret ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </DialogContent>
+                </Dialog>)
               </div>
             )}
 
