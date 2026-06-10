@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "../components/ui/accordion";
-import { Headphones, Mail, Globe } from "lucide-react";
+import { Headphones, Mail, Globe, Play } from "lucide-react";
 import { fetchAllPrices } from "../api";
 import { useWebSocket } from "../hooks/useWebSocket";
 import xIcon from "../assets/Icons/x.com_icon.png";
@@ -14,6 +14,16 @@ import githubIcon from "../assets/Icons/github_icon.png";
 import gmailIcon from "../assets/Icons/Gmail_icon_svg.webp";
 import tradingVideo from "../assets/videos/TradingVid.mp4";
 import qrCodeImg from "../assets/QrCode/QrCode.png";
+
+// Platform Videos
+import vidAboutCrypto from "../assets/videos/Platfrom Video/AboutCrypto.mp4";
+import vidCryptoTrading from "../assets/videos/Platfrom Video/CryptoTrading.mp4";
+import vidHowPriceWorks from "../assets/videos/Platfrom Video/HowPriceWorks.mp4";
+import vidHowToTrade from "../assets/videos/Platfrom Video/HowToTrade.mp4";
+import vidExplainer from "../assets/videos/Platfrom Video/NexTradeX_explainer_video_animation_202606090201.mp4";
+import vidRiskManagement from "../assets/videos/Platfrom Video/RiskManagment.mp4";
+import vidTraders from "../assets/videos/Platfrom Video/Traders.mp4";
+import vidTradingRisk from "../assets/videos/Platfrom Video/TradingRisk.mp4";
 
 // Cryptocurrency SVG Icons from cryptologos.cc
 import btcIcon from "../assets/Icons/btc.svg";
@@ -117,6 +127,19 @@ export default function HomePage() {
   const [activeMarketTab, setActiveMarketTab] = useState("popular");
   const [userCount, setUserCount] = useState(316258026);
   const [prices, setPrices] = useState([]);
+  const [showAllVideos, setShowAllVideos] = useState(false);
+  const [activeVideo, setActiveVideo] = useState(0);
+
+  const platformVideos = [
+    { src: vidExplainer,      title: "NexTradeX Overview",        desc: "A complete walkthrough of the NexTradeX simulated trading platform and its core features." },
+    { src: vidAboutCrypto,    title: "About Cryptocurrency",       desc: "Understand what cryptocurrency is, how blockchain works, and why it matters for traders." },
+    { src: vidCryptoTrading,  title: "Crypto Trading Basics",      desc: "Learn the fundamentals of buying, selling, and managing crypto positions on an exchange." },
+    { src: vidHowPriceWorks,  title: "How Price Works",            desc: "Discover how supply and demand, order books, and market makers drive asset prices." },
+    { src: vidHowToTrade,     title: "How To Trade",               desc: "Step-by-step guide to placing spot, margin, and futures orders on NexTradeX." },
+    { src: vidRiskManagement, title: "Risk Management",            desc: "Essential strategies for stop-losses, position sizing, and protecting your capital." },
+    { src: vidTraders,        title: "Meet The Traders",           desc: "Explore different trader profiles — scalpers, swing traders, and long-term holders." },
+    { src: vidTradingRisk,    title: "Understanding Trading Risk", desc: "A deep dive into volatility, leverage risk, and how to trade responsibly." },
+  ];
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -477,7 +500,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* QR PROMO & APP DOWNLOAD SECTION */}
+
+        {/* PLATFORM VIDEOS SECTION */}
         <section className="py-20 bg-canvas-dark light:bg-canvas-light border-b border-hairline-on-dark light:border-hairline-on-light">
           <div className="max-w-7xl mx-auto px-6">
             <motion.div
@@ -485,71 +509,66 @@ export default function HomePage() {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
-              className="bg-surface-card-dark light:bg-canvas-light border border-hairline-on-dark light:border-hairline-on-light rounded-xl p-8 md:p-12 flex flex-col lg:flex-row items-center justify-between gap-12 shadow-elevation-md"
+              className="text-center mb-12"
             >
-              <div className="flex-1 space-y-6 text-center lg:text-left">
-                <h2 className="font-heading text-3xl md:text-4xl font-bold text-white light:text-ink tracking-tight leading-tight">
-                  Trade On The Go. <br />Anytime, Anywhere.
-                </h2>
-                <p className="text-muted text-sm md:text-base leading-relaxed font-sans max-w-xl">
-                  Scan the mock code with your browser simulator to run the trading terminal on mobile devices. Full support for custom lot sizing, tickers, and profile tracking.
-                </p>
-                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-                  <a href="#download-ios" className="flex items-center gap-3 px-5 py-2 bg-[#15191e] light:bg-surface-strong-light border border-hairline-on-dark light:border-hairline-on-light rounded-lg text-left hover:border-primary/45 transition-all duration-300">
-                    <svg className="w-5 h-5 text-white light:text-ink" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,22C14.32,22.05 13.89,21.23 12.37,21.23C10.84,21.23 10.37,22 9.09,22.05C7.79,22.1 6.8,20.78 5.96,19.58C4.26,17.12 2.97,12.59 4.71,9.58C5.58,8.08 7.13,7.13 8.81,7.1C10.09,7.08 11.3,7.96 12.08,7.96C12.86,7.96 14.3,6.92 15.82,7.08C16.46,7.1 18.26,7.34 19.46,9.1C19.36,9.16 17.25,10.39 17.27,12.87C17.3,15.84 19.9,16.83 19.93,16.84C19.91,16.91 19.5,18.3 18.71,19.5M15.97,4.17C16.63,3.37 17.07,2.28 16.95,1C16,1.04 14.9,1.6 14.24,2.38C13.68,3.04 13.19,4.14 13.34,5.39C14.39,5.47 15.4,4.88 15.97,4.17Z" />
-                    </svg>
-                    <div>
-                      <p className="text-[8px] uppercase tracking-wider text-muted font-sans leading-none">Download on the</p>
-                      <p className="text-xs font-semibold text-white light:text-ink font-heading mt-1 leading-tight">App Store</p>
-                    </div>
-                  </a>
-                  <a href="#download-android" className="flex items-center gap-3 px-5 py-2 bg-[#15191e] light:bg-surface-strong-light border border-hairline-on-dark light:border-hairline-on-light rounded-lg text-left hover:border-primary/45 transition-all duration-300">
-                    <svg className="w-5 h-5 text-white light:text-ink" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M3,5.27V18.73L16.55,12L3,5.27M17.87,11.33L19.5,12.15C19.82,12.31 19.82,12.69 19.5,12.85L17.87,13.67L15,12.24L17.87,11.33M4.24,6.47L14.28,11.5L4.24,16.53V6.47M4.24,17.47L14.28,12.5L4.24,7.53V17.47Z" />
-                    </svg>
-                    <div>
-                      <p className="text-[8px] uppercase tracking-wider text-muted font-sans leading-none">Get it on</p>
-                      <p className="text-xs font-semibold text-white light:text-ink font-heading mt-1 leading-tight">Google Play</p>
-                    </div>
-                  </a>
-                  <a href="#download-apk" className="flex items-center gap-3 px-5 py-2 bg-[#15191e] light:bg-surface-strong-light border border-hairline-on-dark light:border-hairline-on-light rounded-lg text-left hover:border-primary/45 transition-all duration-300">
-                    <Globe size={18} className="text-white light:text-ink" />
-                    <div>
-                      <p className="text-[8px] uppercase tracking-wider text-muted font-sans leading-none">Download APK for</p>
-                      <p className="text-xs font-semibold text-white light:text-ink font-heading mt-1 leading-tight">macOS / Windows</p>
-                    </div>
-                  </a>
+              <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block font-semibold">Learn &amp; Explore</span>
+              <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-white light:text-ink mb-4">Trixie Explains</h2>
+              <p className="text-muted text-sm md:text-base max-w-xl mx-auto font-sans">
+                Your AI trading guide breaks down concepts, strategies, and platform features — one video at a time.
+              </p>
+            </motion.div>
+
+            {/* Featured player + full sidebar */}
+            <motion.div
+              variants={fadeInUpSpring}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+            >
+              {/* Main player */}
+              <div className="lg:col-span-2 bg-surface-card-dark light:bg-canvas-light border border-hairline-on-dark light:border-hairline-on-light rounded-xl overflow-hidden shadow-elevation-md">
+                <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                  <video
+                    key={platformVideos[activeVideo].src}
+                    src={platformVideos[activeVideo].src}
+                    controls
+                    autoPlay
+                    className="absolute inset-0 w-full h-full object-cover bg-black"
+                  />
+                </div>
+                <div className="p-5">
+                  <h3 className="font-heading text-lg font-bold text-white light:text-ink mb-1">{platformVideos[activeVideo].title}</h3>
+                  <p className="text-muted text-sm font-sans leading-relaxed">{platformVideos[activeVideo].desc}</p>
                 </div>
               </div>
 
-              {/* Actual QR Code Image */}
-              <div className="relative group bg-white p-3 rounded-xl border border-hairline-on-dark light:border-hairline-on-light flex flex-col items-center justify-center flex-shrink-0 shadow-elevation-lg overflow-hidden">
-                <style dangerouslySetInnerHTML={{
-                  __html: `
-                  @keyframes scan-line {
-                    0% { top: 0%; opacity: 0; }
-                    5% { opacity: 1; }
-                    95% { opacity: 1; }
-                    100% { top: 100%; opacity: 0; }
-                  }
-                  .qr-scan-line {
-                    position: absolute;
-                    left: 0;
-                    width: 100%;
-                    height: 3px;
-                    background: linear-gradient(90deg, transparent, #fcd535, transparent);
-                    box-shadow: 0 0 10px #fcd535;
-                    animation: scan-line 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-                    z-index: 20;
-                  }
-                `}} />
-                <div className="qr-scan-line" />
-                <img src={qrCodeImg} alt="QR Code" className="w-40 h-40 object-contain relative z-10" />
-                <div className="mt-3 text-center">
-                  <span className="text-[10px] text-[#181a20] font-bold tracking-wider font-mono uppercase block">Scan to Download</span>
-                  <span className="text-[8px] text-[#707a8a] font-sans block mt-0.5">iOS & Android App</span>
-                </div>
+              {/* Sidebar — all 7 non-explainer videos */}
+              <div className="flex flex-col gap-2 max-h-[520px] overflow-y-auto pr-1">
+                {platformVideos.slice(1).map((v, i) => {
+                  const idx = i + 1;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveVideo(idx)}
+                      className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all duration-200 group flex-shrink-0 ${
+                        activeVideo === idx
+                          ? "border-primary/60 bg-primary/10"
+                          : "border-hairline-on-dark light:border-hairline-on-light bg-surface-card-dark light:bg-canvas-light hover:border-primary/30"
+                      }`}
+                    >
+                      <div className={`w-9 h-9 rounded-md flex items-center justify-center flex-shrink-0 ${
+                        activeVideo === idx ? "bg-primary" : "bg-white/5 group-hover:bg-primary/20"
+                      } transition-colors`}>
+                        <Play size={14} className={activeVideo === idx ? "text-black" : "text-primary"} fill="currentColor" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-white light:text-ink font-heading truncate">{v.title}</p>
+                        <p className="text-[10px] text-muted font-sans truncate mt-0.5">{v.desc.slice(0, 60)}…</p>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </motion.div>
           </div>
