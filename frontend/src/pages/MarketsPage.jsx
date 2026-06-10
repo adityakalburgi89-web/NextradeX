@@ -214,7 +214,7 @@ export default function MarketsPage() {
         {/* Page Header and search */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h1 className="font-heading text-3xl font-bold tracking-tight text-white">Markets</h1>
+            <h1 className="font-heading text-3xl font-bold tracking-tight text-white light:text-ink">Markets</h1>
             <p className="text-sm leading-relaxed text-muted">
               Browse supported pairs, inspect simulated depth, and choose the market you want to route into the trading workspace.
             </p>
@@ -225,16 +225,16 @@ export default function MarketsPage() {
               placeholder="Filter by symbol (e.g. BTC)"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              className="bg-surface-card-dark border-hairline-on-dark text-white rounded-lg w-full"
+              className="w-full"
             />
           </div>
         </div>
 
         {/* High-density price table board */}
-        <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl shadow-elevation-md overflow-hidden">
-          <CardHeader className="border-b border-hairline-on-dark bg-canvas-dark/20 py-4 px-6 flex flex-row items-center justify-between">
+        <Card className="rounded-xl shadow-elevation-md overflow-hidden">
+          <CardHeader className="border-b border-hairline-on-dark light:border-hairline-on-light bg-canvas-dark/20 py-4 px-6 flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg font-bold text-white">Price Board</CardTitle>
+              <CardTitle className="text-lg font-bold text-white light:text-ink">Price Board</CardTitle>
               <CardDescription className="mt-1 text-xs text-muted">
                 Streaming symbol prices with instant selection, smoother hover states, and backend-driven pricing.
               </CardDescription>
@@ -261,7 +261,7 @@ export default function MarketsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-hairline-on-dark text-[11px] font-bold text-muted uppercase tracking-wider font-mono bg-canvas-dark/10">
+                    <tr className="border-b border-hairline-on-dark light:border-hairline-on-light text-[11px] font-bold text-muted uppercase tracking-wider font-mono bg-canvas-dark/10 light:bg-surface-soft-light">
                       <th className="py-4 px-6">Asset Pair</th>
                       <th className="py-4 px-6 text-right">Last Price</th>
                       <th className="py-4 px-6 text-right">24H Change</th>
@@ -270,18 +270,18 @@ export default function MarketsPage() {
                       <th className="py-4 px-6 text-center">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-hairline-on-dark">
+                  <tbody className="divide-y divide-hairline-on-dark light:divide-hairline-on-light">
                     {(showAllPrices ? filteredPrices : filteredPrices.slice(0, 5)).map((price) => {
                       const isUp = Number(price.percentChange24h) >= 0;
                       const isSelected = selectedSymbol === price.symbol;
                       return (
                         <tr
                           key={price.id || price.symbol}
-                          className={`group transition-all hover:bg-canvas-dark/25 cursor-pointer ${isSelected ? "bg-primary/[0.04] border-l-2 border-l-primary" : ""
+                          className={`group transition-all hover:bg-canvas-dark/25 light:hover:bg-surface-strong-light/50 cursor-pointer ${isSelected ? "bg-primary/[0.04] border-l-2 border-l-primary" : ""
                             }`}
                           onClick={() => setSelectedSymbol(price.symbol)}
                         >
-                          <td className="py-4 px-6 font-mono text-sm text-white">
+                          <td className="py-4 px-6 font-mono text-sm text-white light:text-ink">
                             <div className="flex items-center gap-3">
                               <div className="relative w-7 h-7 flex-shrink-0 flex items-center justify-center">
                                 <img
@@ -298,12 +298,12 @@ export default function MarketsPage() {
                                 </div>
                               </div>
                               <div>
-                                <span className="group-hover:text-primary transition-colors text-white font-bold">{price.symbol}</span>
+                                <span className="group-hover:text-primary transition-colors text-white light:text-ink font-bold">{price.symbol}</span>
                                 <span className="block text-[10px] text-muted font-normal tracking-wide">SPOT</span>
                               </div>
                             </div>
                           </td>
-                          <td className="py-4 px-6 text-right font-mono text-sm font-semibold text-white">
+                          <td className="py-4 px-6 text-right font-mono text-sm font-semibold text-white light:text-ink">
                             {formatCurrency(price.currentPrice)}
                           </td>
                           <td className={`py-4 px-6 text-right font-mono text-sm font-semibold ${isUp ? "text-trading-up" : "text-trading-down"
@@ -316,7 +316,7 @@ export default function MarketsPage() {
                           <td className="py-4 px-6 text-right font-mono text-xs text-muted">
                             {formatCurrency(price.highPrice || price.currentPrice)} / {formatCurrency(price.lowPrice || price.currentPrice)}
                           </td>
-                          <td className="py-4 px-6 text-right font-mono text-sm text-white">
+                          <td className="py-4 px-6 text-right font-mono text-sm text-white light:text-ink">
                             {formatCompactNumber(price.volume24h)}
                           </td>
                           <td className="py-4 px-6 text-center">
@@ -345,11 +345,11 @@ export default function MarketsPage() {
                   </tbody>
                 </table>
                 {filteredPrices.length > 5 && (
-                  <div className="border-t border-hairline-on-dark bg-canvas-dark/10 py-3 text-center">
+                  <div className="border-t border-hairline-on-dark light:border-hairline-on-light bg-canvas-dark/10 light:bg-surface-soft-light py-3 text-center">
                     <button
                       type="button"
                       onClick={() => setShowAllPrices(!showAllPrices)}
-                      className="text-xs font-bold font-mono text-primary hover:text-white transition-colors"
+                      className="text-xs font-bold font-mono text-primary hover:text-white light:hover:text-ink transition-colors"
                     >
                       {showAllPrices ? "▲ VIEW LESS" : "▼ VIEW MORE"}
                     </button>

@@ -45,14 +45,14 @@ export function TradingChartPanel({
   status,
 }) {
   return (
-    <Card variant="glass" className="panel-shine overflow-hidden border-white/10">
+    <Card variant="glass" className="panel-shine overflow-hidden border-white/10 light:border-hairline-on-light">
       <CardHeader className="gap-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-3">
               <CardTitle className="text-2xl">{title}</CardTitle>
               {symbol ? (
-                <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 font-mono text-[11px] uppercase tracking-[0.24em] text-muted">
+                <span className="inline-flex items-center rounded-full border border-white/10 light:border-hairline-on-light bg-white/[0.04] light:bg-surface-soft-light px-3 py-1 font-mono text-[11px] uppercase tracking-[0.24em] text-muted">
                   {symbol}
                 </span>
               ) : null}
@@ -77,7 +77,7 @@ export function TradingChartPanel({
                   "rounded-md px-3 py-1.5 font-mono text-xs transition-all duration-200",
                   interval === value
                     ? "bg-[#fcd535] text-on-primary font-semibold"
-                    : "bg-surface-elevated-dark text-muted hover:text-white"
+                    : "bg-surface-elevated-dark light:bg-surface-soft-light text-muted hover:text-white light:hover:text-ink"
                 )}
               >
                 {value}
@@ -94,15 +94,15 @@ export function TradingChartPanel({
               return (
                 <div
                   key={stat.label}
-                  className="rounded-lg border border-hairline-on-dark bg-surface-card-dark px-4 py-3 min-w-0 w-full"
+                  className="rounded-lg border border-hairline-on-dark light:border-hairline-on-light bg-surface-card-dark light:bg-canvas-light px-4 py-3 min-w-0 w-full"
                 >
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-xs tracking-wider text-muted font-heading uppercase">{stat.label}</span>
-                    <div className="rounded-full border border-hairline-on-dark bg-surface-elevated-dark p-1.5 text-primary">
+                    <div className="rounded-full border border-hairline-on-dark light:border-hairline-on-light bg-surface-elevated-dark light:bg-surface-soft-light p-1.5 text-primary">
                       <Icon size={14} />
                     </div>
                   </div>
-                  <div className="text-xl font-bold font-mono text-on-dark">
+                  <div className="text-xl font-bold font-mono text-on-dark light:text-ink">
                     {formatStatValue(stat)}
                   </div>
                   {stat.hint ? (
@@ -117,7 +117,7 @@ export function TradingChartPanel({
 
       <CardContent>
         {loading ? (
-          <div className="chart-shell flex h-[420px] items-center justify-center rounded-[28px] border border-white/10 bg-slate-950/50 font-mono text-sm text-muted">
+          <div className="chart-shell flex h-[420px] items-center justify-center rounded-[28px] border border-white/10 light:border-hairline-on-light bg-slate-950/50 light:bg-surface-soft-light font-mono text-sm text-muted">
             Syncing market candles...
           </div>
         ) : (

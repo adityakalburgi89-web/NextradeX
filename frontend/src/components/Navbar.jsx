@@ -11,15 +11,16 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
 
   return (
     <>
-      <nav className={`sticky top-0 z-50 h-16 border-b transition-all duration-300 ${
-        theme === 'dark' 
-          ? 'bg-canvas-dark border-hairline-on-dark text-white' 
+      <nav className={`sticky top-0 z-50 h-16 border-b transition-all duration-300 ${theme === 'dark'
+          ? 'bg-canvas-dark border-hairline-on-dark text-white'
           : 'bg-canvas-light border-hairline-on-light text-ink'
-      } flex items-center`}>
+        } flex items-center`}>
         <div className="flex items-center justify-between px-6 w-full max-w-7xl mx-auto">
           <div className="flex items-center gap-8">
             <Link to="/" className="font-heading font-bold text-xl tracking-tight flex items-center gap-1 hover:opacity-90 transition-opacity">
-              <span className="text-primary">NexTradeX</span>
+              <span className="text-white light:text-[#181a20]">
+                NexTrade<span className="text-primary">X</span>
+              </span>
             </Link>
           </div>
 
@@ -43,11 +44,10 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all duration-300 focus-visible:outline-none ${
-                      theme === 'dark' 
-                        ? 'bg-surface-card-dark border-hairline-on-dark hover:bg-surface-elevated-dark' 
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all duration-300 focus-visible:outline-none ${theme === 'dark'
+                        ? 'bg-surface-card-dark border-hairline-on-dark hover:bg-surface-elevated-dark'
                         : 'bg-white border-hairline-on-light hover:bg-surface-soft-light'
-                    }`}
+                      }`}
                   >
                     <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                       <User size={12} className="text-on-primary" />
@@ -56,13 +56,12 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
                     <ChevronDown size={12} className="text-muted" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent 
+                <DropdownMenuContent
                   align="end"
-                  className={`rounded-xl shadow-elevation-lg py-2 min-w-[180px] border z-50 ${
-                    theme === 'dark'
+                  className={`rounded-xl shadow-elevation-lg py-2 min-w-[180px] border z-50 ${theme === 'dark'
                       ? 'bg-surface-card-dark border-hairline-on-dark text-white'
                       : 'bg-white border-hairline-on-light text-ink'
-                  }`}
+                    }`}
                 >
                   <DropdownMenuItem asChild>
                     <Link
@@ -112,21 +111,19 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
               title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               <div className="relative w-[18px] h-[18px]">
-                <Sun 
-                  size={18} 
-                  className={`absolute inset-0 transition-all duration-500 ${
-                    theme === 'dark' 
-                      ? 'opacity-100 rotate-0 scale-100 text-primary' 
+                <Sun
+                  size={18}
+                  className={`absolute inset-0 transition-all duration-500 ${theme === 'dark'
+                      ? 'opacity-100 rotate-0 scale-100 text-primary'
                       : 'opacity-0 rotate-180 scale-0'
-                  }`}
+                    }`}
                 />
-                <Moon 
-                  size={18} 
-                  className={`absolute inset-0 transition-all duration-500 ${
-                    theme === 'light' 
-                      ? 'opacity-100 rotate-0 scale-100 text-primary' 
+                <Moon
+                  size={18}
+                  className={`absolute inset-0 transition-all duration-500 ${theme === 'light'
+                      ? 'opacity-100 rotate-0 scale-100 text-primary'
                       : 'opacity-0 -rotate-180 scale-0'
-                  }`}
+                    }`}
                 />
               </div>
             </button>
@@ -144,9 +141,8 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className={`md:hidden border-t animate-slide-down ${
-          theme === 'dark' ? 'bg-canvas-dark border-hairline-on-dark text-white' : 'bg-canvas-light border-hairline-on-light text-ink'
-        }`}>
+        <div className={`md:hidden border-t animate-slide-down ${theme === 'dark' ? 'bg-canvas-dark border-hairline-on-dark text-white' : 'bg-canvas-light border-hairline-on-light text-ink'
+          }`}>
           <div className="px-6 py-4 space-y-1 font-mono text-sm">
             <Link to="/trade/spot" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Spot Trading</Link>
             <Link to="/trade/futures" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Futures Trading</Link>
