@@ -45,10 +45,10 @@ public class MarketService {
     private final Map<String, Long> lastDbWriteTimes = new ConcurrentHashMap<>();
     private final Map<CandleCacheKey, CachedCandles> candleCache = new ConcurrentHashMap<>();
 
-    @Value("${coinmarketcap.api.key}")
+    @Value("${coinmarketcap.api.key:demo}")
     private String coinMarketCapApiKey;
 
-    @Value("${coingecko.api.key}")
+    @Value("${coingecko.api.key:demo}")
     private String coinGeckoApiKey;
 
     private static class CandleCacheKey {

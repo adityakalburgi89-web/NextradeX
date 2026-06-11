@@ -33,10 +33,10 @@ public class BinanceService {
     private final RestTemplate restTemplate;
     private final RestClient restClient = RestClient.create();
 
-    @Value("${bybit.api-key}")
+    @Value("${bybit.api-key:}")
     private String bybitApiKey;
 
-    @Value("${bybit.api-secret}")
+    @Value("${bybit.api-secret:}")
     private String bybitApiSecret;
 
     private final Map<String, Long> lastTickerRequestTimes = new ConcurrentHashMap<>();
