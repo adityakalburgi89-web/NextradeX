@@ -122,6 +122,17 @@ const renderCoinIcon = (symbol) => {
   );
 };
 
+const centerCoins = [
+  { symbol: "BTC", icon: btcIcon },
+  { symbol: "ETH", icon: ethIcon },
+  { symbol: "SOL", icon: solIcon },
+  { symbol: "LINK", icon: linkIcon },
+  { symbol: "LTC", icon: ltcIcon },
+  { symbol: "ARB", icon: arbIcon },
+  { symbol: "OP", icon: opIcon },
+  { symbol: "SUI", icon: suiIcon }
+];
+
 export default function HomePage() {
   const [activeMarketTab, setActiveMarketTab] = useState("popular");
   const [userCount, setUserCount] = useState(316258026);
@@ -132,6 +143,15 @@ export default function HomePage() {
   const btcPrice = btcData ? Number(btcData.currentPrice) : 96482.50;
   const btcChange = btcData ? Number(btcData.percentChange24h) : 3.45;
   const isBtcUp = btcChange >= 0;
+
+  const [activeCenterCoinIndex, setActiveCenterCoinIndex] = useState(0);
+
+  useEffect(() => {
+    const coinTimer = setInterval(() => {
+      setActiveCenterCoinIndex((prev) => (prev + 1) % centerCoins.length);
+    }, 5000);
+    return () => clearInterval(coinTimer);
+  }, []);
 
   // Reduced motion hook
   const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -334,7 +354,21 @@ export default function HomePage() {
                 >
                   <div className="w-[240px] h-[240px] md:w-[290px] md:h-[290px] rounded-full shadow-neo-inset flex items-center justify-center bg-background">
                     <div className="w-[180px] h-[180px] md:w-[220px] md:h-[220px] rounded-full shadow-neo flex items-center justify-center bg-background">
-                      <div className="w-[120px] h-[120px] md:w-[150px] md:h-[150px] rounded-full shadow-neo-inset-deep flex items-center justify-center bg-background" />
+                      <div className="w-[120px] h-[120px] md:w-[150px] md:h-[150px] rounded-full shadow-neo-inset-deep flex items-center justify-center bg-background">
+                        {/* Innermost deep well with rotating coin */}
+                        <div className="w-16 h-16 rounded-full shadow-neo flex items-center justify-center bg-background overflow-hidden">
+                          <motion.img
+                            key={activeCenterCoinIndex}
+                            src={centerCoins[activeCenterCoinIndex].icon}
+                            className="w-8 h-8 object-contain"
+                            alt={centerCoins[activeCenterCoinIndex].symbol}
+                            initial={{ scale: 0.6, opacity: 0, rotate: -45 }}
+                            animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                            exit={{ scale: 0.6, opacity: 0, rotate: 45 }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -400,21 +434,6 @@ export default function HomePage() {
                       <span className="font-mono text-muted">1.124 BTC</span>
                     </div>
                   </div>
-                </motion.div>
-
-                {/* Floating mini currency tokens with spring rotation */}
-                <motion.div
-                  className="absolute top-1/2 left-1/2 -translate-x-[115px] -translate-y-[115px] w-12 h-12 rounded-full shadow-neo flex items-center justify-center bg-background cursor-pointer"
-                  whileHover={{ scale: 1.15, rotate: 15 }}
-                >
-                  <img src={ethIcon} className="w-6 h-6 object-contain" alt="ETH" />
-                </motion.div>
-
-                <motion.div
-                  className="absolute bottom-1/2 right-1/2 translate-x-[120px] translate-y-[100px] w-12 h-12 rounded-full shadow-neo flex items-center justify-center bg-background cursor-pointer"
-                  whileHover={{ scale: 1.15, rotate: -15 }}
-                >
-                  <img src={solIcon} className="w-6 h-6 object-contain" alt="SOL" />
                 </motion.div>
 
               </div>
