@@ -4,20 +4,20 @@ import { cva } from "class-variance-authority"
 import { cn } from "../../lib/utils"
 
 const cardVariants = cva(
-    "rounded-xl border transition-all duration-200 relative overflow-hidden animate-fade-in",
+    "rounded-[32px] transition-all duration-300 ease-out relative overflow-hidden animate-fade-in bg-background text-foreground shadow-neo",
     {
         variants: {
             variant: {
                 default:
-                    "bg-surface-card-dark border-hairline-on-dark text-on-dark light:bg-canvas-light light:border-hairline-on-light light:text-ink",
+                    "bg-background text-foreground",
                 glass:
-                    "bg-surface-card-dark/95 backdrop-blur-2xl border-hairline-on-dark text-on-dark light:bg-canvas-light/95 light:border-hairline-on-light light:text-ink",
+                    "bg-surface-glass text-foreground backdrop-blur-xl",
                 elevated:
-                    "bg-surface-elevated-dark border-hairline-on-dark text-on-dark light:bg-surface-soft-light light:border-hairline-on-light light:text-ink",
+                    "bg-background text-foreground shadow-neo-hover",
                 pricing:
-                    "bg-surface-card-dark border-hairline-on-dark text-on-dark light:bg-canvas-light light:border-hairline-on-light light:text-ink",
+                    "bg-background text-foreground",
                 pricingActive:
-                    "bg-surface-card-dark border-primary border-2 z-10 text-on-dark light:bg-canvas-light light:border-primary light:border-2 light:text-ink",
+                    "bg-background z-10 text-foreground ring-2 ring-primary ring-offset-2 ring-offset-background shadow-neo-hover",
             },
         },
         defaultVariants: {
@@ -31,7 +31,7 @@ const Card = React.forwardRef(({ className, variant, interactive = true, ...prop
         ref={ref}
         className={cn(
             cardVariants({ variant, className }),
-            interactive && "hover:border-primary/30 hover:shadow-glow-sm transition-all duration-200 cursor-pointer"
+            interactive && "hover:-translate-y-0.5 hover:shadow-neo-hover transition-all duration-300 cursor-pointer"
         )}
         aria-label={props['aria-label']}
         aria-labelledby={props['aria-labelledby']}
@@ -53,7 +53,7 @@ const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
     <h3
         ref={ref}
         className={cn(
-            "font-heading font-semibold leading-none tracking-tight text-xl text-[var(--foreground)]",
+            "font-heading font-semibold leading-none text-xl text-[var(--foreground)]",
             className
         )}
         {...props}

@@ -390,23 +390,23 @@ export default function MarginTradingPage() {
 
   return (
     <PageTransition>
-      <div className="w-full bg-canvas-dark text-white py-4 font-sans select-none min-h-screen">
+      <div className="w-full bg-background text-foreground py-4 font-sans select-none min-h-screen">
         <div className="max-w-8xl mx-auto px-4 space-y-4">
           
           {/* HIGH-DENSITY HORIZONTAL TICKER BAR */}
-          <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-6 shadow-elevation-md">
+          <div className="bg-background border border-transparent rounded-xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-6 shadow-elevation-md">
             <div className="flex items-center gap-4">
               <div>
-                <h1 className="text-base font-extrabold tracking-tight font-heading flex items-center gap-1.5 text-white">
+                <h1 className="text-base font-extrabold font-heading flex items-center gap-1.5 text-foreground">
                   {form.symbol.toUpperCase()}
-                  <span className="text-[9px] font-mono font-bold bg-primary/15 text-primary px-1 rounded uppercase tracking-wider">Margin {form.leverage}x</span>
+                  <span className="text-[9px] font-mono font-bold bg-primary/15 text-primary px-1 rounded uppercase">Margin {form.leverage}x</span>
                 </h1>
                 <span className="text-[10px] font-mono font-semibold text-muted">NexTradeX Margin</span>
               </div>
 
               {priceSnapshot && (
-                <div className="border-l border-hairline-on-dark pl-4 flex flex-col justify-center">
-                  <span className="text-[10px] text-muted font-mono font-bold uppercase tracking-wider block">Index Price</span>
+                <div className="border-l border-transparent pl-4 flex flex-col justify-center">
+                  <span className="text-[10px] text-muted font-mono font-bold uppercase block">Index Price</span>
                   <span className="text-base font-extrabold font-mono text-trading-up">
                     {formatCurrency(priceSnapshot.currentPrice)}
                   </span>
@@ -417,30 +417,30 @@ export default function MarginTradingPage() {
             {priceSnapshot && (
               <div className="flex flex-wrap items-center gap-8 font-mono text-muted">
                 <div className="min-w-[80px]">
-                  <span className="block uppercase text-[9px] tracking-wider">24h Change</span>
+                  <span className="block uppercase text-[9px]">24h Change</span>
                   <span className={`text-sm font-bold ${Number(priceSnapshot.percentChange24h) >= 0 ? "text-trading-up" : "text-trading-down"}`}>
                     {Number(priceSnapshot.percentChange24h) >= 0 ? "+" : ""}{priceSnapshot.percentChange24h}%
                   </span>
                 </div>
 
                 <div className="min-w-[100px]">
-                  <span className="block uppercase text-[9px] tracking-wider">24H High</span>
-                  <span className="text-sm font-bold text-white">{formatCurrency(priceSnapshot.highPrice || priceSnapshot.currentPrice)}</span>
+                  <span className="block uppercase text-[9px]">24H High</span>
+                  <span className="text-sm font-bold text-foreground">{formatCurrency(priceSnapshot.highPrice || priceSnapshot.currentPrice)}</span>
                 </div>
 
                 <div className="min-w-[100px]">
-                  <span className="block uppercase text-[9px] tracking-wider">24H Low</span>
-                  <span className="text-sm font-bold text-white">{formatCurrency(priceSnapshot.lowPrice || priceSnapshot.currentPrice)}</span>
+                  <span className="block uppercase text-[9px]">24H Low</span>
+                  <span className="text-sm font-bold text-foreground">{formatCurrency(priceSnapshot.lowPrice || priceSnapshot.currentPrice)}</span>
                 </div>
 
                 <div className="min-w-[110px]">
-                  <span className="block uppercase text-[9px] tracking-wider">Collateral Ratio</span>
+                  <span className="block uppercase text-[9px]">Collateral Ratio</span>
                   <span className="text-sm font-bold text-primary">{(marginDetails.collateral / (marginDetails.totalCost || 1) * 100).toFixed(1)}%</span>
                 </div>
 
                 <div className="min-w-[130px]">
-                  <span className="block uppercase text-[9px] tracking-wider">Daily Borrow Interest</span>
-                  <span className="text-sm font-bold text-white">0.05%</span>
+                  <span className="block uppercase text-[9px]">Daily Borrow Interest</span>
+                  <span className="text-sm font-bold text-foreground">0.05%</span>
                 </div>
               </div>
             )}
@@ -467,8 +467,8 @@ export default function MarginTradingPage() {
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                 <div className="md:col-span-9 h-full">
                   <Tabs value={activeBottomTab} onValueChange={setActiveBottomTab} className="w-full h-full flex flex-col">
-                    <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md h-full flex flex-col">
-                      <div className="bg-canvas-dark/30 border-b border-hairline-on-dark px-4 flex items-center justify-between">
+                    <Card className="bg-background border border-transparent rounded-xl overflow-hidden shadow-elevation-md h-full flex flex-col">
+                      <div className="bg-background/30 border-b border-transparent px-4 flex items-center justify-between">
                         <TabsList className="flex gap-4 bg-transparent border-0 p-0 h-auto rounded-none">
                           {[
                             { id: "POSITIONS", label: "Margin Positions" },
@@ -479,7 +479,7 @@ export default function MarginTradingPage() {
                             <TabsTrigger
                               key={tab.id}
                               value={tab.id}
-                              className="pb-3 pt-3 bg-transparent border-0 rounded-none relative font-heading text-[10px] font-bold uppercase tracking-wider text-muted hover:text-white data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:font-bold transition-all cursor-pointer"
+                              className="pb-3 pt-3 bg-transparent border-0 rounded-none relative font-heading text-[10px] font-bold uppercase text-muted hover:text-foreground data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:font-bold transition-all cursor-pointer"
                             >
                               {tab.label}{" "}
                               {tab.id === "POSITIONS"
@@ -519,7 +519,7 @@ export default function MarginTradingPage() {
                       {activeBottomTab === "POSITIONS" && (
                         loadingPositions ? (
                           <div className="p-6 space-y-2">
-                            <div className="h-6 bg-white/[0.02] rounded animate-pulse w-full" />
+                            <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
                           </div>
                         ) : positions.length === 0 ? (
                           <div className="py-12 text-center text-muted font-mono text-xs">
@@ -529,7 +529,7 @@ export default function MarginTradingPage() {
                           <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                               <thead>
-                                <tr className="border-b border-hairline-on-dark text-[10px] font-bold text-muted uppercase tracking-wider font-mono bg-canvas-dark/10">
+                                <tr className="border-b border-transparent text-[10px] font-bold text-muted uppercase font-mono bg-background/10">
                                   <th className="py-3 px-5">Symbol</th>
                                   <th className="py-3 px-5">Side</th>
                                   <th className="py-3 px-5 text-right">Size</th>
@@ -554,14 +554,14 @@ export default function MarginTradingPage() {
                                   
                                   const isProfit = pnlValue >= 0;
                                   return (
-                                    <tr key={p.id} className="hover:bg-canvas-dark/25 transition-colors">
-                                      <td className="py-3 px-5 font-bold text-white">{p.symbol}</td>
+                                    <tr key={p.id} className="hover:bg-background/25 transition-colors">
+                                      <td className="py-3 px-5 font-bold text-foreground">{p.symbol}</td>
                                       <td className="py-3 px-5">
                                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${p.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"}`}>
                                           {p.side}
                                         </span>
                                       </td>
-                                      <td className="py-3 px-5 text-right font-semibold text-white">{p.quantity}</td>
+                                      <td className="py-3 px-5 text-right font-semibold text-foreground">{p.quantity}</td>
                                       <td className="py-3 px-5 text-right text-muted">{formatCurrency(p.entryPrice)}</td>
                                       <td className="py-3 px-5 text-right text-primary font-bold">{p.marginRatio}</td>
                                       <td className={`py-3 px-5 text-right font-bold text-sm ${isProfit ? "text-trading-up" : "text-trading-down"}`}>
@@ -572,7 +572,7 @@ export default function MarginTradingPage() {
                                           variant="outline"
                                           size="sm"
                                           onClick={() => handleClosePosition(p.id)}
-                                          className="text-[10px] h-7 px-2 border-trading-down hover:bg-trading-down text-trading-down hover:text-white"
+                                          className="text-[10px] h-7 px-2 border-trading-down hover:bg-trading-down text-trading-down hover:text-foreground"
                                         >
                                           CLOSE
                                         </Button>
@@ -589,7 +589,7 @@ export default function MarginTradingPage() {
                       {activeBottomTab === "ORDERS" && (
                         loadingOrders ? (
                           <div className="p-6 space-y-2">
-                            <div className="h-6 bg-white/[0.02] rounded animate-pulse w-full" />
+                            <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
                           </div>
                         ) : activeOrders.length === 0 ? (
                           <div className="py-12 text-center text-muted font-mono text-xs">
@@ -599,7 +599,7 @@ export default function MarginTradingPage() {
                           <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse font-mono text-xs">
                               <thead>
-                                <tr className="border-b border-hairline-on-dark text-[9px] font-bold text-muted uppercase tracking-wider bg-canvas-dark/20 py-2.5">
+                                <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
                                   <th className="py-2.5 px-4">Symbol</th>
                                   <th className="py-2.5 px-4">Side</th>
                                   <th className="py-2.5 px-4">Type</th>
@@ -610,8 +610,8 @@ export default function MarginTradingPage() {
                               </thead>
                               <tbody className="divide-y divide-hairline-on-dark">
                                 {activeOrders.map((o) => (
-                                  <tr key={o.id} className="hover:bg-white/[0.01] transition-colors">
-                                    <td className="py-3 px-4 font-bold text-white uppercase">{o.symbol}</td>
+                                  <tr key={o.id} className="hover:bg-background/[0.01] transition-colors">
+                                    <td className="py-3 px-4 font-bold text-foreground uppercase">{o.symbol}</td>
                                     <td className="py-3 px-4">
                                       <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
                                         o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
@@ -633,7 +633,7 @@ export default function MarginTradingPage() {
                                         </button>
                                       ) : (
                                         <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                                          o.status === "FILLED" ? "bg-trading-up/10 text-trading-up" : "bg-white/10 text-muted"
+                                          o.status === "FILLED" ? "bg-trading-up/10 text-trading-up" : "bg-background text-muted"
                                         }`}>
                                           {o.status}
                                         </span>
@@ -650,7 +650,7 @@ export default function MarginTradingPage() {
                       {activeBottomTab === "HISTORY" && (
                         loadingHistory ? (
                           <div className="p-6 space-y-2">
-                            <div className="h-6 bg-white/[0.02] rounded animate-pulse w-full" />
+                            <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
                           </div>
                         ) : orderHistory.length === 0 ? (
                           <div className="py-12 text-center text-muted font-mono text-xs">
@@ -660,7 +660,7 @@ export default function MarginTradingPage() {
                           <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse font-mono text-xs">
                               <thead>
-                                <tr className="border-b border-hairline-on-dark text-[9px] font-bold text-muted uppercase tracking-wider bg-canvas-dark/20 py-2.5">
+                                <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
                                   <th className="py-2.5 px-4">Symbol</th>
                                   <th className="py-2.5 px-4">Side</th>
                                   <th className="py-2.5 px-4">Type</th>
@@ -671,8 +671,8 @@ export default function MarginTradingPage() {
                               </thead>
                               <tbody className="divide-y divide-hairline-on-dark">
                                 {orderHistory.map((o) => (
-                                  <tr key={o.id} className="hover:bg-white/[0.01] transition-colors">
-                                    <td className="py-3 px-4 font-bold text-white">{o.symbol}</td>
+                                  <tr key={o.id} className="hover:bg-background/[0.01] transition-colors">
+                                    <td className="py-3 px-4 font-bold text-foreground">{o.symbol}</td>
                                     <td className="py-3 px-4">
                                       <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
                                         o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
@@ -685,7 +685,7 @@ export default function MarginTradingPage() {
                                     <td className="py-3 px-4 text-right font-semibold">{formatCurrency(o.price)}</td>
                                     <td className="py-3 px-4 text-right">
                                       <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                                        o.status === "FILLED" ? "bg-trading-up/10 text-trading-up" : o.status === "CANCELED" ? "bg-white/10 text-muted" : "bg-primary/15 text-primary"
+                                        o.status === "FILLED" ? "bg-trading-up/10 text-trading-up" : o.status === "CANCELED" ? "bg-background text-muted" : "bg-primary/15 text-primary"
                                       }`}>
                                         {o.status}
                                       </span>
@@ -701,22 +701,22 @@ export default function MarginTradingPage() {
                       {activeBottomTab === "ASSETS" && (
                         loadingWallets ? (
                           <div className="p-6 space-y-2">
-                            <div className="h-6 bg-white/[0.02] rounded animate-pulse w-full" />
+                            <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
                           </div>
                         ) : (
                           <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
-                            <div className="border border-hairline-on-dark rounded-lg p-3 bg-canvas-dark/20">
+                            <div className="border border-transparent rounded-2xl p-3 bg-background/20">
                               <span className="text-muted text-[10px] uppercase block">Total Margin USDT Equity</span>
-                              <span className="text-lg font-bold text-white block mt-1">{formatCurrency(marginWalletBalance)}</span>
+                              <span className="text-lg font-bold text-foreground block mt-1">{formatCurrency(marginWalletBalance)}</span>
                             </div>
-                            <div className="border border-hairline-on-dark rounded-lg p-3 bg-canvas-dark/20">
+                            <div className="border border-transparent rounded-2xl p-3 bg-background/20">
                               <span className="text-muted text-[10px] uppercase block">Borrow Power Cap</span>
                               <span className="text-sm font-bold text-primary block mt-1">10x Leverage Leverage</span>
                             </div>
-                            <div className="border border-hairline-on-dark rounded-lg p-3 bg-canvas-dark/20 flex items-center justify-between">
+                            <div className="border border-transparent rounded-2xl p-3 bg-background/20 flex items-center justify-between">
                               <div>
                                 <span className="text-muted text-[10px] uppercase block">Daily Interest Accrual</span>
-                                <span className="text-[10px] text-white font-bold block mt-1">0.05% Compounded Daily</span>
+                                <span className="text-[10px] text-foreground font-bold block mt-1">0.05% Compounded Daily</span>
                               </div>
                             </div>
                           </div>
@@ -740,29 +740,29 @@ export default function MarginTradingPage() {
 
             {/* Order Entry Form (3-cols) */}
             <div className="lg:col-span-3 space-y-4">
-              <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl overflow-hidden shadow-elevation-md relative">
+              <Card className="border border-transparent bg-background rounded-xl overflow-hidden shadow-elevation-md relative">
                 {!hasAuthToken() && (
-                  <div className="absolute inset-0 bg-[#0a0a0f]/85 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6 text-center">
+                  <div className="absolute inset-0 bg-background/85 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-4">
                       <Lock size={20} className="text-primary" />
                     </div>
-                    <h3 className="font-heading text-sm font-bold text-white mb-2 uppercase tracking-wide">Login Required</h3>
+                    <h3 className="font-heading text-sm font-bold text-foreground mb-2 uppercase">Login Required</h3>
                     <p className="text-xs text-muted leading-relaxed mb-6 max-w-[200px]">
                       Access your simulated wallet and start trading by connecting your account.
                     </p>
-                    <Button variant="default" className="w-full text-xs font-semibold py-2.5 rounded-lg shadow-glow-primary" asChild>
+                    <Button variant="default" className="w-full text-xs font-semibold py-2.5 rounded-2xl shadow-glow-primary" asChild>
                       <Link to="/auth">Sign In / Connect Wallet</Link>
                     </Button>
                   </div>
                 )}
                 <form onSubmit={handleSubmit}>
-                  <div className="flex border-b border-hairline-on-dark p-1 bg-canvas-dark/40">
+                  <div className="flex border-b border-transparent p-1 bg-background/40">
                     <button
                       type="button"
                       aria-pressed={form.side === "BUY"}
-                      className={`flex-1 min-h-[44px] text-center text-xs font-bold tracking-wider rounded transition-all ${form.side === "BUY"
-                        ? "bg-trading-up text-white shadow-sm"
-                        : "text-muted hover:text-white"
+                      className={`flex-1 min-h-[44px] text-center text-xs font-bold rounded transition-all ${form.side === "BUY"
+                        ? "bg-trading-up text-foreground shadow-sm"
+                        : "text-muted hover:text-foreground"
                         }`}
                       onClick={() => setForm((prev) => ({ ...prev, side: "BUY" }))}
                     >
@@ -771,9 +771,9 @@ export default function MarginTradingPage() {
                     <button
                       type="button"
                       aria-pressed={form.side === "SELL"}
-                      className={`flex-1 min-h-[44px] text-center text-xs font-bold tracking-wider rounded transition-all ${form.side === "SELL"
-                        ? "bg-trading-down text-white shadow-sm"
-                        : "text-muted hover:text-white"
+                      className={`flex-1 min-h-[44px] text-center text-xs font-bold rounded transition-all ${form.side === "SELL"
+                        ? "bg-trading-down text-foreground shadow-sm"
+                        : "text-muted hover:text-foreground"
                         }`}
                       onClick={() => setForm((prev) => ({ ...prev, side: "SELL" }))}
                     >
@@ -783,14 +783,14 @@ export default function MarginTradingPage() {
 
                   <CardContent className="space-y-4 pt-4">
                     <div>
-                      <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
+                      <label className="font-mono text-[10px] text-muted uppercase mb-1.5 block">
                         Symbol
                       </label>
                       <Select
                         name="symbol"
                         value={form.symbol}
                         onChange={handleChange}
-                        className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md"
+                        className="bg-background border-transparent font-mono text-sm text-foreground w-full rounded-2xl"
                       >
                         <option value="BTCUSDT">BTC/USDT</option>
                         <option value="ETHUSDT">ETH/USDT</option>
@@ -801,7 +801,7 @@ export default function MarginTradingPage() {
                     </div>
 
                     <div>
-                      <label className="font-mono text-[10px] text-muted uppercase tracking-widest mb-1.5 block">
+                      <label className="font-mono text-[10px] text-muted uppercase mb-1.5 block">
                         Quantity
                       </label>
                       <div className="relative">
@@ -812,7 +812,7 @@ export default function MarginTradingPage() {
                           value={form.quantity}
                           onChange={handleChange}
                           required
-                          className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md pr-12"
+                          className="bg-background border-transparent font-mono text-sm text-foreground w-full rounded-2xl pr-12"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">{baseAsset}</span>
                       </div>
@@ -820,7 +820,7 @@ export default function MarginTradingPage() {
 
                     <div>
                       <div className="flex justify-between items-center mb-1.5">
-                        <label className="font-mono text-[10px] text-muted uppercase tracking-widest block">
+                        <label className="font-mono text-[10px] text-muted uppercase block">
                           Leverage ({form.leverage}x)
                         </label>
                         <span className="text-[10px] text-primary font-mono font-bold uppercase">Margin cap 10x</span>
@@ -834,7 +834,7 @@ export default function MarginTradingPage() {
                         value={form.leverage}
                         onChange={handleChange}
                         required
-                        className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md mb-2"
+                        className="bg-background border-transparent font-mono text-sm text-foreground w-full rounded-2xl mb-2"
                       />
 
                       <div className="flex gap-2 justify-between">
@@ -846,7 +846,7 @@ export default function MarginTradingPage() {
                             aria-pressed={form.leverage === lvl}
                             className={`flex-1 min-h-[44px] py-2 font-mono text-[10px] font-bold rounded border transition-all ${form.leverage === lvl
                               ? "bg-primary border-primary text-on-primary shadow-sm"
-                              : "border-hairline-on-dark text-muted hover:text-white hover:border-muted"
+                              : "border-transparent text-muted hover:text-foreground hover:border-muted"
                               }`}
                           >
                             {lvl}x
@@ -862,7 +862,7 @@ export default function MarginTradingPage() {
                           key={pct}
                           type="button"
                           onClick={() => handlePercentSelect(pct)}
-                          className="flex-1 min-h-[44px] min-w-[44px] px-3 py-2 bg-canvas-dark hover:bg-white/[0.04] border border-hairline-on-dark text-muted hover:text-white rounded font-mono text-[10px] font-bold"
+                          className="flex-1 min-h-[44px] min-w-[44px] px-3 py-2 bg-background hover:bg-background border border-transparent text-muted hover:text-foreground rounded font-mono text-[10px] font-bold"
                         >
                           {pct}%
                         </button>
@@ -870,28 +870,28 @@ export default function MarginTradingPage() {
                     </div>
 
                     {/* Calculations summary */}
-                    <div className="border border-hairline-on-dark bg-canvas-dark/40 rounded-lg p-3 space-y-2">
+                    <div className="border border-transparent bg-background/40 rounded-2xl p-3 space-y-2">
                       <div className="flex justify-between items-center text-xs font-mono">
                         <span className="text-muted">Required Collateral</span>
                         <span className="text-primary font-bold">{formatCurrency(marginDetails.collateral)}</span>
                       </div>
                       <div className="flex justify-between items-center text-xs font-mono">
                         <span className="text-muted">Borrowed Amount</span>
-                        <span className="text-white font-semibold">{formatCurrency(marginDetails.borrowed)}</span>
+                        <span className="text-foreground font-semibold">{formatCurrency(marginDetails.borrowed)}</span>
                       </div>
-                      <div className="flex justify-between items-center text-xs font-mono border-t border-hairline-on-dark pt-2">
+                      <div className="flex justify-between items-center text-xs font-mono border-t border-transparent pt-2">
                         <span className="text-muted">Daily Interest Rate</span>
-                        <span className="text-white font-semibold font-mono">0.05%</span>
+                        <span className="text-foreground font-semibold font-mono">0.05%</span>
                       </div>
                     </div>
 
                     {message && (
-                      <div role="status" className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-trading-up/10 border border-trading-up/20 animate-slide-down">
+                      <div role="status" className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-trading-up/10 border border-trading-up/20 animate-slide-down">
                         <p className="text-trading-up text-xs font-mono">{message}</p>
                       </div>
                     )}
                     {error && (
-                      <div role="alert" className="text-trading-down text-xs mt-1 px-3 py-2.5 rounded-lg bg-trading-down/10 border border-trading-down/20 animate-slide-down">
+                      <div role="alert" className="text-trading-down text-xs mt-1 px-3 py-2.5 rounded-2xl bg-trading-down/10 border border-trading-down/20 animate-slide-down">
                         {error}
                       </div>
                     )}
@@ -900,7 +900,7 @@ export default function MarginTradingPage() {
                   <CardFooter className="pt-2 pb-4">
                     <Button
                       type="submit"
-                      className="w-full font-mono text-sm uppercase py-3 font-bold rounded-md min-h-[48px]"
+                      className="w-full font-mono text-sm uppercase py-3 font-bold rounded-2xl min-h-[48px]"
                       variant={form.side === "BUY" ? "tradingUp" : "tradingDown"}
                       loading={loading}
                     >
@@ -911,18 +911,18 @@ export default function MarginTradingPage() {
               </Card>
 
               {/* Margin Assets & Risk Gauge Card */}
-              <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl p-4 space-y-4 shadow-elevation-md">
-                <div className="flex justify-between items-center border-b border-white/[0.04] pb-2 mb-1">
-                  <h4 className="font-heading text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+              <Card className="border border-transparent bg-background rounded-xl p-4 space-y-4 shadow-elevation-md">
+                <div className="flex justify-between items-center border-b border-transparent pb-2 mb-1">
+                  <h4 className="font-heading text-xs font-bold text-foreground uppercase flex items-center gap-1.5">
                     <Coins size={14} className="text-primary" />
                     Margin Account
                   </h4>
-                  <span className="text-[9px] font-mono font-bold bg-[#fcd535]/15 text-[#fcd535] px-1 rounded uppercase tracking-wider">Risk Level</span>
+                  <span className="text-[9px] font-mono font-bold bg-[#6C63FF]/15 text-[#6C63FF] px-1 rounded uppercase">Risk Level</span>
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-[10px] text-muted font-mono uppercase tracking-wider block">Estimated Equity</span>
-                  <div className="text-lg font-bold font-mono text-white flex items-baseline gap-1.5">
+                  <span className="text-[10px] text-muted font-mono uppercase block">Estimated Equity</span>
+                  <div className="text-lg font-bold font-mono text-foreground flex items-baseline gap-1.5">
                     {marginWalletBalance.toFixed(2)} <span className="text-xs text-muted font-normal">USDT</span>
                   </div>
                 </div>
@@ -934,22 +934,22 @@ export default function MarginTradingPage() {
                     <span className="text-trading-up font-bold">99.9% SAFE</span>
                   </div>
                   {/* Progress bar */}
-                  <div className="w-full h-1.5 bg-canvas-dark rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-background rounded-full overflow-hidden">
                     <div className="h-full bg-trading-up rounded-full" style={{ width: "12%" }} />
                   </div>
                 </div>
 
                 {/* Mini debt/borrow details */}
-                <div className="border border-hairline-on-dark bg-canvas-dark/40 rounded-lg p-2.5 space-y-2 text-[10px] font-mono">
+                <div className="border border-transparent bg-background/40 rounded-2xl p-2.5 space-y-2 text-[10px] font-mono">
                   <div className="flex justify-between items-center text-muted">
                     <span>Collateral Value</span>
-                    <span className="text-white font-bold">{formatCurrency(marginWalletBalance)}</span>
+                    <span className="text-foreground font-bold">{formatCurrency(marginWalletBalance)}</span>
                   </div>
-                  <div className="flex justify-between items-center border-t border-white/[0.02] pt-1.5">
+                  <div className="flex justify-between items-center border-t border-transparent pt-1.5">
                     <span className="text-muted">Total Borrowed Debt</span>
-                    <span className="text-white font-bold">{formatCurrency(positions.reduce((sum, p) => sum + Number(p.borrowed || 0), 0))}</span>
+                    <span className="text-foreground font-bold">{formatCurrency(positions.reduce((sum, p) => sum + Number(p.borrowed || 0), 0))}</span>
                   </div>
-                  <div className="flex justify-between items-center border-t border-white/[0.02] pt-1.5">
+                  <div className="flex justify-between items-center border-t border-transparent pt-1.5">
                     <span className="text-muted">Daily Borrow Rate</span>
                     <span className="text-primary font-bold">0.05%</span>
                   </div>
@@ -958,17 +958,17 @@ export default function MarginTradingPage() {
                 {/* Quick actions grid */}
                 <div className="grid grid-cols-3 gap-2 pt-1">
                   <Link to="/wallets" className="flex-1">
-                    <button className="w-full py-2 bg-[#fcd535] hover:bg-[#fcd535]/90 text-[#181a20] rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <button className="w-full py-2 bg-[#6C63FF] hover:bg-[#6C63FF]/90 text-[#3D4852] rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
                       BORROW
                     </button>
                   </Link>
                   <Link to="/wallets" className="flex-1">
-                    <button className="w-full py-2 bg-canvas-dark hover:bg-white/[0.04] border border-hairline-on-dark text-white rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <button className="w-full py-2 bg-background hover:bg-background border border-transparent text-foreground rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
                       REPAY
                     </button>
                   </Link>
                   <Link to="/wallets" className="flex-1">
-                    <button className="w-full py-2 bg-canvas-dark hover:bg-white/[0.04] border border-hairline-on-dark text-white rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <button className="w-full py-2 bg-background hover:bg-background border border-transparent text-foreground rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
                       TRANSFER
                     </button>
                   </Link>
@@ -976,16 +976,16 @@ export default function MarginTradingPage() {
               </Card>
 
               {/* Streaming Real-Time matched Trades Panel */}
-              <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-4 font-mono text-xs shadow-elevation-md">
-                <div className="flex justify-between items-center border-b border-hairline-on-dark pb-2 mb-3">
-                  <h4 className="font-heading text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+              <Card className="bg-background border border-transparent rounded-xl p-4 font-mono text-xs shadow-elevation-md">
+                <div className="flex justify-between items-center border-b border-transparent pb-2 mb-3">
+                  <h4 className="font-heading text-xs font-bold text-foreground uppercase flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-trading-up animate-ping"></span>
                     Recent Trades
                   </h4>
                   <span className="text-[10px] text-muted">{form.symbol} Live</span>
                 </div>
 
-                <div className="flex justify-between text-muted text-[10px] uppercase font-semibold pb-1 border-b border-white/[0.03] mb-1.5">
+                <div className="flex justify-between text-muted text-[10px] uppercase font-semibold pb-1 border-b border-transparent mb-1.5">
                   <span>Price(USDT)</span>
                   <span>Amount({baseAsset})</span>
                   <span className="text-right">Time</span>
@@ -996,11 +996,11 @@ export default function MarginTradingPage() {
                     <div className="py-4 text-center text-muted text-[10px]">Waiting for market ticks...</div>
                   ) : (
                     recentTrades.slice(0, 5).map((t) => (
-                      <div key={t.id} className="flex justify-between items-center h-5 px-1 hover:bg-white/[0.02] rounded transition-colors">
+                      <div key={t.id} className="flex justify-between items-center h-5 px-1 hover:bg-background/[0.02] rounded transition-colors">
                         <span className={`font-bold ${t.side === "BUY" ? "text-trading-up" : "text-trading-down"}`}>
                           {formatCurrency(t.price)}
                         </span>
-                        <span className="text-body font-medium">{t.amount}</span>
+                        <span className="text-foreground font-medium">{t.amount}</span>
                         <span className="text-muted text-[10px] text-right">{t.time}</span>
                       </div>
                     ))

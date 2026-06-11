@@ -4,38 +4,38 @@ import { cva } from "class-variance-authority"
 import { cn } from "../../lib/utils"
 
 const buttonVariants = cva(
-    "inline-flex items-center justify-center whitespace-nowrap font-body text-sm font-semibold relative overflow-hidden transition-all duration-200 disabled:pointer-events-none focus-ring",
+    "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-2xl font-body text-sm font-bold relative overflow-hidden transition-all duration-300 ease-out disabled:pointer-events-none disabled:opacity-60 focus-ring active:translate-y-0.5",
     {
         variants: {
             variant: {
                 default:
-                    "bg-primary text-on-primary hover:bg-[#f0b90b] disabled:bg-primary-disabled disabled:text-muted rounded-md px-6 py-3 h-10",
+                    "bg-primary text-on-primary px-6 py-3 shadow-neo hover:-translate-y-0.5 hover:bg-primary-active hover:shadow-neo-hover active:shadow-neo-inset-sm",
                 primaryPill:
-                    "bg-primary text-on-primary hover:bg-[#f0b90b] rounded-pill px-8 py-3.5",
+                    "bg-primary text-on-primary rounded-full px-8 py-3.5 shadow-neo hover:-translate-y-0.5 hover:bg-primary-active hover:shadow-neo-hover active:shadow-neo-inset-sm",
                 secondaryOnDark:
-                    "bg-surface-card-dark text-on-dark hover:bg-surface-elevated-dark rounded-md px-6 py-3 h-10",
+                    "bg-background text-foreground px-6 py-3 shadow-neo hover:-translate-y-0.5 hover:shadow-neo-hover active:shadow-neo-inset-sm",
                 secondaryOnLight:
-                    "bg-canvas-light text-ink border border-hairline-on-light hover:bg-surface-soft-light rounded-md px-6 py-3 h-10",
+                    "bg-background text-foreground px-6 py-3 shadow-neo hover:-translate-y-0.5 hover:shadow-neo-hover active:shadow-neo-inset-sm",
                 tertiaryText:
-                    "bg-transparent text-body hover:opacity-90 font-semibold p-0 min-h-0",
+                    "bg-transparent text-foreground hover:text-primary font-bold p-0 min-h-0 shadow-none",
                 outline:
-                    "border border-hairline-on-dark text-body hover:bg-surface-elevated-dark rounded-md px-6 py-3 h-10",
-                ghost: "hover:bg-surface-elevated-dark hover:text-primary text-body rounded-md px-6 py-3 h-10",
+                    "bg-background text-foreground px-6 py-3 shadow-neo hover:-translate-y-0.5 hover:text-primary hover:shadow-neo-hover active:shadow-neo-inset-sm",
+                ghost: "bg-background text-muted px-6 py-3 shadow-neo-sm hover:text-primary active:shadow-neo-inset-sm",
                 link: "text-primary hover:opacity-90",
                 danger:
-                    "bg-trading-down text-white hover:opacity-90 rounded-md px-6 py-3 h-10",
+                    "bg-trading-down text-foreground px-6 py-3 shadow-neo hover:-translate-y-0.5 hover:shadow-neo-hover active:shadow-neo-inset-sm",
                 tradingUp:
-                    "bg-trading-up text-white rounded-sm font-semibold px-5 py-2 hover:opacity-90",
+                    "bg-trading-up text-foreground font-semibold px-5 py-2 shadow-neo hover:-translate-y-0.5 hover:shadow-neo-hover",
                 tradingDown:
-                    "bg-trading-down text-white rounded-sm font-semibold px-5 py-2 hover:opacity-90",
+                    "bg-trading-down text-foreground font-semibold px-5 py-2 shadow-neo hover:-translate-y-0.5 hover:shadow-neo-hover",
                 subscribe:
-                    "bg-primary text-on-primary rounded-sm text-xs font-semibold px-4 py-1.5 h-[28px] min-h-[28px] hover:bg-[#f0b90b]",
+                    "bg-primary text-on-primary text-xs font-bold px-4 py-1.5 h-8 min-h-8 shadow-neo-sm hover:bg-primary-active",
             },
             size: {
-                default: "h-10 px-6 py-3",
-                sm: "h-[28px] rounded-sm px-3 text-xs",
-                lg: "h-12 rounded-md px-8 text-base",
-                icon: "h-10 w-10 rounded-md",
+                default: "h-11 px-6 py-3",
+                sm: "h-9 min-h-9 rounded-2xl px-4 text-xs",
+                lg: "h-12 rounded-2xl px-8 text-base",
+                icon: "h-12 w-12 rounded-2xl p-0",
             },
         },
         defaultVariants: {

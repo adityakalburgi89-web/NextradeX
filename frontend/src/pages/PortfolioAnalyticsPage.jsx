@@ -346,7 +346,7 @@ export default function PortfolioAnalyticsPage() {
     let cumulativePercent = 0;
     
     const types = [
-      { key: "SPOT", name: "Spot", balance: stats.spotBalance, color: "#fcd535" },
+      { key: "SPOT", name: "Spot", balance: stats.spotBalance, color: "#6C63FF" },
       { key: "FUTURES", name: "Futures", balance: stats.futuresBalance, color: "#3bc1eb" },
       { key: "MARGIN", name: "Margin", balance: stats.marginBalance, color: "#0ecb81" },
       { key: "OPTIONS", name: "Options", balance: stats.optionsBalance, color: "#a370f7" }
@@ -380,22 +380,22 @@ export default function PortfolioAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-6 py-12 space-y-8 animate-pulse bg-canvas-dark min-h-screen text-white">
-        <div className="flex justify-between items-center border-b border-hairline-on-dark pb-6">
+      <div className="max-w-7xl mx-auto px-6 py-12 space-y-8 animate-pulse bg-background min-h-screen text-foreground">
+        <div className="flex justify-between items-center border-b border-transparent pb-6">
           <div className="space-y-3">
-            <div className="h-8 bg-surface-card-dark rounded w-48" />
-            <div className="h-4 bg-surface-card-dark rounded w-96" />
+            <div className="h-8 bg-background rounded w-48" />
+            <div className="h-4 bg-background rounded w-96" />
           </div>
-          <div className="h-10 bg-surface-card-dark rounded w-10" />
+          <div className="h-10 bg-background rounded w-10" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-surface-card-dark rounded-xl" />
+            <div key={i} className="h-32 bg-background rounded-xl" />
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 h-96 bg-surface-card-dark rounded-xl" />
-          <div className="lg:col-span-4 h-96 bg-surface-card-dark rounded-xl" />
+          <div className="lg:col-span-8 h-96 bg-background rounded-xl" />
+          <div className="lg:col-span-4 h-96 bg-background rounded-xl" />
         </div>
       </div>
     );
@@ -403,14 +403,14 @@ export default function PortfolioAnalyticsPage() {
 
   return (
     <PageTransition>
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8 bg-canvas-dark text-white min-h-screen font-body relative">
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8 bg-background text-foreground min-h-screen font-body relative">
         
         {/* HEADER SECTION */}
         {/* HEADER SECTION */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-hairline-on-dark pb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-transparent pb-6">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white font-heading">
+              <h1 className="text-2xl md:text-3xl font-extrabold text-foreground font-heading">
                 Portfolio Analytics
               </h1>
             </div>
@@ -423,7 +423,7 @@ export default function PortfolioAnalyticsPage() {
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className={`p-2.5 rounded-lg border border-hairline-on-dark hover:border-primary/30 bg-surface-card-dark hover:bg-surface-elevated-dark text-muted hover:text-white transition-all flex items-center justify-center ${
+              className={`p-2.5 rounded-2xl border border-transparent hover:border-primary/30 bg-background hover:bg-background text-muted hover:text-foreground transition-all flex items-center justify-center ${
                 refreshing ? "animate-spin text-primary" : ""
               }`}
               title="Sync Metrics"
@@ -437,13 +437,13 @@ export default function PortfolioAnalyticsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
           
           {/* Estimated Net Equity */}
-          <Card className="interactive-surface panel-shine bg-[#121218] border border-hairline-on-dark p-5 flex flex-col justify-between h-32 relative overflow-hidden group shadow-elevation-md">
-            <div className="flex items-center justify-between text-muted text-[10px] font-mono uppercase tracking-wider">
+          <Card className="interactive-surface panel-shine bg-background border border-transparent p-5 flex flex-col justify-between h-32 relative overflow-hidden group shadow-elevation-md">
+            <div className="flex items-center justify-between text-muted text-[10px] font-mono uppercase">
               <span>Net Equity</span>
               <TrendingUp size={14} className="text-primary group-hover:scale-110 transition-transform duration-300" />
             </div>
             <div className="mt-2">
-              <span className="text-2xl font-bold font-mono text-white block group-hover:text-primary transition-colors">
+              <span className="text-2xl font-bold font-mono text-foreground block group-hover:text-primary transition-colors">
                 {formatCurrency(stats.totalEquity)}
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
@@ -459,13 +459,13 @@ export default function PortfolioAnalyticsPage() {
           </Card>
 
           {/* Win Rate */}
-          <Card className="interactive-surface panel-shine bg-[#121218] border border-hairline-on-dark p-5 flex flex-col justify-between h-32 relative overflow-hidden group shadow-elevation-md">
-            <div className="flex items-center justify-between text-muted text-[10px] font-mono uppercase tracking-wider">
+          <Card className="interactive-surface panel-shine bg-background border border-transparent p-5 flex flex-col justify-between h-32 relative overflow-hidden group shadow-elevation-md">
+            <div className="flex items-center justify-between text-muted text-[10px] font-mono uppercase">
               <span>Win Rate</span>
               <Award size={14} className="text-trading-up group-hover:scale-110 transition-transform duration-300" />
             </div>
             <div className="mt-2">
-              <span className="text-2xl font-bold font-mono text-white block">
+              <span className="text-2xl font-bold font-mono text-foreground block">
                 {stats.totalFilledCount > 0 ? `${(stats.winRate * 100).toFixed(1)}%` : "--"}
               </span>
               <span className="text-xs text-muted font-mono block mt-1">
@@ -475,13 +475,13 @@ export default function PortfolioAnalyticsPage() {
           </Card>
 
           {/* Profit Factor */}
-          <Card className="interactive-surface panel-shine bg-[#121218] border border-hairline-on-dark p-5 flex flex-col justify-between h-32 relative overflow-hidden group shadow-elevation-md">
-            <div className="flex items-center justify-between text-muted text-[10px] font-mono uppercase tracking-wider">
+          <Card className="interactive-surface panel-shine bg-background border border-transparent p-5 flex flex-col justify-between h-32 relative overflow-hidden group shadow-elevation-md">
+            <div className="flex items-center justify-between text-muted text-[10px] font-mono uppercase">
               <span>Profit Factor</span>
               <Activity size={14} className="text-primary group-hover:scale-110 transition-transform duration-300" />
             </div>
             <div className="mt-2">
-              <span className="text-2xl font-bold font-mono text-white block">
+              <span className="text-2xl font-bold font-mono text-foreground block">
                 {stats.totalFilledCount > 0 ? stats.profitFactor : "--"}
               </span>
               <span className="text-xs text-trading-up font-semibold font-mono block mt-1">
@@ -491,8 +491,8 @@ export default function PortfolioAnalyticsPage() {
           </Card>
 
           {/* Risk Level */}
-          <Card className="interactive-surface panel-shine bg-[#121218] border border-hairline-on-dark p-5 flex flex-col justify-between h-32 relative overflow-hidden group shadow-elevation-md">
-            <div className="flex items-center justify-between text-muted text-[10px] font-mono uppercase tracking-wider">
+          <Card className="interactive-surface panel-shine bg-background border border-transparent p-5 flex flex-col justify-between h-32 relative overflow-hidden group shadow-elevation-md">
+            <div className="flex items-center justify-between text-muted text-[10px] font-mono uppercase">
               <span>Risk Metric</span>
               <ShieldAlert size={14} className="text-trading-up group-hover:scale-110 transition-transform duration-300" />
             </div>
@@ -515,10 +515,10 @@ export default function PortfolioAnalyticsPage() {
           
           {/* SVG PnL Line Chart */}
           <div className="lg:col-span-8 space-y-6">
-            <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-6 shadow-elevation-md">
+            <Card className="bg-background border border-transparent rounded-xl p-6 shadow-elevation-md">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div>
-                  <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <h3 className="font-heading text-sm font-bold text-foreground uppercase flex items-center gap-1.5">
                     <TrendingUp size={15} className="text-primary" />
                     PnL Trend
                   </h3>
@@ -526,15 +526,15 @@ export default function PortfolioAnalyticsPage() {
                 </div>
 
                 {/* Timeframe Selectors */}
-                <div className="flex gap-1 p-0.5 bg-canvas-dark border border-hairline-on-dark rounded">
+                <div className="flex gap-1 p-0.5 bg-background border border-transparent rounded">
                   {["24H", "7D", "30D", "ALL"].map((t) => (
                     <button
                       key={t}
                       onClick={() => setTimeframe(t)}
                       className={`px-3 py-1 font-mono text-[10px] font-bold rounded transition-all ${
                         timeframe === t 
-                          ? "bg-surface-elevated-dark text-primary border border-hairline-on-dark" 
-                          : "text-muted hover:text-white"
+                          ? "bg-background text-primary border border-transparent" 
+                          : "text-muted hover:text-foreground"
                       }`}
                     >
                       {t}
@@ -548,7 +548,7 @@ export default function PortfolioAnalyticsPage() {
                 ref={chartContainerRef}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
-                className="relative overflow-hidden w-full h-[220px] rounded-lg border border-hairline-on-dark/30 bg-canvas-dark/20 cursor-crosshair"
+                className="relative overflow-hidden w-full h-[220px] rounded-2xl border border-transparent/30 bg-background/20 cursor-crosshair"
               >
                 {/* SVG Drawing curve */}
                 <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
@@ -588,7 +588,7 @@ export default function PortfolioAnalyticsPage() {
 
                   {/* Highlight point on hover */}
                   {hoveredPoint && (
-                    <circle cx={hoveredPoint.x} cy={hoveredPoint.y} r="5" fill="#fcd535" stroke="#121218" strokeWidth="1.5" />
+                    <circle cx={hoveredPoint.x} cy={hoveredPoint.y} r="5" fill="#6C63FF" stroke="#121218" strokeWidth="1.5" />
                   )}
                 </svg>
 
@@ -600,14 +600,14 @@ export default function PortfolioAnalyticsPage() {
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.12 }}
-                      className="absolute p-2.5 rounded-lg border border-hairline-on-dark bg-black/95 text-xs font-mono shadow-elevation-lg pointer-events-none z-20"
+                      className="absolute p-2.5 rounded-2xl border border-transparent bg-black/95 text-xs font-mono shadow-elevation-lg pointer-events-none z-20"
                       style={{ 
                         left: Math.min(width - 150, Math.max(15, hoveredPoint.x - 70)), 
                         top: Math.max(10, hoveredPoint.y - 65) 
                       }}
                     >
-                      <span className="text-[9px] text-muted block uppercase tracking-wider">{hoveredPoint.label}</span>
-                      <span className="text-white font-bold block mt-0.5">{formatCurrency(hoveredPoint.value)}</span>
+                      <span className="text-[9px] text-muted block uppercase">{hoveredPoint.label}</span>
+                      <span className="text-foreground font-bold block mt-0.5">{formatCurrency(hoveredPoint.value)}</span>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -624,8 +624,8 @@ export default function PortfolioAnalyticsPage() {
 
           {/* Ratios & Key Stats Panel */}
           <div className="lg:col-span-4 space-y-6">
-            <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-6 shadow-elevation-md">
-              <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-1.5">
+            <Card className="bg-background border border-transparent rounded-xl p-6 shadow-elevation-md">
+              <h3 className="font-heading text-sm font-bold text-foreground uppercase mb-4 flex items-center gap-1.5">
                 <BarChart3 size={15} className="text-primary" />
                 Performance Metrics
               </h3>
@@ -636,7 +636,7 @@ export default function PortfolioAnalyticsPage() {
                     Sharpe Ratio
                     <Info size={11} className="text-muted-strong cursor-help" title="Risk-adjusted excess return ratio" />
                   </span>
-                  <span className="text-white font-bold">
+                  <span className="text-foreground font-bold">
                     {stats.sharpeRatio > 0 ? stats.sharpeRatio.toFixed(2) : "--"}
                   </span>
                 </div>
@@ -651,7 +651,7 @@ export default function PortfolioAnalyticsPage() {
                 </div>
                 <div className="flex justify-between py-3">
                   <span className="text-muted">Total Trade Log count</span>
-                  <span className="text-white font-bold">{stats.totalFilledCount}</span>
+                  <span className="text-foreground font-bold">{stats.totalFilledCount}</span>
                 </div>
                 <div className="flex justify-between py-3">
                   <span className="text-muted">Avg Win Value</span>
@@ -676,8 +676,8 @@ export default function PortfolioAnalyticsPage() {
           
           {/* Dynamic Donut Chart */}
           <div className="lg:col-span-5">
-            <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-6 shadow-elevation-md h-full">
-              <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider mb-5 flex items-center gap-1.5">
+            <Card className="bg-background border border-transparent rounded-xl p-6 shadow-elevation-md h-full">
+              <h3 className="font-heading text-sm font-bold text-foreground uppercase mb-5 flex items-center gap-1.5">
                 <PieChart size={15} className="text-primary" />
                 Asset Allocation Breakdown
               </h3>
@@ -704,8 +704,8 @@ export default function PortfolioAnalyticsPage() {
                     ))}
                   </svg>
                   <div className="absolute text-center">
-                    <span className="text-[9px] font-mono text-muted uppercase tracking-widest block">Total Balance</span>
-                    <span className="text-sm font-bold font-mono text-white mt-0.5 block">
+                    <span className="text-[9px] font-mono text-muted uppercase block">Total Balance</span>
+                    <span className="text-sm font-bold font-mono text-foreground mt-0.5 block">
                       {formatCurrency(totalBalanceCalculated)}
                     </span>
                   </div>
@@ -717,18 +717,18 @@ export default function PortfolioAnalyticsPage() {
                     <button
                       key={seg.key}
                       onClick={() => setSelectedWalletType(seg.key)}
-                      className={`flex justify-between items-center w-full p-2.5 rounded-lg border transition-all text-left ${
+                      className={`flex justify-between items-center w-full p-2.5 rounded-2xl border transition-all text-left ${
                         selectedWalletType === seg.key 
-                          ? "bg-surface-elevated-dark border-primary/30" 
-                          : "border-transparent hover:bg-white/[0.02]"
+                          ? "bg-background border-primary/30" 
+                          : "border-transparent hover:bg-background/[0.02]"
                       }`}
                     >
                       <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded" style={{ backgroundColor: seg.color }} />
-                        <span className="text-white font-bold">{seg.name}</span>
+                        <span className="text-foreground font-bold">{seg.name}</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-white font-bold block">{formatCurrency(seg.balance)}</span>
+                        <span className="text-foreground font-bold block">{formatCurrency(seg.balance)}</span>
                         <span className="text-[10px] text-muted block">{seg.pct.toFixed(1)}%</span>
                       </div>
                     </button>
@@ -740,16 +740,16 @@ export default function PortfolioAnalyticsPage() {
 
           {/* Drill-down Wallet details */}
           <div className="lg:col-span-7">
-            <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-6 shadow-elevation-md h-full flex flex-col justify-between">
+            <Card className="bg-background border border-transparent rounded-xl p-6 shadow-elevation-md h-full flex flex-col justify-between">
               <div>
-                <div className="flex justify-between items-center border-b border-hairline-on-dark pb-3 mb-4">
-                  <h4 className="font-heading text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <div className="flex justify-between items-center border-b border-transparent pb-3 mb-4">
+                  <h4 className="font-heading text-xs font-bold text-foreground uppercase flex items-center gap-2">
                     <Layers size={14} className="text-primary" />
                     <span>
                       {selectedWalletType} Balance Details
                     </span>
                   </h4>
-                  <span className="px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-white/[0.04] text-muted border border-hairline-on-dark">
+                  <span className="px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-background text-muted border border-transparent">
                     Drill-down active
                   </span>
                 </div>
@@ -766,19 +766,19 @@ export default function PortfolioAnalyticsPage() {
                   >
                     {selectedWalletType === "SPOT" && (
                       <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-4 bg-canvas-dark/20 p-3 rounded-lg border border-hairline-on-dark/40 font-mono text-xs">
+                        <div className="grid grid-cols-2 gap-4 bg-background/20 p-3 rounded-2xl border border-transparent/40 font-mono text-xs">
                           <div>
                             <span className="text-muted block text-[10px]">SPOT VALUE</span>
-                            <span className="text-white font-bold text-sm block mt-0.5">{formatCurrency(stats.spotBalance)}</span>
+                            <span className="text-foreground font-bold text-sm block mt-0.5">{formatCurrency(stats.spotBalance)}</span>
                           </div>
-                          <div className="border-l border-hairline-on-dark/40 pl-4">
+                          <div className="border-l border-transparent/40 pl-4">
                             <span className="text-muted block text-[10px]">ASSETS ENROLLED</span>
-                            <span className="text-white font-bold text-sm block mt-0.5">{spotHoldings.length} tokens</span>
+                            <span className="text-foreground font-bold text-sm block mt-0.5">{spotHoldings.length} tokens</span>
                           </div>
                         </div>
 
-                        <div className="overflow-hidden rounded-lg border border-hairline-on-dark/60 font-mono text-xs">
-                          <div className="grid grid-cols-4 bg-[#15191e] px-4 py-2 border-b border-hairline-on-dark font-bold text-muted text-[10px]">
+                        <div className="overflow-hidden rounded-2xl border border-transparent/60 font-mono text-xs">
+                          <div className="grid grid-cols-4 bg-background px-4 py-2 border-b border-transparent font-bold text-muted text-[10px]">
                             <span>Token</span>
                             <span className="text-right">Weight</span>
                             <span className="text-right">Balance</span>
@@ -786,13 +786,13 @@ export default function PortfolioAnalyticsPage() {
                           </div>
                           <div className="divide-y divide-hairline-on-dark">
                             {spotHoldings.map((hold) => (
-                              <div key={hold.coin} className="grid grid-cols-4 px-4 py-3 items-center hover:bg-white/[0.01]">
-                                <span className="font-bold text-white flex items-center gap-1.5">
+                              <div key={hold.coin} className="grid grid-cols-4 px-4 py-3 items-center hover:bg-background/[0.01]">
+                                <span className="font-bold text-foreground flex items-center gap-1.5">
                                   <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                                   {hold.coin}
                                 </span>
                                 <span className="text-right text-muted">{hold.pct}%</span>
-                                <span className="text-right text-white">{(hold.val / (hold.coin === "BTC" ? 68420 : hold.coin === "ETH" ? 3795 : 1)).toFixed(hold.coin === "USDT" ? 2 : 4)}</span>
+                                <span className="text-right text-foreground">{(hold.val / (hold.coin === "BTC" ? 68420 : hold.coin === "ETH" ? 3795 : 1)).toFixed(hold.coin === "USDT" ? 2 : 4)}</span>
                                 <span className="text-right font-bold text-primary">{formatCurrency(hold.val)}</span>
                               </div>
                             ))}
@@ -803,19 +803,19 @@ export default function PortfolioAnalyticsPage() {
 
                     {selectedWalletType === "FUTURES" && (
                       <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-4 bg-canvas-dark/20 p-3 rounded-lg border border-hairline-on-dark/40 font-mono text-xs">
+                        <div className="grid grid-cols-2 gap-4 bg-background/20 p-3 rounded-2xl border border-transparent/40 font-mono text-xs">
                           <div>
                             <span className="text-muted block text-[10px]">FUTURES VALUE</span>
-                            <span className="text-white font-bold text-sm block mt-0.5">{formatCurrency(stats.futuresBalance)}</span>
+                            <span className="text-foreground font-bold text-sm block mt-0.5">{formatCurrency(stats.futuresBalance)}</span>
                           </div>
-                          <div className="border-l border-hairline-on-dark/40 pl-4">
+                          <div className="border-l border-transparent/40 pl-4">
                             <span className="text-muted block text-[10px]">ACTIVE POSITIONS</span>
-                            <span className="text-white font-bold text-sm block mt-0.5">{futuresPositions.length} Long/Short</span>
+                            <span className="text-foreground font-bold text-sm block mt-0.5">{futuresPositions.length} Long/Short</span>
                           </div>
                         </div>
 
-                        <div className="overflow-hidden rounded-lg border border-hairline-on-dark/60 font-mono text-xs">
-                          <div className="grid grid-cols-4 bg-[#15191e] px-4 py-2 border-b border-hairline-on-dark font-bold text-muted text-[10px]">
+                        <div className="overflow-hidden rounded-2xl border border-transparent/60 font-mono text-xs">
+                          <div className="grid grid-cols-4 bg-background px-4 py-2 border-b border-transparent font-bold text-muted text-[10px]">
                             <span>Contract</span>
                             <span className="text-right">Size</span>
                             <span className="text-right">Collateral</span>
@@ -825,15 +825,15 @@ export default function PortfolioAnalyticsPage() {
                             {futuresPositions.map((pos) => {
                               const pnl = parseFloat(pos.unrealizedPnL || "0");
                               return (
-                                <div key={pos.id} className="grid grid-cols-4 px-4 py-3 items-center hover:bg-white/[0.01]">
-                                  <span className="font-bold text-white flex items-center gap-1">
+                                <div key={pos.id} className="grid grid-cols-4 px-4 py-3 items-center hover:bg-background/[0.01]">
+                                  <span className="font-bold text-foreground flex items-center gap-1">
                                     {pos.symbol}
                                     <span className={`text-[9px] font-bold ${pos.positionMode === "LONG" ? "text-trading-up" : "text-trading-down"}`}>
                                       {pos.positionMode.substring(0, 1)}
                                     </span>
                                   </span>
                                   <span className="text-right text-muted">{pos.quantity}</span>
-                                  <span className="text-right text-white">{formatCurrency(pos.collateral)}</span>
+                                  <span className="text-right text-foreground">{formatCurrency(pos.collateral)}</span>
                                   <span className={`text-right font-bold ${pnl >= 0 ? "text-trading-up" : "text-trading-down"}`}>
                                     {pnl >= 0 ? "+" : ""}{formatCurrency(pnl)}
                                   </span>
@@ -850,18 +850,18 @@ export default function PortfolioAnalyticsPage() {
 
                     {selectedWalletType === "MARGIN" && (
                       <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-4 bg-canvas-dark/20 p-3 rounded-lg border border-hairline-on-dark/40 font-mono text-xs">
+                        <div className="grid grid-cols-2 gap-4 bg-background/20 p-3 rounded-2xl border border-transparent/40 font-mono text-xs">
                           <div>
                             <span className="text-muted block text-[10px]">MARGIN EQUITY</span>
-                            <span className="text-white font-bold text-sm block mt-0.5">{formatCurrency(stats.marginBalance)}</span>
+                            <span className="text-foreground font-bold text-sm block mt-0.5">{formatCurrency(stats.marginBalance)}</span>
                           </div>
-                          <div className="border-l border-hairline-on-dark/40 pl-4">
+                          <div className="border-l border-transparent/40 pl-4">
                             <span className="text-muted block text-[10px]">BORROWED RATIO</span>
-                            <span className="text-white font-bold text-sm block mt-0.5">0.00% (No Debt)</span>
+                            <span className="text-foreground font-bold text-sm block mt-0.5">0.00% (No Debt)</span>
                           </div>
                         </div>
 
-                        <div className="p-8 text-center border border-hairline-on-dark/60 rounded-lg text-xs text-muted">
+                        <div className="p-8 text-center border border-transparent/60 rounded-2xl text-xs text-muted">
                           No active borrow/lend lines registered in the margin ledger.
                         </div>
                       </div>
@@ -869,19 +869,19 @@ export default function PortfolioAnalyticsPage() {
 
                     {selectedWalletType === "OPTIONS" && (
                       <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-4 bg-canvas-dark/20 p-3 rounded-lg border border-hairline-on-dark/40 font-mono text-xs">
+                        <div className="grid grid-cols-2 gap-4 bg-background/20 p-3 rounded-2xl border border-transparent/40 font-mono text-xs">
                           <div>
                             <span className="text-muted block text-[10px]">OPTIONS CAPITAL</span>
-                            <span className="text-white font-bold text-sm block mt-0.5">{formatCurrency(stats.optionsBalance)}</span>
+                            <span className="text-foreground font-bold text-sm block mt-0.5">{formatCurrency(stats.optionsBalance)}</span>
                           </div>
-                          <div className="border-l border-hairline-on-dark/40 pl-4">
+                          <div className="border-l border-transparent/40 pl-4">
                             <span className="text-muted block text-[10px]">ACTIVE POSITIONS</span>
-                            <span className="text-white font-bold text-sm block mt-0.5">{optionsPositions.length} Contracts</span>
+                            <span className="text-foreground font-bold text-sm block mt-0.5">{optionsPositions.length} Contracts</span>
                           </div>
                         </div>
 
-                        <div className="overflow-hidden rounded-lg border border-hairline-on-dark/60 font-mono text-xs">
-                          <div className="grid grid-cols-4 bg-[#15191e] px-4 py-2 border-b border-hairline-on-dark font-bold text-muted text-[10px]">
+                        <div className="overflow-hidden rounded-2xl border border-transparent/60 font-mono text-xs">
+                          <div className="grid grid-cols-4 bg-background px-4 py-2 border-b border-transparent font-bold text-muted text-[10px]">
                             <span>Option Contract</span>
                             <span className="text-right">Strike Price</span>
                             <span className="text-right">Qty</span>
@@ -889,12 +889,12 @@ export default function PortfolioAnalyticsPage() {
                           </div>
                           <div className="divide-y divide-hairline-on-dark">
                             {optionsPositions.map((opt) => (
-                              <div key={opt.id} className="grid grid-cols-4 px-4 py-3 items-center hover:bg-white/[0.01]">
-                                <span className="font-bold text-white flex items-center gap-1.5">
+                              <div key={opt.id} className="grid grid-cols-4 px-4 py-3 items-center hover:bg-background/[0.01]">
+                                <span className="font-bold text-foreground flex items-center gap-1.5">
                                   <span className={`w-1.5 h-1.5 rounded-full ${opt.optionType === "CALL" ? "bg-trading-up" : "bg-trading-down"}`} />
                                   {opt.symbol}
                                 </span>
-                                <span className="text-right text-white font-semibold">{formatCurrency(opt.strikePrice)}</span>
+                                <span className="text-right text-foreground font-semibold">{formatCurrency(opt.strikePrice)}</span>
                                 <span className="text-right text-muted">{opt.quantity}</span>
                                 <span className="text-right text-[10px] text-muted-strong">{opt.expirationDate ? new Date(opt.expirationDate).toLocaleDateString() : "--"}</span>
                               </div>
@@ -911,7 +911,7 @@ export default function PortfolioAnalyticsPage() {
               </div>
 
               {/* Action buttons */}
-              <div className="flex justify-end gap-2 border-t border-hairline-on-dark/40 pt-4 mt-6">
+              <div className="flex justify-end gap-2 border-t border-transparent/40 pt-4 mt-6">
                 <Button variant="secondaryOnDark" className="text-xs" asChild>
                   <a href="/wallets">Manage Wallet</a>
                 </Button>
@@ -925,10 +925,10 @@ export default function PortfolioAnalyticsPage() {
         </div>
 
         {/* DETAILED EXECUTIONS HISTORY LOG */}
-        <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md">
-          <CardHeader className="bg-[#181822] px-6 py-4 border-b border-hairline-on-dark flex flex-row items-center justify-between">
+        <Card className="bg-background border border-transparent rounded-xl overflow-hidden shadow-elevation-md">
+          <CardHeader className="bg-background px-6 py-4 border-b border-transparent flex flex-row items-center justify-between">
             <div>
-              <h4 className="font-heading text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+              <h4 className="font-heading text-xs font-bold text-foreground uppercase flex items-center gap-1.5">
                 <Clock size={14} className="text-primary" />
                 Execution Log
               </h4>
@@ -941,7 +941,7 @@ export default function PortfolioAnalyticsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse font-mono text-xs">
                 <thead>
-                  <tr className="border-b border-hairline-on-dark text-[9px] font-bold text-muted uppercase tracking-wider bg-canvas-dark/20 py-2.5">
+                  <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
                     <th className="py-2.5 px-6">Date</th>
                     <th className="py-2.5 px-6">Pair / Contract</th>
                     <th className="py-2.5 px-6">Type</th>
@@ -956,11 +956,11 @@ export default function PortfolioAnalyticsPage() {
                   {unifiedExecutions.map((log) => {
                     const isProfit = Number(log.pnl) >= 0;
                     return (
-                      <tr key={log.id} className="hover:bg-white/[0.01] transition-colors">
+                      <tr key={log.id} className="hover:bg-background/[0.01] transition-colors">
                         <td className="py-3 px-6 text-muted text-[10px]">
                           {new Date(log.timestamp).toLocaleString()}
                         </td>
-                        <td className="py-3 px-6 font-bold text-white">{log.symbol}</td>
+                        <td className="py-3 px-6 font-bold text-foreground">{log.symbol}</td>
                         <td className="py-3 px-6 text-muted uppercase text-[10px]">{log.type}</td>
                         <td className="py-3 px-6">
                           <span className={`font-bold ${

@@ -402,11 +402,11 @@ export default function FuturesTradingPage() {
 
   return (
     <PageTransition>
-      <div className="w-full bg-canvas-dark text-white py-4 font-sans select-none min-h-screen">
+      <div className="w-full bg-background text-foreground py-4 font-sans select-none min-h-screen">
         <div className="max-w-8xl mx-auto px-4 space-y-4">
           
           {/* HIGH-DENSITY TICKER HEADER PANEL */}
-          <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-6 shadow-elevation-md">
+          <div className="bg-background border border-transparent rounded-xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-6 shadow-elevation-md">
             
             {/* Asset Symbol & Base Stats */}
             <div className="flex items-center gap-4 relative" ref={dropdownRef}>
@@ -416,12 +416,12 @@ export default function FuturesTradingPage() {
                   setIsDropdownOpen(!isDropdownOpen);
                   setSymbolSearch("");
                 }}
-                className="text-left group flex items-center gap-3 px-3 py-1.5 rounded-lg border border-white/[0.06] bg-canvas-dark/40 hover:bg-canvas-dark/80 hover:border-primary/30 transition-all duration-200"
+                className="text-left group flex items-center gap-3 px-3 py-1.5 rounded-2xl border border-transparent bg-background/40 hover:bg-background/80 hover:border-primary/30 transition-all duration-200"
               >
                 <div>
-                  <h1 className="text-base font-extrabold tracking-tight font-heading flex items-center gap-1.5 text-white">
+                  <h1 className="text-base font-extrabold font-heading flex items-center gap-1.5 text-foreground">
                     {symbol.toUpperCase()}
-                    <span className="text-[9px] font-mono font-bold bg-primary/15 text-primary px-1 rounded uppercase tracking-wider">Perp</span>
+                    <span className="text-[9px] font-mono font-bold bg-primary/15 text-primary px-1 rounded uppercase">Perp</span>
                     <ChevronDown size={14} className="text-muted group-hover:text-primary transition-transform duration-200 group-hover:translate-y-0.5" />
                   </h1>
                   <span className="text-[10px] font-mono font-semibold text-muted">Binance Futures</span>
@@ -430,16 +430,16 @@ export default function FuturesTradingPage() {
 
               {/* Glassmorphic Dropdown Popover */}
               {isDropdownOpen && (
-                <div className="absolute left-0 top-[110%] w-72 bg-[#0c0d12]/95 backdrop-blur-md border border-hairline-on-dark rounded-xl shadow-elevation-xl overflow-hidden z-50 animate-fade-in-fast font-sans">
+                <div className="absolute left-0 top-[110%] w-72 bg-background backdrop-blur-md border border-transparent rounded-xl shadow-neo-hover overflow-hidden z-50 animate-fade-in-fast font-sans">
                   {/* Search input header */}
-                  <div className="p-3 border-b border-white/[0.05] flex items-center gap-2">
+                  <div className="p-3 border-b border-transparent flex items-center gap-2">
                     <Search size={14} className="text-muted" />
                     <input
                       type="text"
                       value={symbolSearch}
                       onChange={(e) => setSymbolSearch(e.target.value)}
                       placeholder="Search pair..."
-                      className="bg-transparent text-white placeholder-muted text-xs outline-none w-full font-mono"
+                      className="bg-transparent text-foreground placeholder-muted text-xs outline-none w-full font-mono"
                       autoFocus
                     />
                   </div>
@@ -458,8 +458,8 @@ export default function FuturesTradingPage() {
                               setSymbol(sym.toUpperCase());
                               setIsDropdownOpen(false);
                             }}
-                            className={`w-full text-left px-4 py-2.5 text-xs font-mono font-semibold flex items-center justify-between hover:bg-white/[0.04] transition-colors ${
-                              isSelected ? "text-primary bg-primary/[0.05]" : "text-body"
+                            className={`w-full text-left px-4 py-2.5 text-xs font-mono font-semibold flex items-center justify-between hover:bg-background transition-colors ${
+                              isSelected ? "text-primary bg-primary/[0.05]" : "text-foreground"
                             }`}
                           >
                             <span>{sym.toUpperCase()}</span>
@@ -473,8 +473,8 @@ export default function FuturesTradingPage() {
               )}
 
               {priceSnapshot && (
-                <div className="border-l border-hairline-on-dark pl-4 flex flex-col justify-center">
-                  <span className="text-[10px] text-muted font-mono font-bold uppercase tracking-wider block">Mark Price</span>
+                <div className="border-l border-transparent pl-4 flex flex-col justify-center">
+                  <span className="text-[10px] text-muted font-mono font-bold uppercase block">Mark Price</span>
                   <span className="text-base font-extrabold font-mono text-trading-up">
                     {formatCurrency(priceSnapshot.currentPrice)}
                   </span>
@@ -485,35 +485,35 @@ export default function FuturesTradingPage() {
             {priceSnapshot && (
               <div className="flex flex-wrap items-center gap-8 font-mono text-muted">
                 <div className="min-w-[100px]">
-                  <span className="block uppercase text-[9px] tracking-wider">Index Price</span>
-                  <span className="text-sm font-bold text-white">{(Number(priceSnapshot.currentPrice) * 1.0005).toFixed(2)}</span>
+                  <span className="block uppercase text-[9px]">Index Price</span>
+                  <span className="text-sm font-bold text-foreground">{(Number(priceSnapshot.currentPrice) * 1.0005).toFixed(2)}</span>
                 </div>
 
                 <div className="min-w-[160px]">
-                  <span className="block uppercase text-[9px] tracking-wider text-primary">Funding (8h) / Countdown</span>
+                  <span className="block uppercase text-[9px] text-primary">Funding (8h) / Countdown</span>
                   <span className="text-sm font-bold text-primary">0.0055% / 07:49:10</span>
                 </div>
 
                 <div className="min-w-[80px]">
-                  <span className="block uppercase text-[9px] tracking-wider">24h Change</span>
+                  <span className="block uppercase text-[9px]">24h Change</span>
                   <span className={`text-sm font-bold ${Number(priceSnapshot.percentChange24h) >= 0 ? "text-trading-up" : "text-trading-down"}`}>
                     {Number(priceSnapshot.percentChange24h) >= 0 ? "+" : ""}{priceSnapshot.percentChange24h}%
                   </span>
                 </div>
 
                 <div className="min-w-[100px]">
-                  <span className="block uppercase text-[9px] tracking-wider">24h High</span>
-                  <span className="text-sm font-bold text-white">{(Number(priceSnapshot.currentPrice) * 1.025).toFixed(2)}</span>
+                  <span className="block uppercase text-[9px]">24h High</span>
+                  <span className="text-sm font-bold text-foreground">{(Number(priceSnapshot.currentPrice) * 1.025).toFixed(2)}</span>
                 </div>
 
                 <div className="min-w-[100px]">
-                  <span className="block uppercase text-[9px] tracking-wider">24h Low</span>
-                  <span className="text-sm font-bold text-white">{(Number(priceSnapshot.currentPrice) * 0.975).toFixed(2)}</span>
+                  <span className="block uppercase text-[9px]">24h Low</span>
+                  <span className="text-sm font-bold text-foreground">{(Number(priceSnapshot.currentPrice) * 0.975).toFixed(2)}</span>
                 </div>
 
                 <div className="min-w-[120px]">
-                  <span className="block uppercase text-[9px] tracking-wider">24h Vol({symbol.replace("USDT", "").toUpperCase()})</span>
-                  <span className="text-sm font-bold text-white">
+                  <span className="block uppercase text-[9px]">24h Vol({symbol.replace("USDT", "").toUpperCase()})</span>
+                  <span className="text-sm font-bold text-foreground">
                     {priceSnapshot.volume24h
                       ? new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(priceSnapshot.volume24h)
                       : "246,500.27"}
@@ -521,8 +521,8 @@ export default function FuturesTradingPage() {
                 </div>
 
                 <div className="min-w-[140px]">
-                  <span className="block uppercase text-[9px] tracking-wider">24h Vol(USDT)</span>
-                  <span className="text-sm font-bold text-white">
+                  <span className="block uppercase text-[9px]">24h Vol(USDT)</span>
+                  <span className="text-sm font-bold text-foreground">
                     {priceSnapshot.volume24h
                       ? new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(priceSnapshot.volume24h) * Number(priceSnapshot.currentPrice))
                       : "15,286,470,643.58"}
@@ -554,8 +554,8 @@ export default function FuturesTradingPage() {
                 <div className="md:col-span-9 h-full">
                   {/* HIGH-FIDELITY POSITIONS AND BALANCES BOTTOM TAB GRID */}
                   <Tabs value={activeBottomTab} onValueChange={setActiveBottomTab} className="w-full h-full flex flex-col">
-                    <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md h-full flex flex-col">
-                      <div className="bg-canvas-dark/30 border-b border-hairline-on-dark px-4 flex items-center justify-between">
+                    <Card className="bg-background border border-transparent rounded-xl overflow-hidden shadow-elevation-md h-full flex flex-col">
+                      <div className="bg-background/30 border-b border-transparent px-4 flex items-center justify-between">
                         <TabsList className="flex gap-4 bg-transparent border-0 p-0 h-auto rounded-none">
                           {[
                             { id: "POSITIONS", label: "Positions" },
@@ -567,7 +567,7 @@ export default function FuturesTradingPage() {
                             <TabsTrigger
                               key={tab.id}
                               value={tab.id}
-                              className="pb-3 pt-3 bg-transparent border-0 rounded-none relative font-heading text-[10px] font-bold uppercase tracking-wider text-muted hover:text-white data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:font-bold transition-all cursor-pointer"
+                              className="pb-3 pt-3 bg-transparent border-0 rounded-none relative font-heading text-[10px] font-bold uppercase text-muted hover:text-foreground data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:font-bold transition-all cursor-pointer"
                             >
                               {tab.label}{" "}
                               {tab.id === "POSITIONS" ? `(${positions.length})` : "(0)"}
@@ -593,8 +593,8 @@ export default function FuturesTradingPage() {
                       {activeBottomTab === "POSITIONS" ? (
                         loadingPositions ? (
                           <div className="p-6 space-y-2">
-                            <div className="h-6 bg-white/[0.02] rounded animate-pulse w-full" />
-                            <div className="h-6 bg-white/[0.02] rounded animate-pulse w-full" />
+                            <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
+                            <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
                           </div>
                         ) : positions.length === 0 ? (
                           <div className="py-12 text-center text-muted font-mono text-xs">
@@ -604,7 +604,7 @@ export default function FuturesTradingPage() {
                           <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse font-mono text-xs">
                               <thead>
-                                <tr className="border-b border-hairline-on-dark text-[9px] font-bold text-muted uppercase tracking-wider bg-canvas-dark/20 py-2.5">
+                                <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
                                   <th className="py-2.5 px-4">Symbol</th>
                                   <th className="py-2.5 px-4">Mode</th>
                                   <th className="py-2.5 px-4 text-right">Size</th>
@@ -630,8 +630,8 @@ export default function FuturesTradingPage() {
                                   
                                   const isProfit = pnlVal >= 0;
                                   return (
-                                    <tr key={p.id} className="hover:bg-white/[0.01] transition-colors">
-                                      <td className="py-3 px-4 font-bold text-white">{p.symbol}</td>
+                                    <tr key={p.id} className="hover:bg-background/[0.01] transition-colors">
+                                      <td className="py-3 px-4 font-bold text-foreground">{p.symbol}</td>
                                       <td className="py-3 px-4">
                                         <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
                                           p.positionMode === "LONG" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
@@ -660,7 +660,7 @@ export default function FuturesTradingPage() {
                                           <button
                                             type="button"
                                             onClick={() => handleOpenSlTpModal(p)}
-                                            className="px-2 py-1 bg-white/[0.03] hover:bg-primary/15 hover:text-primary border border-white/[0.05] rounded text-[10px] font-semibold transition-all"
+                                            className="px-2 py-1 bg-background hover:bg-primary/15 hover:text-primary border border-transparent rounded text-[10px] font-semibold transition-all"
                                           >
                                             Set TP/SL
                                           </button>
@@ -682,15 +682,15 @@ export default function FuturesTradingPage() {
                         )
                       ) : activeBottomTab === "ASSETS" ? (
                         <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
-                          <div className="border border-hairline-on-dark rounded-lg p-3 bg-canvas-dark/20">
+                          <div className="border border-transparent rounded-2xl p-3 bg-background/20">
                             <span className="text-muted text-[10px] uppercase block">Total Futures Equity</span>
-                            <span className="text-lg font-bold text-white block mt-1">{formatCurrency(usdtWalletBalance)}</span>
+                            <span className="text-lg font-bold text-foreground block mt-1">{formatCurrency(usdtWalletBalance)}</span>
                           </div>
-                          <div className="border border-hairline-on-dark rounded-lg p-3 bg-canvas-dark/20">
+                          <div className="border border-transparent rounded-2xl p-3 bg-background/20">
                             <span className="text-muted text-[10px] uppercase block">Asset Sizing Base</span>
                             <span className="text-sm font-bold text-primary block mt-1">USDT (Perpetual Margin)</span>
                           </div>
-                          <div className="border border-hairline-on-dark rounded-lg p-3 bg-canvas-dark/20 flex items-center justify-between">
+                          <div className="border border-transparent rounded-2xl p-3 bg-background/20 flex items-center justify-between">
                             <div>
                               <span className="text-muted text-[10px] uppercase block">Wallet Connection</span>
                               <span className="text-[10px] text-trading-up font-bold block mt-1">● ONLINE (Simulated Perp)</span>
@@ -720,29 +720,29 @@ export default function FuturesTradingPage() {
 
             {/* RIGHT AREA: Full Professional Order Entry Form (col-span-3) */}
             <div className="lg:col-span-3 space-y-4">
-              <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl overflow-hidden shadow-elevation-lg relative">
+              <Card className="border border-transparent bg-background rounded-xl overflow-hidden shadow-elevation-lg relative">
                 {!hasAuthToken() && (
-                  <div className="absolute inset-0 bg-[#0a0a0f]/85 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6 text-center">
+                  <div className="absolute inset-0 bg-background/85 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-4">
                       <Lock size={20} className="text-primary" />
                     </div>
-                    <h3 className="font-heading text-sm font-bold text-white mb-2 uppercase tracking-wide">Login Required</h3>
+                    <h3 className="font-heading text-sm font-bold text-foreground mb-2 uppercase">Login Required</h3>
                     <p className="text-xs text-muted leading-relaxed mb-6 max-w-[200px]">
                       Access your simulated wallet and start trading by connecting your account.
                     </p>
-                    <Button variant="default" className="w-full text-xs font-semibold py-2.5 rounded-lg shadow-glow-primary" asChild>
+                    <Button variant="default" className="w-full text-xs font-semibold py-2.5 rounded-2xl shadow-glow-primary" asChild>
                       <Link to="/auth">Sign In / Connect Wallet</Link>
                     </Button>
                   </div>
                 )}
                 
                 {/* Isolated/Leverage Config Bar */}
-                <div className="bg-canvas-dark/30 px-4 py-2 border-b border-hairline-on-dark flex items-center justify-between text-[10px] font-mono">
+                <div className="bg-background/30 px-4 py-2 border-b border-transparent flex items-center justify-between text-[10px] font-mono">
                   <div className="flex gap-2">
                     <select
                       value={marginMode}
                       onChange={(e) => setMarginMode(e.target.value)}
-                      className="bg-canvas-dark border border-hairline-on-dark rounded px-1.5 py-0.5 text-white font-bold outline-none uppercase cursor-pointer"
+                      className="bg-background border border-transparent rounded px-1.5 py-0.5 text-foreground font-bold outline-none uppercase cursor-pointer"
                     >
                       <option value="ISOLATED">Isolated</option>
                       <option value="CROSS">Cross</option>
@@ -751,7 +751,7 @@ export default function FuturesTradingPage() {
                     <select
                       value={leverage}
                       onChange={(e) => setLeverage(e.target.value)}
-                      className="bg-canvas-dark border border-hairline-on-dark rounded px-1.5 py-0.5 text-primary font-extrabold outline-none cursor-pointer"
+                      className="bg-background border border-transparent rounded px-1.5 py-0.5 text-primary font-extrabold outline-none cursor-pointer"
                     >
                       {["1", "3", "5", "7", "10", "20", "50", "100", "125"].map(lvl => (
                         <option key={lvl} value={lvl}>{lvl}x</option>
@@ -762,12 +762,12 @@ export default function FuturesTradingPage() {
                   <TooltipProvider delayDuration={200}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="text-muted flex items-center gap-1 cursor-pointer hover:text-white transition-colors">
+                        <span className="text-muted flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
                           <Info size={11} className="text-primary" />
                           Margin Mode
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent className="bg-surface-elevated-dark border border-hairline-on-dark text-xs p-2 text-white max-w-[200px] rounded-lg">
+                      <TooltipContent className="bg-background border border-transparent text-xs p-2 text-foreground max-w-[200px] rounded-2xl">
                         Isolated restricts margin to a single position, while Cross shares margin across all positions to prevent liquidation.
                       </TooltipContent>
                     </Tooltip>
@@ -775,12 +775,12 @@ export default function FuturesTradingPage() {
                 </div>
 
                 {/* Open / Close Order Tabs — 44px touch targets */}
-                <div className="flex border-b border-hairline-on-dark p-1 bg-canvas-dark/40">
+                <div className="flex border-b border-transparent p-1 bg-background/40">
                   <button
                     type="button"
                     aria-pressed={orderMode === "OPEN"}
-                    className={`flex-1 min-h-[44px] text-center text-xs font-bold tracking-wider rounded transition-all ${
-                      orderMode === "OPEN" ? "bg-surface-elevated-dark text-white font-bold" : "text-muted hover:text-white"
+                    className={`flex-1 min-h-[44px] text-center text-xs font-bold rounded transition-all ${
+                      orderMode === "OPEN" ? "bg-background text-foreground font-bold" : "text-muted hover:text-foreground"
                     }`}
                     onClick={() => setOrderMode("OPEN")}
                   >
@@ -789,8 +789,8 @@ export default function FuturesTradingPage() {
                   <button
                     type="button"
                     aria-pressed={orderMode === "CLOSE"}
-                    className={`flex-1 min-h-[44px] text-center text-xs font-bold tracking-wider rounded transition-all ${
-                      orderMode === "CLOSE" ? "bg-surface-elevated-dark text-white font-bold" : "text-muted hover:text-white"
+                    className={`flex-1 min-h-[44px] text-center text-xs font-bold rounded transition-all ${
+                      orderMode === "CLOSE" ? "bg-background text-foreground font-bold" : "text-muted hover:text-foreground"
                     }`}
                     onClick={() => setOrderMode("CLOSE")}
                   >
@@ -799,13 +799,13 @@ export default function FuturesTradingPage() {
                 </div>
 
                 {/* Order Type Selector Sub-Tabs */}
-                <div className="flex justify-between items-center px-4 py-2 border-b border-hairline-on-dark font-heading text-[10px] text-muted">
+                <div className="flex justify-between items-center px-4 py-2 border-b border-transparent font-heading text-[10px] text-muted">
                   {["LIMIT", "MARKET", "CONDITIONAL"].map((type) => (
                     <button
                       key={type}
                       type="button"
                       onClick={() => setOrderType(type)}
-                      className={`font-bold pb-0.5 ${orderType === type ? "text-primary border-b border-primary" : "hover:text-white"}`}
+                      className={`font-bold pb-0.5 ${orderType === type ? "text-primary border-b border-primary" : "hover:text-foreground"}`}
                     >
                       {type}
                     </button>
@@ -816,7 +816,7 @@ export default function FuturesTradingPage() {
                   {/* Available Capital balance */}
                   <div aria-label={`Available wallet balance: ${usdtWalletBalance.toFixed(2)} USDT`} className="flex justify-between items-center text-[10px] font-mono text-muted">
                     <span>Avbl Wallet Balance</span>
-                    <span className="text-white font-semibold flex items-center gap-1">
+                    <span className="text-foreground font-semibold flex items-center gap-1">
                       {usdtWalletBalance.toFixed(2)} USDT
                       <ArrowRightLeft size={10} className="text-primary cursor-pointer" />
                     </span>
@@ -825,14 +825,14 @@ export default function FuturesTradingPage() {
                   {/* Stop price (Conditional Order only) */}
                   {orderType === "CONDITIONAL" && (
                     <div className="animate-slide-down">
-                      <label className="font-mono text-[9px] text-muted uppercase tracking-widest mb-1 block">Stop Price</label>
+                      <label className="font-mono text-[9px] text-muted uppercase mb-1 block">Stop Price</label>
                       <div className="relative">
                         <Input
                           type="number"
                           step="0.1"
                           value={stopPrice}
                           onChange={(e) => setStopPrice(e.target.value)}
-                          className="bg-canvas-dark border-hairline-on-dark text-white font-mono text-xs rounded w-full pr-12"
+                          className="bg-background border-transparent text-foreground font-mono text-xs rounded w-full pr-12"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">USDT</span>
                       </div>
@@ -842,14 +842,14 @@ export default function FuturesTradingPage() {
                   {/* Limit Price */}
                   {orderType !== "MARKET" && (
                     <div>
-                      <label className="font-mono text-[9px] text-muted uppercase tracking-widest mb-1 block">Price</label>
+                      <label className="font-mono text-[9px] text-muted uppercase mb-1 block">Price</label>
                       <div className="relative">
                         <Input
                           type="number"
                           step="0.1"
                           value={price}
                           onChange={(e) => setPrice(e.target.value)}
-                          className="bg-canvas-dark border-hairline-on-dark text-white font-mono text-xs rounded w-full pr-12"
+                          className="bg-background border-transparent text-foreground font-mono text-xs rounded w-full pr-12"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">USDT</span>
                       </div>
@@ -858,14 +858,14 @@ export default function FuturesTradingPage() {
 
                   {/* Order quantity sizing */}
                   <div>
-                    <label className="font-mono text-[9px] text-muted uppercase tracking-widest mb-1 block">Size</label>
+                    <label className="font-mono text-[9px] text-muted uppercase mb-1 block">Size</label>
                     <div className="relative">
                       <Input
                         type="number"
                         step="0.001"
                         value={quantity}
                         onChange={(e) => setQuantity(e.target.value)}
-                        className="bg-canvas-dark border-hairline-on-dark text-white font-mono text-xs rounded w-full pr-12"
+                        className="bg-background border-transparent text-foreground font-mono text-xs rounded w-full pr-12"
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">{baseAsset}</span>
                     </div>
@@ -878,7 +878,7 @@ export default function FuturesTradingPage() {
                         key={pct}
                         type="button"
                         onClick={() => handlePercentSelect(pct)}
-                        className="flex-1 min-h-[44px] min-w-[44px] px-3 py-2 bg-canvas-dark hover:bg-white/[0.04] border border-hairline-on-dark text-muted hover:text-white rounded font-mono text-[10px] font-bold"
+                        className="flex-1 min-h-[44px] min-w-[44px] px-3 py-2 bg-background hover:bg-background border border-transparent text-muted hover:text-foreground rounded font-mono text-[10px] font-bold"
                       >
                         {pct}%
                       </button>
@@ -886,19 +886,19 @@ export default function FuturesTradingPage() {
                   </div>
 
                   {/* Financials & Risks summary */}
-                  <div className="border border-hairline-on-dark bg-canvas-dark/40 rounded-lg p-2.5 space-y-1.5 text-[10px] font-mono">
+                  <div className="border border-transparent bg-background/40 rounded-2xl p-2.5 space-y-1.5 text-[10px] font-mono">
                     <div className="flex justify-between items-center text-muted">
                       <TooltipProvider delayDuration={200}>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="cursor-pointer border-b border-dashed border-white/20 hover:text-white transition-colors">Order Value Notional</span>
+                            <span className="cursor-pointer border-b border-dashed border-transparent/20 hover:text-foreground transition-colors">Order Value Notional</span>
                           </TooltipTrigger>
-                          <TooltipContent className="bg-surface-elevated-dark border border-hairline-on-dark text-xs p-2 text-white max-w-[200px] rounded-lg">
+                          <TooltipContent className="bg-background border border-transparent text-xs p-2 text-foreground max-w-[200px] rounded-2xl">
                             Total position size in USDT, calculated as Quantity × Mark Price.
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                      <span className="text-white font-semibold">
+                      <span className="text-foreground font-semibold">
                         {formatCurrency(Number(quantity || 0) * (priceSnapshot?.currentPrice || 0))}
                       </span>
                     </div>
@@ -906,9 +906,9 @@ export default function FuturesTradingPage() {
                       <TooltipProvider delayDuration={200}>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="cursor-pointer border-b border-dashed border-white/20 hover:text-white transition-colors">Initial Margin Cost</span>
+                            <span className="cursor-pointer border-b border-dashed border-transparent/20 hover:text-foreground transition-colors">Initial Margin Cost</span>
                           </TooltipTrigger>
-                          <TooltipContent className="bg-surface-elevated-dark border border-hairline-on-dark text-xs p-2 text-white max-w-[200px] rounded-lg">
+                          <TooltipContent className="bg-background border border-transparent text-xs p-2 text-foreground max-w-[200px] rounded-2xl">
                             The minimum collateral required to open this leveraged position.
                           </TooltipContent>
                         </Tooltip>
@@ -919,9 +919,9 @@ export default function FuturesTradingPage() {
                       <TooltipProvider delayDuration={200}>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="cursor-pointer border-b border-dashed border-white/20 hover:text-white transition-colors">Liq. Price (Est)</span>
+                            <span className="cursor-pointer border-b border-dashed border-transparent/20 hover:text-foreground transition-colors">Liq. Price (Est)</span>
                           </TooltipTrigger>
-                          <TooltipContent className="bg-surface-elevated-dark border border-hairline-on-dark text-xs p-2 text-white max-w-[200px] rounded-lg">
+                          <TooltipContent className="bg-background border border-transparent text-xs p-2 text-foreground max-w-[200px] rounded-2xl">
                             The estimated price at which the position's margin is exhausted and liquidation is triggered.
                           </TooltipContent>
                         </Tooltip>
@@ -950,7 +950,7 @@ export default function FuturesTradingPage() {
                       <Button
                         type="button"
                         onClick={() => handleSubmitOrder("BUY")}
-                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-white rounded-lg shadow-elevation-sm"
+                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-foreground rounded-2xl shadow-elevation-sm"
                         variant="tradingUp"
                         loading={loading}
                       >
@@ -959,7 +959,7 @@ export default function FuturesTradingPage() {
                       <Button
                         type="button"
                         onClick={() => handleSubmitOrder("SELL")}
-                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-white rounded-lg shadow-elevation-sm"
+                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-foreground rounded-2xl shadow-elevation-sm"
                         variant="tradingDown"
                         loading={loading}
                       >
@@ -971,7 +971,7 @@ export default function FuturesTradingPage() {
                       <Button
                         type="button"
                         onClick={() => handleSubmitOrder("SELL")}
-                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-white rounded-lg shadow-elevation-sm"
+                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-foreground rounded-2xl shadow-elevation-sm"
                         variant="tradingDown"
                         loading={loading}
                       >
@@ -980,7 +980,7 @@ export default function FuturesTradingPage() {
                       <Button
                         type="button"
                         onClick={() => handleSubmitOrder("BUY")}
-                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-white rounded-lg shadow-elevation-sm"
+                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-foreground rounded-2xl shadow-elevation-sm"
                         variant="tradingUp"
                         loading={loading}
                       >
@@ -993,18 +993,18 @@ export default function FuturesTradingPage() {
               </Card>
 
               {/* Futures Assets & Risk Margin Card */}
-              <Card className="border border-hairline-on-dark bg-surface-card-dark rounded-xl p-4 space-y-4 shadow-elevation-md">
-                <div className="flex justify-between items-center border-b border-white/[0.04] pb-2 mb-1">
-                  <h4 className="font-heading text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+              <Card className="border border-transparent bg-background rounded-xl p-4 space-y-4 shadow-elevation-md">
+                <div className="flex justify-between items-center border-b border-transparent pb-2 mb-1">
+                  <h4 className="font-heading text-xs font-bold text-foreground uppercase flex items-center gap-1.5">
                     <Shield size={14} className="text-primary" />
                     Futures Account
                   </h4>
-                  <span className="text-[9px] font-mono font-bold bg-[#fcd535]/15 text-[#fcd535] px-1 rounded uppercase tracking-wider">Risk Level</span>
+                  <span className="text-[9px] font-mono font-bold bg-[#6C63FF]/15 text-[#6C63FF] px-1 rounded uppercase">Risk Level</span>
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-[10px] text-muted font-mono uppercase tracking-wider block">Estimated Equity</span>
-                  <div className="text-lg font-bold font-mono text-white flex items-baseline gap-1.5">
+                  <span className="text-[10px] text-muted font-mono uppercase block">Estimated Equity</span>
+                  <div className="text-lg font-bold font-mono text-foreground flex items-baseline gap-1.5">
                     {usdtWalletBalance.toFixed(2)} <span className="text-xs text-muted font-normal">USDT</span>
                   </div>
                 </div>
@@ -1016,22 +1016,22 @@ export default function FuturesTradingPage() {
                     <span className="text-trading-up font-bold">0.0% SAFE</span>
                   </div>
                   {/* Progress bar */}
-                  <div className="w-full h-1.5 bg-canvas-dark rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-background rounded-full overflow-hidden">
                     <div className="h-full bg-trading-up rounded-full" style={{ width: "0%" }} />
                   </div>
                 </div>
 
                 {/* Mini risk/margin details */}
-                <div className="border border-hairline-on-dark bg-canvas-dark/40 rounded-lg p-2.5 space-y-2 text-[10px] font-mono">
+                <div className="border border-transparent bg-background/40 rounded-2xl p-2.5 space-y-2 text-[10px] font-mono">
                   <div className="flex justify-between items-center text-muted">
                     <span>Margin Balance</span>
-                    <span className="text-white font-bold">{formatCurrency(usdtWalletBalance)}</span>
+                    <span className="text-foreground font-bold">{formatCurrency(usdtWalletBalance)}</span>
                   </div>
-                  <div className="flex justify-between items-center border-t border-white/[0.02] pt-1.5">
+                  <div className="flex justify-between items-center border-t border-transparent pt-1.5">
                     <span className="text-muted">Maintenance Margin</span>
-                    <span className="text-white font-bold">0.00 USDT</span>
+                    <span className="text-foreground font-bold">0.00 USDT</span>
                   </div>
-                  <div className="flex justify-between items-center border-t border-white/[0.02] pt-1.5">
+                  <div className="flex justify-between items-center border-t border-transparent pt-1.5">
                     <span className="text-muted">Active Leverage Mode</span>
                     <span className="text-primary font-bold">{marginMode} {leverage}x</span>
                   </div>
@@ -1040,28 +1040,28 @@ export default function FuturesTradingPage() {
                 {/* Quick actions grid */}
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <Link to="/wallets" className="flex-1">
-                    <button className="w-full py-2 bg-[#fcd535] hover:bg-[#fcd535]/90 text-[#181a20] rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <button className="w-full py-2 bg-[#6C63FF] hover:bg-[#6C63FF]/90 text-[#3D4852] rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
                       DEPOSIT
                     </button>
                   </Link>
                   <Link to="/wallets" className="flex-1">
-                    <button className="w-full py-2 bg-canvas-dark hover:bg-white/[0.04] border border-hairline-on-dark text-white rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <button className="w-full py-2 bg-background hover:bg-background border border-transparent text-foreground rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
                       TRANSFER
                     </button>
                   </Link>
                 </div>
 
                 {/* Streaming Real-Time matched Trades Panel */}
-                <div className="border-t border-white/[0.04] pt-4">
+                <div className="border-t border-transparent pt-4">
                   <div className="flex justify-between items-center pb-2 mb-3">
-                    <h4 className="font-heading text-[10px] font-bold text-muted uppercase tracking-wider flex items-center gap-1.5">
+                    <h4 className="font-heading text-[10px] font-bold text-muted uppercase flex items-center gap-1.5">
                       <span className="w-1 h-1 rounded-full bg-trading-up animate-ping"></span>
                       Recent Trades
                     </h4>
                     <span className="text-[9px] text-muted">{symbol} Live</span>
                   </div>
 
-                  <div className="flex justify-between text-muted text-[9px] uppercase font-semibold pb-1 border-b border-white/[0.03] mb-1.5">
+                  <div className="flex justify-between text-muted text-[9px] uppercase font-semibold pb-1 border-b border-transparent mb-1.5">
                     <span>Price(USDT)</span>
                     <span>Amount({baseAsset})</span>
                     <span className="text-right">Time</span>
@@ -1072,11 +1072,11 @@ export default function FuturesTradingPage() {
                       <div className="py-2 text-center text-muted text-[9px]">Waiting...</div>
                     ) : (
                       recentTrades.slice(0, 5).map((t) => (
-                        <div key={t.id} className="flex justify-between items-center h-5 px-1 hover:bg-white/[0.02] rounded transition-colors text-[10px]">
+                        <div key={t.id} className="flex justify-between items-center h-5 px-1 hover:bg-background/[0.02] rounded transition-colors text-[10px]">
                           <span className={`font-bold ${t.side === "BUY" ? "text-trading-up" : "text-trading-down"}`}>
                             {formatCurrency(t.price)}
                           </span>
-                          <span className="text-body font-medium">{t.amount}</span>
+                          <span className="text-foreground font-medium">{t.amount}</span>
                           <span className="text-muted text-[9px] text-right">{t.time}</span>
                         </div>
                       ))
@@ -1092,11 +1092,11 @@ export default function FuturesTradingPage() {
 
       {/* GLASSMORPHIC STOP LOSS & TAKE PROFIT PORTAL MODAL */}
       <Dialog open={!!selectedPositionForSlTp} onOpenChange={(open) => { if (!open) setSelectedPositionForSlTp(null); }}>
-        <DialogContent className="bg-surface-card-dark border-hairline-on-dark max-w-md w-full p-0 overflow-hidden shadow-elevation-xl text-white">
+        <DialogContent className="bg-background border-transparent max-w-md w-full p-0 overflow-hidden shadow-neo-hover text-foreground">
           {selectedPositionForSlTp && (
             <>
-              <DialogHeader className="bg-canvas-dark/30 px-6 py-4 border-b border-hairline-on-dark flex flex-row justify-between items-center space-y-0">
-                <DialogTitle className="font-heading font-extrabold text-sm text-white flex items-center gap-2">
+              <DialogHeader className="bg-background/30 px-6 py-4 border-b border-transparent flex flex-row justify-between items-center space-y-0">
+                <DialogTitle className="font-heading font-extrabold text-sm text-foreground flex items-center gap-2">
                   <span>Manage Trade Risk: {selectedPositionForSlTp.symbol}</span>
                   <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
                     selectedPositionForSlTp.positionMode === "LONG" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
@@ -1108,10 +1108,10 @@ export default function FuturesTradingPage() {
 
               <div className="p-6 space-y-6">
                 {/* Entry Price & Current Mark Price Display */}
-                <div className="grid grid-cols-2 gap-4 text-xs font-mono bg-canvas-dark/40 p-3 rounded-lg border border-white/[0.02]">
+                <div className="grid grid-cols-2 gap-4 text-xs font-mono bg-background/40 p-3 rounded-2xl border border-transparent">
                   <div>
                     <span className="text-muted block text-[10px] uppercase">Entry Price</span>
-                    <span className="text-white font-bold">{selectedPositionForSlTp.entryPrice} USDT</span>
+                    <span className="text-foreground font-bold">{selectedPositionForSlTp.entryPrice} USDT</span>
                   </div>
                   <div>
                     <span className="text-muted block text-[10px] uppercase">Mark Price</span>
@@ -1122,7 +1122,7 @@ export default function FuturesTradingPage() {
                 {/* Take Profit Inputs */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <label className="font-heading text-[10px] text-muted uppercase tracking-widest font-bold">Take Profit (TP)</label>
+                    <label className="font-heading text-[10px] text-muted uppercase font-bold">Take Profit (TP)</label>
                     <span className="text-[10px] text-trading-up font-mono">Trigger profit target</span>
                   </div>
                   <div className="relative">
@@ -1132,7 +1132,7 @@ export default function FuturesTradingPage() {
                       value={tpInput}
                       onChange={(e) => setTpInput(e.target.value)}
                       placeholder="e.g. 75000.00"
-                      className="bg-canvas-dark border-hairline-on-dark text-white font-mono text-xs rounded w-full pr-12"
+                      className="bg-background border-transparent text-foreground font-mono text-xs rounded w-full pr-12"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">USDT</span>
                   </div>
@@ -1149,7 +1149,7 @@ export default function FuturesTradingPage() {
                           key={pct}
                           type="button"
                           onClick={() => setTpInput(target.toFixed(2))}
-                          className="flex-1 py-1.5 bg-canvas-dark hover:bg-trading-up/10 hover:text-trading-up border border-primary/20 hover:border-trading-up/40 text-muted rounded font-mono text-[9px] font-bold transition-all cursor-pointer"
+                          className="flex-1 py-1.5 bg-background hover:bg-trading-up/10 hover:text-trading-up border border-primary/20 hover:border-trading-up/40 text-muted rounded font-mono text-[9px] font-bold transition-all cursor-pointer"
                         >
                           +{pct}% ROE
                         </button>
@@ -1161,7 +1161,7 @@ export default function FuturesTradingPage() {
                 {/* Stop Loss Inputs */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <label className="font-heading text-[10px] text-muted uppercase tracking-widest font-bold">Stop Loss (SL)</label>
+                    <label className="font-heading text-[10px] text-muted uppercase font-bold">Stop Loss (SL)</label>
                     <span className="text-[10px] text-trading-down font-mono">Trigger stop exit</span>
                   </div>
                   <div className="relative">
@@ -1171,7 +1171,7 @@ export default function FuturesTradingPage() {
                       value={slInput}
                       onChange={(e) => setSlInput(e.target.value)}
                       placeholder="e.g. 65000.00"
-                      className="bg-canvas-dark border-hairline-on-dark text-white font-mono text-xs rounded w-full pr-12"
+                      className="bg-background border-transparent text-foreground font-mono text-xs rounded w-full pr-12"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">USDT</span>
                   </div>
@@ -1188,7 +1188,7 @@ export default function FuturesTradingPage() {
                           key={pct}
                           type="button"
                           onClick={() => setSlInput(target.toFixed(2))}
-                          className="flex-1 py-1.5 bg-canvas-dark hover:bg-trading-down/10 hover:text-trading-down border border-primary/20 hover:border-trading-down/40 text-muted rounded font-mono text-[9px] font-bold transition-all cursor-pointer"
+                          className="flex-1 py-1.5 bg-background hover:bg-trading-down/10 hover:text-trading-down border border-primary/20 hover:border-trading-down/40 text-muted rounded font-mono text-[9px] font-bold transition-all cursor-pointer"
                         >
                           -{pct}% ROE
                         </button>
@@ -1204,11 +1204,11 @@ export default function FuturesTradingPage() {
                 )}
               </div>
 
-              <div className="bg-canvas-dark/30 px-6 py-4 border-t border-hairline-on-dark flex justify-end gap-3">
+              <div className="bg-background/30 px-6 py-4 border-t border-transparent flex justify-end gap-3">
                 <Button
                   type="button"
                   onClick={() => setSelectedPositionForSlTp(null)}
-                  className="font-mono text-xs px-4 py-2 border border-hairline-on-dark bg-transparent text-muted hover:text-white rounded"
+                  className="font-mono text-xs px-4 py-2 border border-transparent bg-transparent text-muted hover:text-foreground rounded"
                 >
                   Cancel
                 </Button>

@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn } from "../../lib/utils"
 
 function Skeleton({ className, variant = "line", ...props }) {
-    const base = "relative overflow-hidden bg-white/[0.06] rounded-lg"
+    const base = "relative overflow-hidden bg-background rounded-2xl"
     const shimmer = "after:absolute after:inset-0 after:bg-gradient-to-r after:from-transparent after:via-white/[0.04] after:to-transparent after:animate-shimmer"
 
     const variants = {
@@ -31,7 +31,7 @@ function SkeletonRow({ cols = 2 }) {
 
 function SkeletonCard() {
     return (
-        <div className="rounded-2xl border border-white/[0.06] bg-surface p-6 space-y-4">
+        <div className="rounded-2xl border border-transparent bg-surface p-6 space-y-4">
             <Skeleton className="h-5 w-1/3" />
             <Skeleton variant="text" />
             <div className="space-y-2">

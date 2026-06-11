@@ -88,7 +88,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
           {/* LEFT COLLAPSIBLE ACCORDION SIDEBAR NAV */}
-          <div className="lg:col-span-3 space-y-2 bg-surface-card-dark border border-hairline-on-dark rounded-2xl p-4 font-sans text-sm select-none">
+          <div className="lg:col-span-3 space-y-2 bg-background border border-transparent rounded-2xl p-4 font-sans text-sm select-none">
 
             <Link
               to="/dashboard"
@@ -102,7 +102,7 @@ export default function DashboardPage() {
             <div className="space-y-1">
               <button
                 onClick={() => setAssetsOpen(!assetsOpen)}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/[0.04] text-body hover:text-white transition-all"
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-background text-foreground hover:text-foreground transition-all"
               >
                 <div className="flex items-center gap-3">
                   <Wallet size={18} className="text-muted" />
@@ -128,7 +128,7 @@ export default function DashboardPage() {
             <div className="space-y-1">
               <button
                 onClick={() => setOrdersOpen(!ordersOpen)}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/[0.04] text-body hover:text-white transition-all"
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-background text-foreground hover:text-foreground transition-all"
               >
                 <div className="flex items-center gap-3">
                   <FileText size={18} className="text-muted" />
@@ -150,7 +150,7 @@ export default function DashboardPage() {
 
             <Link
               to="/referral"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/[0.04] text-body hover:text-white transition-all"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-background text-foreground hover:text-foreground transition-all"
             >
               <Users size={18} className="text-muted" />
               <span className="font-semibold">Referral</span>
@@ -158,7 +158,7 @@ export default function DashboardPage() {
 
             <Link
               to="/profile"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/[0.04] text-body hover:text-white transition-all"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-background text-foreground hover:text-foreground transition-all"
             >
               <User size={18} className="text-muted" />
               <span className="font-semibold">Account</span>
@@ -166,7 +166,7 @@ export default function DashboardPage() {
 
             <Link
               to="/sub-accounts"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/[0.04] text-body hover:text-white transition-all"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-background text-foreground hover:text-foreground transition-all"
             >
               <Users size={18} className="text-muted" />
               <span className="font-semibold">Sub Accounts</span>
@@ -179,37 +179,37 @@ export default function DashboardPage() {
           <div className="lg:col-span-9 space-y-6">
 
             {/* USER IDENTITY HEADER SECTION */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface-card-dark border border-hairline-on-dark rounded-2xl p-6 shadow-elevation-md">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-background border border-transparent rounded-2xl p-6 shadow-elevation-md">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center border border-primary/20 overflow-hidden relative shadow-glow-primary">
                   <User size={24} className="text-on-primary" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white font-heading tracking-tight flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-foreground font-heading flex items-center gap-2">
                     {user?.username || "CAKE ON TABLE"}
                     <span className="text-[10px] font-normal text-primary border border-primary/30 px-2 py-0.5 rounded font-mono uppercase">Regular User</span>
                   </h2>
                   <div className="flex items-center gap-4 text-xs text-muted font-mono mt-1">
-                    <span>UID: <span className="text-body font-semibold">{user?.id || "—"}</span></span>
-                    <span>VIP Level: <span className="text-body font-semibold">Regular User</span></span>
+                    <span>UID: <span className="text-foreground font-semibold">{user?.id || "—"}</span></span>
+                    <span>VIP Level: <span className="text-foreground font-semibold">Regular User</span></span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-6 text-center border-t md:border-t-0 pt-4 md:pt-0 border-hairline-on-dark font-mono text-xs text-muted">
+              <div className="flex items-center gap-6 text-center border-t md:border-t-0 pt-4 md:pt-0 border-transparent font-mono text-xs text-muted">
                 <div>
                   <span className="block text-[10px] uppercase">Following</span>
-                  <span className="text-sm font-bold text-white">39</span>
+                  <span className="text-sm font-bold text-foreground">39</span>
                 </div>
-                <div className="border-l border-hairline-on-dark pl-6">
+                <div className="border-l border-transparent pl-6">
                   <span className="block text-[10px] uppercase">Followers</span>
-                  <span className="text-sm font-bold text-white">44</span>
+                  <span className="text-sm font-bold text-foreground">44</span>
                 </div>
               </div>
             </div>
 
             {/* ESTIMATED TOTAL VALUE WITH MINI GLOW SPARKLINE */}
-            <div className="relative overflow-hidden bg-surface-card-dark border border-hairline-on-dark rounded-2xl p-6 shadow-elevation-lg flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="relative overflow-hidden bg-background border border-transparent rounded-2xl p-6 shadow-elevation-lg flex flex-col md:flex-row md:items-center justify-between gap-6">
               {/* Sparkline glow background */}
               <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-30 pointer-events-none z-0">
                 <svg className="w-48 h-20 text-primary" viewBox="0 0 100 30" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -235,15 +235,15 @@ export default function DashboardPage() {
               </div>
 
               <div className="space-y-4 relative z-10 flex-1">
-                <div className="flex items-center gap-2 text-muted font-mono text-[10px] uppercase tracking-wider">
+                <div className="flex items-center gap-2 text-muted font-mono text-[10px] uppercase">
                   <span>Est. Total Value</span>
-                  <button onClick={() => setShowBalance(!showBalance)} className="hover:text-white transition-colors">
+                  <button onClick={() => setShowBalance(!showBalance)} className="hover:text-foreground transition-colors">
                     {showBalance ? <Eye size={14} /> : <EyeOff size={14} />}
                   </button>
                 </div>
 
                 <div className="space-y-1">
-                  <h3 className="text-3xl font-extrabold text-white font-mono tracking-tight flex items-baseline gap-2">
+                  <h3 className="text-3xl font-extrabold text-foreground font-mono flex items-baseline gap-2">
                     {showBalance ? totalUSDEquity.toFixed(8) : "********"}
                     <span className="text-base font-normal text-muted">USDT</span>
                   </h3>
@@ -261,22 +261,22 @@ export default function DashboardPage() {
               </div>
 
               <div className="flex flex-wrap md:flex-col lg:flex-row items-center gap-3 relative z-10">
-                <Button className="font-mono text-xs font-bold uppercase py-2 px-5 rounded-lg shadow-glow-primary" asChild>
+                <Button className="font-mono text-xs font-bold uppercase py-2 px-5 rounded-2xl shadow-glow-primary" asChild>
                   <Link to="/wallets">Deposit</Link>
                 </Button>
               </div>
             </div>
 
             {/* MARKETS / HOLDINGS TABLE GRID */}
-            <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-2xl shadow-elevation-md overflow-hidden" aria-live="polite">
+            <Card className="bg-background border border-transparent rounded-2xl shadow-elevation-md overflow-hidden" aria-live="polite">
               {/* Binance Tab filter bar */}
-              <div className="bg-canvas-dark/20 border-b border-hairline-on-dark px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-6 font-heading text-xs font-bold tracking-wider uppercase select-none">
+              <div className="bg-background/20 border-b border-transparent px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-6 font-heading text-xs font-bold uppercase select-none">
                   {["Holding", "Hot", "New Listing", "Favorite", "Top Gainers"].map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveSubTab(tab)}
-                      className={`pb-1 relative transition-colors ${activeSubTab === tab ? "text-primary" : "text-muted hover:text-white"}`}
+                      className={`pb-1 relative transition-colors ${activeSubTab === tab ? "text-primary" : "text-muted hover:text-foreground"}`}
                     >
                       {tab}
                       {activeSubTab === tab && (
@@ -294,7 +294,7 @@ export default function DashboardPage() {
                     <div className="overflow-x-auto">
                       <table className="w-full text-left border-collapse">
                         <thead>
-                          <tr className="border-b border-hairline-on-dark text-[10px] font-bold text-muted uppercase tracking-wider font-mono bg-canvas-dark/10">
+                          <tr className="border-b border-transparent text-[10px] font-bold text-muted uppercase font-mono bg-background/10">
                             <th className="py-4 px-6">Coin</th>
                             <th className="py-4 px-6 text-right">Amount</th>
                             <th className="py-4 px-6 text-right">Asset Price / Cost Price</th>
@@ -306,24 +306,24 @@ export default function DashboardPage() {
                           {holdingsList.map((coin, index) => {
                             const isProfit = coin.change >= 0;
                             return (
-                              <tr key={index} className="hover:bg-canvas-dark/25 transition-colors">
+                              <tr key={index} className="hover:bg-background/25 transition-colors">
                                 <td className="py-4 px-6">
                                   <div className="flex items-center gap-3">
-                                    <div className="w-7 h-7 rounded-full overflow-hidden bg-white/10 flex items-center justify-center p-0.5">
+                                    <div className="w-7 h-7 rounded-full overflow-hidden bg-background flex items-center justify-center p-0.5">
                                       <img src={coin.icon} alt={coin.symbol} className="w-full h-full object-contain" onError={(e) => { e.target.src = "https://cryptologos.cc/logos/tether-usdt-logo.png"; }} />
                                     </div>
                                     <div>
-                                      <span className="text-white font-bold block">{coin.symbol}</span>
+                                      <span className="text-foreground font-bold block">{coin.symbol}</span>
                                       <span className="text-[10px] text-muted font-sans font-semibold">{coin.name}</span>
                                     </div>
                                   </div>
                                 </td>
                                 <td className="py-4 px-6 text-right font-semibold">
-                                  <span className="text-white block">{coin.amount.toFixed(8)}</span>
+                                  <span className="text-foreground block">{coin.amount.toFixed(8)}</span>
                                   <span className="text-[10px] text-muted">≈ ${coin.costUSD.toLocaleString()}</span>
                                 </td>
                                 <td className="py-4 px-6 text-right">
-                                  <span className="text-white block">₹{coin.priceINR.toLocaleString()}</span>
+                                  <span className="text-foreground block">₹{coin.priceINR.toLocaleString()}</span>
                                   <span className="text-[10px] text-muted">≈ ${(coin.priceINR / 83).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                                 </td>
                                 <td className={`py-4 px-6 text-right font-bold text-sm ${isProfit ? "text-trading-up" : "text-trading-down"}`}>

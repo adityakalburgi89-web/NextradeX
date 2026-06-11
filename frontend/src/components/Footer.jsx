@@ -7,26 +7,26 @@ import githubIcon from "../assets/Icons/github_icon.png";
 import gmailIcon from "../assets/Icons/Gmail_icon_svg.webp";
 
 export default function Footer() {
-  const linkClass = "text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200 block py-1.5";
+  const linkClass = "block py-1.5 text-xs font-semibold text-muted transition-colors duration-200 hover:text-primary";
   return (
-    <footer className="relative z-10 bg-canvas-dark light:bg-[#fafafa] border-t border-hairline-on-dark light:border-[#eaecef] py-16 text-white light:text-[#181a20]">
+    <footer className="relative z-10 bg-background py-16 text-foreground">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10 rounded-[32px] bg-background p-8 shadow-neo">
           {/* Brand */}
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
             <div className="flex items-center mb-4">
-              <span className="font-heading font-bold text-lg tracking-tight text-white light:text-[#181a20]">
-                NexTrade<span className="text-[#fcd535]">X</span>
+              <span className="font-heading font-bold text-lg text-foreground">
+                NexTrade<span className="text-primary">X</span>
               </span>
             </div>
-            <p className="text-xs text-[#707a8a] leading-relaxed max-w-[200px]">
+            <p className="text-xs text-muted leading-relaxed max-w-[200px]">
               NexTradeX is a paper trading simulation platform for educational purposes. No real assets are traded.
             </p>
           </div>
 
           {/* About */}
           <div>
-            <h4 className="font-heading text-xs font-bold uppercase tracking-widest text-white light:text-[#181a20] mb-4">About</h4>
+            <h4 className="font-heading text-xs font-bold uppercase text-foreground mb-4">About</h4>
             <nav className="space-y-1">
               <Link to="/about" className={linkClass}>About Us</Link>
               <Link to="/careers" className={linkClass}>Careers</Link>
@@ -37,7 +37,7 @@ export default function Footer() {
 
           {/* Products */}
           <div>
-            <h4 className="font-heading text-xs font-bold uppercase tracking-widest text-white light:text-[#181a20] mb-4">Products</h4>
+            <h4 className="font-heading text-xs font-bold uppercase text-foreground mb-4">Products</h4>
             <nav className="space-y-1">
               <Link to="/trade/spot" className={linkClass}>Spot Trading</Link>
               <Link to="/trade/futures" className={linkClass}>Futures Trading</Link>
@@ -48,7 +48,7 @@ export default function Footer() {
 
           {/* Service */}
           <div>
-            <h4 className="font-heading text-xs font-bold uppercase tracking-widest text-white light:text-[#181a20] mb-4">Service</h4>
+            <h4 className="font-heading text-xs font-bold uppercase text-foreground mb-4">Service</h4>
             <nav className="space-y-1">
               <Link to="/support" className={linkClass}>Support Center</Link>
               <Link to="/user-guide" className={linkClass}>User Guide</Link>
@@ -59,7 +59,7 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="font-heading text-xs font-bold uppercase tracking-widest text-white light:text-[#181a20] mb-4">Legal</h4>
+            <h4 className="font-heading text-xs font-bold uppercase text-foreground mb-4">Legal</h4>
             <nav className="space-y-1">
               <Link to="/terms" className={linkClass}>Terms of Service</Link>
               <Link to="/privacy" className={linkClass}>Privacy Policy</Link>
@@ -70,21 +70,21 @@ export default function Footer() {
 
           {/* Socials */}
           <div>
-            <h4 className="font-heading text-xs font-bold uppercase tracking-widest text-white light:text-[#181a20] mb-4">Socials</h4>
+            <h4 className="font-heading text-xs font-bold uppercase text-foreground mb-4">Socials</h4>
             <nav className="space-y-3">
-              <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" aria-label="Follow NexTradeX on X (Twitter)" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
+              <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" aria-label="Follow NexTradeX on X (Twitter)" className="flex items-center gap-3 text-xs font-semibold text-muted hover:text-primary transition-colors duration-200">
                 <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" fill="currentColor" aria-hidden="true">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
                 <span>X (Twitter)</span>
               </a>
-              <a href="https://www.linkedin.com/in/aditya-kalburgi-080b5b267/" target="_blank" rel="noopener noreferrer" aria-label="Connect with NexTradeX on LinkedIn" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
+              <a href="https://www.linkedin.com/in/aditya-kalburgi-080b5b267/" target="_blank" rel="noopener noreferrer" aria-label="Connect with NexTradeX on LinkedIn" className="flex items-center gap-3 text-xs font-semibold text-muted hover:text-primary transition-colors duration-200">
                 <img src={linkedInIcon} alt="" className="w-4 h-4 object-contain" aria-hidden="true" /> <span>LinkedIn</span>
               </a>
-              <a href="mailto:contact@nextradex.sim" aria-label="Email NexTradeX" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
+              <a href="mailto:contact@nextradex.sim" aria-label="Email NexTradeX" className="flex items-center gap-3 text-xs font-semibold text-muted hover:text-primary transition-colors duration-200">
                 <img src={gmailIcon} alt="" className="w-4 h-4 object-contain" aria-hidden="true" /> <span>Email</span>
               </a>
-              <a href="https://github.com/aditykalburgi" target="_blank" rel="noopener noreferrer" aria-label="View NexTradeX on GitHub" className="flex items-center gap-3 text-xs font-semibold text-[#707a8a] hover:text-[#f0b90b] transition-colors duration-200">
+              <a href="https://github.com/aditykalburgi" target="_blank" rel="noopener noreferrer" aria-label="View NexTradeX on GitHub" className="flex items-center gap-3 text-xs font-semibold text-muted hover:text-primary transition-colors duration-200">
                 <img src={githubIcon} alt="" className="w-4 h-4 object-contain brightness-0 contrast-50" aria-hidden="true" /> <span>GitHub</span>
               </a>
             </nav>

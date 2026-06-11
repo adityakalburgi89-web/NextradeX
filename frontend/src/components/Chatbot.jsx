@@ -101,7 +101,7 @@ function formatMessageText(text) {
           bits.push(part.substring(lastIndex, match.index));
         }
         bits.push(
-          <code key={match.index} className="bg-canvas-dark px-1.5 py-0.5 rounded font-mono text-[10px] text-primary font-semibold border border-white/5 mx-0.5">
+          <code key={match.index} className="bg-background px-1.5 py-0.5 rounded font-mono text-[10px] text-primary font-semibold border border-transparent mx-0.5">
             {match[1]}
           </code>
         );
@@ -270,7 +270,7 @@ export default function Chatbot() {
         {/* Tooltip speech bubble */}
         {!isOpen && (
           <div
-            className={`absolute bottom-24 right-2 glass-panel text-white border border-hairline-on-dark px-3.5 py-2 rounded-xl text-xs font-semibold shadow-elevation-md transition-all duration-300 pointer-events-none whitespace-nowrap flex items-center gap-1.5 ${
+            className={`absolute bottom-24 right-2 glass-panel text-foreground border border-transparent px-3.5 py-2 rounded-xl text-xs font-semibold shadow-elevation-md transition-all duration-300 pointer-events-none whitespace-nowrap flex items-center gap-1.5 ${
               isHovered
                 ? "opacity-100 translate-y-0 scale-100"
                 : "opacity-0 translate-y-2 scale-95"
@@ -279,7 +279,7 @@ export default function Chatbot() {
           >
             <span className={`w-1.5 h-1.5 rounded-full bg-trading-up ${prefersReducedMotion ? '' : 'animate-pulse'}`}></span>
             <span>Chat with Trixie!</span>
-            <div className="absolute bottom-[-5px] right-8 w-2 h-2 glass-panel border-r border-b border-hairline-on-dark transform rotate-45"></div>
+            <div className="absolute bottom-[-5px] right-8 w-2 h-2 glass-panel border-r border-b border-transparent transform rotate-45"></div>
           </div>
         )}
 
@@ -299,7 +299,7 @@ export default function Chatbot() {
           className={`size-20 rounded-full flex items-center justify-center bg-primary hover:bg-primary-active text-on-primary transition-all duration-300 shadow-glow-primary hover:shadow-glow-primary-hover hover:scale-110 active:scale-95 border-2 border-background focus:outline-none relative`}
         >
           {isOpen ? (
-            <X size={32} className={prefersReducedMotion ? 'text-ink' : 'animate-scale-in text-ink'} aria-hidden="true" />
+            <X size={32} className={prefersReducedMotion ? 'text-foreground' : 'animate-scale-in text-foreground'} aria-hidden="true" />
           ) : (
             <div className="relative size-full rounded-full overflow-hidden flex items-center justify-center p-1 border border-primary/30">
               <video
@@ -321,11 +321,11 @@ export default function Chatbot() {
           role="dialog" 
           aria-label="Trixie chatbot" 
           aria-modal="false"
-          className={`fixed bottom-24 right-6 w-96 max-w-[calc(100vw-2rem)] h-[520px] z-50 flex flex-col glass-panel rounded-2xl shadow-elevation-lg overflow-hidden ${prefersReducedMotion ? '' : 'animate-fade-in-fast'} font-sans select-text border border-white/10`}>
+          className={`fixed bottom-24 right-6 w-96 max-w-[calc(100vw-2rem)] h-[520px] z-50 flex flex-col glass-panel rounded-2xl shadow-elevation-lg overflow-hidden ${prefersReducedMotion ? '' : 'animate-fade-in-fast'} font-sans select-text border border-transparent`}>
         
           
           {/* Header */}
-          <div className="bg-canvas-dark/40 border-b border-hairline-on-dark px-4 py-3.5 flex items-center justify-between">
+          <div className="bg-background/40 border-b border-transparent px-4 py-3.5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center relative overflow-hidden">
                 <video
@@ -338,15 +338,15 @@ export default function Chatbot() {
                 />
               </div>
               <div>
-                <h4 className="font-heading text-xs font-bold text-white flex items-center gap-1.5">
-                  Trixie <span className="text-[9px] font-bold bg-primary/15 text-primary px-1 rounded uppercase tracking-wider font-mono">Copilot</span>
+                <h4 className="font-heading text-xs font-bold text-foreground flex items-center gap-1.5">
+                  Trixie <span className="text-[9px] font-bold bg-primary/15 text-primary px-1 rounded uppercase font-mono">Copilot</span>
                 </h4>
                 <div className="flex items-center gap-1 mt-0.5">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className={`${prefersReducedMotion ? '' : 'animate-ping'} absolute inline-flex h-full w-full rounded-full bg-trading-up opacity-75`}></span>
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-trading-up"></span>
                   </span>
-                  <span className="text-[9px] text-muted font-mono uppercase tracking-wider">Online & Ready</span>
+                  <span className="text-[9px] text-muted font-mono uppercase">Online & Ready</span>
                 </div>
               </div>
             </div>
@@ -356,7 +356,7 @@ export default function Chatbot() {
               <button
                 type="button"
                 onClick={toggleMute}
-                className="p-1.5 rounded hover:bg-white/5 transition-colors text-muted hover:text-white mr-1.5"
+                className="p-1.5 rounded hover:bg-background transition-colors text-muted hover:text-foreground mr-1.5"
                 title={isMuted ? "Unmute Voice Replies" : "Mute Voice Replies"}
               >
                 {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
@@ -364,7 +364,7 @@ export default function Chatbot() {
               
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded hover:bg-white/5 transition-colors text-muted hover:text-white"
+                className="p-1.5 rounded hover:bg-background transition-colors text-muted hover:text-foreground"
               >
                 <X size={16} />
               </button>
@@ -372,7 +372,7 @@ export default function Chatbot() {
           </div>
 
           {/* Messages Body */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-canvas-dark/15 flex flex-col scrollbar-thin">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background/15 flex flex-col scrollbar-thin">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -388,12 +388,12 @@ export default function Chatbot() {
                   <div
                     className={`rounded-2xl px-4 py-2.5 text-xs font-sans leading-relaxed whitespace-pre-wrap shadow-elevation-sm ${msg.sender === "user"
                       ? "bg-gradient-to-r from-primary to-primary-active text-on-primary font-bold rounded-tr-sm hover:brightness-105 transition-all"
-                      : "bg-white/[0.03] backdrop-blur-md border border-white/5 text-foreground rounded-tl-sm"
+                      : "bg-background backdrop-blur-md border border-transparent text-foreground rounded-tl-sm"
                       }`}
                   >
                     {msg.sender === "trixie" ? formatMessageText(msg.text) : msg.text}
                   </div>
-                  <span className={`text-[8px] text-muted font-mono tracking-wide ${msg.sender === "user" ? "self-end" : "self-start pl-1"
+                  <span className={`text-[8px] text-muted font-mono ${msg.sender === "user" ? "self-end" : "self-start pl-1"
                     }`}>
                     {msg.timestamp}
                   </span>
@@ -408,7 +408,7 @@ export default function Chatbot() {
                   <img src={trixieAvatar} alt="Trixie" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <div className="rounded-2xl px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/5 rounded-tl-sm flex items-center gap-1.5 h-[34px] shadow-sm">
+                  <div className="rounded-2xl px-4 py-3 bg-background backdrop-blur-md border border-transparent rounded-tl-sm flex items-center gap-1.5 h-[34px] shadow-sm">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }}></span>
                     <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }}></span>
                     <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }}></span>
@@ -421,44 +421,44 @@ export default function Chatbot() {
           </div>
 
           {/* Quick Actions Panel */}
-          <div className="px-4 py-2.5 border-t border-white/5 bg-canvas-dark/25 flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth">
+          <div className="px-4 py-2.5 border-t border-transparent bg-background/25 flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth">
             <button
               type="button"
               onClick={() => handleQuickAction("Check Prices", "price")}
-              className="px-3 py-1.5 text-[9px] font-mono rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-md text-muted hover:text-primary hover:border-primary/45 hover:bg-primary/5 transition-all font-bold cursor-pointer shadow-sm"
+              className="px-3 py-1.5 text-[9px] font-mono rounded-full border border-transparent bg-background/[0.02] backdrop-blur-md text-muted hover:text-primary hover:border-primary/45 hover:bg-primary/5 transition-all font-bold cursor-pointer shadow-sm"
             >
               Live Prices
             </button>
             <button
               type="button"
               onClick={() => handleQuickAction("Verify Safu", "safu")}
-              className="px-3 py-1.5 text-[9px] font-mono rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-md text-muted hover:text-primary hover:border-primary/45 hover:bg-primary/5 transition-all font-bold cursor-pointer shadow-sm"
+              className="px-3 py-1.5 text-[9px] font-mono rounded-full border border-transparent bg-background/[0.02] backdrop-blur-md text-muted hover:text-primary hover:border-primary/45 hover:bg-primary/5 transition-all font-bold cursor-pointer shadow-sm"
             >
               Reserves SAFU
             </button>
             <button
               type="button"
               onClick={() => handleQuickAction("Cost and Fees?", "fees")}
-              className="px-3 py-1.5 text-[9px] font-mono rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-md text-muted hover:text-primary hover:border-primary/45 hover:bg-primary/5 transition-all font-bold cursor-pointer shadow-sm"
+              className="px-3 py-1.5 text-[9px] font-mono rounded-full border border-transparent bg-background/[0.02] backdrop-blur-md text-muted hover:text-primary hover:border-primary/45 hover:bg-primary/5 transition-all font-bold cursor-pointer shadow-sm"
             >
               Spot/Futures Fees
             </button>
           </div>
 
           {/* Input Chat Footer */}
-          <form onSubmit={handleSend} className="p-3 border-t border-white/5 flex gap-2 bg-canvas-dark/35 backdrop-blur-md">
+          <form onSubmit={handleSend} className="p-3 border-t border-transparent flex gap-2 bg-background/35 backdrop-blur-md">
             <input
               type="text"
               placeholder="Ask Trixie..."
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              className="flex-1 px-4 py-2.5 h-10 bg-canvas-dark/65 border border-white/10 rounded-xl text-xs font-mono text-foreground placeholder:text-muted/40 focus:outline-none focus:border-primary/60 transition-all shadow-inner"
+              className="flex-1 px-4 py-2.5 h-10 bg-background/65 border border-transparent rounded-xl text-xs font-mono text-foreground placeholder:text-muted/40 focus:outline-none focus:border-primary/60 transition-all shadow-inner"
             />
             <button
               type="submit"
               className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary hover:bg-primary-active text-on-primary transition-all duration-300 shadow-glow-primary hover:scale-105 active:scale-95 focus:outline-none"
             >
-              <Send size={14} className="text-ink" />
+              <Send size={14} className="text-foreground" />
             </button>
           </form>
         </div>

@@ -146,7 +146,7 @@ export default function CandlestickChart({ data = [], options = EMPTY_OPTIONS, h
   if (!data || data.length === 0) {
     return (
       <div
-        className="chart-shell relative flex items-center justify-center rounded-[28px] border border-white/10 light:border-hairline-on-light bg-slate-950/50 light:bg-surface-soft-light text-sm text-muted"
+        className="chart-shell relative flex items-center justify-center rounded-[28px] border border-transparent light:border-transparent bg-slate-950/50 light:bg-background text-sm text-muted"
         style={{ height }}
       >
         Waiting for candle data...
@@ -161,26 +161,26 @@ export default function CandlestickChart({ data = [], options = EMPTY_OPTIONS, h
           role="tooltip"
           aria-live="polite"
           aria-atomic="true"
-          className="absolute left-4 top-4 z-10 rounded-lg border border-white/10 light:border-hairline-on-light bg-black/80 light:bg-white/95 px-3 py-2 backdrop-blur-sm shadow-elevation-md"
+          className="absolute left-4 top-4 z-10 rounded-2xl border border-transparent light:border-transparent bg-black/80 light:bg-background/95 px-3 py-2 backdrop-blur-sm shadow-elevation-md"
         >
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
             <span className="text-muted">O</span>
-            <span className="text-white light:text-ink">{formatPrice(tooltipData.open)}</span>
+            <span className="text-foreground light:text-foreground">{formatPrice(tooltipData.open)}</span>
             <span className="text-muted">H</span>
-            <span className="text-white light:text-ink">{formatPrice(tooltipData.high)}</span>
+            <span className="text-foreground light:text-foreground">{formatPrice(tooltipData.high)}</span>
             <span className="text-muted">L</span>
-            <span className="text-white light:text-ink">{formatPrice(tooltipData.low)}</span>
+            <span className="text-foreground light:text-foreground">{formatPrice(tooltipData.low)}</span>
             <span className="text-muted">C</span>
             <span className={tooltipData.close >= tooltipData.open ? "text-accent-green" : "text-accent-red"}>{formatPrice(tooltipData.close)}</span>
             <span className="text-muted">Vol</span>
-            <span className="text-white light:text-ink">{formatVolume(tooltipData.volume)}</span>
+            <span className="text-foreground light:text-foreground">{formatVolume(tooltipData.volume)}</span>
           </div>
         </div>
       )}
       <div
         ref={containerRef}
         aria-label={`Candlestick chart for ${options?.symbol || "trading pair"}`}
-        className="chart-shell w-full overflow-hidden rounded-[28px] bg-black/20 light:bg-surface-soft-light"
+        className="chart-shell w-full overflow-hidden rounded-[28px] bg-background light:bg-background"
         style={{ height }}
       />
     </div>

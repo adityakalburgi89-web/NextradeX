@@ -53,14 +53,14 @@ export default function SearchModal({ open, onClose, query, setQuery, isLoggedIn
   return (
     <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
       <DialogContent 
-        className="max-w-xl w-full bg-[#0a0a0f] border-white/10 rounded-2xl p-0 overflow-hidden shadow-2xl text-white"
+        className="max-w-xl w-full bg-background border-transparent rounded-2xl p-0 overflow-hidden shadow-2xl text-foreground"
         role="dialog"
         aria-modal="true"
         aria-label="Search"
       >
         <DialogHeader className="p-0">
           <DialogTitle className="sr-only">Search</DialogTitle>
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-transparent">
             <Search size={18} className="text-muted" aria-hidden="true" />
             <input
               ref={inputRef}
@@ -68,7 +68,7 @@ export default function SearchModal({ open, onClose, query, setQuery, isLoggedIn
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search pages..."
-              className="flex-1 bg-transparent text-white placeholder-muted outline-none text-sm"
+              className="flex-1 bg-transparent text-foreground placeholder-muted outline-none text-sm"
             />
           </div>
         </DialogHeader>
@@ -81,10 +81,10 @@ export default function SearchModal({ open, onClose, query, setQuery, isLoggedIn
                 <button
                   key={index}
                   onClick={() => handleSelect(item.path)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors text-left"
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-background transition-colors text-left"
                 >
                   <div>
-                    <div className="text-white text-sm font-medium">{item.label}</div>
+                    <div className="text-foreground text-sm font-medium">{item.label}</div>
                     <div className="text-muted text-xs">{item.description}</div>
                   </div>
                   <ChevronDown size={16} className="text-muted rotate-[-90deg]" />

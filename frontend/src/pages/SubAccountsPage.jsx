@@ -39,22 +39,22 @@ export default function SubAccountsPage() {
 
   return (
     <PageTransition>
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8 text-white">
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8 text-foreground">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight font-heading">Sub-Accounts Corporate Manager</h1>
+          <h1 className="text-2xl font-bold font-heading">Sub-Accounts Corporate Manager</h1>
           <p className="text-sm text-muted">Provision virtual trading sub-accounts, delegate mock capital, oversee API access tokens, and enforce risk caps.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Main Sub Accounts Table */}
           <div className="lg:col-span-8 space-y-6">
-            <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md">
-              <CardHeader className="border-b border-hairline-on-dark bg-canvas-dark/20 py-4 px-6 flex flex-row items-center justify-between">
+            <Card className="bg-background border border-transparent rounded-xl overflow-hidden shadow-elevation-md">
+              <CardHeader className="border-b border-transparent bg-background/20 py-4 px-6 flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle className="text-base font-bold uppercase tracking-wider font-heading">Active Sub-Accounts</CardTitle>
+                  <CardTitle className="text-base font-bold uppercase font-heading">Active Sub-Accounts</CardTitle>
                   <CardDescription className="text-xs text-muted">Manage allocations and monitor state metrics for simulated agents.</CardDescription>
                 </div>
-                <span className="text-[10px] font-mono font-semibold text-muted bg-canvas-dark px-2.5 py-1 rounded border border-hairline-on-dark">
+                <span className="text-[10px] font-mono font-semibold text-muted bg-background px-2.5 py-1 rounded border border-transparent">
                   PROVISIONED AGENTS: {subAccounts.length}
                 </span>
               </CardHeader>
@@ -67,7 +67,7 @@ export default function SubAccountsPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="border-b border-hairline-on-dark text-[10px] font-bold text-muted uppercase tracking-wider font-mono bg-canvas-dark/10">
+                        <tr className="border-b border-transparent text-[10px] font-bold text-muted uppercase font-mono bg-background/10">
                           <th className="py-4 px-6">Sub-Account Details</th>
                           <th className="py-4 px-6 text-right">Delegated Balance</th>
                           <th className="py-4 px-6 text-center">API Keys</th>
@@ -77,16 +77,16 @@ export default function SubAccountsPage() {
                       </thead>
                       <tbody className="divide-y divide-hairline-on-dark font-mono text-xs">
                         {subAccounts.map((acc) => (
-                          <tr key={acc.id} className="hover:bg-white/[0.01] transition-colors">
+                          <tr key={acc.id} className="hover:bg-background/[0.01] transition-colors">
                             <td className="py-4 px-6">
-                              <div className="font-bold text-white">{acc.name}</div>
+                              <div className="font-bold text-foreground">{acc.name}</div>
                               <div className="text-[10px] text-muted">{acc.email}</div>
                             </td>
                             <td className="py-4 px-6 text-right font-bold text-primary">
                               ${acc.balance.toLocaleString()}
                             </td>
                             <td className="py-4 px-6 text-center">
-                              <span className="bg-canvas-dark px-2 py-0.5 rounded border border-hairline-on-dark text-[10px]">
+                              <span className="bg-background px-2 py-0.5 rounded border border-transparent text-[10px]">
                                 {acc.apiKeys} Active
                               </span>
                             </td>
@@ -96,10 +96,10 @@ export default function SubAccountsPage() {
                               </span>
                             </td>
                             <td className="py-4 px-6 text-center flex items-center justify-center gap-2">
-                              <Button variant="outline" size="sm" className="text-[10px] h-7 px-2 border-hairline-on-dark">
+                              <Button variant="outline" size="sm" className="text-[10px] h-7 px-2 border-transparent">
                                 <Key size={10} className="mr-1" /> API
                               </Button>
-                              <Button variant="outline" size="sm" className="text-[10px] h-7 px-2 border-hairline-on-dark text-trading-down hover:bg-trading-down hover:text-white">
+                              <Button variant="outline" size="sm" className="text-[10px] h-7 px-2 border-transparent text-trading-down hover:bg-trading-down hover:text-foreground">
                                 Freeze
                               </Button>
                             </td>
@@ -115,9 +115,9 @@ export default function SubAccountsPage() {
 
           {/* Provision New Sub-Account Panel */}
           <div className="lg:col-span-4">
-            <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl shadow-elevation-md overflow-hidden">
-              <CardHeader className="border-b border-hairline-on-dark bg-canvas-dark/20 py-4 px-6">
-                <CardTitle className="text-base font-bold uppercase tracking-wider font-heading">Provision Agent</CardTitle>
+            <Card className="bg-background border border-transparent rounded-xl shadow-elevation-md overflow-hidden">
+              <CardHeader className="border-b border-transparent bg-background/20 py-4 px-6">
+                <CardTitle className="text-base font-bold uppercase font-heading">Provision Agent</CardTitle>
                 <CardDescription className="text-xs text-muted">Delegate virtual funds and security boundaries to a new trading agent.</CardDescription>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
@@ -130,7 +130,7 @@ export default function SubAccountsPage() {
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
                       required
-                      className="bg-canvas-dark border-hairline-on-dark text-white rounded-lg text-xs"
+                      className="bg-background border-transparent text-foreground rounded-2xl text-xs"
                     />
                   </div>
 
@@ -141,7 +141,7 @@ export default function SubAccountsPage() {
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
                       required
-                      className="bg-canvas-dark border-hairline-on-dark text-white rounded-lg text-xs"
+                      className="bg-background border-transparent text-foreground rounded-2xl text-xs"
                     />
                   </div>
 
@@ -152,12 +152,12 @@ export default function SubAccountsPage() {
                       placeholder="e.g. 50000"
                       value={newBalance}
                       onChange={(e) => setNewBalance(e.target.value)}
-                      className="bg-canvas-dark border-hairline-on-dark text-white font-mono rounded-lg text-xs"
+                      className="bg-background border-transparent text-foreground font-mono rounded-2xl text-xs"
                     />
                   </div>
 
                   {message && (
-                    <div className="p-2.5 rounded-lg bg-trading-up/10 border border-trading-up/20 text-center animate-slide-down">
+                    <div className="p-2.5 rounded-2xl bg-trading-up/10 border border-trading-up/20 text-center animate-slide-down">
                       <span className="text-xs text-trading-up font-semibold text-center">{message}</span>
                     </div>
                   )}

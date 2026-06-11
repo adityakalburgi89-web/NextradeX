@@ -117,7 +117,7 @@ const renderCoinIcon = (symbol) => {
     return <img src={src} className="w-8 h-8 flex-shrink-0 object-contain" alt={symbol} />;
   }
   return (
-    <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white font-mono text-sm font-bold">
+    <div className="w-8 h-8 rounded-full bg-background border border-transparent/20 flex items-center justify-center text-foreground font-mono text-sm font-bold">
       {symbol.charAt(0)}
     </div>
   );
@@ -257,9 +257,9 @@ export default function HomePage() {
 
   return (
     <PageTransition>
-      <main className="w-full text-white light:text-ink bg-canvas-dark light:bg-canvas-light">
-        {/* HERO SECTION BAND (Full-Bleed bg-canvas-dark) */}
-        <section className="relative overflow-hidden py-20 md:py-32 border-b border-hairline-on-dark light:border-hairline-on-light bg-canvas-dark light:bg-canvas-light min-h-[calc(100vh-64px)] flex items-center">
+      <main className="w-full text-foreground light:text-foreground bg-background light:bg-background">
+        {/* HERO SECTION BAND (Full-Bleed bg-background) */}
+        <section className="relative overflow-hidden py-20 md:py-32 border-b border-transparent light:border-transparent bg-background light:bg-background min-h-[calc(100vh-64px)] flex items-center">
           {/* Video Background */}
           <video
             autoPlay
@@ -286,7 +286,7 @@ export default function HomePage() {
             <div className="overflow-hidden">
               <motion.h1
                 variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : textReveal}
-                className="font-heading text-4xl sm:text-5xl md:text-[60px] lg:text-[72px] font-bold leading-[1.1] mb-6 tracking-tight"
+                className="font-heading text-4xl sm:text-5xl md:text-[60px] lg:text-[72px] font-bold leading-[1.1] mb-6"
               >
                 TRADE WITH. <br />
                 <span className="text-primary">MATHEMATICAL PRECISION</span>
@@ -323,7 +323,7 @@ export default function HomePage() {
               <Button variant="primaryPill" className="w-full sm:w-auto" asChild>
                 <Link to="/auth">Start Trading</Link>
               </Button>
-              <Button variant="outline" className="w-full sm:w-auto text-body light:text-body-on-light hover:bg-surface-card-dark light:hover:bg-surface-strong-light" asChild>
+              <Button variant="outline" className="w-full sm:w-auto text-foreground light:text-foreground hover:bg-background light:hover:bg-background" asChild>
                 <Link to="/markets">View Markets</Link>
               </Button>
             </motion.div>
@@ -331,7 +331,7 @@ export default function HomePage() {
         </section>
 
         {/* TRUST BADGES GRID (Flat surface cards) */}
-        <section className="bg-canvas-dark light:bg-canvas-light py-12 border-b border-hairline-on-dark light:border-hairline-on-light">
+        <section className="bg-background light:bg-background py-12 border-b border-transparent light:border-transparent">
           <div className="max-w-7xl mx-auto px-6">
             <motion.div
               variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : staggerContainer}
@@ -349,13 +349,13 @@ export default function HomePage() {
                 <motion.div
                   key={idx}
                   variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
-                  className="bg-surface-card-dark light:bg-canvas-light rounded-lg border border-hairline-on-dark light:border-hairline-on-light p-5 flex items-center gap-4 hover:border-primary/30 transition-all duration-300 interactive-surface"
+                  className="bg-background light:bg-background rounded-2xl border border-transparent light:border-transparent p-5 flex items-center gap-4 hover:border-primary/30 transition-all duration-300 interactive-surface"
                 >
                   <span className="text-primary font-mono text-xl font-bold px-3 py-1 bg-primary/10 border border-primary/20 rounded flex-shrink-0">
                     {item.badge}
                   </span>
                   <div>
-                    <div className="text-white light:text-ink text-sm font-semibold tracking-tight font-heading">{item.label}</div>
+                    <div className="text-foreground light:text-foreground text-sm font-semibold font-heading">{item.label}</div>
                     <div className="text-muted text-xs font-sans leading-relaxed mt-0.5">{item.desc}</div>
                   </div>
                 </motion.div>
@@ -365,7 +365,7 @@ export default function HomePage() {
         </section>
 
         {/* HERO USER STAT BANDS */}
-        <section className="py-20 bg-canvas-dark light:bg-canvas-light border-b border-hairline-on-dark light:border-hairline-on-light text-center relative overflow-hidden">
+        <section className="py-20 bg-background light:bg-background border-b border-transparent light:border-transparent text-center relative overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-primary/[0.02] blur-[130px] pointer-events-none" />
           <motion.div
             variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
@@ -374,13 +374,13 @@ export default function HomePage() {
             viewport={{ once: true, margin: "-100px" }}
             className="max-w-7xl mx-auto px-6 relative z-10"
           >
-            <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block font-semibold">Platform Metric</span>
-            <div className="inline-flex items-center gap-2 select-none border border-hairline-on-dark light:border-hairline-on-light bg-surface-card-dark/30 light:bg-canvas-light/80 rounded-2xl px-8 py-6 backdrop-blur-md shadow-elevation-md">
-              <h2 className="font-mono text-5xl md:text-8xl font-bold tracking-wider text-primary leading-none">
+            <span className="font-mono text-xs text-primary uppercase mb-4 block font-semibold">Platform Metric</span>
+            <div className="inline-flex items-center gap-2 select-none border border-transparent light:border-transparent bg-background/30 light:bg-background/80 rounded-2xl px-8 py-6 backdrop-blur-md shadow-elevation-md">
+              <h2 className="font-mono text-5xl md:text-8xl font-bold text-primary leading-none">
                 <NumberFlow plugins={[continuous]} value={userCount} />
               </h2>
             </div>
-            <h3 className="font-heading text-lg md:text-2xl font-semibold tracking-tight text-white/95 light:text-ink max-w-2xl mx-auto mt-6">
+            <h3 className="font-heading text-lg md:text-2xl font-semibold text-foreground light:text-foreground max-w-2xl mx-auto mt-6">
               Simulated Users Trust NexTradeX Platform Ecosystem
             </h3>
             <p className="text-muted text-xs font-sans mt-2 max-w-md mx-auto">
@@ -390,7 +390,7 @@ export default function HomePage() {
         </section>
 
         {/* FUNDS SAFU BAND (reserves stats) */}
-        <section className="py-20 bg-canvas-dark light:bg-canvas-light border-b border-hairline-on-dark light:border-hairline-on-light">
+        <section className="py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">
           <div className="max-w-7xl mx-auto px-6">
             <motion.div
               variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
@@ -399,8 +399,8 @@ export default function HomePage() {
               viewport={{ once: true, margin: "-100px" }}
               className="mb-12 text-center lg:text-left"
             >
-              <span className="font-mono text-xs text-primary uppercase tracking-widest mb-3 block font-semibold">Security Guarantee</span>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-primary mb-4 uppercase">FUNDS ARE SAFU</h2>
+              <span className="font-mono text-xs text-primary uppercase mb-3 block font-semibold">Security Guarantee</span>
+              <h2 className="font-heading text-3xl md:text-5xl font-bold text-primary mb-4 uppercase">FUNDS ARE SAFU</h2>
               <p className="text-muted text-sm md:text-base max-w-2xl font-sans">
                 All mock balances are backed 1:1 on our virtual ledger. Verified proof of simulated reserves protects all users.
               </p>
@@ -421,11 +421,11 @@ export default function HomePage() {
                 <motion.div
                   key={idx}
                   variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
-                  className="border-l border-hairline-on-dark light:border-hairline-on-light pl-6 flex flex-col justify-between"
+                  className="border-l border-transparent light:border-transparent pl-6 flex flex-col justify-between"
                 >
-                  <div className="font-mono text-2xl sm:text-3xl font-bold text-primary mb-2 tracking-tight">{item.value}</div>
+                  <div className="font-mono text-2xl sm:text-3xl font-bold text-primary mb-2">{item.value}</div>
                   <div>
-                    <div className="text-white light:text-ink text-sm font-semibold tracking-tight mb-1">{item.label}</div>
+                    <div className="text-foreground light:text-foreground text-sm font-semibold mb-1">{item.label}</div>
                     <div className="text-muted text-xs leading-relaxed font-sans">{item.desc}</div>
                   </div>
                 </motion.div>
@@ -435,7 +435,7 @@ export default function HomePage() {
         </section>
 
         {/* CRYPTOCURRENCIES LIST */}
-        <section className="py-20 bg-canvas-dark light:bg-canvas-light border-b border-hairline-on-dark light:border-hairline-on-light">
+        <section className="py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">
           <div className="max-w-7xl mx-auto px-6">
             <motion.div
               variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
@@ -444,8 +444,8 @@ export default function HomePage() {
               viewport={{ once: true, margin: "-100px" }}
               className="text-center mb-12"
             >
-              <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block font-semibold">Simulation Markets</span>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-white light:text-ink mb-4">Supported Cryptocurrencies</h2>
+              <span className="font-mono text-xs text-primary uppercase mb-4 block font-semibold">Simulation Markets</span>
+              <h2 className="font-heading text-3xl md:text-5xl font-bold text-foreground light:text-foreground mb-4">Supported Cryptocurrencies</h2>
               <p className="text-muted text-sm md:text-base max-w-xl mx-auto font-sans">
                 Discover virtual currencies, lot restrictions, and tick rules routed through our simulation engine.
               </p>
@@ -458,16 +458,16 @@ export default function HomePage() {
               viewport={{ once: true, margin: "-100px" }}
               className="max-w-5xl mx-auto"
             >
-              <div className="bg-surface-card-dark light:bg-canvas-light border border-hairline-on-dark light:border-hairline-on-light rounded-xl overflow-hidden p-6 shadow-elevation-md">
+              <div className="bg-background light:bg-background border border-transparent light:border-transparent rounded-xl overflow-hidden p-6 shadow-elevation-md">
                 {/* Tab Header */}
-                <div className="flex items-center gap-2 border-b border-hairline-on-dark light:border-hairline-on-light pb-4 mb-6">
+                <div className="flex items-center gap-2 border-b border-transparent light:border-transparent pb-4 mb-6">
                   {Object.keys(marketTabs).map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveMarketTab(tab)}
-                      className={`px-4 py-2 text-xs font-semibold rounded-md transition-all duration-200 capitalize ${activeMarketTab === tab
+                      className={`px-4 py-2 text-xs font-semibold rounded-2xl transition-all duration-200 capitalize ${activeMarketTab === tab
                         ? "bg-primary text-on-primary font-bold shadow-glow-primary"
-                        : "text-muted hover:text-white light:hover:text-ink bg-transparent"
+                        : "text-muted hover:text-foreground light:hover:text-foreground bg-transparent"
                         }`}
                     >
                       {tab === "popular" ? "Popular Pairs" : tab === "new" ? "New Listings" : "Top Gainers"}
@@ -477,7 +477,7 @@ export default function HomePage() {
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
-                    <thead className="bg-[#15191e] light:bg-[#f5f5f5] border-b border-hairline-on-dark light:border-hairline-on-light font-heading text-white light:text-ink">
+                    <thead className="bg-background light:bg-[#f5f5f5] border-b border-transparent light:border-transparent font-heading text-foreground light:text-foreground">
                       <tr>
                         <th className="px-6 py-4 font-semibold">Token Pair</th>
                         <th className="px-6 py-4 font-semibold text-right">Last Price</th>
@@ -488,12 +488,12 @@ export default function HomePage() {
                     </thead>
                     <tbody className="divide-y divide-hairline-on-dark light:divide-hairline-on-light font-mono text-muted">
                       {dynamicTabs[activeMarketTab].map((coin, index) => (
-                        <tr key={index} className="hover:bg-surface-elevated-dark/30 light:hover:bg-surface-strong-light/50 transition-colors duration-150 group">
-                          <td className="px-6 py-4 text-white light:text-ink font-semibold flex items-center gap-3">
+                        <tr key={index} className="hover:bg-background/30 light:hover:bg-background/50 transition-colors duration-150 group">
+                          <td className="px-6 py-4 text-foreground light:text-foreground font-semibold flex items-center gap-3">
                             {renderCoinIcon(coin.pair)}
                             <span className="group-hover:text-primary transition-colors">{coin.pair}</span>
                           </td>
-                          <td className="px-6 py-4 text-right text-white light:text-ink font-medium">{coin.price}</td>
+                          <td className="px-6 py-4 text-right text-foreground light:text-foreground font-medium">{coin.price}</td>
                           <td className={`px-6 py-4 text-right font-medium ${coin.isUp ? "text-trading-up" : "text-trading-down"}`}>
                             <span className="inline-flex items-center gap-1 justify-end">
                               {coin.isUp ? "▲" : "▼"} {coin.change}
@@ -501,7 +501,7 @@ export default function HomePage() {
                           </td>
                           <td className="px-6 py-4 text-right">{coin.vol}</td>
                           <td className="px-6 py-4 text-center">
-                            <Button size="sm" className="h-[28px] px-4 font-semibold text-xs text-on-primary bg-primary rounded-sm hover:bg-primary-active transition-all" asChild>
+                            <Button size="sm" className="h-[28px] px-4 font-semibold text-xs text-on-primary bg-primary rounded-xl hover:bg-primary-active transition-all" asChild>
                               <Link to={`/trade/spot?symbol=${coin.rawSymbol || "BTCUSDT"}`}>Trade</Link>
                             </Button>
                           </td>
@@ -517,7 +517,7 @@ export default function HomePage() {
 
 
         {/* PLATFORM VIDEOS SECTION */}
-        <section className="py-20 bg-canvas-dark light:bg-canvas-light border-b border-hairline-on-dark light:border-hairline-on-light">
+        <section className="py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">
           <div className="max-w-7xl mx-auto px-6">
             <motion.div
               variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
@@ -526,8 +526,8 @@ export default function HomePage() {
               viewport={{ once: true, margin: "-100px" }}
               className="text-center mb-12"
             >
-              <span className="font-mono text-xs text-primary uppercase tracking-widest mb-4 block font-semibold">Learn &amp; Explore</span>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-white light:text-ink mb-4">Trixie Explains</h2>
+              <span className="font-mono text-xs text-primary uppercase mb-4 block font-semibold">Learn &amp; Explore</span>
+              <h2 className="font-heading text-3xl md:text-5xl font-bold text-foreground light:text-foreground mb-4">Trixie Explains</h2>
               <p className="text-muted text-sm md:text-base max-w-xl mx-auto font-sans">
                 Your AI trading guide breaks down concepts, strategies, and platform features — one video at a time.
               </p>
@@ -542,7 +542,7 @@ export default function HomePage() {
               className="grid grid-cols-1 lg:grid-cols-3 gap-6"
             >
               {/* Main player */}
-              <div className="lg:col-span-2 bg-surface-card-dark light:bg-canvas-light border border-hairline-on-dark light:border-hairline-on-light rounded-xl overflow-hidden shadow-elevation-md">
+              <div className="lg:col-span-2 bg-background light:bg-background border border-transparent light:border-transparent rounded-xl overflow-hidden shadow-elevation-md">
                 <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
                   <video
                     key={platformVideos[activeVideo].src}
@@ -553,7 +553,7 @@ export default function HomePage() {
                   />
                 </div>
                 <div className="p-5">
-                  <h3 className="font-heading text-lg font-bold text-white light:text-ink mb-1">{platformVideos[activeVideo].title}</h3>
+                  <h3 className="font-heading text-lg font-bold text-foreground light:text-foreground mb-1">{platformVideos[activeVideo].title}</h3>
                   <p className="text-muted text-sm font-sans leading-relaxed">{platformVideos[activeVideo].desc}</p>
                 </div>
               </div>
@@ -566,19 +566,19 @@ export default function HomePage() {
                     <button
                       key={idx}
                       onClick={() => setActiveVideo(idx)}
-                      className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all duration-200 group flex-shrink-0 ${
+                      className={`flex items-center gap-3 p-3 rounded-2xl border text-left transition-all duration-200 group flex-shrink-0 ${
                         activeVideo === idx
                           ? "border-primary/60 bg-primary/10"
-                          : "border-hairline-on-dark light:border-hairline-on-light bg-surface-card-dark light:bg-canvas-light hover:border-primary/30"
+                          : "border-transparent light:border-transparent bg-background light:bg-background hover:border-primary/30"
                       }`}
                     >
-                      <div className={`w-9 h-9 rounded-md flex items-center justify-center flex-shrink-0 ${
-                        activeVideo === idx ? "bg-primary" : "bg-white/5 group-hover:bg-primary/20"
+                      <div className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0 ${
+                        activeVideo === idx ? "bg-primary" : "bg-background group-hover:bg-primary/20"
                       } transition-colors`}>
                         <Play size={14} className={activeVideo === idx ? "text-black" : "text-primary"} fill="currentColor" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-semibold text-white light:text-ink font-heading truncate">{v.title}</p>
+                        <p className="text-xs font-semibold text-foreground light:text-foreground font-heading truncate">{v.title}</p>
                         <p className="text-[10px] text-muted font-sans truncate mt-0.5">{v.desc.slice(0, 60)}…</p>
                       </div>
                     </button>
@@ -590,7 +590,7 @@ export default function HomePage() {
         </section>
 
         {/* SUPPORT + FAQ */}
-        <section className="py-20 bg-canvas-dark light:bg-canvas-light border-b border-hairline-on-dark light:border-hairline-on-light">
+        <section className="py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16">
               {/* Support Card */}
@@ -601,52 +601,52 @@ export default function HomePage() {
                 viewport={{ once: true, margin: "-100px" }}
                 className="lg:col-span-2"
               >
-                <div className="bg-surface-card-dark light:bg-canvas-light border border-hairline-on-dark light:border-hairline-on-light rounded-xl p-8 relative overflow-hidden h-full flex flex-col justify-between shadow-elevation-md interactive-surface">
+                <div className="bg-background light:bg-background border border-transparent light:border-transparent rounded-xl p-8 relative overflow-hidden h-full flex flex-col justify-between shadow-elevation-md interactive-surface">
                   <div className="space-y-6 relative z-10">
-                    <h3 className="font-heading text-2xl md:text-3xl font-bold leading-tight text-white light:text-ink">24x7 Customer Support</h3>
+                    <h3 className="font-heading text-2xl md:text-3xl font-bold leading-tight text-foreground light:text-foreground">24x7 Customer Support</h3>
                     <p className="text-muted text-sm leading-relaxed font-sans">
                       Got questions or issues? Our simulated help center is active around the clock with real-time simulated agents.
                     </p>
 
-                    <div className="space-y-4 font-sans border-t border-hairline-on-dark light:border-hairline-on-light pt-6">
+                    <div className="space-y-4 font-sans border-t border-transparent light:border-transparent pt-6">
                       <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+                        <div className="w-8 h-8 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
                           <Headphones size={16} />
                         </div>
                         <div>
-                          <p className="font-mono text-[10px] text-primary uppercase tracking-widest leading-none mb-1">Help Center</p>
+                          <p className="font-mono text-[10px] text-primary uppercase leading-none mb-1">Help Center</p>
                           <p className="text-xs text-muted leading-relaxed">Visit our support database for documentation answers.</p>
                         </div>
                       </div>
 
                       <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+                        <div className="w-8 h-8 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
                           <Mail size={16} />
                         </div>
                         <div>
-                          <p className="font-mono text-[10px] text-primary uppercase tracking-widest leading-none mb-1">Support Ticket</p>
+                          <p className="font-mono text-[10px] text-primary uppercase leading-none mb-1">Support Ticket</p>
                           <p className="text-xs text-muted leading-relaxed">Raise a virtual ticket to consult with developer desk agents.</p>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-8 relative z-10 border-t border-hairline-on-dark light:border-hairline-on-light pt-6">
-                    <p className="font-mono text-[10px] text-muted uppercase tracking-widest mb-3">Connect with our Creator</p>
+                  <div className="mt-8 relative z-10 border-t border-transparent light:border-transparent pt-6">
+                    <p className="font-mono text-[10px] text-muted uppercase mb-3">Connect with our Creator</p>
                     <div className="flex flex-wrap items-center gap-3">
-                      <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-md bg-[#15191e] light:bg-surface-strong-light border border-hairline-on-dark light:border-hairline-on-light flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
+                      <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-2xl bg-background light:bg-background border border-transparent light:border-transparent flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
                         <img src={xIcon} alt="X" className="w-4 h-4 object-contain brightness-0 invert light:invert-0" />
                       </a>
-                      <a href="mailto:contact@nextradex.sim" className="w-9 h-9 rounded-md bg-[#15191e] light:bg-surface-strong-light border border-hairline-on-dark light:border-hairline-on-light flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
+                      <a href="mailto:contact@nextradex.sim" className="w-9 h-9 rounded-2xl bg-background light:bg-background border border-transparent light:border-transparent flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
                         <img src={gmailIcon} alt="Gmail" className="w-4 h-4 object-contain" />
                       </a>
-                      <a href="https://portfolio-zeta-two-0s3z3wko1s.vercel.app" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-md bg-[#15191e] light:bg-surface-strong-light border border-hairline-on-dark light:border-hairline-on-light flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
+                      <a href="https://portfolio-zeta-two-0s3z3wko1s.vercel.app" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-2xl bg-background light:bg-background border border-transparent light:border-transparent flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
                         <Globe size={16} className="text-muted" />
                       </a>
-                      <a href="https://www.linkedin.com/in/aditya-kalburgi-080b5b267/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-md bg-[#15191e] light:bg-surface-strong-light border border-hairline-on-dark light:border-hairline-on-light flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
+                      <a href="https://www.linkedin.com/in/aditya-kalburgi-080b5b267/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-2xl bg-background light:bg-background border border-transparent light:border-transparent flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
                         <img src={linkedInIcon} alt="LinkedIn" className="w-4 h-4 object-contain" />
                       </a>
-                      <a href="https://github.com/aditykalburgi" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-md bg-[#15191e] light:bg-surface-strong-light border border-hairline-on-dark light:border-hairline-on-light flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
+                      <a href="https://github.com/aditykalburgi" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-2xl bg-background light:bg-background border border-transparent light:border-transparent flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
                         <img src={githubIcon} alt="GitHub" className="w-4 h-4 object-contain brightness-0 invert light:invert-0" />
                       </a>
                     </div>
@@ -662,34 +662,34 @@ export default function HomePage() {
                 viewport={{ once: true, margin: "-100px" }}
                 className="lg:col-span-3 font-sans"
               >
-                <h3 className="font-heading text-2xl md:text-3xl font-bold mb-8 tracking-tight text-white light:text-ink">Frequently Asked Questions</h3>
+                <h3 className="font-heading text-2xl md:text-3xl font-bold mb-8 text-foreground light:text-foreground">Frequently Asked Questions</h3>
                 <Accordion type="single" collapsible className="w-full">
-                  <AccordionItem value="item-1" className="border-b border-hairline-on-dark light:border-hairline-on-light py-2">
-                    <AccordionTrigger className="font-heading text-sm md:text-base font-semibold text-white light:text-ink hover:text-primary transition-colors text-left hover:no-underline py-4">
+                  <AccordionItem value="item-1" className="border-b border-transparent light:border-transparent py-2">
+                    <AccordionTrigger className="font-heading text-sm md:text-base font-semibold text-foreground light:text-foreground hover:text-primary transition-colors text-left hover:no-underline py-4">
                       Is NexTradeX a regulated trading platform?
                     </AccordionTrigger>
                     <AccordionContent className="text-sm text-muted leading-relaxed font-sans pr-6 pt-2 pb-4">
                       NexTradeX operates strictly as a paper trading simulation platform for educational purposes. All trades, orders, funds, and positions are entirely simulated.
                     </AccordionContent>
                   </AccordionItem>
-                  <AccordionItem value="item-2" className="border-b border-hairline-on-dark light:border-hairline-on-light py-2">
-                    <AccordionTrigger className="font-heading text-sm md:text-base font-semibold text-white light:text-ink hover:text-primary transition-colors text-left hover:no-underline py-4">
+                  <AccordionItem value="item-2" className="border-b border-transparent light:border-transparent py-2">
+                    <AccordionTrigger className="font-heading text-sm md:text-base font-semibold text-foreground light:text-foreground hover:text-primary transition-colors text-left hover:no-underline py-4">
                       Do I need actual crypto to use NexTradeX?
                     </AccordionTrigger>
                     <AccordionContent className="text-sm text-muted leading-relaxed font-sans pr-6 pt-2 pb-4">
                       No. All accounts receive immediate mock balances upon login. No credit cards or deposits are required.
                     </AccordionContent>
                   </AccordionItem>
-                  <AccordionItem value="item-3" className="border-b border-hairline-on-dark light:border-hairline-on-light py-2">
-                    <AccordionTrigger className="font-heading text-sm md:text-base font-semibold text-white light:text-ink hover:text-primary transition-colors text-left hover:no-underline py-4">
+                  <AccordionItem value="item-3" className="border-b border-transparent light:border-transparent py-2">
+                    <AccordionTrigger className="font-heading text-sm md:text-base font-semibold text-foreground light:text-foreground hover:text-primary transition-colors text-left hover:no-underline py-4">
                       What simulated contracts are available?
                     </AccordionTrigger>
                     <AccordionContent className="text-sm text-muted leading-relaxed font-sans pr-6 pt-2 pb-4">
                       We support spot trading pairs, leveraged futures with configurable margin structures, and European-style options contracts.
                     </AccordionContent>
                   </AccordionItem>
-                  <AccordionItem value="item-4" className="border-b border-hairline-on-dark light:border-hairline-on-light py-2">
-                    <AccordionTrigger className="font-heading text-sm md:text-base font-semibold text-white light:text-ink hover:text-primary transition-colors text-left hover:no-underline py-4">
+                  <AccordionItem value="item-4" className="border-b border-transparent light:border-transparent py-2">
+                    <AccordionTrigger className="font-heading text-sm md:text-base font-semibold text-foreground light:text-foreground hover:text-primary transition-colors text-left hover:no-underline py-4">
                       How does simulated market data stream?
                     </AccordionTrigger>
                     <AccordionContent className="text-sm text-muted leading-relaxed font-sans pr-6 pt-2 pb-4">
@@ -703,17 +703,17 @@ export default function HomePage() {
         </section>
 
         {/* CTA BAND */}
-        <section className="py-20 bg-canvas-dark light:bg-canvas-light">
+        <section className="py-20 bg-background light:bg-background">
           <div className="max-w-7xl mx-auto px-6">
             <motion.div
               variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
-              className="bg-surface-card-dark light:bg-canvas-light border border-hairline-on-dark light:border-hairline-on-light rounded-xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-elevation-md"
+              className="bg-background light:bg-background border border-transparent light:border-transparent rounded-xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-elevation-md"
             >
               <div className="space-y-2 text-center md:text-left">
-                <h2 className="font-heading text-2xl md:text-3xl font-bold text-white light:text-ink tracking-tight">
+                <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground light:text-foreground">
                   Secure, Low-Fee Trading on NexTradeX
                 </h2>
                 <p className="text-muted text-sm md:text-base font-sans">

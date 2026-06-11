@@ -24,13 +24,13 @@ class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
-          <div className="bg-surface border border-white/[0.08] rounded-2xl p-8 max-w-md w-full text-center shadow-elevation-lg">
+          <div className="bg-surface border border-transparent rounded-2xl p-8 max-w-md w-full text-center shadow-elevation-lg">
             <div className="flex justify-center mb-4">
               <div className="rounded-full bg-trading-down/10 p-4 text-trading-down">
                 <AlertTriangle size={32} />
               </div>
             </div>
-            <h1 className="font-heading text-xl font-bold text-white mb-2">
+            <h1 className="font-heading text-xl font-bold text-foreground mb-2">
               Something went wrong
             </h1>
             <p className="text-muted text-sm mb-6 font-body">
@@ -38,7 +38,7 @@ class ErrorBoundary extends React.Component {
             </p>
             <button
               onClick={this.handleReload}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-active text-ink font-bold rounded-xl text-sm transition-all focus-ring"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-active text-foreground font-bold rounded-xl text-sm transition-all focus-ring"
             >
               <RefreshCw size={16} />
               Reload app

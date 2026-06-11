@@ -348,7 +348,7 @@ export default function AuthPage() {
     return (
       <PageTransition>
         <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12">
-          <Card className="w-full max-w-md overflow-hidden border border-hairline-on-dark light:border-hairline-on-light">
+          <Card className="w-full max-w-md overflow-hidden border border-transparent light:border-transparent">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl">Complete Your Profile</CardTitle>
               <CardDescription className="text-sm mt-1">Choose a username and verify your name to continue.</CardDescription>
@@ -357,7 +357,7 @@ export default function AuthPage() {
               <CardContent className="space-y-5">
                 {/* Username */}
                 <div>
-                  <label htmlFor="setup-username" className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2 block font-semibold">
+                  <label htmlFor="setup-username" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
                     Username <span className="text-trading-down" aria-hidden="true">*</span>
                   </label>
                   <div className="relative min-h-[56px]">
@@ -382,7 +382,7 @@ export default function AuthPage() {
                 {/* First + Last Name */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="setup-firstName" className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2 block font-semibold">
+                    <label htmlFor="setup-firstName" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
                       First Name <span className="text-trading-down" aria-hidden="true">*</span>
                     </label>
                     <div className="relative min-h-[56px]">
@@ -404,7 +404,7 @@ export default function AuthPage() {
                     <FieldError id="setup-firstName-error" message={fieldErrors.firstName} />
                   </div>
                   <div>
-                    <label htmlFor="setup-lastName" className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2 block font-semibold">
+                    <label htmlFor="setup-lastName" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
                       Last Name <span className="text-trading-down" aria-hidden="true">*</span>
                     </label>
                     <div className="relative min-h-[56px]">
@@ -429,7 +429,7 @@ export default function AuthPage() {
 
                 {/* Top-level form error */}
                 {error && (
-                  <div role="alert" aria-live="polite" className="flex items-start gap-2 p-3 rounded-lg bg-trading-down/10 border border-trading-down/20 text-trading-down text-sm">
+                  <div role="alert" aria-live="polite" className="flex items-start gap-2 p-3 rounded-2xl bg-trading-down/10 border border-trading-down/20 text-trading-down text-sm">
                     <AlertCircle size={16} className="mt-0.5 flex-shrink-0" aria-hidden="true" />
                     <span>{error}</span>
                   </div>
@@ -457,13 +457,13 @@ export default function AuthPage() {
   return (
     <PageTransition>
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md overflow-hidden border border-hairline-on-dark light:border-hairline-on-light">
+        <Card className="w-full max-w-md overflow-hidden border border-transparent light:border-transparent">
           <CardHeader className="pb-4">
             {/* Login / Register toggle */}
             <div className="relative mb-6">
-              <div className="flex items-center bg-surface-elevated-dark light:bg-surface-strong-light rounded-xl p-1 border border-hairline-on-dark light:border-hairline-on-light relative overflow-hidden">
+              <div className="flex items-center bg-background light:bg-background rounded-xl p-1 border border-transparent light:border-transparent relative overflow-hidden">
                 <div
-                  className="absolute top-1 bottom-1 rounded-lg bg-primary"
+                  className="absolute top-1 bottom-1 rounded-2xl bg-primary"
                   style={{
                     ...getToggleStyle(),
                     transition: 'transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1), width 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)',
@@ -476,10 +476,10 @@ export default function AuthPage() {
                   aria-controls="auth-form-panel"
                   id="auth-tab-login"
                   onClick={() => { setMode("login"); setFieldErrors({}); setTouched({}); }}
-                  className={`flex-1 font-mono text-xs uppercase tracking-widest px-4 py-2.5 rounded-lg relative z-10 transition-colors duration-300 ${
+                  className={`flex-1 font-mono text-xs uppercase px-4 py-2.5 rounded-2xl relative z-10 transition-colors duration-300 ${
                     mode === "login"
                       ? "text-on-primary font-bold"
-                      : "text-muted hover:text-on-dark light:hover:text-ink"
+                      : "text-muted hover:text-on-dark light:hover:text-foreground"
                   }`}
                 >
                   Login
@@ -491,10 +491,10 @@ export default function AuthPage() {
                   aria-controls="auth-form-panel"
                   id="auth-tab-register"
                   onClick={() => { setMode("register"); setFieldErrors({}); setTouched({}); }}
-                  className={`flex-1 font-mono text-xs uppercase tracking-widest px-4 py-2.5 rounded-lg relative z-10 transition-colors duration-300 ${
+                  className={`flex-1 font-mono text-xs uppercase px-4 py-2.5 rounded-2xl relative z-10 transition-colors duration-300 ${
                     mode === "register"
                       ? "text-on-primary font-bold"
-                      : "text-muted hover:text-on-dark light:hover:text-ink"
+                      : "text-muted hover:text-on-dark light:hover:text-foreground"
                   }`}
                 >
                   Register
@@ -557,7 +557,7 @@ export default function AuthPage() {
             <CardContent className="space-y-5 pb-5">
               {/* Top-level form error */}
               {error && (
-                <div role="alert" aria-live="polite" className="flex items-start gap-2 p-3 rounded-lg bg-trading-down/10 border border-trading-down/20 text-trading-down text-sm">
+                <div role="alert" aria-live="polite" className="flex items-start gap-2 p-3 rounded-2xl bg-trading-down/10 border border-trading-down/20 text-trading-down text-sm">
                   <AlertCircle size={16} className="mt-0.5 flex-shrink-0" aria-hidden="true" />
                   <span>{error}</span>
                 </div>
@@ -565,7 +565,7 @@ export default function AuthPage() {
 
               {/* Username — always visible */}
               <div>
-                <label htmlFor="auth-username" className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2 block font-semibold">
+                <label htmlFor="auth-username" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
                   Username <span className="text-trading-down" aria-hidden="true">*</span>
                 </label>
                 <div className="relative min-h-[56px]">
@@ -601,7 +601,7 @@ export default function AuthPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* First Name */}
                     <div>
-                      <label htmlFor="auth-firstName" className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2 block font-semibold">
+                      <label htmlFor="auth-firstName" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
                         First Name <span className="text-trading-down" aria-hidden="true">*</span>
                       </label>
                       <div className="relative min-h-[56px]">
@@ -625,7 +625,7 @@ export default function AuthPage() {
 
                     {/* Last Name */}
                     <div>
-                      <label htmlFor="auth-lastName" className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2 block font-semibold">
+                      <label htmlFor="auth-lastName" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
                         Last Name <span className="text-trading-down" aria-hidden="true">*</span>
                       </label>
                       <div className="relative min-h-[56px]">
@@ -650,7 +650,7 @@ export default function AuthPage() {
 
                   {/* Email */}
                   <div>
-                    <label htmlFor="auth-email" className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2 block font-semibold">
+                    <label htmlFor="auth-email" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
                       Email Address <span className="text-trading-down" aria-hidden="true">*</span>
                     </label>
                     <div className="relative min-h-[56px]">
@@ -677,7 +677,7 @@ export default function AuthPage() {
 
               {/* Password */}
               <div>
-                <label htmlFor="auth-password" className="font-mono text-[10px] text-muted uppercase tracking-widest mb-2 block font-semibold">
+                <label htmlFor="auth-password" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
                   Password <span className="text-trading-down" aria-hidden="true">*</span>
                 </label>
                 <div className="relative min-h-[56px]">
@@ -727,14 +727,14 @@ export default function AuthPage() {
                 {content.button}
               </Button>
               <div className="relative flex items-center w-full my-1">
-                <div className="flex-grow border-t border-hairline-on-dark light:border-hairline-on-light" />
-                <span className="flex-shrink mx-4 text-muted text-xs font-mono uppercase tracking-wider">or</span>
-                <div className="flex-grow border-t border-hairline-on-dark light:border-hairline-on-light" />
+                <div className="flex-grow border-t border-transparent light:border-transparent" />
+                <span className="flex-shrink mx-4 text-muted text-xs font-mono uppercase">or</span>
+                <div className="flex-grow border-t border-transparent light:border-transparent" />
               </div>
               <Button
                 type="button"
                 variant="outline"
-                className="w-full font-mono flex items-center justify-center gap-2 hover:bg-surface-elevated-dark light:hover:bg-surface-strong-light"
+                className="w-full font-mono flex items-center justify-center gap-2 hover:bg-background light:hover:bg-background"
                 onClick={googleLogin}
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">

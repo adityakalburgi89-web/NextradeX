@@ -42,18 +42,18 @@ export default function FundingPage() {
 
   return (
     <PageTransition>
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8 text-white">
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8 text-foreground">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight font-heading">Funding Ledger</h1>
+          <h1 className="text-2xl font-bold font-heading">Funding Ledger</h1>
           <p className="text-sm text-muted">Manage deposit channels, initiate internal balance transfers, and audit simulated transaction records.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Transfer Form Panel */}
           <div className="lg:col-span-4">
-            <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl shadow-elevation-md overflow-hidden">
-              <CardHeader className="border-b border-hairline-on-dark bg-canvas-dark/20 py-4 px-6">
-                <CardTitle className="text-base font-bold uppercase tracking-wider font-heading">Internal Transfer</CardTitle>
+            <Card className="bg-background border border-transparent rounded-xl shadow-elevation-md overflow-hidden">
+              <CardHeader className="border-b border-transparent bg-background/20 py-4 px-6">
+                <CardTitle className="text-base font-bold uppercase font-heading">Internal Transfer</CardTitle>
                 <CardDescription className="text-xs text-muted">Instantly move mock assets between Spot, Margin, and Futures wallets.</CardDescription>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
@@ -64,7 +64,7 @@ export default function FundingPage() {
                       <select
                         value={transferForm.from}
                         onChange={(e) => setTransferForm({ ...transferForm, from: e.target.value })}
-                        className="w-full bg-canvas-dark border border-hairline-on-dark rounded-lg p-2.5 text-xs font-semibold focus:outline-none focus:border-primary"
+                        className="w-full bg-background border border-transparent rounded-2xl p-2.5 text-xs font-semibold focus:outline-none focus:border-primary"
                       >
                         <option value="Spot">Spot Wallet</option>
                         <option value="Margin">Margin Wallet</option>
@@ -76,7 +76,7 @@ export default function FundingPage() {
                       <select
                         value={transferForm.to}
                         onChange={(e) => setTransferForm({ ...transferForm, to: e.target.value })}
-                        className="w-full bg-canvas-dark border border-hairline-on-dark rounded-lg p-2.5 text-xs font-semibold focus:outline-none focus:border-primary"
+                        className="w-full bg-background border border-transparent rounded-2xl p-2.5 text-xs font-semibold focus:outline-none focus:border-primary"
                       >
                         <option value="Futures">Futures Wallet</option>
                         <option value="Spot">Spot Wallet</option>
@@ -91,7 +91,7 @@ export default function FundingPage() {
                       <select
                         value={transferForm.symbol}
                         onChange={(e) => setTransferForm({ ...transferForm, symbol: e.target.value })}
-                        className="w-full bg-canvas-dark border border-hairline-on-dark rounded-lg p-2.5 text-xs font-semibold focus:outline-none focus:border-primary"
+                        className="w-full bg-background border border-transparent rounded-2xl p-2.5 text-xs font-semibold focus:outline-none focus:border-primary"
                       >
                         <option value="USDT">USDT - Tether</option>
                         <option value="BTC">BTC - Bitcoin</option>
@@ -108,13 +108,13 @@ export default function FundingPage() {
                         value={transferForm.amount}
                         onChange={(e) => setTransferForm({ ...transferForm, amount: e.target.value })}
                         required
-                        className="bg-canvas-dark border-hairline-on-dark text-white font-mono text-xs rounded-lg"
+                        className="bg-background border-transparent text-foreground font-mono text-xs rounded-2xl"
                       />
                     </div>
                   </div>
 
                   {message && (
-                    <div className="p-2.5 rounded-lg bg-trading-up/10 border border-trading-up/20 text-center animate-slide-down">
+                    <div className="p-2.5 rounded-2xl bg-trading-up/10 border border-trading-up/20 text-center animate-slide-down">
                       <span className="text-xs text-trading-up font-semibold">{message}</span>
                     </div>
                   )}
@@ -132,14 +132,14 @@ export default function FundingPage() {
 
           {/* Funding Ledger Audit Feed */}
           <div className="lg:col-span-8 space-y-6">
-            <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md">
-              <CardHeader className="border-b border-hairline-on-dark bg-canvas-dark/20 py-4 px-6 flex flex-row items-center justify-between">
+            <Card className="bg-background border border-transparent rounded-xl overflow-hidden shadow-elevation-md">
+              <CardHeader className="border-b border-transparent bg-background/20 py-4 px-6 flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle className="text-base font-bold uppercase tracking-wider font-heading">Ledger Auditing History</CardTitle>
+                  <CardTitle className="text-base font-bold uppercase font-heading">Ledger Auditing History</CardTitle>
                   <CardDescription className="text-xs text-muted">Complete records of deposits, internal balance transfers, and withdrawals.</CardDescription>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" className="text-[10px] h-8 px-2 border-hairline-on-dark">
+                  <Button variant="outline" className="text-[10px] h-8 px-2 border-transparent">
                     <Download size={12} className="mr-1" /> EXPORT CSV
                   </Button>
                 </div>
@@ -148,7 +148,7 @@ export default function FundingPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-hairline-on-dark text-[10px] font-bold text-muted uppercase tracking-wider font-mono bg-canvas-dark/10">
+                      <tr className="border-b border-transparent text-[10px] font-bold text-muted uppercase font-mono bg-background/10">
                         <th className="py-4 px-6">Transaction ID</th>
                         <th className="py-4 px-6">Type</th>
                         <th className="py-4 px-6 text-right">Amount</th>
@@ -159,7 +159,7 @@ export default function FundingPage() {
                     </thead>
                     <tbody className="divide-y divide-hairline-on-dark font-mono text-xs">
                       {transfers.map((tx) => (
-                        <tr key={tx.id} className="hover:bg-white/[0.01] transition-colors">
+                        <tr key={tx.id} className="hover:bg-background/[0.01] transition-colors">
                           <td className="py-4 px-6 text-muted">TX-{tx.id}</td>
                           <td className="py-4 px-6">
                             <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${

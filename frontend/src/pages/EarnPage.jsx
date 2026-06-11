@@ -47,24 +47,24 @@ export default function EarnPage() {
 
   return (
     <PageTransition>
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8 text-white">
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8 text-foreground">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight font-heading">NexTradeX Earn</h1>
+          <h1 className="text-2xl font-bold font-heading">NexTradeX Earn</h1>
           <p className="text-sm text-muted">Subscribe your idle simulated assets to high-yield staking pools and earn continuous mock rewards.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Staking Products Feed */}
           <div className="lg:col-span-8 space-y-6">
-            <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md">
-              <CardHeader className="border-b border-hairline-on-dark bg-canvas-dark/20 py-4 px-6">
-                <CardTitle className="text-base font-bold uppercase tracking-wider font-heading">Available Staking Pools</CardTitle>
+            <Card className="bg-background border border-transparent rounded-xl overflow-hidden shadow-elevation-md">
+              <CardHeader className="border-b border-transparent bg-background/20 py-4 px-6">
+                <CardTitle className="text-base font-bold uppercase font-heading">Available Staking Pools</CardTitle>
                 <CardDescription className="text-xs text-muted">Select high-rate flexible or locked staking options.</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-hairline-on-dark">
                   {products.map((p) => (
-                    <div key={p.symbol} className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-white/[0.01] transition-colors">
+                    <div key={p.symbol} className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-background/[0.01] transition-colors">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
                           <Coins className="text-primary" size={20} />
@@ -72,7 +72,7 @@ export default function EarnPage() {
                         <div>
                           <h3 className="font-bold font-sans text-sm flex items-center gap-2">
                             {p.symbol} Staking Pool
-                            <span className="text-[9px] font-mono text-muted uppercase border border-hairline-on-dark px-1.5 py-0.5 rounded">{p.category}</span>
+                            <span className="text-[9px] font-mono text-muted uppercase border border-transparent px-1.5 py-0.5 rounded">{p.category}</span>
                           </h3>
                           <span className="text-xs text-muted font-mono">Min. Subscription: {p.min} {p.symbol}</span>
                         </div>
@@ -99,9 +99,9 @@ export default function EarnPage() {
             </Card>
 
             {/* Current Staking Assets */}
-            <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl overflow-hidden shadow-elevation-md">
-              <CardHeader className="border-b border-hairline-on-dark bg-canvas-dark/20 py-4 px-6">
-                <CardTitle className="text-base font-bold uppercase tracking-wider font-heading">My Staked Assets</CardTitle>
+            <Card className="bg-background border border-transparent rounded-xl overflow-hidden shadow-elevation-md">
+              <CardHeader className="border-b border-transparent bg-background/20 py-4 px-6">
+                <CardTitle className="text-base font-bold uppercase font-heading">My Staked Assets</CardTitle>
                 <CardDescription className="text-xs text-muted">Track your active yield subscriptions and accumulated mock payouts.</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
@@ -113,7 +113,7 @@ export default function EarnPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="border-b border-hairline-on-dark text-[10px] font-bold text-muted uppercase tracking-wider font-mono bg-canvas-dark/10">
+                        <tr className="border-b border-transparent text-[10px] font-bold text-muted uppercase font-mono bg-background/10">
                           <th className="py-4 px-6">Asset</th>
                           <th className="py-4 px-6 text-right">Staked Balance</th>
                           <th className="py-4 px-6 text-right">APY</th>
@@ -124,8 +124,8 @@ export default function EarnPage() {
                       </thead>
                       <tbody className="divide-y divide-hairline-on-dark font-mono text-xs">
                         {stakedList.map((s) => (
-                          <tr key={s.id} className="hover:bg-white/[0.01] transition-colors">
-                            <td className="py-4 px-6 font-bold text-white">{s.symbol}</td>
+                          <tr key={s.id} className="hover:bg-background/[0.01] transition-colors">
+                            <td className="py-4 px-6 font-bold text-foreground">{s.symbol}</td>
                             <td className="py-4 px-6 text-right font-semibold">{s.amount.toLocaleString()} {s.symbol}</td>
                             <td className="py-4 px-6 text-right text-trading-up">{s.apy}%</td>
                             <td className="py-4 px-6 text-right text-muted">{s.duration}</td>
@@ -147,9 +147,9 @@ export default function EarnPage() {
 
           {/* Staking Entry Form Sidebar */}
           <div className="lg:col-span-4">
-            <Card className="bg-surface-card-dark border border-hairline-on-dark rounded-xl shadow-elevation-md overflow-hidden">
-              <CardHeader className="border-b border-hairline-on-dark bg-canvas-dark/20 py-4 px-6">
-                <CardTitle className="text-base font-bold uppercase tracking-wider font-heading">Subscribe Asset</CardTitle>
+            <Card className="bg-background border border-transparent rounded-xl shadow-elevation-md overflow-hidden">
+              <CardHeader className="border-b border-transparent bg-background/20 py-4 px-6">
+                <CardTitle className="text-base font-bold uppercase font-heading">Subscribe Asset</CardTitle>
                 <CardDescription className="text-xs text-muted">Stake your mock capital to generate returns.</CardDescription>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
@@ -159,7 +159,7 @@ export default function EarnPage() {
                     <select
                       value={stakeSymbol}
                       onChange={(e) => setStakeSymbol(e.target.value)}
-                      className="w-full bg-canvas-dark border border-hairline-on-dark rounded-lg p-2.5 text-sm font-semibold focus:outline-none focus:border-primary"
+                      className="w-full bg-background border border-transparent rounded-2xl p-2.5 text-sm font-semibold focus:outline-none focus:border-primary"
                     >
                       {products.map(p => (
                         <option key={p.symbol} value={p.symbol}>{p.symbol} - {p.name} ({p.apy}% APY)</option>
@@ -175,10 +175,10 @@ export default function EarnPage() {
                           key={dur}
                           type="button"
                           onClick={() => setStakeDuration(dur)}
-                          className={`py-2 text-[10px] font-bold rounded-lg border transition-all ${
+                          className={`py-2 text-[10px] font-bold rounded-2xl border transition-all ${
                             stakeDuration === dur
                               ? "bg-primary border-primary text-on-primary shadow-glow-primary"
-                              : "border-hairline-on-dark text-muted hover:text-white"
+                              : "border-transparent text-muted hover:text-foreground"
                           }`}
                         >
                           {dur}
@@ -195,12 +195,12 @@ export default function EarnPage() {
                       value={stakeAmount}
                       onChange={(e) => setStakeAmount(e.target.value)}
                       required
-                      className="bg-canvas-dark border-hairline-on-dark text-white font-mono rounded-lg"
+                      className="bg-background border-transparent text-foreground font-mono rounded-2xl"
                     />
                   </div>
 
                   {message && (
-                    <div className="p-2.5 rounded-lg bg-trading-up/10 border border-trading-up/20 text-center animate-slide-down">
+                    <div className="p-2.5 rounded-2xl bg-trading-up/10 border border-trading-up/20 text-center animate-slide-down">
                       <span className="text-xs text-trading-up font-semibold">{message}</span>
                     </div>
                   )}

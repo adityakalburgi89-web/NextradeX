@@ -26,7 +26,7 @@ const ToastContainer = () => {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={`pointer-events-auto flex items-start gap-3 bg-surface border border-white/[0.08] border-l-4 ${BORDER_COLORS[t.type] || "border-l-muted"} rounded-xl px-4 py-3 min-w-[280px] max-w-sm shadow-elevation-lg`}
+          className={`pointer-events-auto flex items-start gap-3 bg-surface border border-transparent border-l-4 ${BORDER_COLORS[t.type] || "border-l-muted"} rounded-xl px-4 py-3 min-w-[280px] max-w-sm shadow-elevation-lg`}
         >
           <div className="mt-0.5">{ICONS[t.type]}</div>
           <p className="text-sm text-foreground font-body flex-1">{t.message}</p>

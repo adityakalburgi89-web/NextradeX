@@ -58,7 +58,7 @@ export default function QuantitySelector({
           aria-label={`${label} amount`}
           aria-invalid={isInvalid}
           aria-describedby={isInvalid ? `${label}-qty-error` : undefined}
-          className="bg-canvas-dark border-hairline-on-dark font-mono text-sm text-white w-full rounded-md pr-12"
+          className="bg-background border-transparent font-mono text-sm text-foreground w-full rounded-2xl pr-12"
         />
         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">
           {symbol}
@@ -72,7 +72,7 @@ export default function QuantitySelector({
             key={pct}
             type="button"
             onClick={() => handlePercentClick(pct)}
-            className="flex-1 min-h-[44px] min-w-[44px] px-3 py-2 bg-canvas-dark hover:bg-white/[0.04] border border-hairline-on-dark text-muted hover:text-white rounded font-mono text-[10px] font-bold transition-all cursor-pointer"
+            className="flex-1 min-h-[44px] min-w-[44px] px-3 py-2 bg-background hover:bg-background border border-transparent text-muted hover:text-foreground rounded font-mono text-[10px] font-bold transition-all cursor-pointer"
           >
             {pct}%
           </button>
@@ -91,7 +91,7 @@ export default function QuantitySelector({
               onChange(((Number(e.target.value) / 100) * max).toFixed(4));
             }
           }}
-          className="w-full h-1.5 bg-canvas-dark rounded-full appearance-none cursor-pointer accent-primary"
+          className="w-full h-1.5 bg-background rounded-full appearance-none cursor-pointer accent-primary"
           aria-label={`${label} percentage slider`}
         />
       )}
@@ -99,7 +99,7 @@ export default function QuantitySelector({
       {/* Available helper text */}
       <div className="flex justify-between items-center">
         <span className="text-[10px] text-muted font-mono">Available</span>
-        <span className="text-[10px] text-white font-mono font-semibold">
+        <span className="text-[10px] text-foreground font-mono font-semibold">
           {max != null ? formatCurrency(max) : "—"} {symbol}
         </span>
       </div>

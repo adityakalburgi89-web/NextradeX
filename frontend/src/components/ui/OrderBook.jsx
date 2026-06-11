@@ -25,16 +25,16 @@ export function OrderBook({ symbol, currentPrice, onSelectPrice, limit = 4 }) {
   }, [currentPrice]);
 
   return (
-    <div className="bg-surface-card-dark border border-hairline-on-dark rounded-xl p-4 font-mono text-xs shadow-elevation-md h-full flex flex-col justify-between">
-      <div className="flex justify-between items-center border-b border-hairline-on-dark pb-2 mb-3">
-        <h4 className="font-heading text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+    <div className="bg-background border border-transparent rounded-xl p-4 font-mono text-xs shadow-elevation-md h-full flex flex-col justify-between">
+      <div className="flex justify-between items-center border-b border-transparent pb-2 mb-3">
+        <h4 className="font-heading text-xs font-bold text-foreground uppercase flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-trading-up animate-pulse"></span>
           Order Book
         </h4>
         <span className="text-[10px] text-muted">{symbol}</span>
       </div>
 
-      <div className="flex justify-between text-muted text-[10px] uppercase font-semibold pb-1 border-b border-white/[0.03] mb-1">
+      <div className="flex justify-between text-muted text-[10px] uppercase font-semibold pb-1 border-b border-transparent mb-1">
         <span>Price(USDT)</span>
         <span>Size</span>
         <span className="text-right">Total</span>
@@ -50,22 +50,22 @@ export function OrderBook({ symbol, currentPrice, onSelectPrice, limit = 4 }) {
             role="button"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectPrice && onSelectPrice(ask.price); }}
-            className="relative flex justify-between items-center h-6 min-h-[44px] hover:bg-white/[0.03] cursor-pointer rounded px-1 group transition-colors"
+            className="relative flex justify-between items-center h-6 min-h-[44px] hover:bg-background cursor-pointer rounded px-1 group transition-colors"
           >
             <div
               className="absolute right-0 top-0 bottom-0 bg-trading-down/5 group-hover:bg-trading-down/10 transition-colors"
               style={{ width: `${ask.percentage}%` }}
             />
             <span className="text-trading-down font-bold relative z-10">{formatCurrency(ask.price)}</span>
-            <span className="text-body relative z-10">{ask.size}</span>
+            <span className="text-foreground relative z-10">{ask.size}</span>
             <span className="text-muted relative z-10 text-right">{ask.total}</span>
           </div>
         ))}
       </div>
 
       {/* Current Spread/Mark Price Banner */}
-      <div className="border-y border-hairline-on-dark py-2.5 my-2 text-center bg-canvas-dark/30 rounded">
-        <span className="text-[10px] text-muted uppercase tracking-wider block">Spread / Mark Price</span>
+      <div className="border-y border-transparent py-2.5 my-2 text-center bg-background/30 rounded">
+        <span className="text-[10px] text-muted uppercase block">Spread / Mark Price</span>
         <span
           onClick={() => onSelectPrice && onSelectPrice(currentPrice)}
           role="button"
@@ -88,14 +88,14 @@ export function OrderBook({ symbol, currentPrice, onSelectPrice, limit = 4 }) {
             role="button"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectPrice && onSelectPrice(bid.price); }}
-            className="relative flex justify-between items-center h-6 min-h-[44px] hover:bg-white/[0.03] cursor-pointer rounded px-1 group transition-colors"
+            className="relative flex justify-between items-center h-6 min-h-[44px] hover:bg-background cursor-pointer rounded px-1 group transition-colors"
           >
             <div
               className="absolute right-0 top-0 bottom-0 bg-trading-up/5 group-hover:bg-trading-up/10 transition-colors"
               style={{ width: `${bid.percentage}%` }}
             />
             <span className="text-trading-up font-bold relative z-10">{formatCurrency(bid.price)}</span>
-            <span className="text-body relative z-10">{bid.size}</span>
+            <span className="text-foreground relative z-10">{bid.size}</span>
             <span className="text-muted relative z-10 text-right">{bid.total}</span>
           </div>
         ))}

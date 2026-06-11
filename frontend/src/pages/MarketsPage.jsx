@@ -214,7 +214,7 @@ export default function MarketsPage() {
         {/* Page Header and search */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h1 className="font-heading text-3xl font-bold tracking-tight text-white light:text-ink">Markets</h1>
+            <h1 className="font-heading text-3xl font-bold text-foreground light:text-foreground">Markets</h1>
             <p className="text-sm leading-relaxed text-muted">
               Browse supported pairs, inspect simulated depth, and choose the market you want to route into the trading workspace.
             </p>
@@ -232,9 +232,9 @@ export default function MarketsPage() {
 
         {/* High-density price table board */}
         <Card className="rounded-xl shadow-elevation-md overflow-hidden">
-          <CardHeader className="border-b border-hairline-on-dark light:border-hairline-on-light bg-canvas-dark/20 py-4 px-6 flex flex-row items-center justify-between">
+          <CardHeader className="border-b border-transparent light:border-transparent bg-background/20 py-4 px-6 flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg font-bold text-white light:text-ink">Price Board</CardTitle>
+              <CardTitle className="text-lg font-bold text-foreground light:text-foreground">Price Board</CardTitle>
               <CardDescription className="mt-1 text-xs text-muted">
                 Streaming symbol prices with instant selection, smoother hover states, and backend-driven pricing.
               </CardDescription>
@@ -248,7 +248,7 @@ export default function MarketsPage() {
             {loading ? (
               <div className="p-6 space-y-4">
                 {[...Array(6)].map((_, idx) => (
-                  <div key={idx} className="flex justify-between items-center py-4 border-b border-hairline-on-dark last:border-0">
+                  <div key={idx} className="flex justify-between items-center py-4 border-b border-transparent last:border-0">
                     <Skeleton className="h-5 w-24" />
                     <Skeleton className="h-5 w-20" />
                     <Skeleton className="h-5 w-16" />
@@ -261,7 +261,7 @@ export default function MarketsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-hairline-on-dark light:border-hairline-on-light text-[11px] font-bold text-muted uppercase tracking-wider font-mono bg-canvas-dark/10 light:bg-surface-soft-light">
+                    <tr className="border-b border-transparent light:border-transparent text-[11px] font-bold text-muted uppercase font-mono bg-background/10 light:bg-background">
                       <th className="py-4 px-6">Asset Pair</th>
                       <th className="py-4 px-6 text-right">Last Price</th>
                       <th className="py-4 px-6 text-right">24H Change</th>
@@ -277,17 +277,17 @@ export default function MarketsPage() {
                       return (
                         <tr
                           key={price.id || price.symbol}
-                          className={`group transition-all hover:bg-canvas-dark/25 light:hover:bg-surface-strong-light/50 cursor-pointer ${isSelected ? "bg-primary/[0.04] border-l-2 border-l-primary" : ""
+                          className={`group transition-all hover:bg-background/25 light:hover:bg-background/50 cursor-pointer ${isSelected ? "bg-primary/[0.04] border-l-2 border-l-primary" : ""
                             }`}
                           onClick={() => setSelectedSymbol(price.symbol)}
                         >
-                          <td className="py-4 px-6 font-mono text-sm text-white light:text-ink">
+                          <td className="py-4 px-6 font-mono text-sm text-foreground light:text-foreground">
                             <div className="flex items-center gap-3">
                               <div className="relative w-7 h-7 flex-shrink-0 flex items-center justify-center">
                                 <img
                                   src={getCryptoIcon(price.symbol)}
                                   alt={price.symbol}
-                                  className="w-7 h-7 object-contain rounded-full bg-white/5 p-0.5"
+                                  className="w-7 h-7 object-contain rounded-full bg-background p-0.5"
                                   onError={(e) => {
                                     e.target.style.display = 'none';
                                     e.target.nextSibling.style.display = 'flex';
@@ -298,12 +298,12 @@ export default function MarketsPage() {
                                 </div>
                               </div>
                               <div>
-                                <span className="group-hover:text-primary transition-colors text-white light:text-ink font-bold">{price.symbol}</span>
-                                <span className="block text-[10px] text-muted font-normal tracking-wide">SPOT</span>
+                                <span className="group-hover:text-primary transition-colors text-foreground light:text-foreground font-bold">{price.symbol}</span>
+                                <span className="block text-[10px] text-muted font-normal">SPOT</span>
                               </div>
                             </div>
                           </td>
-                          <td className="py-4 px-6 text-right font-mono text-sm font-semibold text-white light:text-ink">
+                          <td className="py-4 px-6 text-right font-mono text-sm font-semibold text-foreground light:text-foreground">
                             {formatCurrency(price.currentPrice)}
                           </td>
                           <td className={`py-4 px-6 text-right font-mono text-sm font-semibold ${isUp ? "text-trading-up" : "text-trading-down"
@@ -316,13 +316,13 @@ export default function MarketsPage() {
                           <td className="py-4 px-6 text-right font-mono text-xs text-muted">
                             {formatCurrency(price.highPrice || price.currentPrice)} / {formatCurrency(price.lowPrice || price.currentPrice)}
                           </td>
-                          <td className="py-4 px-6 text-right font-mono text-sm text-white light:text-ink">
+                          <td className="py-4 px-6 text-right font-mono text-sm text-foreground light:text-foreground">
                             {formatCompactNumber(price.volume24h)}
                           </td>
                           <td className="py-4 px-6 text-center">
                             <button
                               type="button"
-                              className="px-4 py-1.5 text-xs font-bold font-mono tracking-wide rounded bg-primary text-on-primary hover:bg-[#f0b90b] transition-all"
+                              className="px-4 py-1.5 text-xs font-bold font-mono rounded bg-primary text-on-primary hover:bg-[#8B84FF] transition-all"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 navigate(`/trade/spot?symbol=${price.symbol}`);
@@ -345,11 +345,11 @@ export default function MarketsPage() {
                   </tbody>
                 </table>
                 {filteredPrices.length > 5 && (
-                  <div className="border-t border-hairline-on-dark light:border-hairline-on-light bg-canvas-dark/10 light:bg-surface-soft-light py-3 text-center">
+                  <div className="border-t border-transparent light:border-transparent bg-background/10 light:bg-background py-3 text-center">
                     <button
                       type="button"
                       onClick={() => setShowAllPrices(!showAllPrices)}
-                      className="text-xs font-bold font-mono text-primary hover:text-white light:hover:text-ink transition-colors"
+                      className="text-xs font-bold font-mono text-primary hover:text-foreground light:hover:text-foreground transition-colors"
                     >
                       {showAllPrices ? "▲ VIEW LESS" : "▼ VIEW MORE"}
                     </button>

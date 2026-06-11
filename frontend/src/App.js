@@ -92,11 +92,6 @@ function App() {
   return (
     <ToastProvider>
       <div className="min-h-screen bg-background text-foreground relative overflow-hidden font-body">
-        {/* Background Ambient Glows */}
-        <div className={`fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] blur-[150px] rounded-full pointer-events-none animate-drift transition-all duration-500 ${theme === 'dark' ? 'bg-primary/[0.07]' : 'bg-primary/[0.03]'}`} />
-        <div className={`fixed bottom-0 right-0 w-[600px] h-[600px] blur-[180px] rounded-full pointer-events-none animate-drift transition-all duration-500 ${theme === 'dark' ? 'bg-secondary/[0.07]' : 'bg-secondary/[0.03]'}`} style={{ animationDelay: "-10s" }} />
-        <div className={`fixed top-1/2 left-0 w-[400px] h-[400px] blur-[120px] rounded-full pointer-events-none animate-drift transition-all duration-500 ${theme === 'dark' ? 'bg-tertiary/[0.03]' : 'bg-tertiary/[0.01]'}`} style={{ animationDelay: "-5s" }} />
-
         {/* Accessibility Skip Nav */}
         <SkipNav />
 
@@ -151,14 +146,14 @@ function App() {
 
         {/* Custom Logout Confirmation Modal */}
         <Dialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
-          <DialogContent className="bg-[#1e2329] border-white/[0.08] p-6 rounded-2xl max-w-sm w-full shadow-elevation-lg text-center space-y-5 text-white">
+          <DialogContent className="bg-background p-6 rounded-[32px] max-w-sm w-full shadow-neo-hover text-center space-y-5 text-foreground">
             <DialogHeader className="space-y-0">
               <div className="flex justify-center mb-4">
                 <div className="rounded-full bg-trading-down/10 p-3 text-trading-down">
                   <LogOut size={24} />
                 </div>
               </div>
-              <DialogTitle className="font-heading text-lg font-bold text-white text-center">Confirm Logout</DialogTitle>
+              <DialogTitle className="font-heading text-lg font-bold text-foreground text-center">Confirm Logout</DialogTitle>
             </DialogHeader>
 
             <p className="text-xs text-muted font-sans -mt-2">
@@ -169,14 +164,14 @@ function App() {
               <button
                 type="button"
                 onClick={() => setShowLogoutConfirm(false)}
-                className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg text-xs font-bold transition-all border border-white/5"
+                className="flex-1 py-2.5 bg-background text-foreground rounded-2xl text-xs font-bold transition-all shadow-neo-sm hover:shadow-neo active:shadow-neo-inset-sm"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex-1 py-2.5 bg-trading-down hover:bg-trading-down/80 text-white rounded-lg text-xs font-bold transition-all"
+                className="flex-1 py-2.5 bg-trading-down hover:bg-trading-down/80 text-white rounded-2xl text-xs font-bold transition-all shadow-neo-sm"
               >
                 Logout
               </button>

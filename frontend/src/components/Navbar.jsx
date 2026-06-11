@@ -11,7 +11,6 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const hamburgerRef = useRef(null);
   const mobileMenuRef = useRef(null);
-  const firstFocusableRef = useRef(null);
 
   // Escape key closes mobile menu
   useEffect(() => {
@@ -40,14 +39,11 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
 
   return (
     <>
-      <nav className={`sticky top-0 z-50 h-16 border-b transition-all duration-300 ${theme === 'dark'
-          ? 'bg-canvas-dark border-hairline-on-dark text-white'
-          : 'bg-canvas-light border-hairline-on-light text-ink'
-        } flex items-center`}>
+      <nav className="sticky top-0 z-50 h-16 bg-background text-foreground shadow-neo-sm transition-all duration-300 flex items-center">
         <div className="flex items-center justify-between px-6 w-full max-w-7xl mx-auto">
           <div className="flex items-center gap-8">
-            <Link to="/" className="font-heading font-bold text-xl tracking-tight flex items-center gap-1 hover:opacity-90 transition-opacity">
-              <span className="text-white light:text-[#181a20]">
+            <Link to="/" className="font-heading font-bold text-xl flex items-center gap-1 hover:opacity-90 transition-opacity">
+              <span className="text-foreground">
                 NexTrade<span className="text-primary">X</span>
               </span>
             </Link>
@@ -57,14 +53,14 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
             {/* Search Button */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="p-2 rounded-lg hover:bg-white/[0.06] transition-colors text-muted hover:text-primary"
+              className="flex h-12 w-12 items-center justify-center rounded-2xl text-muted shadow-neo-sm transition-all hover:text-primary hover:shadow-neo active:shadow-neo-inset-sm"
               title="Search"
             >
               <Search size={18} />
             </button>
 
             {/* Desktop Nav — moved to right side */}
-            <div className="hidden md:flex items-center gap-6 font-mono text-xs tracking-wider">
+            <div className="hidden md:flex items-center gap-6 font-mono text-xs">
               <TradeDropdown theme={theme} />
               <NavLink to="/markets">Markets</NavLink>
             </div>
@@ -73,10 +69,7 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
               <DropdownMenu onOpenChange={setDropdownOpen}>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all duration-300 focus-visible:outline-none ${theme === 'dark'
-                        ? 'bg-surface-card-dark border-hairline-on-dark hover:bg-surface-elevated-dark'
-                        : 'bg-white border-hairline-on-light hover:bg-surface-soft-light'
-                      }`}
+                    className="flex min-h-11 items-center gap-2 rounded-2xl bg-background px-3 py-1.5 shadow-neo-sm transition-all duration-300 hover:shadow-neo focus-visible:outline-none"
                     aria-haspopup="true"
                     aria-expanded={dropdownOpen}
                   >
@@ -89,15 +82,12 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className={`rounded-xl shadow-elevation-lg py-2 min-w-[180px] border z-50 ${theme === 'dark'
-                      ? 'bg-surface-card-dark border-hairline-on-dark text-white'
-                      : 'bg-white border-hairline-on-light text-ink'
-                    }`}
+                  className="z-50 min-w-[180px] rounded-[24px] bg-background py-2 text-foreground shadow-neo"
                 >
                   <DropdownMenuItem asChild>
                     <Link
                       to="/profile"
-                      className="flex items-center gap-3 px-4 py-2 text-xs w-full hover:bg-white/[0.04] hover:text-primary transition-colors font-semibold cursor-pointer"
+                      className="flex items-center gap-3 px-4 py-2 text-xs w-full hover:bg-background hover:text-primary transition-colors font-semibold cursor-pointer"
                     >
                       <User size={14} />
                       Profile
@@ -106,17 +96,17 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
                   <DropdownMenuItem asChild>
                     <Link
                       to="/wallets"
-                      className="flex items-center gap-3 px-4 py-2 text-xs w-full hover:bg-white/[0.04] hover:text-primary transition-colors font-semibold cursor-pointer"
+                      className="flex items-center gap-3 px-4 py-2 text-xs w-full hover:bg-background hover:text-primary transition-colors font-semibold cursor-pointer"
                     >
                       <Layers size={14} />
                       Wallets
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator className={`my-1 border-t ${theme === 'dark' ? 'border-hairline-on-dark' : 'border-hairline-on-light'}`} />
+                  <DropdownMenuSeparator className="my-2" />
                   <DropdownMenuItem asChild>
                     <button
                       onClick={triggerLogoutConfirm}
-                      className="flex items-center gap-3 px-4 py-2 text-xs w-full text-left hover:bg-white/[0.04] hover:text-trading-down transition-colors font-semibold cursor-pointer"
+                      className="flex items-center gap-3 px-4 py-2 text-xs w-full text-left hover:bg-background hover:text-trading-down transition-colors font-semibold cursor-pointer"
                     >
                       <LogOut size={14} />
                       Logout
@@ -138,7 +128,7 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-white/[0.06] transition-all duration-300 text-muted hover:text-primary group"
+              className="flex h-12 w-12 items-center justify-center rounded-2xl text-muted shadow-neo-sm transition-all duration-300 hover:text-primary hover:shadow-neo active:shadow-neo-inset-sm group"
               title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               <div className="relative w-[18px] h-[18px]">
@@ -162,7 +152,7 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
             {/* Mobile hamburger */}
             <button
               ref={hamburgerRef}
-              className="md:hidden p-2 rounded-lg hover:bg-white/[0.06] transition-colors"
+              className="md:hidden flex h-12 w-12 items-center justify-center rounded-2xl text-muted shadow-neo-sm transition-all hover:text-primary hover:shadow-neo active:shadow-neo-inset-sm"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileMenuOpen}
@@ -182,41 +172,40 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
           role="dialog"
           aria-modal="true"
           aria-label="Navigation menu"
-          className={`md:hidden border-t animate-slide-down ${theme === 'dark' ? 'bg-canvas-dark border-hairline-on-dark text-white' : 'bg-canvas-light border-hairline-on-light text-ink'
-          }`}>
+          className="md:hidden animate-slide-down bg-background text-foreground shadow-neo">
           <div className="flex justify-end px-4 pt-3">
             <button
               onClick={() => setMobileMenuOpen(false)}
-              className="p-2 rounded-lg hover:bg-white/[0.06] transition-colors"
+              className="flex h-12 w-12 items-center justify-center rounded-2xl text-muted shadow-neo-sm transition-all hover:text-primary hover:shadow-neo"
               aria-label="Close menu"
             >
               <X size={20} />
             </button>
           </div>
           <div className="px-6 py-4 space-y-1 font-mono text-sm">
-            <Link to="/trade/spot" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Spot Trading</Link>
-            <Link to="/trade/futures" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Futures Trading</Link>
-            <Link to="/trade/options" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Options Trading</Link>
-            <div className={`h-[1px] my-3 ${theme === 'dark' ? 'bg-hairline-on-dark' : 'bg-hairline-on-light'}`} />
-            <Link to="/markets" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Markets</Link>
+            <Link to="/trade/spot" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Spot Trading</Link>
+            <Link to="/trade/futures" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Futures Trading</Link>
+            <Link to="/trade/options" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Options Trading</Link>
+            <div className="glow-line my-3" />
+            <Link to="/markets" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Markets</Link>
             {isLoggedIn && (
               <>
-                <Link to="/wallets" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Wallets</Link>
-                <Link to="/orders" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Orders</Link>
-                <Link to="/analytics" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Analytics</Link>
+                <Link to="/wallets" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Wallets</Link>
+                <Link to="/orders" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Orders</Link>
+                <Link to="/analytics" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Analytics</Link>
               </>
             )}
             {isLoggedIn ? (
               <>
-                <div className={`h-[1px] my-3 ${theme === 'dark' ? 'bg-hairline-on-dark' : 'bg-hairline-on-light'}`} />
-                <Link to="/profile" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Profile</Link>
-                <button onClick={() => { triggerLogoutConfirm(); setMobileMenuOpen(false); }} className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-trading-down transition-colors w-full text-left">Logout</button>
+                <div className="glow-line my-3" />
+                <Link to="/profile" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Profile</Link>
+                <button onClick={() => { triggerLogoutConfirm(); setMobileMenuOpen(false); }} className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-trading-down transition-colors w-full text-left">Logout</button>
               </>
             ) : (
               <>
-                <div className={`h-[1px] my-3 ${theme === 'dark' ? 'bg-hairline-on-dark' : 'bg-hairline-on-light'}`} />
-                <Link to="/auth?mode=login" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
-                <Link to="/auth?mode=register" className="block py-3 px-3 rounded-lg hover:bg-white/[0.04] text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
+                <div className="glow-line my-3" />
+                <Link to="/auth?mode=login" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
+                <Link to="/auth?mode=register" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
               </>
             )}
           </div>
