@@ -12,7 +12,6 @@ import xIcon from "../assets/Icons/x.com_icon.png";
 import linkedInIcon from "../assets/Icons/LinkedIn_icon.svg.png";
 import githubIcon from "../assets/Icons/github_icon.png";
 import gmailIcon from "../assets/Icons/Gmail_icon_svg.webp";
-import tradingVideo from "../assets/videos/TradingVid.mp4";
 import qrCodeImg from "../assets/QrCode/QrCode.png";
 
 // Platform Videos
@@ -129,6 +128,10 @@ export default function HomePage() {
   const [prices, setPrices] = useState([]);
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [activeVideo, setActiveVideo] = useState(0);
+  const btcData = prices.find(p => p.symbol === "BTCUSDT");
+  const btcPrice = btcData ? Number(btcData.currentPrice) : 96482.50;
+  const btcChange = btcData ? Number(btcData.percentChange24h) : 3.45;
+  const isBtcUp = btcChange >= 0;
 
   // Reduced motion hook
   const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -146,14 +149,14 @@ export default function HomePage() {
   };
 
   const platformVideos = [
-    { src: vidExplainer,      title: "NexTradeX Overview",        desc: "A complete walkthrough of the NexTradeX simulated trading platform and its core features." },
-    { src: vidAboutCrypto,    title: "About Cryptocurrency",       desc: "Understand what cryptocurrency is, how blockchain works, and why it matters for traders." },
-    { src: vidCryptoTrading,  title: "Crypto Trading Basics",      desc: "Learn the fundamentals of buying, selling, and managing crypto positions on an exchange." },
-    { src: vidHowPriceWorks,  title: "How Price Works",            desc: "Discover how supply and demand, order books, and market makers drive asset prices." },
-    { src: vidHowToTrade,     title: "How To Trade",               desc: "Step-by-step guide to placing spot, margin, and futures orders on NexTradeX." },
-    { src: vidRiskManagement, title: "Risk Management",            desc: "Essential strategies for stop-losses, position sizing, and protecting your capital." },
-    { src: vidTraders,        title: "Meet The Traders",           desc: "Explore different trader profiles — scalpers, swing traders, and long-term holders." },
-    { src: vidTradingRisk,    title: "Understanding Trading Risk", desc: "A deep dive into volatility, leverage risk, and how to trade responsibly." },
+    { src: vidExplainer, title: "NexTradeX Overview", desc: "A complete walkthrough of the NexTradeX simulated trading platform and its core features." },
+    { src: vidAboutCrypto, title: "About Cryptocurrency", desc: "Understand what cryptocurrency is, how blockchain works, and why it matters for traders." },
+    { src: vidCryptoTrading, title: "Crypto Trading Basics", desc: "Learn the fundamentals of buying, selling, and managing crypto positions on an exchange." },
+    { src: vidHowPriceWorks, title: "How Price Works", desc: "Discover how supply and demand, order books, and market makers drive asset prices." },
+    { src: vidHowToTrade, title: "How To Trade", desc: "Step-by-step guide to placing spot, margin, and futures orders on NexTradeX." },
+    { src: vidRiskManagement, title: "Risk Management", desc: "Essential strategies for stop-losses, position sizing, and protecting your capital." },
+    { src: vidTraders, title: "Meet The Traders", desc: "Explore different trader profiles — scalpers, swing traders, and long-term holders." },
+    { src: vidTradingRisk, title: "Understanding Trading Risk", desc: "A deep dive into volatility, leverage risk, and how to trade responsibly." },
   ];
 
   useEffect(() => {
@@ -259,75 +262,165 @@ export default function HomePage() {
     <PageTransition>
       <main className="w-full text-foreground light:text-foreground bg-background light:bg-background">
         {/* HERO SECTION BAND (Full-Bleed bg-background) */}
-        <section className="relative overflow-hidden py-20 md:py-32 border-b border-transparent light:border-transparent bg-background light:bg-background min-h-[calc(100vh-64px)] flex items-center">
-          {/* Video Background */}
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover z-0 opacity-60 pointer-events-none"
-          >
-            <source src={tradingVideo} type="video/mp4" />
-          </video>
-          {/* Dark Overlay Gradient to maintain contrast and blend the video */}
-          <div className="absolute inset-0 bg-gradient-to-b from-canvas-dark/10 via-canvas-dark/70 to-canvas-dark light:from-canvas-light/10 light:via-canvas-light/70 light:to-canvas-light z-0" />
-
+        <section className="relative overflow-hidden py-20 lg:py-32 border-b border-transparent light:border-transparent bg-background light:bg-background min-h-[calc(100vh-64px)] flex items-center">
           {/* Subtle background ambient mesh */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/[0.05] blur-[160px] pointer-events-none z-0" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/[0.03] blur-[160px] pointer-events-none z-0" />
 
-          <motion.div
-            className="max-w-7xl mx-auto px-6 relative z-10 w-full text-left"
-            variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : staggerContainer}
-            initial="hidden"
-            animate="visible"
-          >
-            {/* Display Headline - Text Reveal */}
-            <div className="overflow-hidden">
-              <motion.h1
-                variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : textReveal}
-                className="font-heading text-4xl sm:text-5xl md:text-[60px] lg:text-[72px] font-bold leading-[1.1] mb-6"
+          <div className="max-w-7xl mx-auto px-6 relative z-10 w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+
+              {/* Left Column: Content */}
+              <motion.div
+                className="lg:col-span-7 text-left flex flex-col items-start"
+                variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : staggerContainer}
+                initial="hidden"
+                animate="visible"
               >
-                TRADE WITH. <br />
-                <span className="text-primary">MATHEMATICAL PRECISION</span>
-              </motion.h1>
+                {/* Display Headline - Text Reveal */}
+                <div className="overflow-hidden w-full">
+                  <motion.h1
+                    variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : textReveal}
+                    className="font-heading text-4xl sm:text-5xl md:text-[60px] lg:text-[72px] font-bold leading-[1.1] mb-6"
+                  >
+                    TRADE WITH. <br />
+                    <span className="text-primary">MATHEMATICAL PRECISION</span>
+                  </motion.h1>
+                </div>
+
+                {/* Subtext */}
+                <motion.p
+                  variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : {
+                    hidden: { opacity: 0, y: 25 },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      transition: { duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.15 }
+                    }
+                  }}
+                  className="text-muted text-base md:text-lg max-w-2xl mb-10 leading-relaxed font-sans"
+                >
+                  Experience high-density simulated trading, real-time depth visualizations, and custom order matching. Zero risk, professional-grade tools.
+                </motion.p>
+
+                {/* Action Buttons */}
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0, y: 20 },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }
+                    }
+                  }}
+                  className="flex flex-col sm:flex-row items-center gap-4 justify-start w-full sm:w-auto"
+                >
+                  <Button variant="primaryPill" className="w-full sm:w-auto" asChild>
+                    <Link to="/auth">Start Trading</Link>
+                  </Button>
+                  <Button variant="outline" className="w-full sm:w-auto text-foreground light:text-foreground hover:bg-background light:hover:bg-background" asChild>
+                    <Link to="/markets">View Markets</Link>
+                  </Button>
+                </motion.div>
+              </motion.div>
+
+              {/* Right Column: Visual Tactile Neumorphic Illustration */}
+              <div className="lg:col-span-5 flex items-center justify-center relative w-full max-w-md mx-auto lg:max-w-none h-[420px] md:h-[480px]">
+
+                {/* Concentric Neumorphic Circles (Ambient Motion) */}
+                <motion.div
+                  className="absolute w-[300px] h-[300px] md:w-[360px] md:h-[360px] rounded-full shadow-neo flex items-center justify-center bg-background pointer-events-none"
+                  animate={prefersReducedMotion ? {} : { y: [0, -8, 0] }}
+                  transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+                >
+                  <div className="w-[240px] h-[240px] md:w-[290px] md:h-[290px] rounded-full shadow-neo-inset flex items-center justify-center bg-background">
+                    <div className="w-[180px] h-[180px] md:w-[220px] md:h-[220px] rounded-full shadow-neo flex items-center justify-center bg-background">
+                      <div className="w-[120px] h-[120px] md:w-[150px] md:h-[150px] rounded-full shadow-neo-inset-deep flex items-center justify-center bg-background" />
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Card 1: Interactive Live Price Ticker (Molded Surface) */}
+                <motion.div
+                  className="absolute top-4 left-0 md:-left-6 bg-background p-5 rounded-[32px] shadow-neo w-[220px] md:w-[240px] cursor-pointer text-left"
+                  animate={prefersReducedMotion ? {} : { y: [0, -12, 0] }}
+                  transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.2 }}
+                  whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-2xl shadow-neo-inset flex items-center justify-center bg-background">
+                      <img src={btcIcon} className="w-6 h-6 object-contain" alt="BTC" />
+                    </div>
+                    <div>
+                      <h4 className="font-heading text-sm font-bold text-foreground">BTC / USDT</h4>
+                      <p className="text-[10px] text-muted font-sans font-medium">Bitcoin</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-3 px-3.5 py-2.5 rounded-2xl shadow-neo-inset bg-background font-mono">
+                    <div className="text-[10px] text-muted mb-0.5">Live Price</div>
+                    <div className="text-sm font-bold text-primary flex items-center justify-between">
+                      <span>
+                        $<NumberFlow value={btcPrice} format={{ minimumFractionDigits: 2, maximumFractionDigits: 2 }} />
+                      </span>
+                      <span className={`text-[10px] font-semibold ${isBtcUp ? "text-trading-up" : "text-trading-down"}`}>
+                        {btcChange >= 0 ? "+" : ""}{btcChange.toFixed(2)}%
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="w-full h-8 shadow-neo-inset-sm rounded-xl overflow-hidden bg-background relative flex items-center px-1">
+                    <svg className="w-full h-6 stroke-primary stroke-[2] fill-none overflow-visible">
+                      <path d="M 0 16 Q 15 6, 30 18 T 60 10 T 90 20 T 120 8 T 150 14 T 180 6 T 210 16" />
+                    </svg>
+                  </div>
+                </motion.div>
+
+                {/* Card 2: Interactive Depth Matching Wells */}
+                <motion.div
+                  className="absolute bottom-4 right-0 md:-right-6 bg-background p-5 rounded-[32px] shadow-neo w-[200px] md:w-[220px] cursor-pointer text-left"
+                  animate={prefersReducedMotion ? {} : { y: [0, -10, 0] }}
+                  transition={{ repeat: Infinity, duration: 5.5, ease: "easeInOut", delay: 0.8 }}
+                  whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                >
+                  <h4 className="font-heading text-[10px] font-bold text-muted uppercase tracking-wider mb-3">Matching Engine</h4>
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-trading-up font-bold">BID</span>
+                      <span className="font-mono text-foreground font-semibold">
+                        {(btcPrice - 0.50).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                      <span className="font-mono text-muted">0.450 BTC</span>
+                    </div>
+                    <div className="h-[1px] bg-gradient-to-r from-transparent via-muted/20 to-transparent" />
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-trading-down font-bold">ASK</span>
+                      <span className="font-mono text-foreground font-semibold">
+                        {(btcPrice + 1.00).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                      <span className="font-mono text-muted">1.124 BTC</span>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Floating mini currency tokens with spring rotation */}
+                <motion.div
+                  className="absolute top-1/2 left-1/2 -translate-x-[115px] -translate-y-[115px] w-12 h-12 rounded-full shadow-neo flex items-center justify-center bg-background cursor-pointer"
+                  whileHover={{ scale: 1.15, rotate: 15 }}
+                >
+                  <img src={ethIcon} className="w-6 h-6 object-contain" alt="ETH" />
+                </motion.div>
+
+                <motion.div
+                  className="absolute bottom-1/2 right-1/2 translate-x-[120px] translate-y-[100px] w-12 h-12 rounded-full shadow-neo flex items-center justify-center bg-background cursor-pointer"
+                  whileHover={{ scale: 1.15, rotate: -15 }}
+                >
+                  <img src={solIcon} className="w-6 h-6 object-contain" alt="SOL" />
+                </motion.div>
+
+              </div>
+
             </div>
-
-            {/* Subtext */}
-            <motion.p
-              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : {
-                hidden: { opacity: 0, y: 25 },
-                visible: {
-                  opacity: 1,
-                  y: 0,
-                  transition: { duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.15 }
-                }
-              }}
-              className="text-muted text-base md:text-lg max-w-2xl mb-10 leading-relaxed font-sans"
-            >
-              Experience high-density simulated trading, real-time depth visualizations, and custom order matching. Zero risk, professional-grade tools.
-            </motion.p>
-
-            {/* Action Buttons */}
-            <motion.div
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: {
-                  opacity: 1,
-                  y: 0,
-                  transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }
-                }
-              }}
-              className="flex flex-col sm:flex-row items-center gap-4 justify-start"
-            >
-              <Button variant="primaryPill" className="w-full sm:w-auto" asChild>
-                <Link to="/auth">Start Trading</Link>
-              </Button>
-              <Button variant="outline" className="w-full sm:w-auto text-foreground light:text-foreground hover:bg-background light:hover:bg-background" asChild>
-                <Link to="/markets">View Markets</Link>
-              </Button>
-            </motion.div>
-          </motion.div>
+          </div>
         </section>
 
         {/* TRUST BADGES GRID (Flat surface cards) */}
@@ -566,15 +659,13 @@ export default function HomePage() {
                     <button
                       key={idx}
                       onClick={() => setActiveVideo(idx)}
-                      className={`flex items-center gap-3 p-3 rounded-2xl border text-left transition-all duration-200 group flex-shrink-0 ${
-                        activeVideo === idx
+                      className={`flex items-center gap-3 p-3 rounded-2xl border text-left transition-all duration-200 group flex-shrink-0 ${activeVideo === idx
                           ? "border-primary/60 bg-primary/10"
                           : "border-transparent light:border-transparent bg-background light:bg-background hover:border-primary/30"
-                      }`}
+                        }`}
                     >
-                      <div className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-                        activeVideo === idx ? "bg-primary" : "bg-background group-hover:bg-primary/20"
-                      } transition-colors`}>
+                      <div className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0 ${activeVideo === idx ? "bg-primary" : "bg-background group-hover:bg-primary/20"
+                        } transition-colors`}>
                         <Play size={14} className={activeVideo === idx ? "text-black" : "text-primary"} fill="currentColor" />
                       </div>
                       <div className="min-w-0">
