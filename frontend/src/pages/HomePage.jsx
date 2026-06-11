@@ -707,8 +707,8 @@ export default function HomePage() {
                         setShouldAutoplay(true);
                       }}
                       className={`flex items-center gap-3 p-3 rounded-2xl border text-left transition-all duration-200 group flex-shrink-0 ${activeVideo === idx
-                          ? "border-primary/60 bg-primary/10"
-                          : "border-transparent light:border-transparent bg-background light:bg-background hover:border-primary/30"
+                        ? "border-primary/60 bg-primary/10"
+                        : "border-transparent light:border-transparent bg-background light:bg-background hover:border-primary/30"
                         }`}
                     >
                       <div className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0 ${activeVideo === idx ? "bg-primary" : "bg-background group-hover:bg-primary/20"
