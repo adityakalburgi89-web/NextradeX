@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import NumberFlow, { continuous } from '@number-flow/react';
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -139,6 +139,13 @@ export default function HomePage() {
   const [prices, setPrices] = useState([]);
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [activeVideo, setActiveVideo] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [shouldAutoplay, setShouldAutoplay] = useState(false);
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    setIsPlaying(shouldAutoplay);
+  }, [activeVideo, shouldAutoplay]);
   const btcData = prices.find(p => p.symbol === "BTCUSDT");
   const btcPrice = btcData ? Number(btcData.currentPrice) : 96482.50;
   const btcChange = btcData ? Number(btcData.percentChange24h) : 3.45;
@@ -657,12 +664,30 @@ export default function HomePage() {
               <div className="lg:col-span-2 bg-background light:bg-background border border-transparent light:border-transparent rounded-xl overflow-hidden shadow-elevation-md">
                 <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
                   <video
+                    ref={videoRef}
                     key={platformVideos[activeVideo].src}
                     src={platformVideos[activeVideo].src}
                     controls
-                    autoPlay
+                    autoPlay={shouldAutoplay}
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                    onEnded={() => setIsPlaying(false)}
                     className="absolute inset-0 w-full h-full object-cover bg-black"
                   />
+                  {!isPlaying && (
+                    <div
+                      onClick={() => {
+                        if (videoRef.current) {
+                          videoRef.current.play().catch((err) => console.error(err));
+                        }
+                      }}
+                      className="absolute inset-0 flex items-center justify-center bg-black/45 cursor-pointer group transition-all duration-300 z-10"
+                    >
+                      <div className="w-16 h-16 rounded-full bg-primary/20 backdrop-blur-md border border-primary/40 flex items-center justify-center text-primary shadow-glow-primary group-hover:scale-110 group-hover:bg-primary/30 transition-all duration-300">
+                        <Play size={28} className="text-primary fill-primary ml-1" />
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="p-5">
                   <h3 className="font-heading text-lg font-bold text-foreground light:text-foreground mb-1">{platformVideos[activeVideo].title}</h3>
@@ -677,7 +702,10 @@ export default function HomePage() {
                   return (
                     <button
                       key={idx}
-                      onClick={() => setActiveVideo(idx)}
+                      onClick={() => {
+                        setActiveVideo(idx);
+                        setShouldAutoplay(true);
+                      }}
                       className={`flex items-center gap-3 p-3 rounded-2xl border text-left transition-all duration-200 group flex-shrink-0 ${activeVideo === idx
                           ? "border-primary/60 bg-primary/10"
                           : "border-transparent light:border-transparent bg-background light:bg-background hover:border-primary/30"
