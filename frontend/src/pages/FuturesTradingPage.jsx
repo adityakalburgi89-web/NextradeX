@@ -950,7 +950,7 @@ export default function FuturesTradingPage() {
                       <Button
                         type="button"
                         onClick={() => handleSubmitOrder("BUY")}
-                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-foreground rounded-2xl shadow-elevation-sm"
+                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-white rounded-2xl shadow-elevation-sm"
                         variant="tradingUp"
                         loading={loading}
                       >
@@ -959,7 +959,7 @@ export default function FuturesTradingPage() {
                       <Button
                         type="button"
                         onClick={() => handleSubmitOrder("SELL")}
-                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-foreground rounded-2xl shadow-elevation-sm"
+                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-white rounded-2xl shadow-elevation-sm"
                         variant="tradingDown"
                         loading={loading}
                       >
@@ -971,7 +971,7 @@ export default function FuturesTradingPage() {
                       <Button
                         type="button"
                         onClick={() => handleSubmitOrder("SELL")}
-                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-foreground rounded-2xl shadow-elevation-sm"
+                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-white rounded-2xl shadow-elevation-sm"
                         variant="tradingDown"
                         loading={loading}
                       >
@@ -980,7 +980,7 @@ export default function FuturesTradingPage() {
                       <Button
                         type="button"
                         onClick={() => handleSubmitOrder("BUY")}
-                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-foreground rounded-2xl shadow-elevation-sm"
+                        className="flex-1 font-mono text-xs uppercase py-3 font-bold min-h-[48px] text-white rounded-2xl shadow-elevation-sm"
                         variant="tradingUp"
                         loading={loading}
                       >
@@ -1040,12 +1040,12 @@ export default function FuturesTradingPage() {
                 {/* Quick actions grid */}
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <Link to="/wallets" className="flex-1">
-                    <button className="w-full py-2 bg-[#6C63FF] hover:bg-[#6C63FF]/90 text-[#3D4852] rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <button className="w-full py-2 bg-[#6C63FF] hover:bg-[#6C63FF]/90 text-white rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
                       DEPOSIT
                     </button>
                   </Link>
                   <Link to="/wallets" className="flex-1">
-                    <button className="w-full py-2 bg-background hover:bg-background border border-transparent text-foreground rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <button className="w-full py-2 bg-[#3D4852] hover:bg-[#3D4852]/90 text-white rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
                       TRANSFER
                     </button>
                   </Link>

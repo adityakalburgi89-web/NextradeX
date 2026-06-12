@@ -25,9 +25,9 @@ const buttonVariants = cva(
                 danger:
                     "bg-trading-down text-foreground px-6 py-3 shadow-neo hover:-translate-y-0.5 hover:shadow-neo-hover active:shadow-neo-inset-sm",
                 tradingUp:
-                    "bg-trading-up text-foreground font-semibold px-5 py-2 shadow-neo hover:-translate-y-0.5 hover:shadow-neo-hover",
+                    "bg-trading-up text-white font-semibold px-5 py-2 shadow-neo hover:-translate-y-0.5 hover:shadow-neo-hover",
                 tradingDown:
-                    "bg-trading-down text-foreground font-semibold px-5 py-2 shadow-neo hover:-translate-y-0.5 hover:shadow-neo-hover",
+                    "bg-trading-down text-white font-semibold px-5 py-2 shadow-neo hover:-translate-y-0.5 hover:shadow-neo-hover",
                 subscribe:
                     "bg-primary text-on-primary text-xs font-bold px-4 py-1.5 h-8 min-h-8 shadow-neo-sm hover:bg-primary-active",
             },
