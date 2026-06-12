@@ -164,21 +164,64 @@ export async function updateUserProfile(payload) {
   return handleResponse(res);
 }
 
+export function cachePrices(prices) {
+  try {
+    localStorage.setItem("nextradex_cached_prices", JSON.stringify(prices));
+  } catch (e) {
+    console.warn("[API] Failed to cache prices:", e.message);
+  }
+}
+
+export function getCachedPrices() {
+  try {
+    const cached = localStorage.getItem("nextradex_cached_prices");
+    return cached ? JSON.parse(cached) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
 // MARKET
 export async function fetchAllPrices() {
   console.log("[API] GET /market/prices");
-  const res = await fetch(`${API_BASE_URL}/market/prices`,
-    createFetchOptions("GET")
-  );
-  return handleResponse(res);
+  try {
+    const res = await fetch(`${API_BASE_URL}/market/prices`,
+      createFetchOptions("GET")
+    );
+    const data = await handleResponse(res);
+    if (data?.data) {
+      cachePrices(data.data);
+    }
+    return data;
+  } catch (err) {
+    console.warn("[API] fetchAllPrices failed, falling back to cache:", err.message);
+    const cached = getCachedPrices();
+    if (cached) {
+      return { data: cached, isFallback: true };
+    }
+    throw err;
+  }
 }
 
 export async function fetchPrice(symbol) {
   console.log("[API] GET /market/price/:symbol");
-  const res = await fetch(`${API_BASE_URL}/market/price/${encodeURIComponent(symbol)}`,
-    createFetchOptions("GET")
-  );
-  return handleResponse(res);
+  try {
+    const res = await fetch(`${API_BASE_URL}/market/price/${encodeURIComponent(symbol)}`,
+      createFetchOptions("GET")
+    );
+    const data = await handleResponse(res);
+    return data;
+  } catch (err) {
+    console.warn(`[API] fetchPrice for ${symbol} failed, checking cache:`, err.message);
+    const cachedList = getCachedPrices();
+    if (cachedList) {
+      const match = cachedList.find(p => p.symbol.toUpperCase() === symbol.toUpperCase());
+      if (match) {
+        return { data: match, isFallback: true };
+      }
+    }
+    throw err;
+  }
 }
 
 export async function fetchBinanceSymbols() {

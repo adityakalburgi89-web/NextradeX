@@ -6,7 +6,7 @@ import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "../components/ui/accordion";
 import { Headphones, Mail, Globe, Play } from "lucide-react";
-import { fetchAllPrices } from "../api";
+import { fetchAllPrices, cachePrices } from "../api";
 import { useWebSocket } from "../hooks/useWebSocket";
 import xIcon from "../assets/Icons/x.com_icon.png";
 import linkedInIcon from "../assets/Icons/LinkedIn_icon.svg.png";
@@ -196,17 +196,21 @@ export default function HomePage() {
   const handlePriceUpdate = (payload) => {
     if (Array.isArray(payload)) {
       setPrices(payload);
+      cachePrices(payload);
       return;
     }
     if (payload?.symbol) {
       setPrices((prev) => {
         const idx = prev.findIndex((p) => p.symbol === payload.symbol);
+        let next;
         if (idx >= 0) {
-          const next = [...prev];
+          next = [...prev];
           next[idx] = payload;
-          return next;
+        } else {
+          next = [...prev, payload];
         }
-        return [...prev, payload];
+        cachePrices(next);
+        return next;
       });
     }
   };

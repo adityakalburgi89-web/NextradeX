@@ -30,8 +30,17 @@ public class NexTradeXApplication {
 	
 	
 	@Bean
-	public CommandLineRunner init() {
+	public CommandLineRunner init(org.springframework.core.env.Environment env) {
 	    return args -> {
+	        System.out.println("=== SPRING ENVIRONMENT DEBUG ===");
+	        System.out.println("spring.data.redis.host: " + env.getProperty("spring.data.redis.host"));
+	        System.out.println("spring.data.redis.port: " + env.getProperty("spring.data.redis.port"));
+	        System.out.println("spring.data.redis.password: " + env.getProperty("spring.data.redis.password"));
+	        System.out.println("spring.data.redis.ssl.enabled: " + env.getProperty("spring.data.redis.ssl.enabled"));
+	        System.out.println("spring.datasource.url: " + env.getProperty("spring.datasource.url"));
+	        System.out.println("REDIS_HOST: " + env.getProperty("REDIS_HOST"));
+	        System.out.println("=================================");
+
 	        // Initialize default prices
 	        marketService.initializeDefaultPrices();
 	        

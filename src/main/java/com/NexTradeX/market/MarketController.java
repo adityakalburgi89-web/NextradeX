@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.NexTradeX.binance.BinanceService;
 import com.NexTradeX.common.ApiResponse;
+import com.NexTradeX.common.RateLimit;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ public class MarketController {
     private final MarketService marketService;
     private final BinanceService binanceService;
     
+    @RateLimit(capacity = 5, refillRate = 2.0)
     @GetMapping("/prices")
     public ResponseEntity<ApiResponse<List<CryptoPrice>>> getAllPrices() {
         try {
@@ -40,6 +42,7 @@ public class MarketController {
         }
     }
     
+    @RateLimit(capacity = 5, refillRate = 2.0)
     @GetMapping("/price/{symbol}")
     public ResponseEntity<ApiResponse<CryptoPrice>> getPrice(
             @PathVariable String symbol) {
@@ -54,7 +57,7 @@ public class MarketController {
         }
     }
 
-@GetMapping("/candles/{symbol}")
+    @GetMapping("/candles/{symbol}")
     public ResponseEntity<ApiResponse<List<CandlestickDataPoint>>> getCandlestickData(
             @PathVariable String symbol,
             @RequestParam(defaultValue = "1h") String interval,
