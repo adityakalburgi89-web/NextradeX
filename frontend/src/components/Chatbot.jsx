@@ -277,7 +277,6 @@ export default function Chatbot() {
             }`}
             aria-hidden="true"
           >
-            <span className={`w-1.5 h-1.5 rounded-full bg-trading-up ${prefersReducedMotion ? '' : 'animate-pulse'}`}></span>
             <span>Chat with Trixie!</span>
             <div className="absolute bottom-[-5px] right-8 w-2 h-2 glass-panel border-r border-b border-transparent transform rotate-45"></div>
           </div>
@@ -342,10 +341,6 @@ export default function Chatbot() {
                   Trixie <span className="text-[9px] font-bold bg-primary/15 text-primary px-1 rounded uppercase font-mono">Copilot</span>
                 </h4>
                 <div className="flex items-center gap-1 mt-0.5">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className={`${prefersReducedMotion ? '' : 'animate-ping'} absolute inline-flex h-full w-full rounded-full bg-trading-up opacity-75`}></span>
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-trading-up"></span>
-                  </span>
                   <span className="text-[9px] text-muted font-mono uppercase">Online & Ready</span>
                 </div>
               </div>

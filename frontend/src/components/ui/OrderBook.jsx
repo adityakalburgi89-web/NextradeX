@@ -28,7 +28,6 @@ export function OrderBook({ symbol, currentPrice, onSelectPrice, limit = 4 }) {
     <div className="bg-background border border-transparent rounded-xl p-4 font-mono text-xs shadow-elevation-md h-full flex flex-col justify-between">
       <div className="flex justify-between items-center border-b border-transparent pb-2 mb-3">
         <h4 className="font-heading text-xs font-bold text-foreground uppercase flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-trading-up animate-pulse"></span>
           Order Book
         </h4>
         <span className="text-[10px] text-muted">{symbol}</span>

@@ -1055,7 +1055,6 @@ export default function FuturesTradingPage() {
                 <div className="border-t border-transparent pt-4">
                   <div className="flex justify-between items-center pb-2 mb-3">
                     <h4 className="font-heading text-[10px] font-bold text-muted uppercase flex items-center gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-trading-up animate-ping"></span>
                       Recent Trades
                     </h4>
                     <span className="text-[9px] text-muted">{symbol} Live</span>
