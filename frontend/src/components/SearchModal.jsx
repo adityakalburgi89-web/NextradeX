@@ -53,14 +53,14 @@ export default function SearchModal({ open, onClose, query, setQuery, isLoggedIn
   return (
     <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
       <DialogContent 
-        className="max-w-xl w-full bg-background border-transparent rounded-2xl p-0 overflow-hidden shadow-2xl text-foreground"
+        className="max-w-xl w-full bg-background border-transparent rounded-2xl p-0 overflow-hidden shadow-2xl text-foreground [&>button]:top-2 [&>button]:h-8 [&>button]:w-8"
         role="dialog"
         aria-modal="true"
         aria-label="Search"
       >
         <DialogHeader className="p-0">
           <DialogTitle className="sr-only">Search</DialogTitle>
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-transparent">
+          <div className="flex items-center gap-3 pl-4 pr-16 py-3.5 border-b border-muted/15 focus-within:border-primary/35 transition-all duration-300">
             <Search size={18} className="text-muted" aria-hidden="true" />
             <input
               ref={inputRef}
@@ -68,7 +68,7 @@ export default function SearchModal({ open, onClose, query, setQuery, isLoggedIn
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search pages..."
-              className="flex-1 bg-transparent text-foreground placeholder-muted outline-none text-sm"
+              className="flex-1 bg-transparent text-foreground placeholder-muted outline-none focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
             />
           </div>
         </DialogHeader>
