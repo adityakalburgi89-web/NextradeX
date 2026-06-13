@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import Logo from "../assets/images/Logo.png";
 import { Button } from "./ui/Button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "./ui/dropdown-menu";
 import { Search, Sun, Moon, User, ChevronDown, Layers, LogOut, X, Menu } from "lucide-react";
@@ -40,9 +41,10 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
   return (
     <>
       <nav className="sticky top-0 z-50 h-16 bg-background text-foreground shadow-neo-sm transition-all duration-300 flex items-center">
-        <div className="flex items-center justify-between px-6 w-full max-w-7xl mx-auto">
+        <div className="flex items-center justify-between px-6 w-full max-w-none">
           <div className="flex items-center gap-8">
             <Link to="/" className="font-heading font-bold text-xl flex items-center gap-1 hover:opacity-90 transition-opacity">
+              <img src={Logo} alt="NexTradeX Logo" className="h-14 w-auto object-contain" />
               <span className="text-foreground">
                 NexTrade<span className="text-primary">X</span>
               </span>
@@ -135,15 +137,15 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
                 <Sun
                   size={18}
                   className={`absolute inset-0 transition-all duration-500 ${theme === 'dark'
-                      ? 'opacity-100 rotate-0 scale-100 text-primary'
-                      : 'opacity-0 rotate-180 scale-0'
+                    ? 'opacity-100 rotate-0 scale-100 text-primary'
+                    : 'opacity-0 rotate-180 scale-0'
                     }`}
                 />
                 <Moon
                   size={18}
                   className={`absolute inset-0 transition-all duration-500 ${theme === 'light'
-                      ? 'opacity-100 rotate-0 scale-100 text-primary'
-                      : 'opacity-0 -rotate-180 scale-0'
+                    ? 'opacity-100 rotate-0 scale-100 text-primary'
+                    : 'opacity-0 -rotate-180 scale-0'
                     }`}
                 />
               </div>
