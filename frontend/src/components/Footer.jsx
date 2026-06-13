@@ -5,6 +5,7 @@ import { Globe } from "lucide-react";
 import linkedInIcon from "../assets/Icons/LinkedIn_icon.svg.png";
 import githubIcon from "../assets/Icons/github_icon.png";
 import gmailIcon from "../assets/Icons/Gmail_icon_svg.webp";
+import logoIcon from "../assets/images/Logo.png";
 
 export default function Footer() {
   const linkClass = "block py-1.5 text-xs font-semibold text-muted transition-colors duration-200 hover:text-primary";
@@ -86,6 +87,12 @@ export default function Footer() {
               </a>
               <a href="https://github.com/aditykalburgi" target="_blank" rel="noopener noreferrer" aria-label="View NexTradeX on GitHub" className="flex items-center gap-3 text-xs font-semibold text-muted hover:text-primary transition-colors duration-200">
                 <img src={githubIcon} alt="" className="w-4 h-4 object-contain brightness-0 contrast-50" aria-hidden="true" /> <span>GitHub</span>
+              </a>
+              <a href="https://portfolio-zeta-two-0s3z3wko1s.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Visit Aditya's Portfolio Website" className="flex items-center gap-3 text-xs font-semibold text-muted hover:text-primary transition-colors duration-200">
+                <div className="w-4 h-4 relative flex items-center justify-center" aria-hidden="true">
+                  <img src={logoIcon} alt="" className="absolute w-10 h-10 max-w-none object-contain" />
+                </div>
+                <span>Portfolio</span>
               </a>
             </nav>
           </div>
