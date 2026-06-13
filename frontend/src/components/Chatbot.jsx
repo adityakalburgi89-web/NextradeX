@@ -24,10 +24,13 @@ import popClickSound from "../assets/Chatbot/Audio/pop-click.wav";
 const chatAudio = new Audio(popClickSound);
 chatAudio.preload = "auto";
 
-const playChatSound = (isMuted) => {
+const playChatSound = () => {
+  const isMuted = localStorage.getItem("trixie_chatbot_muted") === "true";
   if (isMuted) return;
   try {
-    chatAudio.currentTime = 0;
+    if (chatAudio.readyState > 0) {
+      chatAudio.currentTime = 0;
+    }
     chatAudio.volume = 0.45; // comfortable volume
     const playPromise = chatAudio.play();
     if (playPromise !== undefined) {
@@ -125,6 +128,36 @@ export default function Chatbot() {
   // Persistent mute state
   const [isMuted, setIsMuted] = useState(() => localStorage.getItem("trixie_chatbot_muted") === "true");
 
+  // Unlock audio once on the first user interaction (safari/chrome mobile support)
+  useEffect(() => {
+    const unlock = () => {
+      const isMuted = localStorage.getItem("trixie_chatbot_muted") === "true";
+      if (!isMuted) {
+        try {
+          chatAudio.muted = true;
+          chatAudio.play()
+            .then(() => {
+              chatAudio.pause();
+              chatAudio.muted = false;
+            })
+            .catch(() => {
+              chatAudio.muted = false;
+            });
+        } catch (e) {
+          // ignore
+        }
+      }
+      window.removeEventListener("click", unlock);
+      window.removeEventListener("touchstart", unlock);
+    };
+    window.addEventListener("click", unlock);
+    window.addEventListener("touchstart", unlock);
+    return () => {
+      window.removeEventListener("click", unlock);
+      window.removeEventListener("touchstart", unlock);
+    };
+  }, []);
+
   const [messages, setMessages] = useState([
     {
       id: "welcome",
@@ -137,6 +170,7 @@ export default function Chatbot() {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const videoRef = useRef(null);
+  const lastSentTimeRef = useRef(0);
 
   const toggleMute = () => {
     setIsMuted((prev) => {
@@ -186,6 +220,20 @@ export default function Chatbot() {
   };
 
   const submitQuery = async (displayText, queryText) => {
+    // Rate limit check (1.5 seconds cooldown to prevent spamming)
+    const now = Date.now();
+    if (now - lastSentTimeRef.current < 1500) {
+      const rateLimitMsg = {
+        id: Math.random().toString(),
+        sender: "trixie",
+        text: "⚠️ **Please slow down!** Wait a moment before sending another message.",
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages((prev) => [...prev, rateLimitMsg]);
+      return;
+    }
+    lastSentTimeRef.current = now;
+
     // Add user message
     const userMsg = {
       id: Math.random().toString(),
@@ -245,7 +293,7 @@ export default function Chatbot() {
 
     setMessages((prev) => [...prev, trixieMsg]);
     setIsTyping(false);
-    playChatSound(isMuted);
+    playChatSound();
   };
 
   return (
@@ -330,9 +378,6 @@ export default function Chatbot() {
                 <h4 className="font-heading text-xs font-extrabold text-[#3D4852] flex items-center gap-1.5">
                   Trixie <span className="text-[9px] font-bold bg-[#6C63FF]/15 text-[#6C63FF] px-1.5 py-0.5 rounded-full uppercase font-mono">Copilot</span>
                 </h4>
-                <div className="flex items-center gap-1 mt-0.5">
-                  <span className="text-[9px] text-[#6B7280] font-mono uppercase">Online & Ready</span>
-                </div>
               </div>
             </div>
             
@@ -409,22 +454,25 @@ export default function Chatbot() {
           <div className="px-6 py-2 flex gap-2.5 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth bg-transparent">
             <button
               type="button"
+              disabled={isTyping}
               onClick={() => handleQuickAction("Check Prices", "price")}
-              className="px-3 py-1.5 text-[9px] font-mono rounded-full bg-[#E0E5EC] text-[#3D4852] shadow-[3px_3px_6px_rgb(163,177,198,0.5),-3px_-3px_6px_rgba(255,255,255,0.5)] hover:shadow-inner active:scale-95 transition-all duration-300 font-extrabold cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF]"
+              className="px-3 py-1.5 text-[9px] font-mono rounded-full bg-[#E0E5EC] text-[#3D4852] shadow-[3px_3px_6px_rgb(163,177,198,0.5),-3px_-3px_6px_rgba(255,255,255,0.5)] hover:shadow-inner active:scale-95 transition-all duration-300 font-extrabold cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Live Prices
             </button>
             <button
               type="button"
+              disabled={isTyping}
               onClick={() => handleQuickAction("Verify Safu", "safu")}
-              className="px-3 py-1.5 text-[9px] font-mono rounded-full bg-[#E0E5EC] text-[#3D4852] shadow-[3px_3px_6px_rgb(163,177,198,0.5),-3px_-3px_6px_rgba(255,255,255,0.5)] hover:shadow-inner active:scale-95 transition-all duration-300 font-extrabold cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF]"
+              className="px-3 py-1.5 text-[9px] font-mono rounded-full bg-[#E0E5EC] text-[#3D4852] shadow-[3px_3px_6px_rgb(163,177,198,0.5),-3px_-3px_6px_rgba(255,255,255,0.5)] hover:shadow-inner active:scale-95 transition-all duration-300 font-extrabold cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Reserves SAFU
             </button>
             <button
               type="button"
+              disabled={isTyping}
               onClick={() => handleQuickAction("Cost and Fees?", "fees")}
-              className="px-3 py-1.5 text-[9px] font-mono rounded-full bg-[#E0E5EC] text-[#3D4852] shadow-[3px_3px_6px_rgb(163,177,198,0.5),-3px_-3px_6px_rgba(255,255,255,0.5)] hover:shadow-inner active:scale-95 transition-all duration-300 font-extrabold cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF]"
+              className="px-3 py-1.5 text-[9px] font-mono rounded-full bg-[#E0E5EC] text-[#3D4852] shadow-[3px_3px_6px_rgb(163,177,198,0.5),-3px_-3px_6px_rgba(255,255,255,0.5)] hover:shadow-inner active:scale-95 transition-all duration-300 font-extrabold cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Spot/Futures Fees
             </button>
@@ -434,14 +482,16 @@ export default function Chatbot() {
           <form onSubmit={handleSend} className="p-4 flex gap-3 bg-transparent items-center">
             <input
               type="text"
-              placeholder="Ask Trixie..."
+              placeholder={isTyping ? "Trixie is typing..." : "Ask Trixie..."}
+              disabled={isTyping}
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              className="flex-1 px-4 py-2.5 h-11 bg-[#E0E5EC] text-xs font-mono text-[#3D4852] placeholder-[#6B7280]/60 rounded-2xl shadow-[inset_4px_4px_8px_rgb(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.5)] focus:shadow-[inset_6px_6px_12px_rgb(163,177,198,0.7),inset_-6px_-6px_12px_rgba(255,255,255,0.6)] outline-none border-none transition-all duration-300 focus-visible:ring-2 focus-visible:ring-[#6C63FF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E0E5EC]"
+              className="flex-1 px-4 py-2.5 h-11 bg-[#E0E5EC] text-xs font-mono text-[#3D4852] placeholder-[#6B7280]/60 rounded-2xl shadow-[inset_4px_4px_8px_rgb(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.5)] focus:shadow-[inset_6px_6px_12px_rgb(163,177,198,0.7),inset_-6px_-6px_12px_rgba(255,255,255,0.6)] outline-none border-none transition-all duration-300 focus-visible:ring-2 focus-visible:ring-[#6C63FF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E0E5EC] disabled:opacity-60 disabled:cursor-not-allowed"
             />
             <button
               type="submit"
-              className="h-11 w-11 flex items-center justify-center rounded-2xl bg-[#6C63FF] text-white transition-all duration-300 shadow-[4px_4px_8px_rgba(108,99,255,0.4)] hover:translate-y-[-1px] active:translate-y-[0.5px] active:shadow-inner focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E0E5EC]"
+              disabled={isTyping || !inputVal.trim()}
+              className="h-11 w-11 flex items-center justify-center rounded-2xl bg-[#6C63FF] text-white transition-all duration-300 shadow-[4px_4px_8px_rgba(108,99,255,0.4)] hover:translate-y-[-1px] active:translate-y-[0.5px] active:shadow-inner focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E0E5EC] disabled:bg-gray-400 disabled:shadow-none disabled:cursor-not-allowed"
             >
               <Send size={16} className="text-white" />
             </button>
