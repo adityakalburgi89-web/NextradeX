@@ -36,6 +36,8 @@ import opIcon from "../assets/Icons/op.svg";
 import suiIcon from "../assets/Icons/sui.svg";
 import tiaIcon from "../assets/Icons/tia.svg";
 import seiIcon from "../assets/Icons/sei.svg";
+import bnbIcon from "../assets/Icons/bnb.svg";
+import dotIcon from "../assets/Icons/dot.svg";
 
 // Framer Motion Animation Variants for a Pro UX Look
 const fadeInUpSpring = {
@@ -111,6 +113,8 @@ const renderCoinIcon = (symbol) => {
     "SUI / USDT": suiIcon,
     "TIA / USDT": tiaIcon,
     "SEI / USDT": seiIcon,
+    "BNB / USDT": bnbIcon,
+    "DOT / USDT": dotIcon,
   };
   const src = iconMap[symbol];
   if (src) {
