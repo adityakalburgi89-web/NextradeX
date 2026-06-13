@@ -360,23 +360,23 @@ export default function HomePage() {
               </motion.div>
 
               {/* Right Column: Visual Tactile Neumorphic Illustration */}
-              <div className="lg:col-span-5 flex items-center justify-center relative w-full max-w-md mx-auto lg:max-w-none h-[420px] md:h-[480px]">
+              <div className="lg:col-span-5 flex items-center justify-center relative w-full max-w-md mx-auto lg:max-w-none h-[380px] sm:h-[420px] md:h-[480px] scale-[0.9] sm:scale-100 origin-center my-4 sm:my-0">
 
                 {/* Concentric Neumorphic Circles (Ambient Motion) */}
                 <motion.div
-                  className="absolute w-[300px] h-[300px] md:w-[360px] md:h-[360px] rounded-full shadow-neo flex items-center justify-center bg-background pointer-events-none"
+                  className="absolute w-[260px] h-[260px] sm:w-[300px] sm:h-[300px] md:w-[360px] md:h-[360px] rounded-full shadow-neo flex items-center justify-center bg-background pointer-events-none"
                   animate={prefersReducedMotion ? {} : { y: [0, -8, 0] }}
                   transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
                 >
-                  <div className="w-[240px] h-[240px] md:w-[290px] md:h-[290px] rounded-full shadow-neo-inset flex items-center justify-center bg-background">
-                    <div className="w-[180px] h-[180px] md:w-[220px] md:h-[220px] rounded-full shadow-neo flex items-center justify-center bg-background">
-                      <div className="w-[120px] h-[120px] md:w-[150px] md:h-[150px] rounded-full shadow-neo-inset-deep flex items-center justify-center bg-background">
+                  <div className="w-[200px] h-[200px] sm:w-[240px] sm:h-[240px] md:w-[290px] md:h-[290px] rounded-full shadow-neo-inset flex items-center justify-center bg-background">
+                    <div className="w-[140px] h-[140px] sm:w-[180px] sm:h-[180px] md:w-[220px] md:h-[220px] rounded-full shadow-neo flex items-center justify-center bg-background">
+                      <div className="w-[90px] h-[90px] sm:w-[120px] sm:h-[120px] md:w-[150px] md:h-[150px] rounded-full shadow-neo-inset-deep flex items-center justify-center bg-background">
                         {/* Innermost deep well with rotating coin */}
-                        <div className="w-16 h-16 rounded-full shadow-neo flex items-center justify-center bg-background overflow-hidden">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full shadow-neo flex items-center justify-center bg-background overflow-hidden">
                           <motion.img
                             key={activeCenterCoinIndex}
                             src={centerCoins[activeCenterCoinIndex].icon}
-                            className="w-8 h-8 object-contain"
+                            className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
                             alt={centerCoins[activeCenterCoinIndex].symbol}
                             initial={{ scale: 0.6, opacity: 0, rotate: -45 }}
                             animate={{ scale: 1, opacity: 1, rotate: 0 }}
@@ -391,34 +391,34 @@ export default function HomePage() {
 
                 {/* Card 1: Interactive Live Price Ticker (Molded Surface) */}
                 <motion.div
-                  className="absolute top-4 left-0 md:-left-6 bg-background p-5 rounded-[32px] shadow-neo w-[220px] md:w-[240px] cursor-pointer text-left"
+                  className="absolute top-2 left-2 sm:top-4 sm:-left-4 md:-left-6 bg-background p-4 sm:p-5 rounded-[24px] sm:rounded-[32px] shadow-neo w-[190px] sm:w-[220px] md:w-[240px] cursor-pointer text-left"
                   animate={prefersReducedMotion ? {} : { y: [0, -12, 0] }}
                   transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.2 }}
                   whileHover={{ y: -6, transition: { duration: 0.2 } }}
                 >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-2xl shadow-neo-inset flex items-center justify-center bg-background">
-                      <img src={btcIcon} className="w-6 h-6 object-contain" alt="BTC" />
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl shadow-neo-inset flex items-center justify-center bg-background">
+                      <img src={btcIcon} className="w-5 h-5 sm:w-6 sm:h-6 object-contain" alt="BTC" />
                     </div>
                     <div>
-                      <h4 className="font-heading text-sm font-bold text-foreground">BTC / USDT</h4>
-                      <p className="text-[10px] text-muted font-sans font-medium">Bitcoin</p>
+                      <h4 className="font-heading text-xs sm:text-sm font-bold text-foreground">BTC / USDT</h4>
+                      <p className="text-[9px] sm:text-[10px] text-muted font-sans font-medium">Bitcoin</p>
                     </div>
                   </div>
 
-                  <div className="mb-3 px-3.5 py-2.5 rounded-2xl shadow-neo-inset bg-background font-mono">
-                    <div className="text-[10px] text-muted mb-0.5">Live Price</div>
-                    <div className="text-sm font-bold text-primary flex items-center justify-between">
+                  <div className="mb-3 px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-2xl shadow-neo-inset bg-background font-mono">
+                    <div className="text-[9px] sm:text-[10px] text-muted mb-0.5">Live Price</div>
+                    <div className="text-xs sm:text-sm font-bold text-primary flex items-center justify-between">
                       <span>
                         $<NumberFlow value={btcPrice} format={{ minimumFractionDigits: 2, maximumFractionDigits: 2 }} />
                       </span>
-                      <span className={`text-[10px] font-semibold ${isBtcUp ? "text-trading-up" : "text-trading-down"}`}>
+                      <span className={`text-[9px] sm:text-[10px] font-semibold ${isBtcUp ? "text-trading-up" : "text-trading-down"}`}>
                         {btcChange >= 0 ? "+" : ""}{btcChange.toFixed(2)}%
                       </span>
                     </div>
                   </div>
 
-                  <div className="w-full h-8 shadow-neo-inset-sm rounded-xl overflow-hidden bg-background relative flex items-center px-1">
+                  <div className="hidden sm:flex w-full h-8 shadow-neo-inset-sm rounded-xl overflow-hidden bg-background relative items-center px-1">
                     <svg className="w-full h-6 stroke-primary stroke-[2] fill-none overflow-visible">
                       <path d="M 0 16 Q 15 6, 30 18 T 60 10 T 90 20 T 120 8 T 150 14 T 180 6 T 210 16" />
                     </svg>
@@ -427,14 +427,14 @@ export default function HomePage() {
 
                 {/* Card 2: Interactive Depth Matching Wells */}
                 <motion.div
-                  className="absolute bottom-4 right-0 md:-right-6 bg-background p-5 rounded-[32px] shadow-neo w-[200px] md:w-[220px] cursor-pointer text-left"
+                  className="absolute bottom-2 right-2 sm:bottom-4 sm:-right-4 md:-right-6 bg-background p-4 sm:p-5 rounded-[24px] sm:rounded-[32px] shadow-neo w-[170px] sm:w-[200px] md:w-[220px] cursor-pointer text-left"
                   animate={prefersReducedMotion ? {} : { y: [0, -10, 0] }}
                   transition={{ repeat: Infinity, duration: 5.5, ease: "easeInOut", delay: 0.8 }}
                   whileHover={{ y: -6, transition: { duration: 0.2 } }}
                 >
-                  <h4 className="font-heading text-[10px] font-bold text-muted uppercase tracking-wider mb-3">Matching Engine</h4>
+                  <h4 className="font-heading text-[9px] sm:text-[10px] font-bold text-muted uppercase tracking-wider mb-3">Matching Engine</h4>
                   <div className="space-y-2.5">
-                    <div className="flex items-center justify-between text-[10px]">
+                    <div className="flex items-center justify-between text-[9px] sm:text-[10px]">
                       <span className="text-trading-up font-bold">BID</span>
                       <span className="font-mono text-foreground font-semibold">
                         {(btcPrice - 0.50).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -442,7 +442,7 @@ export default function HomePage() {
                       <span className="font-mono text-muted">0.450 BTC</span>
                     </div>
                     <div className="h-[1px] bg-gradient-to-r from-transparent via-muted/20 to-transparent" />
-                    <div className="flex items-center justify-between text-[10px]">
+                    <div className="flex items-center justify-between text-[9px] sm:text-[10px]">
                       <span className="text-trading-down font-bold">ASK</span>
                       <span className="font-mono text-foreground font-semibold">
                         {(btcPrice + 1.00).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
