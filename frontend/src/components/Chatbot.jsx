@@ -18,27 +18,18 @@ const useReducedMotion = () => {
   return reduced;
 };
 
-// Import audio assets for random chat replies
-import bangSound from "../assets/Chatbot/Audio/bang-anime-wataten.mp3";
-import cuteSound from "../assets/Chatbot/Audio/cute-anime-girl_OpABtug.mp3";
-import giggleSound from "../assets/Chatbot/Audio/giggle_XuDecHl (1).mp3";
-import ohCuteSound from "../assets/Chatbot/Audio/oh-cute-anime-girl-voice-sound-effect (1).mp3";
+// Import audio asset for chat reply sound
+import popClickSound from "../assets/Chatbot/Audio/pop-click.wav";
 
-const replySounds = [bangSound, cuteSound, giggleSound, ohCuteSound];
-const audioElements = replySounds.map((sound) => {
-  const audio = new Audio(sound);
-  audio.preload = "auto";
-  return audio;
-});
+const chatAudio = new Audio(popClickSound);
+chatAudio.preload = "auto";
 
-const playRandomSound = (isMuted) => {
+const playChatSound = (isMuted) => {
   if (isMuted) return;
   try {
-    const randomIndex = Math.floor(Math.random() * audioElements.length);
-    const audio = audioElements[randomIndex];
-    audio.currentTime = 0;
-    audio.volume = 0.45; // comfortable volume
-    const playPromise = audio.play();
+    chatAudio.currentTime = 0;
+    chatAudio.volume = 0.45; // comfortable volume
+    const playPromise = chatAudio.play();
     if (playPromise !== undefined) {
       playPromise.catch((err) => {
         console.warn("Audio playback was blocked or failed:", err);
@@ -80,7 +71,7 @@ function formatMessageText(text) {
         if (match.index > lastIndex) {
           bits.push(part.substring(lastIndex, match.index));
         }
-        bits.push(<strong key={match.index} className="text-primary font-bold">{match[1]}</strong>);
+        bits.push(<strong key={match.index} className="text-[#6C63FF] font-extrabold">{match[1]}</strong>);
         lastIndex = boldRegex.lastIndex;
       }
       if (lastIndex < part.length) {
@@ -101,7 +92,7 @@ function formatMessageText(text) {
           bits.push(part.substring(lastIndex, match.index));
         }
         bits.push(
-          <code key={match.index} className="bg-background px-1.5 py-0.5 rounded font-mono text-[10px] text-primary font-semibold border border-transparent mx-0.5">
+          <code key={match.index} className="bg-[#E0E5EC] shadow-[inset_2px_2px_4px_rgb(163,177,198,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.5)] px-1.5 py-0.5 rounded font-mono text-[10px] text-[#6C63FF] font-semibold mx-0.5 border-none">
             {match[1]}
           </code>
         );
@@ -115,14 +106,14 @@ function formatMessageText(text) {
 
     if (isList) {
       return (
-        <div key={idx} className="flex items-start gap-1.5 my-1 pl-2">
-          <span className="text-primary mt-1.5 flex-shrink-0 size-1.5 rounded-full bg-primary" />
-          <span className="text-foreground">{parts}</span>
+        <div key={idx} className="flex items-start gap-1.5 my-1.5 pl-2">
+          <span className="mt-1.5 flex-shrink-0 size-1.5 rounded-full bg-[#6C63FF]" />
+          <span className="text-[#3D4852] font-medium font-sans text-xs">{parts}</span>
         </div>
       );
     }
 
-    return <p key={idx} className={line.trim() === "" ? "h-2" : "my-0.5 text-foreground"}>{parts}</p>;
+    return <p key={idx} className={line.trim() === "" ? "h-2" : "my-1 text-[#3D4852] font-medium font-sans text-xs"}>{parts}</p>;
   });
 }
 
@@ -254,7 +245,7 @@ export default function Chatbot() {
 
     setMessages((prev) => [...prev, trixieMsg]);
     setIsTyping(false);
-    playRandomSound(isMuted);
+    playChatSound(isMuted);
   };
 
   return (
@@ -264,13 +255,13 @@ export default function Chatbot() {
         
         {/* Glow backdrop ring (Antigravity vibe) */}
         {!isOpen && (
-          <div className={`absolute inset-[-4px] rounded-full bg-primary/10 blur-[8px] ${prefersReducedMotion ? '' : 'animate-pulse'} pointer-events-none`} aria-hidden="true" />
+          <div className={`absolute inset-[-4px] rounded-full bg-[#6C63FF]/10 blur-[8px] ${prefersReducedMotion ? '' : 'animate-pulse'} pointer-events-none`} aria-hidden="true" />
         )}
 
         {/* Tooltip speech bubble */}
         {!isOpen && (
           <div
-            className={`absolute bottom-24 right-2 glass-panel text-foreground border border-transparent px-3.5 py-2 rounded-xl text-xs font-semibold shadow-elevation-md transition-all duration-300 pointer-events-none whitespace-nowrap flex items-center gap-1.5 ${
+            className={`absolute bottom-24 right-2 bg-[#E0E5EC] text-[#3D4852] px-3.5 py-2 rounded-xl text-xs font-semibold shadow-[5px_5px_10px_rgb(163,177,198,0.6),-5px_-5px_10px_rgba(255,255,255,0.5)] transition-all duration-300 pointer-events-none whitespace-nowrap flex items-center gap-1.5 ${
               isHovered
                 ? "opacity-100 translate-y-0 scale-100"
                 : "opacity-0 translate-y-2 scale-95"
@@ -278,7 +269,7 @@ export default function Chatbot() {
             aria-hidden="true"
           >
             <span>Chat with Trixie!</span>
-            <div className="absolute bottom-[-5px] right-8 w-2 h-2 glass-panel border-r border-b border-transparent transform rotate-45"></div>
+            <div className="absolute bottom-[-5px] right-8 w-2.5 h-2.5 bg-[#E0E5EC] border-r border-b border-transparent transform rotate-45"></div>
           </div>
         )}
 
@@ -295,12 +286,12 @@ export default function Chatbot() {
           onMouseLeave={() => {
             setIsHovered(false);
           }}
-          className={`size-20 rounded-full flex items-center justify-center bg-primary hover:bg-primary-active text-on-primary transition-all duration-300 shadow-glow-primary hover:shadow-glow-primary-hover hover:scale-110 active:scale-95 border-2 border-background focus:outline-none relative`}
+          className="size-20 rounded-full flex items-center justify-center bg-[#E0E5EC] text-[#3D4852] transition-all duration-300 shadow-[9px_9px_16px_rgb(163,177,198,0.6),-9px_-9px_16px_rgba(255,255,255,0.5)] hover:shadow-[12px_12px_20px_rgb(163,177,198,0.7),-12px_-12px_20px_rgba(255,255,255,0.6)] hover:scale-105 active:shadow-[inset_6px_6px_10px_rgb(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.5)] active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E0E5EC] relative"
         >
           {isOpen ? (
-            <X size={32} className={prefersReducedMotion ? 'text-foreground' : 'animate-scale-in text-foreground'} aria-hidden="true" />
+            <X size={32} className={prefersReducedMotion ? 'text-[#3D4852]' : 'animate-scale-in text-[#3D4852]'} aria-hidden="true" />
           ) : (
-            <div className="relative size-full rounded-full overflow-hidden flex items-center justify-center p-1 border border-primary/30">
+            <div className="relative w-[70px] h-[70px] rounded-full overflow-hidden flex items-center justify-center p-1 bg-[#E0E5EC] shadow-[inset_6px_6px_10px_rgb(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.5)]">
               <video
                 ref={videoRef}
                 src={trixieVideo}
@@ -320,28 +311,27 @@ export default function Chatbot() {
           role="dialog" 
           aria-label="Trixie chatbot" 
           aria-modal="false"
-          className={`fixed bottom-24 right-6 w-96 max-w-[calc(100vw-2rem)] h-[520px] z-50 flex flex-col glass-panel rounded-2xl shadow-elevation-lg overflow-hidden ${prefersReducedMotion ? '' : 'animate-fade-in-fast'} font-sans select-text border border-transparent`}>
+          className={`fixed bottom-24 right-6 w-96 max-w-[calc(100vw-2rem)] h-[520px] z-50 flex flex-col bg-[#E0E5EC] rounded-[32px] shadow-[9px_9px_16px_rgb(163,177,198,0.6),-9px_-9px_16px_rgba(255,255,255,0.5)] overflow-hidden ${prefersReducedMotion ? '' : 'animate-fade-in-fast'} font-sans select-text`}>
         
-          
           {/* Header */}
-          <div className="bg-background/40 border-b border-transparent px-4 py-3.5 flex items-center justify-between">
+          <div className="bg-transparent px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center relative overflow-hidden">
+              <div className="w-12 h-12 rounded-full bg-[#E0E5EC] shadow-[inset_4px_4px_8px_rgb(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.5)] flex items-center justify-center p-0.5 overflow-hidden">
                 <video
                   src={trixieVideo}
                   autoPlay
                   loop
                   muted
                   playsInline
-                  className="w-full h-full object-cover"
+                  className="w-[42px] h-[42px] object-cover rounded-full"
                 />
               </div>
               <div>
-                <h4 className="font-heading text-xs font-bold text-foreground flex items-center gap-1.5">
-                  Trixie <span className="text-[9px] font-bold bg-primary/15 text-primary px-1 rounded uppercase font-mono">Copilot</span>
+                <h4 className="font-heading text-xs font-extrabold text-[#3D4852] flex items-center gap-1.5">
+                  Trixie <span className="text-[9px] font-bold bg-[#6C63FF]/15 text-[#6C63FF] px-1.5 py-0.5 rounded-full uppercase font-mono">Copilot</span>
                 </h4>
                 <div className="flex items-center gap-1 mt-0.5">
-                  <span className="text-[9px] text-muted font-mono uppercase">Online & Ready</span>
+                  <span className="text-[9px] text-[#6B7280] font-mono uppercase">Online & Ready</span>
                 </div>
               </div>
             </div>
@@ -351,7 +341,7 @@ export default function Chatbot() {
               <button
                 type="button"
                 onClick={toggleMute}
-                className="p-1.5 rounded hover:bg-background transition-colors text-muted hover:text-foreground mr-1.5"
+                className="p-2 rounded-xl bg-[#E0E5EC] text-[#6B7280] hover:text-[#3D4852] transition-all duration-300 shadow-[3px_3px_6px_rgb(163,177,198,0.5),-3px_-3px_6px_rgba(255,255,255,0.5)] hover:shadow-inner mr-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF]"
                 title={isMuted ? "Unmute Voice Replies" : "Mute Voice Replies"}
               >
                 {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
@@ -359,7 +349,7 @@ export default function Chatbot() {
               
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded hover:bg-background transition-colors text-muted hover:text-foreground"
+                className="p-2 rounded-xl bg-[#E0E5EC] text-[#6B7280] hover:text-[#3D4852] transition-all duration-300 shadow-[3px_3px_6px_rgb(163,177,198,0.5),-3px_-3px_6px_rgba(255,255,255,0.5)] hover:shadow-inner focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF]"
               >
                 <X size={16} />
               </button>
@@ -367,7 +357,7 @@ export default function Chatbot() {
           </div>
 
           {/* Messages Body */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background/15 flex flex-col scrollbar-thin">
+          <div className="flex-1 overflow-y-auto p-4 mx-4 my-1 space-y-4 bg-[#E0E5EC] shadow-[inset_5px_5px_10px_rgb(163,177,198,0.6),inset_-5px_-5px_10px_rgba(255,255,255,0.5)] rounded-[24px] flex flex-col scrollbar-thin">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -375,20 +365,20 @@ export default function Chatbot() {
                   }`}
               >
                 {msg.sender === "trixie" && (
-                  <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center flex-shrink-0 overflow-hidden mt-0.5 shadow-sm">
-                    <img src={trixieAvatar} alt="Trixie" className="w-full h-full object-cover" />
+                  <div className="w-8 h-8 rounded-full bg-[#E0E5EC] shadow-[3px_3px_6px_rgb(163,177,198,0.5),-3px_-3px_6px_rgba(255,255,255,0.5)] flex items-center justify-center overflow-hidden flex-shrink-0 mt-0.5">
+                    <img src={trixieAvatar} alt="Trixie" className="w-[26px] h-[26px] object-cover rounded-full" />
                   </div>
                 )}
                 <div className="flex flex-col gap-1">
                   <div
-                    className={`rounded-2xl px-4 py-2.5 text-xs font-sans leading-relaxed whitespace-pre-wrap shadow-elevation-sm ${msg.sender === "user"
-                      ? "bg-gradient-to-r from-primary to-primary-active text-on-primary font-bold rounded-tr-sm hover:brightness-105 transition-all"
-                      : "bg-background backdrop-blur-md border border-transparent text-foreground rounded-tl-sm"
+                    className={`rounded-2xl px-4 py-2.5 text-xs font-sans leading-relaxed whitespace-pre-wrap ${msg.sender === "user"
+                      ? "bg-[#6C63FF] text-white font-bold rounded-tr-sm shadow-[4px_4px_8px_rgba(108,99,255,0.4)] hover:brightness-105 transition-all"
+                      : "bg-[#E0E5EC] text-[#3D4852] rounded-tl-sm shadow-[3px_3px_6px_rgb(163,177,198,0.5),-3px_-3px_6px_rgba(255,255,255,0.5)]"
                       }`}
                   >
                     {msg.sender === "trixie" ? formatMessageText(msg.text) : msg.text}
                   </div>
-                  <span className={`text-[8px] text-muted font-mono ${msg.sender === "user" ? "self-end" : "self-start pl-1"
+                  <span className={`text-[8px] text-[#6B7280] font-mono ${msg.sender === "user" ? "self-end" : "self-start pl-1"
                     }`}>
                     {msg.timestamp}
                   </span>
@@ -399,14 +389,14 @@ export default function Chatbot() {
             {/* Pulsing Typing Indicator */}
             {isTyping && (
               <div className="flex gap-2.5 max-w-[80%] self-start">
-                <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
-                  <img src={trixieAvatar} alt="Trixie" className="w-full h-full object-cover" />
+                <div className="w-8 h-8 rounded-full bg-[#E0E5EC] shadow-[3px_3px_6px_rgb(163,177,198,0.5),-3px_-3px_6px_rgba(255,255,255,0.5)] flex items-center justify-center overflow-hidden flex-shrink-0 mt-0.5">
+                  <img src={trixieAvatar} alt="Trixie" className="w-[26px] h-[26px] object-cover rounded-full" />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <div className="rounded-2xl px-4 py-3 bg-background backdrop-blur-md border border-transparent rounded-tl-sm flex items-center gap-1.5 h-[34px] shadow-sm">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                  <div className="rounded-2xl px-4 py-3 bg-[#E0E5EC] shadow-[3px_3px_6px_rgb(163,177,198,0.5),-3px_-3px_6px_rgba(255,255,255,0.5)] rounded-tl-sm flex items-center gap-1.5 h-[34px]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#6C63FF] animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#6C63FF] animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#6C63FF] animate-bounce" style={{ animationDelay: '300ms' }}></span>
                   </div>
                 </div>
               </div>
@@ -416,44 +406,44 @@ export default function Chatbot() {
           </div>
 
           {/* Quick Actions Panel */}
-          <div className="px-4 py-2.5 border-t border-transparent bg-background/25 flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth">
+          <div className="px-6 py-2 flex gap-2.5 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth bg-transparent">
             <button
               type="button"
               onClick={() => handleQuickAction("Check Prices", "price")}
-              className="px-3 py-1.5 text-[9px] font-mono rounded-full border border-transparent bg-background/[0.02] backdrop-blur-md text-muted hover:text-primary hover:border-primary/45 hover:bg-primary/5 transition-all font-bold cursor-pointer shadow-sm"
+              className="px-3 py-1.5 text-[9px] font-mono rounded-full bg-[#E0E5EC] text-[#3D4852] shadow-[3px_3px_6px_rgb(163,177,198,0.5),-3px_-3px_6px_rgba(255,255,255,0.5)] hover:shadow-inner active:scale-95 transition-all duration-300 font-extrabold cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF]"
             >
               Live Prices
             </button>
             <button
               type="button"
               onClick={() => handleQuickAction("Verify Safu", "safu")}
-              className="px-3 py-1.5 text-[9px] font-mono rounded-full border border-transparent bg-background/[0.02] backdrop-blur-md text-muted hover:text-primary hover:border-primary/45 hover:bg-primary/5 transition-all font-bold cursor-pointer shadow-sm"
+              className="px-3 py-1.5 text-[9px] font-mono rounded-full bg-[#E0E5EC] text-[#3D4852] shadow-[3px_3px_6px_rgb(163,177,198,0.5),-3px_-3px_6px_rgba(255,255,255,0.5)] hover:shadow-inner active:scale-95 transition-all duration-300 font-extrabold cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF]"
             >
               Reserves SAFU
             </button>
             <button
               type="button"
               onClick={() => handleQuickAction("Cost and Fees?", "fees")}
-              className="px-3 py-1.5 text-[9px] font-mono rounded-full border border-transparent bg-background/[0.02] backdrop-blur-md text-muted hover:text-primary hover:border-primary/45 hover:bg-primary/5 transition-all font-bold cursor-pointer shadow-sm"
+              className="px-3 py-1.5 text-[9px] font-mono rounded-full bg-[#E0E5EC] text-[#3D4852] shadow-[3px_3px_6px_rgb(163,177,198,0.5),-3px_-3px_6px_rgba(255,255,255,0.5)] hover:shadow-inner active:scale-95 transition-all duration-300 font-extrabold cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF]"
             >
               Spot/Futures Fees
             </button>
           </div>
 
           {/* Input Chat Footer */}
-          <form onSubmit={handleSend} className="p-3 border-t border-transparent flex gap-2 bg-background/35 backdrop-blur-md">
+          <form onSubmit={handleSend} className="p-4 flex gap-3 bg-transparent items-center">
             <input
               type="text"
               placeholder="Ask Trixie..."
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              className="flex-1 px-4 py-2.5 h-10 bg-background/65 border border-transparent rounded-xl text-xs font-mono text-foreground placeholder:text-muted/40 focus:outline-none focus:border-primary/60 transition-all shadow-inner"
+              className="flex-1 px-4 py-2.5 h-11 bg-[#E0E5EC] text-xs font-mono text-[#3D4852] placeholder-[#6B7280]/60 rounded-2xl shadow-[inset_4px_4px_8px_rgb(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.5)] focus:shadow-[inset_6px_6px_12px_rgb(163,177,198,0.7),inset_-6px_-6px_12px_rgba(255,255,255,0.6)] outline-none border-none transition-all duration-300 focus-visible:ring-2 focus-visible:ring-[#6C63FF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E0E5EC]"
             />
             <button
               type="submit"
-              className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary hover:bg-primary-active text-on-primary transition-all duration-300 shadow-glow-primary hover:scale-105 active:scale-95 focus:outline-none"
+              className="h-11 w-11 flex items-center justify-center rounded-2xl bg-[#6C63FF] text-white transition-all duration-300 shadow-[4px_4px_8px_rgba(108,99,255,0.4)] hover:translate-y-[-1px] active:translate-y-[0.5px] active:shadow-inner focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E0E5EC]"
             >
-              <Send size={14} className="text-foreground" />
+              <Send size={16} className="text-white" />
             </button>
           </form>
         </div>
