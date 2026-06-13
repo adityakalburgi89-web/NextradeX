@@ -12,6 +12,7 @@ import xIcon from "../assets/Icons/x.com_icon.png";
 import linkedInIcon from "../assets/Icons/LinkedIn_icon.svg.png";
 import githubIcon from "../assets/Icons/github_icon.png";
 import gmailIcon from "../assets/Icons/Gmail_icon_svg.webp";
+import creatorLogo from "../assets/images/Logo.png";
 import qrCodeImg from "../assets/QrCode/QrCode.png";
 
 // Platform Videos
@@ -777,13 +778,13 @@ export default function HomePage() {
                     <p className="font-mono text-[10px] text-muted uppercase mb-3">Connect with our Creator</p>
                     <div className="flex flex-wrap items-center gap-3">
                       <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-2xl bg-background light:bg-background border border-transparent light:border-transparent flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
-                        <img src={xIcon} alt="X" className="w-4 h-4 object-contain brightness-0 invert light:invert-0" />
+                        <img src={xIcon} alt="X" className="w-4 h-4 object-contain" />
                       </a>
                       <a href="mailto:contact@nextradex.sim" className="w-9 h-9 rounded-2xl bg-background light:bg-background border border-transparent light:border-transparent flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
                         <img src={gmailIcon} alt="Gmail" className="w-4 h-4 object-contain" />
                       </a>
-                      <a href="https://portfolio-zeta-two-0s3z3wko1s.vercel.app" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-2xl bg-background light:bg-background border border-transparent light:border-transparent flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
-                        <Globe size={16} className="text-muted" />
+                      <a href="https://portfolio-zeta-two-0s3z3wko1s.vercel.app" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-background light:bg-background border border-transparent light:border-transparent flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
+                        <img src={creatorLogo} alt="Logo" className="w-10 h-10 object-contain" />
                       </a>
                       <a href="https://www.linkedin.com/in/aditya-kalburgi-080b5b267/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-2xl bg-background light:bg-background border border-transparent light:border-transparent flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
                         <img src={linkedInIcon} alt="LinkedIn" className="w-4 h-4 object-contain" />
