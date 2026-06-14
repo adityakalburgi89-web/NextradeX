@@ -2,5 +2,6 @@ import { useContext } from "react";
 import { ToastContext } from "../components/Toast/ToastProvider";
 
 export function useToast() {
-  return useContext(ToastContext);
+  const context = useContext(ToastContext);
+  return context ? context.toast : null;
 }
