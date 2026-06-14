@@ -14,7 +14,7 @@
     --surface-elevated: #e0e5ec;
     --surface-glass: rgba(224, 229, 236, 0.82);
     --foreground: #3d4852;
-    --muted: #6b7280;
+    --muted: #4b5563;
     --border: transparent;
     --input-bg: #e0e5ec;
     --card-bg: #e0e5ec;
@@ -91,7 +91,7 @@
   textarea,
   [role="button"],
   [tabindex]:not([tabindex="-1"]) {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 focus-visible:ring-0 focus-visible:ring-offset-0;
   }
 }
 
@@ -297,7 +297,7 @@
   }
 
   .focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 focus-visible:ring-0 focus-visible:ring-offset-0;
   }
 
   .data-row {

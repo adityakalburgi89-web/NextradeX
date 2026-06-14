@@ -121,7 +121,7 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
                 <Button variant="tertiaryText" className="hidden sm:inline-flex text-xs" asChild>
                   <Link to="/auth?mode=login">Log In</Link>
                 </Button>
-                <Button className="hidden sm:inline-flex text-xs h-9" asChild>
+                <Button className="inline-flex text-xs h-9 px-3 sm:px-4" asChild>
                   <Link to="/auth?mode=register">Sign Up</Link>
                 </Button>
               </>

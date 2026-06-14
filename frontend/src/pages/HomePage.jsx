@@ -298,7 +298,7 @@ export default function HomePage() {
     <PageTransition>
       <main className="w-full text-foreground light:text-foreground bg-background light:bg-background">
         {/* HERO SECTION BAND (Full-Bleed bg-background) */}
-        <section className="relative overflow-hidden py-20 lg:py-32 border-b border-transparent light:border-transparent bg-background light:bg-background min-h-[calc(100vh-64px)] flex items-center">
+        <section className="relative overflow-hidden py-12 md:py-20 lg:py-32 border-b border-transparent light:border-transparent bg-background light:bg-background min-h-[calc(100vh-64px)] flex items-center">
           {/* Subtle background ambient mesh */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/[0.03] blur-[160px] pointer-events-none z-0" />
 
@@ -333,7 +333,7 @@ export default function HomePage() {
                       transition: { duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.15 }
                     }
                   }}
-                  className="text-muted text-base md:text-lg max-w-2xl mb-10 leading-relaxed font-sans"
+                  className="text-muted text-base md:text-lg max-w-2xl mb-6 md:mb-10 leading-relaxed font-sans"
                 >
                   Experience high-density simulated trading, real-time depth visualizations, and custom order matching. Zero risk, professional-grade tools.
                 </motion.p>
@@ -350,7 +350,7 @@ export default function HomePage() {
                   }}
                   className="flex flex-col sm:flex-row items-center gap-4 justify-start w-full sm:w-auto"
                 >
-                  <Button variant="primaryPill" className="w-full sm:w-auto" asChild>
+                  <Button variant="primaryGradientPill" className="w-full sm:w-auto hover:scale-[1.02] shadow-glow-primary active:scale-[0.98] transition-transform duration-200" asChild>
                     <Link to="/auth">Start Trading</Link>
                   </Button>
                   <Button variant="outline" className="w-full sm:w-auto text-foreground light:text-foreground hover:bg-background light:hover:bg-background" asChild>
@@ -493,7 +493,7 @@ export default function HomePage() {
         </section>
 
         {/* HERO USER STAT BANDS */}
-        <section className="py-20 bg-background light:bg-background border-b border-transparent light:border-transparent text-center relative overflow-hidden">
+        <section className="py-12 md:py-20 bg-background light:bg-background border-b border-transparent light:border-transparent text-center relative overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-primary/[0.02] blur-[130px] pointer-events-none" />
           <motion.div
             variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
@@ -518,7 +518,7 @@ export default function HomePage() {
         </section>
 
         {/* FUNDS SAFU BAND (reserves stats) */}
-        <section className="py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">
+        <section className="py-12 md:py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">
           <div className="max-w-7xl mx-auto px-6">
             <motion.div
               variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
@@ -563,7 +563,7 @@ export default function HomePage() {
         </section>
 
         {/* CRYPTOCURRENCIES LIST */}
-        <section className="py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">
+        <section className="py-12 md:py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">
           <div className="max-w-7xl mx-auto px-6">
             <motion.div
               variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
@@ -629,7 +629,7 @@ export default function HomePage() {
                           </td>
                           <td className="px-6 py-4 text-right">{coin.vol}</td>
                           <td className="px-6 py-4 text-center">
-                            <Button size="sm" className="h-[28px] px-4 font-semibold text-xs text-on-primary bg-primary rounded-xl hover:bg-primary-active transition-all" asChild>
+                            <Button size="sm" asChild>
                               <Link to={`/trade/spot?symbol=${coin.rawSymbol || "BTCUSDT"}`}>Trade</Link>
                             </Button>
                           </td>
@@ -645,7 +645,7 @@ export default function HomePage() {
 
 
         {/* PLATFORM VIDEOS SECTION */}
-        <section className="py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">
+        <section className="py-12 md:py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">
           <div className="max-w-7xl mx-auto px-6">
             <motion.div
               variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
@@ -737,7 +737,7 @@ export default function HomePage() {
         </section>
 
         {/* SUPPORT + FAQ */}
-        <section className="py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">
+        <section className="py-12 md:py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16">
               {/* Support Card */}
@@ -850,7 +850,7 @@ export default function HomePage() {
         </section>
 
         {/* CTA BAND */}
-        <section className="py-20 bg-background light:bg-background">
+        <section className="py-12 md:py-20 bg-background light:bg-background">
           <div className="max-w-7xl mx-auto px-6">
             <motion.div
               variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
@@ -867,7 +867,7 @@ export default function HomePage() {
                   Create a virtual account in less than a minute and begin testing options chains instantly.
                 </p>
               </div>
-              <Button variant="default" className="w-full md:w-auto h-12 px-8 text-base font-semibold" asChild>
+              <Button variant="primaryGradient" className="w-full md:w-auto h-12 px-8 text-base font-semibold hover:scale-[1.02] shadow-glow-primary active:scale-[0.98] transition-transform duration-200" asChild>
                 <Link to="/auth">Sign Up Now</Link>
               </Button>
             </motion.div>
