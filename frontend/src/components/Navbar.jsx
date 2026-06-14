@@ -44,8 +44,8 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
         <div className="flex items-center justify-between px-6 w-full max-w-none">
           <div className="flex items-center gap-8">
             <Link to="/" className="font-heading font-bold text-xl flex items-center gap-1 hover:opacity-90 transition-opacity">
-              <img src={Logo} alt="NexTradeX Logo" className="h-14 w-auto object-contain" />
-              <span className="text-foreground">
+              <img src={Logo} alt="NexTradeX Logo" className="h-12 sm:h-14 w-auto object-contain" />
+              <span className="text-foreground hidden sm:inline">
                 NexTrade<span className="text-primary">X</span>
               </span>
             </Link>
