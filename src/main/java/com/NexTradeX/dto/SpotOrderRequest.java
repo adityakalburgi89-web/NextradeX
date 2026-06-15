@@ -1,5 +1,6 @@
 package com.NexTradeX.dto;
 
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,10 +28,13 @@ public class SpotOrderRequest {
     
     @NotNull(message = "Quantity is required")
     @DecimalMin(value = "0.00000001", message = "Quantity must be greater than zero")
+    @DecimalMax(value = "99999999999.99999999", message = "Quantity exceeds maximum allowable digits")
     private BigDecimal quantity;
     
     @DecimalMin(value = "0.00000001", message = "Price must be greater than zero")
+    @DecimalMax(value = "99999999999.99999999", message = "Price exceeds maximum allowable digits")
     private BigDecimal price;
 
+    @DecimalMax(value = "99999999999.99999999", message = "Stop price exceeds maximum allowable digits")
     private BigDecimal stopPrice;
 }

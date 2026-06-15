@@ -264,10 +264,28 @@ export default function FuturesTradingPage() {
     setError("");
     setMessage("");
     try {
+      const qty = parseFloat(quantity);
+      if (isNaN(qty) || qty <= 0) {
+        setError("Quantity must be greater than zero");
+        setLoading(false);
+        return;
+      }
+      if (symbol.toUpperCase() === "BTCUSDT" && qty > 11) {
+        setError("Quantity cannot exceed 11 BTC for BTC trading");
+        setLoading(false);
+        return;
+      }
+      const totalCost = qty * Number(priceSnapshot?.currentPrice || 0);
+      if (totalCost > 99999999999.99999999) {
+        setError("Total position value exceeds maximum allowed precision");
+        setLoading(false);
+        return;
+      }
+
       const payload = {
         symbol: symbol,
         side: orderSide,
-        quantity: parseFloat(quantity),
+        quantity: qty,
         leverage: parseFloat(leverage),
       };
       const res = await openFuturesPosition(payload);
@@ -338,9 +356,16 @@ export default function FuturesTradingPage() {
     setIsUpdatingSlTp(true);
     setSlTpError("");
     try {
+      const sl = slInput ? parseFloat(slInput) : null;
+      const tp = tpInput ? parseFloat(tpInput) : null;
+      if ((sl !== null && sl > 99999999999.99999999) || (tp !== null && tp > 99999999999.99999999)) {
+        setSlTpError("Stop Loss / Take Profit exceeds maximum allowed precision");
+        setIsUpdatingSlTp(false);
+        return;
+      }
       const payload = {
-        stopLoss: slInput ? parseFloat(slInput) : null,
-        takeProfit: tpInput ? parseFloat(tpInput) : null
+        stopLoss: sl,
+        takeProfit: tp
       };
       await updateFuturesSlTp(selectedPositionForSlTp.id, payload);
       await loadPositions();
@@ -830,6 +855,7 @@ export default function FuturesTradingPage() {
                         <Input
                           type="number"
                           step="0.1"
+                          max="99999999999.99999999"
                           value={stopPrice}
                           onChange={(e) => setStopPrice(e.target.value)}
                           className="bg-background border-transparent text-foreground font-mono text-xs rounded w-full pr-12"
@@ -847,6 +873,7 @@ export default function FuturesTradingPage() {
                         <Input
                           type="number"
                           step="0.1"
+                          max="99999999999.99999999"
                           value={price}
                           onChange={(e) => setPrice(e.target.value)}
                           className="bg-background border-transparent text-foreground font-mono text-xs rounded w-full pr-12"
@@ -863,6 +890,7 @@ export default function FuturesTradingPage() {
                       <Input
                         type="number"
                         step="0.001"
+                        max={symbol === "BTCUSDT" ? "11" : "99999999999.99999999"}
                         value={quantity}
                         onChange={(e) => setQuantity(e.target.value)}
                         className="bg-background border-transparent text-foreground font-mono text-xs rounded w-full pr-12"
@@ -1128,6 +1156,7 @@ export default function FuturesTradingPage() {
                     <Input
                       type="number"
                       step="0.01"
+                      max="99999999999.99999999"
                       value={tpInput}
                       onChange={(e) => setTpInput(e.target.value)}
                       placeholder="e.g. 75000.00"
@@ -1167,6 +1196,7 @@ export default function FuturesTradingPage() {
                     <Input
                       type="number"
                       step="0.01"
+                      max="99999999999.99999999"
                       value={slInput}
                       onChange={(e) => setSlInput(e.target.value)}
                       placeholder="e.g. 65000.00"

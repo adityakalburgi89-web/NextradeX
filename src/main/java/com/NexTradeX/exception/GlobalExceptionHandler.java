@@ -54,6 +54,23 @@ public class GlobalExceptionHandler {
                 .stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .reduce("", (a, b) -> a + ", " + b);
+        if (message.startsWith(", ")) {
+            message = message.substring(2);
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(400, "Validation failed: " + message, null));
+    }
+
+    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<String>> handleConstraintViolation(
+            jakarta.validation.ConstraintViolationException ex, WebRequest request) {
+        String message = ex.getConstraintViolations()
+                .stream()
+                .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+                .reduce("", (a, b) -> a + ", " + b);
+        if (message.startsWith(", ")) {
+            message = message.substring(2);
+        }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ApiResponse<>(400, "Validation failed: " + message, null));
     }

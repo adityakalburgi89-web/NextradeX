@@ -128,6 +128,10 @@ export default function WalletsPage() {
       setError("Please specify a valid deposit amount.");
       return;
     }
+    if (amt > 99999999999.99) {
+      setError("Deposit amount exceeds maximum allowable limit of $99,999,999,999.99.");
+      return;
+    }
     setDepositModal({ ...depositModal, open: false, amount: "" });
     await handleQuickDeposit(depositModal.walletType, amt);
   };
@@ -137,6 +141,10 @@ export default function WalletsPage() {
     const amt = parseFloat(transferModal.amount);
     if (isNaN(amt) || amt <= 0) {
       setError("Please specify a valid transfer amount.");
+      return;
+    }
+    if (amt > 99999999999.99) {
+      setError("Transfer amount exceeds maximum allowable limit of $99,999,999,999.99.");
       return;
     }
     if (transferModal.from === transferModal.to) {
@@ -802,6 +810,7 @@ export default function WalletsPage() {
                     type="number"
                     step="0.01"
                     min="0.01"
+                    max="99999999999.99"
                     required
                     placeholder="0.00"
                     value={depositModal.amount || ""}
@@ -917,6 +926,7 @@ export default function WalletsPage() {
                   <input
                     type="number"
                     step="0.01"
+                    max="99999999999.99"
                     required
                     placeholder="0.00"
                     value={transferModal.amount}

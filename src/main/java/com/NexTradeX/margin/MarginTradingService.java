@@ -45,6 +45,10 @@ public class MarginTradingService {
         if (quantity.compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidOrderException("Quantity must be greater than zero");
         }
+
+        if (symbol.toUpperCase().startsWith("BTC") && quantity.compareTo(new BigDecimal("11")) > 0) {
+            throw new InvalidOrderException("Quantity cannot exceed 11 BTC for BTC trading");
+        }
         
         if (leverage.compareTo(new BigDecimal("2")) < 0 || leverage.compareTo(new BigDecimal("10")) > 0) {
             throw new InvalidOrderException("Margin leverage must be between 2x and 10x");
@@ -52,6 +56,9 @@ public class MarginTradingService {
         
         BigDecimal entryPrice = marketService.getPrice(symbol).getCurrentPrice();
         BigDecimal totalCost = entryPrice.multiply(quantity);
+        if (totalCost.compareTo(new BigDecimal("99999999999.99999999")) > 0) {
+            throw new InvalidOrderException("Total position value exceeds maximum allowed precision");
+        }
         BigDecimal collateral = totalCost.divide(leverage, 8, RoundingMode.HALF_UP);
         BigDecimal borrowedAmount = totalCost.subtract(collateral);
         

@@ -4,10 +4,13 @@ import com.NexTradeX.auth.JwtService;
 import com.NexTradeX.common.ApiResponse;
 import com.NexTradeX.user.User;
 import com.NexTradeX.user.UserService;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -17,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/market/alerts")
 @RequiredArgsConstructor
+@Validated
 public class PriceAlertController {
 
     private final PriceAlertRepository priceAlertRepository;
@@ -26,7 +30,7 @@ public class PriceAlertController {
     @PostMapping
     public ResponseEntity<ApiResponse<PriceAlert>> createAlert(
             @RequestParam String symbol,
-            @RequestParam BigDecimal targetPrice,
+            @RequestParam @DecimalMin(value = "0.00000001", message = "Price must be greater than zero") @DecimalMax(value = "99999999999.99999999", message = "Price exceeds maximum allowed precision") BigDecimal targetPrice,
             @RequestParam String condition,
             Authentication authentication) {
         try {

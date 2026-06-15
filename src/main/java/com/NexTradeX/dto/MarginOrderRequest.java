@@ -25,6 +25,7 @@ public class MarginOrderRequest {
     
     @NotNull(message = "Quantity is required")
     @DecimalMin(value = "0.00000001", message = "Quantity must be greater than zero")
+    @DecimalMax(value = "99999999999.99999999", message = "Quantity exceeds maximum allowable digits")
     private BigDecimal quantity;
     
     @NotNull(message = "Leverage is required")

@@ -14,6 +14,7 @@ import com.NexTradeX.common.ApiResponse;
 import com.NexTradeX.dto.OptionsBuyRequest;
 import com.NexTradeX.dto.OptionsContractResponse;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,7 +29,7 @@ public class OptionsController {
     
     @PostMapping("/buy")
     public ResponseEntity<ApiResponse<OptionsContractResponse>> buyOption(
-            @RequestBody OptionsBuyRequest request,
+            @Valid @RequestBody OptionsBuyRequest request,
             Authentication authentication) {
         try {
             Long userId = jwtService.extractUserIdFromAuthentication(authentication);
@@ -37,9 +38,9 @@ public class OptionsController {
                     userId,
                     request.getSymbol(),
                     OptionType.valueOf(request.getOptionType().toUpperCase()),
-                    new BigDecimal(request.getStrikePrice()),
-                    new BigDecimal(request.getPremium()),
-                    new BigDecimal(request.getQuantity()),
+                    request.getStrikePrice(),
+                    request.getPremium(),
+                    request.getQuantity(),
                     LocalDateTime.parse(request.getExpiryDate())
             );
             

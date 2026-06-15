@@ -4,10 +4,13 @@ import com.NexTradeX.auth.JwtService;
 import com.NexTradeX.common.ApiResponse;
 import com.NexTradeX.user.User;
 import com.NexTradeX.user.UserService;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -18,6 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/orders/dca")
 @RequiredArgsConstructor
+@Validated
 public class DcaController {
 
     private final DcaScheduleRepository dcaScheduleRepository;
@@ -27,7 +31,7 @@ public class DcaController {
     @PostMapping
     public ResponseEntity<ApiResponse<DcaSchedule>> createDcaSchedule(
             @RequestParam String symbol,
-            @RequestParam BigDecimal amountUSDT,
+            @RequestParam @DecimalMin(value = "0.00000001", message = "Amount must be greater than zero") @DecimalMax(value = "99999999999.99999999", message = "Amount exceeds maximum allowed precision") BigDecimal amountUSDT,
             @RequestParam int frequencySeconds,
             Authentication authentication) {
         try {

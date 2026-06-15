@@ -271,13 +271,34 @@ export default function SpotTradingPage() {
     setError("");
     setMessage("");
     try {
+      const qty = parseFloat(form.quantity);
+      if (isNaN(qty) || qty <= 0) {
+        setError("Quantity must be greater than zero");
+        setLoading(false);
+        return;
+      }
+      if (form.symbol === "BTCUSDT" && qty > 11) {
+        setError("Quantity cannot exceed 11 BTC for BTC trading");
+        setLoading(false);
+        return;
+      }
+      const checkPrice = ["LIMIT", "STOP_LIMIT", "TAKE_PROFIT_LIMIT"].includes(form.orderType) && form.price
+        ? parseFloat(form.price)
+        : (currentPrice || priceSnapshot?.currentPrice || 0);
+      const totalCost = qty * checkPrice;
+      if (totalCost > 99999999999.99999999) {
+        setError("Total order value exceeds maximum allowed precision");
+        setLoading(false);
+        return;
+      }
+
       const isLimitPriceType = ["LIMIT", "STOP_LIMIT", "TAKE_PROFIT_LIMIT"].includes(form.orderType);
       const isTriggerPriceType = ["STOP_LIMIT", "STOP_MARKET", "TAKE_PROFIT_LIMIT", "TAKE_PROFIT_MARKET"].includes(form.orderType);
       const payload = {
         symbol: form.symbol,
         side: form.side,
         orderType: form.orderType,
-        quantity: parseFloat(form.quantity),
+        quantity: qty,
         price: isLimitPriceType ? parseFloat(form.price) : null,
         stopPrice: isTriggerPriceType ? parseFloat(form.stopPrice) : null,
       };
@@ -876,6 +897,7 @@ export default function SpotTradingPage() {
                         <Input
                           type="number"
                           step="0.0001"
+                          max={form.symbol === "BTCUSDT" ? "11" : "99999999999.99999999"}
                           name="quantity"
                           value={form.quantity}
                           onChange={handleChange}
@@ -909,6 +931,7 @@ export default function SpotTradingPage() {
                           <Input
                             type="number"
                             step="0.01"
+                            max="99999999999.99999999"
                             name="stopPrice"
                             value={form.stopPrice}
                             onChange={handleChange}
@@ -929,6 +952,7 @@ export default function SpotTradingPage() {
                           <Input
                             type="number"
                             step="0.01"
+                            max="99999999999.99999999"
                             name="price"
                             value={form.price}
                             onChange={handleChange}

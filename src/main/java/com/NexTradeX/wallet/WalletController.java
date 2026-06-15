@@ -6,6 +6,7 @@ import com.NexTradeX.dto.WalletResponse;
 import com.NexTradeX.dto.DepositRequest;
 import com.NexTradeX.dto.TransferRequest;
 import com.NexTradeX.dto.WithdrawRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -65,7 +66,7 @@ public class WalletController {
     
     @PostMapping("/deposit")
     public ResponseEntity<ApiResponse<WalletResponse>> deposit(
-            @RequestBody DepositRequest request,
+            @Valid @RequestBody DepositRequest request,
             Authentication authentication) {
         try {
             Long userId = extractUserIdFromAuth(authentication);
@@ -82,7 +83,7 @@ public class WalletController {
 
     @PostMapping("/transfer")
     public ResponseEntity<ApiResponse<Void>> transfer(
-            @RequestBody TransferRequest request,
+            @Valid @RequestBody TransferRequest request,
             Authentication authentication) {
         try {
             Long userId = extractUserIdFromAuth(authentication);
@@ -100,7 +101,7 @@ public class WalletController {
 
     @PostMapping("/withdraw")
     public ResponseEntity<ApiResponse<WalletResponse>> withdraw(
-            @RequestBody WithdrawRequest request,
+            @Valid @RequestBody WithdrawRequest request,
             Authentication authentication) {
         try {
             Long userId = extractUserIdFromAuth(authentication);

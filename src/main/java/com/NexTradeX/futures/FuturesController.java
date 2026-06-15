@@ -92,7 +92,7 @@ public class FuturesController {
     @PostMapping("/update-sl-tp/{positionId}")
     public ResponseEntity<ApiResponse<FuturesPositionDTO>> updateSlTp(
             @PathVariable Long positionId,
-            @RequestBody SlTpUpdateRequest request,
+            @Valid @RequestBody SlTpUpdateRequest request,
             Authentication authentication) {
         try {
             Long userId = extractUserIdFromAuth(authentication);

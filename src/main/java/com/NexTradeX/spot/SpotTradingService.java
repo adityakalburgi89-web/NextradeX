@@ -39,6 +39,10 @@ public class SpotTradingService {
         if (quantity.compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidOrderException("Quantity must be greater than zero");
         }
+
+        if (symbol.toUpperCase().startsWith("BTC") && quantity.compareTo(new BigDecimal("11")) > 0) {
+            throw new InvalidOrderException("Quantity cannot exceed 11 BTC for BTC trading");
+        }
         
         // For market orders, get current price
         BigDecimal executionPrice = price;
@@ -52,6 +56,15 @@ public class SpotTradingService {
              orderType == OrderType.TAKE_PROFIT_LIMIT || orderType == OrderType.TAKE_PROFIT_MARKET) && 
             (stopPrice == null || stopPrice.compareTo(BigDecimal.ZERO) <= 0)) {
             throw new InvalidOrderException("Stop/Trigger price must be specified for Stop/Take-Profit orders");
+        }
+
+        BigDecimal checkPrice = executionPrice;
+        if (checkPrice == null) {
+            checkPrice = stopPrice != null ? stopPrice : marketService.getPrice(symbol).getCurrentPrice();
+        }
+        BigDecimal totalCost = checkPrice.multiply(quantity);
+        if (totalCost.compareTo(new BigDecimal("99999999999.99999999")) > 0) {
+            throw new InvalidOrderException("Total order value exceeds maximum allowed precision");
         }
         
         Order order = Order.builder()

@@ -265,10 +265,28 @@ export default function MarginTradingPage() {
     setError("");
     setMessage("");
     try {
+      const qty = parseFloat(form.quantity);
+      if (isNaN(qty) || qty <= 0) {
+        setError("Quantity must be greater than zero");
+        setLoading(false);
+        return;
+      }
+      if (form.symbol === "BTCUSDT" && qty > 11) {
+        setError("Quantity cannot exceed 11 BTC for BTC trading");
+        setLoading(false);
+        return;
+      }
+      const totalCost = qty * Number(priceSnapshot?.currentPrice || 0);
+      if (totalCost > 99999999999.99999999) {
+        setError("Total position value exceeds maximum allowed precision");
+        setLoading(false);
+        return;
+      }
+
       const payload = {
         symbol: form.symbol,
         side: form.side,
-        quantity: parseFloat(form.quantity),
+        quantity: qty,
         leverage: parseFloat(form.leverage),
       };
       const res = await openMarginPosition(payload);
@@ -808,6 +826,7 @@ export default function MarginTradingPage() {
                         <Input
                           type="number"
                           step="0.0001"
+                          max={form.symbol === "BTCUSDT" ? "11" : "99999999999.99999999"}
                           name="quantity"
                           value={form.quantity}
                           onChange={handleChange}
