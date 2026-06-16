@@ -98,7 +98,6 @@ function App() {
         {/* Navigation */}
         <Navbar
           theme={theme}
-          toggleTheme={toggleTheme}
           isLoggedIn={isLoggedIn}
           user={user}
           setSearchOpen={setSearchOpen}

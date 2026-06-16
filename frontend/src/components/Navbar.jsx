@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 import Logo from "../assets/images/Logo.png";
 import { Button } from "./ui/Button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "./ui/dropdown-menu";
-import { Search, Sun, Moon, User, ChevronDown, Layers, LogOut, X, Menu } from "lucide-react";
+import { Search, User, ChevronDown, Layers, LogOut, X, Menu } from "lucide-react";
 import TradeDropdown from "./TradeDropdown";
 import NavLink from "./NavLink";
 
-export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearchOpen, triggerLogoutConfirm }) {
+export default function Navbar({ theme, isLoggedIn, user, setSearchOpen, triggerLogoutConfirm }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const hamburgerRef = useRef(null);
@@ -127,29 +127,6 @@ export default function Navbar({ theme, toggleTheme, isLoggedIn, user, setSearch
               </>
             )}
 
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="flex h-12 w-12 items-center justify-center rounded-2xl text-muted shadow-neo-sm transition-all duration-300 hover:text-primary hover:shadow-neo active:shadow-neo-inset-sm group"
-              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              <div className="relative w-[18px] h-[18px]">
-                <Sun
-                  size={18}
-                  className={`absolute inset-0 transition-all duration-500 ${theme === 'dark'
-                    ? 'opacity-100 rotate-0 scale-100 text-primary'
-                    : 'opacity-0 rotate-180 scale-0'
-                    }`}
-                />
-                <Moon
-                  size={18}
-                  className={`absolute inset-0 transition-all duration-500 ${theme === 'light'
-                    ? 'opacity-100 rotate-0 scale-100 text-primary'
-                    : 'opacity-0 -rotate-180 scale-0'
-                    }`}
-                />
-              </div>
-            </button>
 
             {/* Mobile hamburger */}
             <button

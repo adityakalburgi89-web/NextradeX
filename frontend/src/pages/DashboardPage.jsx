@@ -71,12 +71,158 @@ export default function DashboardPage() {
   }, [totalUSDEquity]);
 
   const holdingsList = useMemo(() => {
-    const spotWallet = wallets.find(w => w.walletType === "SPOT");
-    const balance = spotWallet ? Number(spotWallet.balance) : 0;
-    return [
-      { symbol: "USDT", name: "Tether", amount: balance, costUSD: balance, priceINR: balance * 83, change: 0.00, icon: "https://cryptologos.cc/logos/tether-usdt-logo.png" }
-    ];
+    return wallets
+      .filter(w => w.walletType === "SPOT" || Number(w.balance) > 0)
+      .map(w => {
+        let name = "Tether";
+        let symbol = "USDT";
+        let icon = "https://cryptologos.cc/logos/tether-usdt-logo.png";
+        if (w.walletType === "FUTURES") {
+          name = "Futures USDT Wallet";
+          symbol = "USDT (Futures)";
+        } else if (w.walletType === "MARGIN") {
+          name = "Margin USDT Wallet";
+          symbol = "USDT (Margin)";
+        } else if (w.walletType === "OPTIONS") {
+          name = "Options USDT Wallet";
+          symbol = "USDT (Options)";
+        }
+        const bal = Number(w.balance || 0);
+        return {
+          symbol,
+          name,
+          amount: bal,
+          costUSD: bal,
+          priceINR: bal * 83,
+          change: 0.00,
+          icon,
+          walletType: w.walletType
+        };
+      });
   }, [wallets]);
+
+  const hotList = useMemo(() => {
+    return [...prices]
+      .sort((a, b) => Number(b.volume24h || 0) - Number(a.volume24h || 0))
+      .slice(0, 5);
+  }, [prices]);
+
+  const newListingList = useMemo(() => {
+    const newSymbols = ["SOLUSDT", "OPUSDT", "ARBUSDT", "SUIUSDT", "TIAUSDT"];
+    return prices.filter(p => newSymbols.includes(p.symbol));
+  }, [prices]);
+
+  const favoriteList = useMemo(() => {
+    try {
+      const stored = localStorage.getItem("nextradex_favorites");
+      if (stored) {
+        const favSymbols = JSON.parse(stored);
+        if (Array.isArray(favSymbols) && favSymbols.length > 0) {
+          return prices.filter(p => favSymbols.includes(p.symbol));
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    const defaultFavs = ["BTCUSDT", "ETHUSDT", "SOLUSDT"];
+    return prices.filter(p => defaultFavs.includes(p.symbol));
+  }, [prices]);
+
+  const topGainersList = useMemo(() => {
+    return [...prices]
+      .sort((a, b) => Number(b.percentChange24h || 0) - Number(a.percentChange24h || 0))
+      .slice(0, 5);
+  }, [prices]);
+
+  const getCryptoIcon = (symbol) => {
+    const base = (symbol?.endsWith("USDT") ? symbol.slice(0, -4) : symbol)?.toUpperCase();
+    const mapper = {
+      BTC: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg",
+      ETH: "https://cryptologos.cc/logos/ethereum-eth-logo.svg",
+      BNB: "https://cryptologos.cc/logos/bnb-bnb-logo.svg",
+      SOL: "https://cryptologos.cc/logos/solana-sol-logo.svg",
+      LTC: "https://cryptologos.cc/logos/litecoin-ltc-logo.svg",
+      LINK: "https://cryptologos.cc/logos/chainlink-link-logo.svg",
+      XRP: "https://cryptologos.cc/logos/xrp-xrp-logo.svg",
+      ADA: "https://cryptologos.cc/logos/cardano-ada-logo.svg",
+      DOGE: "https://cryptologos.cc/logos/dogecoin-doge-logo.svg",
+      DOT: "https://cryptologos.cc/logos/polkadot-new-dot-logo.svg"
+    };
+    return mapper[base] || `https://cryptologos.cc/logos/${base?.toLowerCase()}-${base?.toLowerCase()}-logo.svg`;
+  };
+
+  const renderMarketTable = (list) => {
+    if (!list || list.length === 0) {
+      return (
+        <EmptyState
+          icon={Layers}
+          title={`No ${activeSubTab} Items`}
+          description={`No assets match this category right now.`}
+          actionLabel="Explore Markets"
+          action={() => window.location.href = "/markets"}
+        />
+      );
+    }
+
+    return (
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-transparent text-[10px] font-bold text-muted uppercase font-mono bg-background/10">
+              <th className="py-4 px-6">Coin</th>
+              <th className="py-4 px-6 text-right">Last Price</th>
+              <th className="py-4 px-6 text-right">Change (24h)</th>
+              <th className="py-4 px-6 text-right">24h Volume</th>
+              <th className="py-4 px-6 text-center w-24">Trade</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-hairline-on-dark font-mono text-xs">
+            {list.map((coin, index) => {
+              const isProfit = Number(coin.percentChange24h) >= 0;
+              const symbolBase = coin.symbol.replace("USDT", "");
+              return (
+                <tr key={index} className="hover:bg-background/25 transition-colors">
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-7 h-7 rounded-full overflow-hidden bg-background flex items-center justify-center p-0.5">
+                        <img 
+                          src={getCryptoIcon(coin.symbol)} 
+                          alt={coin.symbol} 
+                          className="w-full h-full object-contain" 
+                          onError={(e) => { e.target.src = "https://cryptologos.cc/logos/tether-usdt-logo.png"; }} 
+                        />
+                      </div>
+                      <div>
+                        <span className="text-foreground font-bold block">{coin.symbol}</span>
+                        <span className="text-[10px] text-muted font-sans font-semibold">{symbolBase} / USDT</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6 text-right font-semibold">
+                    <span className="text-foreground block">{formatCurrency(coin.currentPrice)}</span>
+                  </td>
+                  <td className={`py-4 px-6 text-right font-bold text-sm ${isProfit ? "text-trading-up" : "text-trading-down"}`}>
+                    {formatPercent(coin.percentChange24h)}
+                  </td>
+                  <td className="py-4 px-6 text-right text-muted">
+                    {Number(coin.volume24h || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                  </td>
+                  <td className="py-4 px-6 text-center">
+                    <Link
+                      to={`/trade/spot?symbol=${coin.symbol}`}
+                      className="text-xs font-bold text-primary hover:underline font-heading uppercase"
+                    >
+                      Trade
+                    </Link>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
   if (loading) {
     return <DashboardSkeleton />;
@@ -186,53 +332,20 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-foreground font-heading flex items-center gap-2">
-                    {user?.username || "CAKE ON TABLE"}
-                    <span className="text-[10px] font-normal text-primary border border-primary/30 px-2 py-0.5 rounded font-mono uppercase">Regular User</span>
+                    {user?.username || "Trader"}
+                    <span className="text-[10px] font-normal text-primary border border-primary/30 px-2 py-0.5 rounded font-mono uppercase">{user?.role || "USER"}</span>
                   </h2>
-                  <div className="flex items-center gap-4 text-xs text-muted font-mono mt-1">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted font-mono mt-1">
                     <span>UID: <span className="text-foreground font-semibold">{user?.id || "—"}</span></span>
-                    <span>VIP Level: <span className="text-foreground font-semibold">Regular User</span></span>
+                    <span>Email: <span className="text-foreground font-semibold">{user?.email || "—"}</span></span>
+                    <span>Status: <span className={`font-semibold uppercase ${user?.active ? "text-trading-up" : "text-trading-down"}`}>{user?.active ? "Active" : "Inactive"}</span></span>
                   </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-6 text-center border-t md:border-t-0 pt-4 md:pt-0 border-transparent font-mono text-xs text-muted">
-                <div>
-                  <span className="block text-[10px] uppercase">Following</span>
-                  <span className="text-sm font-bold text-foreground">39</span>
-                </div>
-                <div className="border-l border-transparent pl-6">
-                  <span className="block text-[10px] uppercase">Followers</span>
-                  <span className="text-sm font-bold text-foreground">44</span>
                 </div>
               </div>
             </div>
 
-            {/* ESTIMATED TOTAL VALUE WITH MINI GLOW SPARKLINE */}
+            {/* ESTIMATED TOTAL VALUE */}
             <div className="relative overflow-hidden bg-background border border-transparent rounded-2xl p-6 shadow-elevation-lg flex flex-col md:flex-row md:items-center justify-between gap-6">
-              {/* Sparkline glow background */}
-              <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-30 pointer-events-none z-0">
-                <svg className="w-48 h-20 text-primary" viewBox="0 0 100 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M0 25C15 20 30 28 45 15C60 2 75 18 100 5"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M0 25C15 20 30 28 45 15C60 2 75 18 100 5V30H0V25Z"
-                    fill="url(#sparkline-grad)"
-                    opacity="0.1"
-                  />
-                  <defs>
-                    <linearGradient id="sparkline-grad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--primary)" />
-                      <stop offset="100%" stopColor="transparent" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </div>
 
               <div className="space-y-4 relative z-10 flex-1">
                 <div className="flex items-center gap-2 text-muted font-mono text-[10px] uppercase">
@@ -331,7 +444,7 @@ export default function DashboardPage() {
                                 </td>
                                 <td className="py-4 px-6 text-center">
                                   <Link
-                                    to="/trade/spot"
+                                    to={coin.walletType ? `/trade/${coin.walletType.toLowerCase()}` : "/trade/spot"}
                                     className="text-xs font-bold text-primary hover:underline font-heading uppercase"
                                   >
                                     Trade
@@ -352,6 +465,14 @@ export default function DashboardPage() {
                       action={() => window.location.href = "/markets"}
                     />
                   )
+                ) : activeSubTab === "Hot" ? (
+                  renderMarketTable(hotList)
+                ) : activeSubTab === "New Listing" ? (
+                  renderMarketTable(newListingList)
+                ) : activeSubTab === "Favorite" ? (
+                  renderMarketTable(favoriteList)
+                ) : activeSubTab === "Top Gainers" ? (
+                  renderMarketTable(topGainersList)
                 ) : (
                   <EmptyState
                     icon={Layers}

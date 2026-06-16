@@ -59,7 +59,7 @@ export default function Footer() {
           </div>
 
           {/* Legal */}
-          <div>
+          <div className="hidden md:block">
             <h4 className="font-heading text-xs font-bold uppercase text-foreground mb-4">Legal</h4>
             <nav className="space-y-1">
               <Link to="/terms" className={linkClass}>Terms of Service</Link>
