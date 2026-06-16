@@ -188,7 +188,9 @@ export default function MarginTradingPage() {
         const next = { ...prev };
         if (Array.isArray(data)) {
           data.forEach((p) => {
-            next[p.symbol.toUpperCase()] = Number(p.currentPrice);
+            if (p && p.symbol) {
+              next[p.symbol.toUpperCase()] = Number(p.currentPrice);
+            }
           });
         } else if (data.symbol) {
           next[data.symbol.toUpperCase()] = Number(data.currentPrice);
@@ -201,8 +203,8 @@ export default function MarginTradingPage() {
     const currentSymbol = form.symbol.toUpperCase();
 
     if (Array.isArray(data)) {
-      update = data.find((p) => p.symbol.toUpperCase() === currentSymbol);
-    } else if (data && data.symbol.toUpperCase() === currentSymbol) {
+      update = data.find((p) => p && p.symbol && p.symbol.toUpperCase() === currentSymbol);
+    } else if (data && data.symbol && data.symbol.toUpperCase() === currentSymbol) {
       update = data;
     }
 

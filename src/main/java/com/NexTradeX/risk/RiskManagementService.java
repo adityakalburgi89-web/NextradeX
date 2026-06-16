@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import jakarta.persistence.EntityManager;
 
 @Slf4j
 @Service
@@ -32,6 +33,7 @@ public class RiskManagementService {
     private final MarginTradingService marginTradingService;
     private final MarketService marketService;
     private final UserService userService;
+    private final EntityManager entityManager;
     
     private static final BigDecimal FUTURES_MAINTENANCE_MARGIN = new BigDecimal("0.05");
     private static final BigDecimal MARGIN_MAINTENANCE_MARGIN = new BigDecimal("0.20");
@@ -48,14 +50,11 @@ public class RiskManagementService {
     }
     
     private void monitorFuturesPositions() {
-        List<FuturesPosition> openPositions = futuresPositionRepository
-                .findAll()
-                .stream()
-                .filter(p -> p.getStatus() == PositionStatus.OPEN)
-                .toList();
+        List<FuturesPosition> openPositions = futuresPositionRepository.findAllByStatus(PositionStatus.OPEN);
         
         for (FuturesPosition position : openPositions) {
             try {
+                entityManager.detach(position);
                 BigDecimal currentPrice = marketService.getPrice(position.getSymbol()).getCurrentPrice();
                 updateFuturesPosition(position, currentPrice);
             } catch (Exception e) {
@@ -65,14 +64,11 @@ public class RiskManagementService {
     }
     
     private void monitorMarginPositions() {
-        List<MarginPosition> openPositions = marginPositionRepository
-                .findAll()
-                .stream()
-                .filter(p -> "OPEN".equals(p.getStatus()))
-                .toList();
+        List<MarginPosition> openPositions = marginPositionRepository.findAllByStatus("OPEN");
         
         for (MarginPosition position : openPositions) {
             try {
+                entityManager.detach(position);
                 BigDecimal currentPrice = marketService.getPrice(position.getSymbol()).getCurrentPrice();
                 updateMarginPosition(position, currentPrice);
             } catch (Exception e) {
@@ -134,10 +130,10 @@ public class RiskManagementService {
             return;
         }
         
-        futuresPositionRepository.save(position);
+        int updated = futuresPositionRepository.updateRiskFields(position.getId(), currentPrice, unrealizedPnL, marginRatio);
         
-        // Check liquidation condition
-        if (marginRatio.compareTo(BigDecimal.ONE) < 0) {
+        // Check liquidation condition only if position was still OPEN and updated
+        if (updated > 0 && marginRatio.compareTo(BigDecimal.ONE) < 0) {
             log.warn("Liquidating futures position {} with margin ratio: {}", position.getId(), marginRatio);
             futuresTradingService.liquidatePosition(position.getId());
         }
@@ -161,10 +157,10 @@ public class RiskManagementService {
         BigDecimal marginRatio = equity.divide(position.getBorrowedAmount(), 4, RoundingMode.HALF_UP);
         position.setMarginRatio(marginRatio);
         
-        marginPositionRepository.save(position);
+        int updated = marginPositionRepository.updateRiskFields(position.getId(), unrealizedPnL, marginRatio);
         
-        // Check liquidation condition
-        if (marginRatio.compareTo(MARGIN_MAINTENANCE_MARGIN) < 0) {
+        // Check liquidation condition only if position was still OPEN and updated
+        if (updated > 0 && marginRatio.compareTo(MARGIN_MAINTENANCE_MARGIN) < 0) {
             log.warn("Liquidating margin position {} with margin ratio: {}", position.getId(), marginRatio);
             marginTradingService.liquidatePosition(position.getId());
         }

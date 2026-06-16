@@ -20,6 +20,7 @@ public class FuturesPositionDTO {
     private BigDecimal markPrice;
     private BigDecimal unrealizedPnL;
     private BigDecimal leverage;
+    private BigDecimal collateral;
     private BigDecimal marginRatio;
     private BigDecimal stopLoss;
     private BigDecimal takeProfit;

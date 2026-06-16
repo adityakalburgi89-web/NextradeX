@@ -129,6 +129,7 @@ public class FuturesController {
                 .markPrice(position.getMarkPrice())
                 .unrealizedPnL(position.getUnrealizedPnL())
                 .leverage(position.getLeverage())
+                .collateral(position.getCollateral())
                 .marginRatio(position.getMarginRatio())
                 .stopLoss(position.getStopLoss())
                 .takeProfit(position.getTakeProfit())
