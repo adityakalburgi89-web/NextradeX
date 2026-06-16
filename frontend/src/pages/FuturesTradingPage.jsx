@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { fetchCandlestickData, fetchOpenFuturesPositions, fetchPrice, openFuturesPosition, fetchWallets, closeFuturesPosition, updateFuturesSlTp, hasAuthToken, fetchBinanceSymbols } from "../api";
+import { fetchCandlestickData, fetchOpenFuturesPositions, fetchPrice, openFuturesPosition, fetchWallets, closeFuturesPosition, updateFuturesSlTp, hasAuthToken, fetchBinanceSymbols, fetchActiveOrders, fetchOrderHistory, cancelOrder } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
@@ -94,6 +94,86 @@ export default function FuturesTradingPage() {
       setPositionsPage(totalPages || 1);
     }
   }, [positions.length, totalPages, positionsPage]);
+
+  // Order & Trade History States
+  const [activeOrders, setActiveOrders] = useState([]);
+  const [orderHistory, setOrderHistory] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+
+  // Pagination for other tabs
+  const [ordersPage, setOrdersPage] = useState(1);
+  const [orderHistPage, setOrderHistPage] = useState(1);
+  const [tradeHistPage, setTradeHistPage] = useState(1);
+
+  const activeOrdersCount = useMemo(() => {
+    return activeOrders.filter(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED").length;
+  }, [activeOrders]);
+
+  const paginatedOrders = useMemo(() => {
+    const list = activeOrders.filter(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED");
+    return list.slice((ordersPage - 1) * itemsPerPage, ordersPage * itemsPerPage);
+  }, [activeOrders, ordersPage]);
+
+  const totalOrdersPages = Math.ceil(activeOrdersCount / itemsPerPage);
+
+  const paginatedOrderHist = useMemo(() => {
+    return orderHistory.slice((orderHistPage - 1) * itemsPerPage, orderHistPage * itemsPerPage);
+  }, [orderHistory, orderHistPage]);
+
+  const totalOrderHistPages = Math.ceil(orderHistory.length / itemsPerPage);
+
+  const tradeHistoryList = useMemo(() => {
+    return orderHistory.filter(o => o.status === "FILLED" || o.status === "PARTIALLY_FILLED");
+  }, [orderHistory]);
+
+  const paginatedTradeHist = useMemo(() => {
+    return tradeHistoryList.slice((tradeHistPage - 1) * itemsPerPage, tradeHistPage * itemsPerPage);
+  }, [tradeHistoryList, tradeHistPage]);
+
+  const totalTradeHistPages = Math.ceil(tradeHistoryList.length / itemsPerPage);
+
+  const loadOrdersAndHistory = async () => {
+    try {
+      const activeRes = await fetchActiveOrders();
+      setActiveOrders(activeRes?.data?.filter(o => o.tradeType === "FUTURES") || []);
+    } catch (err) {
+      console.warn("Failed to fetch active futures orders:", err.message);
+    } finally {
+      setLoadingOrders(false);
+    }
+
+    try {
+      const histRes = await fetchOrderHistory();
+      setOrderHistory(histRes?.data?.filter(o => o.tradeType === "FUTURES") || []);
+    } catch (err) {
+      console.warn("Failed to fetch futures order history:", err.message);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  useEffect(() => {
+    loadOrdersAndHistory();
+  }, []);
+
+  useEffect(() => {
+    if (ordersPage > 1 && ordersPage > totalOrdersPages) {
+      setOrdersPage(totalOrdersPages || 1);
+    }
+  }, [activeOrders.length, totalOrdersPages, ordersPage]);
+
+  useEffect(() => {
+    if (orderHistPage > 1 && orderHistPage > totalOrderHistPages) {
+      setOrderHistPage(totalOrderHistPages || 1);
+    }
+  }, [orderHistory.length, totalOrderHistPages, orderHistPage]);
+
+  useEffect(() => {
+    if (tradeHistPage > 1 && tradeHistPage > totalTradeHistPages) {
+      setTradeHistPage(totalTradeHistPages || 1);
+    }
+  }, [tradeHistoryList.length, totalTradeHistPages, tradeHistPage]);
 
   // Load available trading symbols
   useEffect(() => {
@@ -312,6 +392,7 @@ export default function FuturesTradingPage() {
       setMessage(res?.message || `Futures ${orderSide} position opened successfully`);
       setTimeout(() => setMessage(""), 4000);
       await loadPositions();
+      await loadOrdersAndHistory();
     } catch (err) {
       setError(err.message || "Failed to open position");
       setTimeout(() => setError(""), 4000);
@@ -329,6 +410,7 @@ export default function FuturesTradingPage() {
       setMessage(res?.message || "Position closed successfully");
       setTimeout(() => setMessage(""), 4000);
       await loadPositions();
+      await loadOrdersAndHistory();
       
       // Update balance
       const walletsRes = await fetchWallets();
@@ -354,6 +436,7 @@ export default function FuturesTradingPage() {
       setMessage("All open positions closed successfully");
       setTimeout(() => setMessage(""), 4000);
       await loadPositions();
+      await loadOrdersAndHistory();
       
       // Update balance
       const walletsRes = await fetchWallets();
@@ -365,8 +448,46 @@ export default function FuturesTradingPage() {
       setError(err.message || "Failed to close all positions");
       setTimeout(() => setError(""), 4000);
       await loadPositions();
+      await loadOrdersAndHistory();
     } finally {
       setClosingPositionIds([]);
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    setLoadingOrders(true);
+    setError("");
+    setMessage("");
+    try {
+      const res = await cancelOrder(orderId);
+      setMessage(res?.message || "Order cancelled successfully");
+      setTimeout(() => setMessage(""), 4000);
+      await loadOrdersAndHistory();
+    } catch (err) {
+      setError(err.message || "Failed to cancel order");
+      setTimeout(() => setError(""), 4000);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  const handleCancelAllOrders = async () => {
+    const ordersToCancel = activeOrders.filter(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED");
+    if (ordersToCancel.length === 0) return;
+    setLoadingOrders(true);
+    setError("");
+    setMessage("");
+    try {
+      await Promise.all(ordersToCancel.map((o) => cancelOrder(o.id)));
+      setMessage("All open orders cancelled successfully");
+      setTimeout(() => setMessage(""), 4000);
+      await loadOrdersAndHistory();
+    } catch (err) {
+      setError(err.message || "Failed to cancel all orders");
+      setTimeout(() => setError(""), 4000);
+      await loadOrdersAndHistory();
+    } finally {
+      setLoadingOrders(false);
     }
   };
 
@@ -621,7 +742,15 @@ export default function FuturesTradingPage() {
                               className="pb-3 pt-3 bg-transparent border-0 rounded-none relative font-heading text-[10px] font-bold uppercase text-muted hover:text-foreground data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:font-bold transition-all cursor-pointer"
                             >
                               {tab.label}{" "}
-                              {tab.id === "POSITIONS" ? `(${positions.length})` : "(0)"}
+                              {tab.id === "POSITIONS" 
+                                ? `(${positions.length})` 
+                                : tab.id === "OPEN ORDERS" 
+                                ? `(${activeOrdersCount})` 
+                                : tab.id === "ORDER HISTORY" 
+                                ? `(${orderHistory.length})` 
+                                : tab.id === "TRADE HISTORY" 
+                                ? `(${tradeHistoryList.length})` 
+                                : "(0)"}
                               {activeBottomTab === tab.id && (
                                 <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full" />
                               )}
@@ -636,6 +765,16 @@ export default function FuturesTradingPage() {
                           >
                             <Trash2 size={12} />
                             Close All
+                          </button>
+                        )}
+                        {activeBottomTab === "OPEN ORDERS" && activeOrdersCount > 0 && (
+                          <button
+                            type="button"
+                            onClick={handleCancelAllOrders}
+                            className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                          >
+                            <Trash2 size={12} />
+                            Cancel All
                           </button>
                         )}
                       </div>
@@ -780,6 +919,238 @@ export default function FuturesTradingPage() {
                             </div>
                           </div>
                         </div>
+                      ) : activeBottomTab === "OPEN ORDERS" ? (
+                        loadingOrders ? (
+                          <div className="p-6 space-y-2">
+                            <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
+                          </div>
+                        ) : activeOrdersCount === 0 ? (
+                          <div className="py-12 text-center text-muted font-mono text-xs">
+                            No active open orders records.
+                          </div>
+                        ) : (
+                          <div className="overflow-x-auto flex-grow flex flex-col justify-between">
+                            <table className="w-full text-left border-collapse font-mono text-xs">
+                              <thead>
+                                <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
+                                  <th className="py-2.5 px-4">Symbol</th>
+                                  <th className="py-2.5 px-4">Side</th>
+                                  <th className="py-2.5 px-4">Type</th>
+                                  <th className="py-2.5 px-4 text-right">Quantity</th>
+                                  <th className="py-2.5 px-4 text-right">Price</th>
+                                  <th className="py-2.5 px-4 text-center">Action / Status</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-hairline-on-dark">
+                                {paginatedOrders.map((o) => (
+                                  <tr key={o.id} className="hover:bg-background/[0.01] transition-colors">
+                                    <td className="py-3 px-4 font-bold text-foreground uppercase">{o.symbol}</td>
+                                    <td className="py-3 px-4">
+                                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                                        o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
+                                      }`}>
+                                        {o.side}
+                                      </span>
+                                    </td>
+                                    <td className="py-3 px-4 text-muted">{o.orderType}</td>
+                                    <td className="py-3 px-4 text-right font-semibold">{o.quantity}</td>
+                                    <td className="py-3 px-4 text-right font-semibold">{formatCurrency(o.price)}</td>
+                                    <td className="py-3 px-4 text-center">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleCancelOrder(o.id)}
+                                        className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all cursor-pointer"
+                                      >
+                                        Cancel
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                            {/* Pagination Controls */}
+                            {totalOrdersPages > 1 && (
+                              <div className="flex items-center justify-between px-4 py-2 border-t border-white/[0.04] bg-background/20 mt-auto">
+                                <div className="text-[10px] text-muted font-mono">
+                                  Showing {(ordersPage - 1) * itemsPerPage + 1} to {Math.min(ordersPage * itemsPerPage, activeOrdersCount)} of {activeOrdersCount}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setOrdersPage((p) => Math.max(p - 1, 1))}
+                                    disabled={ordersPage === 1}
+                                    className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
+                                  >
+                                    Prev
+                                  </button>
+                                  <span className="text-[10px] text-muted font-mono px-1">
+                                    {ordersPage} / {totalOrdersPages}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setOrdersPage((p) => Math.min(p + 1, totalOrdersPages))}
+                                    disabled={ordersPage === totalOrdersPages}
+                                    className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
+                                  >
+                                    Next
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      ) : activeBottomTab === "ORDER HISTORY" ? (
+                        loadingHistory ? (
+                          <div className="p-6 space-y-2">
+                            <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
+                          </div>
+                        ) : orderHistory.length === 0 ? (
+                          <div className="py-12 text-center text-muted font-mono text-xs">
+                            No active order history records.
+                          </div>
+                        ) : (
+                          <div className="overflow-x-auto flex-grow flex flex-col justify-between">
+                            <table className="w-full text-left border-collapse font-mono text-xs">
+                              <thead>
+                                <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
+                                  <th className="py-2.5 px-4">Symbol</th>
+                                  <th className="py-2.5 px-4">Side</th>
+                                  <th className="py-2.5 px-4">Type</th>
+                                  <th className="py-2.5 px-4 text-right">Quantity</th>
+                                  <th className="py-2.5 px-4 text-right">Price</th>
+                                  <th className="py-2.5 px-4 text-right">Status</th>
+                                  <th className="py-2.5 px-4 text-right">Date</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-hairline-on-dark">
+                                {paginatedOrderHist.map((o) => (
+                                  <tr key={o.id} className="hover:bg-background/[0.01] transition-colors">
+                                    <td className="py-3 px-4 font-bold text-foreground uppercase">{o.symbol}</td>
+                                    <td className="py-3 px-4">
+                                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                                        o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
+                                      }`}>
+                                        {o.side}
+                                      </span>
+                                    </td>
+                                    <td className="py-3 px-4 text-muted">{o.orderType}</td>
+                                    <td className="py-3 px-4 text-right font-semibold">{o.quantity}</td>
+                                    <td className="py-3 px-4 text-right font-semibold">{formatCurrency(o.price)}</td>
+                                    <td className="py-3 px-4 text-right">
+                                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                        o.status === "FILLED" ? "bg-trading-up/10 text-trading-up" : o.status === "CANCELED" ? "bg-background text-muted" : "bg-primary/15 text-primary"
+                                      }`}>
+                                        {o.status}
+                                      </span>
+                                    </td>
+                                    <td className="py-3 px-4 text-right text-muted">{o.createdAt ? new Date(o.createdAt).toLocaleString() : "---"}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                            {/* Pagination Controls */}
+                            {totalOrderHistPages > 1 && (
+                              <div className="flex items-center justify-between px-4 py-2 border-t border-white/[0.04] bg-background/20 mt-auto">
+                                <div className="text-[10px] text-muted font-mono">
+                                  Showing {(orderHistPage - 1) * itemsPerPage + 1} to {Math.min(orderHistPage * itemsPerPage, orderHistory.length)} of {orderHistory.length}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setOrderHistPage((p) => Math.max(p - 1, 1))}
+                                    disabled={orderHistPage === 1}
+                                    className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
+                                  >
+                                    Prev
+                                  </button>
+                                  <span className="text-[10px] text-muted font-mono px-1">
+                                    {orderHistPage} / {totalOrderHistPages}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setOrderHistPage((p) => Math.min(p + 1, totalOrderHistPages))}
+                                    disabled={orderHistPage === totalOrderHistPages}
+                                    className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
+                                  >
+                                    Next
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      ) : activeBottomTab === "TRADE HISTORY" ? (
+                        loadingHistory ? (
+                          <div className="p-6 space-y-2">
+                            <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
+                          </div>
+                        ) : tradeHistoryList.length === 0 ? (
+                          <div className="py-12 text-center text-muted font-mono text-xs">
+                            No active trade history records.
+                          </div>
+                        ) : (
+                          <div className="overflow-x-auto flex-grow flex flex-col justify-between">
+                            <table className="w-full text-left border-collapse font-mono text-xs">
+                              <thead>
+                                <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
+                                  <th className="py-2.5 px-4">Symbol</th>
+                                  <th className="py-2.5 px-4">Side</th>
+                                  <th className="py-2.5 px-4 text-right">Filled Qty</th>
+                                  <th className="py-2.5 px-4 text-right">Avg Price</th>
+                                  <th className="py-2.5 px-4 text-right">Total Cost</th>
+                                  <th className="py-2.5 px-4 text-right">Date</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-hairline-on-dark">
+                                {paginatedTradeHist.map((o) => (
+                                  <tr key={o.id} className="hover:bg-background/[0.01] transition-colors">
+                                    <td className="py-3 px-4 font-bold text-foreground uppercase">{o.symbol}</td>
+                                    <td className="py-3 px-4">
+                                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                                        o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
+                                      }`}>
+                                        {o.side}
+                                      </span>
+                                    </td>
+                                    <td className="py-3 px-4 text-right font-semibold">{o.filledQuantity || o.quantity}</td>
+                                    <td className="py-3 px-4 text-right font-semibold">{formatCurrency(o.averagePrice || o.price)}</td>
+                                    <td className="py-3 px-4 text-right font-semibold">{formatCurrency((o.filledQuantity || o.quantity) * (o.averagePrice || o.price))}</td>
+                                    <td className="py-3 px-4 text-right text-muted">{o.filledAt ? new Date(o.filledAt).toLocaleString() : o.createdAt ? new Date(o.createdAt).toLocaleString() : "---"}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                            {/* Pagination Controls */}
+                            {totalTradeHistPages > 1 && (
+                              <div className="flex items-center justify-between px-4 py-2 border-t border-white/[0.04] bg-background/20 mt-auto">
+                                <div className="text-[10px] text-muted font-mono">
+                                  Showing {(tradeHistPage - 1) * itemsPerPage + 1} to {Math.min(tradeHistPage * itemsPerPage, tradeHistoryList.length)} of {tradeHistoryList.length}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setTradeHistPage((p) => Math.max(p - 1, 1))}
+                                    disabled={tradeHistPage === 1}
+                                    className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
+                                  >
+                                    Prev
+                                  </button>
+                                  <span className="text-[10px] text-muted font-mono px-1">
+                                    {tradeHistPage} / {totalTradeHistPages}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setTradeHistPage((p) => Math.min(p + 1, totalTradeHistPages))}
+                                    disabled={tradeHistPage === totalTradeHistPages}
+                                    className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
+                                  >
+                                    Next
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )
                       ) : (
                         <div className="py-12 text-center text-muted font-mono text-xs">
                           No active {activeBottomTab.toLowerCase()} records.
