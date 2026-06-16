@@ -101,6 +101,10 @@ public class SpotTradingService {
         }
         
         BigDecimal executionPrice = order.getPrice();
+        if (executionPrice == null || order.getOrderType() == OrderType.STOP_MARKET || order.getOrderType() == OrderType.TAKE_PROFIT_MARKET) {
+            executionPrice = marketService.getPrice(order.getSymbol()).getCurrentPrice();
+            order.setPrice(executionPrice);
+        }
         BigDecimal totalCost = executionPrice.multiply(order.getQuantity());
         BigDecimal commission = totalCost.multiply(COMMISSION_RATE);
         BigDecimal totalWithCommission = totalCost.add(commission);
