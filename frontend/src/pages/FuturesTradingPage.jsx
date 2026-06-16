@@ -77,6 +77,23 @@ export default function FuturesTradingPage() {
   const [usdtWalletBalance, setUsdtWalletBalance] = useState(0.00);
   const [pricesMap, setPricesMap] = useState({});
 
+  // Pagination states
+  const [positionsPage, setPositionsPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const totalPages = Math.ceil(positions.length / itemsPerPage);
+
+  const paginatedPositions = useMemo(() => {
+    return positions.slice((positionsPage - 1) * itemsPerPage, positionsPage * itemsPerPage);
+  }, [positions, positionsPage]);
+
+  // Reset page if it exceeds total pages
+  useEffect(() => {
+    if (positionsPage > 1 && positionsPage > totalPages) {
+      setPositionsPage(totalPages || 1);
+    }
+  }, [positions.length, totalPages, positionsPage]);
+
   // Load available trading symbols
   useEffect(() => {
     const getSymbols = async () => {
@@ -292,9 +309,11 @@ export default function FuturesTradingPage() {
       };
       const res = await openFuturesPosition(payload);
       setMessage(res?.message || `Futures ${orderSide} position opened successfully`);
+      setTimeout(() => setMessage(""), 4000);
       await loadPositions();
     } catch (err) {
       setError(err.message || "Failed to open position");
+      setTimeout(() => setError(""), 4000);
     } finally {
       setLoading(false);
     }
@@ -560,10 +579,10 @@ export default function FuturesTradingPage() {
           </div>
 
           {/* MAIN PRO TRADING WORKSPACE CONTAINER */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             
             {/* LEFT AREA: Chart (col-span-9) + Bottom Analytics */}
-            <div className="lg:col-span-9 space-y-4">
+            <div className="lg:col-span-9 flex flex-col gap-4">
               <TradingChartPanel
                 title="Futures Real-Time Workspace"
                 description="High-fidelity futures execution engine featuring real-time candle matching and leverage modifiers."
@@ -577,11 +596,11 @@ export default function FuturesTradingPage() {
               />
 
               {/* Bottom Row Sub-Grid: Tabs (9-cols) + Order Book (3-cols) */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                <div className="md:col-span-9 h-full">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 flex-grow">
+                <div className="md:col-span-9 flex flex-col">
                   {/* HIGH-FIDELITY POSITIONS AND BALANCES BOTTOM TAB GRID */}
-                  <Tabs value={activeBottomTab} onValueChange={setActiveBottomTab} className="w-full h-full flex flex-col">
-                    <Card className="bg-background border border-transparent rounded-xl overflow-hidden shadow-elevation-md h-full flex flex-col">
+                  <Tabs value={activeBottomTab} onValueChange={setActiveBottomTab} className="w-full flex-grow flex flex-col">
+                    <Card className="bg-background border border-transparent rounded-xl overflow-hidden shadow-elevation-md flex-grow flex flex-col">
                       <div className="bg-background/30 border-b border-transparent px-4 flex items-center justify-between">
                         <TabsList className="flex gap-4 bg-transparent border-0 p-0 h-auto rounded-none">
                           {[
@@ -628,7 +647,7 @@ export default function FuturesTradingPage() {
                             No active leveraged exposures.
                           </div>
                         ) : (
-                          <div className="overflow-x-auto">
+                          <div className="overflow-x-auto flex-grow flex flex-col justify-between">
                             <table className="w-full text-left border-collapse font-mono text-xs">
                               <thead>
                                 <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
@@ -643,7 +662,7 @@ export default function FuturesTradingPage() {
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-hairline-on-dark">
-                                {positions.map((p) => {
+                                {paginatedPositions.map((p) => {
                                   const currentPrice = pricesMap[p.symbol.toUpperCase()] || Number(p.markPrice || p.entryPrice);
                                   const entryPrice = Number(p.entryPrice);
                                   const qty = Number(p.quantity);
@@ -705,6 +724,36 @@ export default function FuturesTradingPage() {
                                 })}
                               </tbody>
                             </table>
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                              <div className="flex items-center justify-between px-4 py-2 border-t border-white/[0.04] bg-background/20 mt-auto">
+                                <div className="text-[10px] text-muted font-mono">
+                                  Showing {(positionsPage - 1) * itemsPerPage + 1} to {Math.min(positionsPage * itemsPerPage, positions.length)} of {positions.length}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setPositionsPage((p) => Math.max(p - 1, 1))}
+                                    disabled={positionsPage === 1}
+                                    className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
+                                  >
+                                    Prev
+                                  </button>
+                                  <span className="text-[10px] text-muted font-mono px-1">
+                                    {positionsPage} / {totalPages}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setPositionsPage((p) => Math.min(p + 1, totalPages))}
+                                    disabled={positionsPage === totalPages}
+                                    className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
+                                  >
+                                    Next
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )
                       ) : activeBottomTab === "ASSETS" ? (
@@ -735,7 +784,7 @@ export default function FuturesTradingPage() {
                 </div>
 
                 {/* Order Book component (col-span-3) */}
-                <div className="md:col-span-3 h-full">
+                <div className="md:col-span-3 flex flex-col">
                   <OrderBook
                     symbol={symbol}
                     currentPrice={priceSnapshot?.currentPrice}
@@ -962,17 +1011,18 @@ export default function FuturesTradingPage() {
                     </div>
                   </div>
 
-                  {/* Feedback overlays */}
-                  {message && (
-                    <div role="status" className="p-2.5 rounded bg-trading-up/10 border border-trading-up/20 text-center animate-slide-down">
-                      <p className="text-trading-up text-xs font-semibold">{message}</p>
-                    </div>
-                  )}
-                  {error && (
-                    <div role="alert" className="text-trading-down text-xs mt-1 p-2.5 rounded bg-trading-down/10 border border-trading-down/20 text-center animate-slide-down">
-                      {error}
-                    </div>
-                  )}
+                  {/* Feedback overlays with reserved space to prevent layout shifts */}
+                  <div className="h-[46px] flex items-center justify-center">
+                    {message ? (
+                      <div role="status" className="w-full p-2.5 rounded bg-trading-up/10 border border-trading-up/20 text-center animate-slide-down">
+                        <p className="text-trading-up text-xs font-semibold">{message}</p>
+                      </div>
+                    ) : error ? (
+                      <div role="alert" className="w-full p-2.5 rounded bg-trading-down/10 border border-trading-down/20 text-center animate-slide-down">
+                        <p className="text-trading-down text-xs font-semibold">{error}</p>
+                      </div>
+                    ) : null}
+                  </div>
 
                   {/* Side-by-side Buy/Sell Buttons — 48px touch targets */}
                   {orderMode === "OPEN" ? (
@@ -1023,66 +1073,68 @@ export default function FuturesTradingPage() {
               </Card>
 
               {/* Futures Assets & Risk Margin Card */}
-              <Card className="border border-transparent bg-background rounded-xl p-4 space-y-4 shadow-elevation-md">
-                <div className="flex justify-between items-center border-b border-transparent pb-2 mb-1">
-                  <h4 className="font-heading text-xs font-bold text-foreground uppercase flex items-center gap-1.5">
-                    <Shield size={14} className="text-primary" />
-                    Futures Account
-                  </h4>
-                  <span className="text-[9px] font-mono font-bold bg-[#6C63FF]/15 text-[#6C63FF] px-1 rounded uppercase">Risk Level</span>
-                </div>
+              <Card className="border border-transparent bg-background rounded-xl p-4 shadow-elevation-md flex-grow flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-transparent pb-2 mb-1">
+                    <h4 className="font-heading text-xs font-bold text-foreground uppercase flex items-center gap-1.5">
+                      <Shield size={14} className="text-primary" />
+                      Futures Account
+                    </h4>
+                    <span className="text-[9px] font-mono font-bold bg-[#6C63FF]/15 text-[#6C63FF] px-1 rounded uppercase">Risk Level</span>
+                  </div>
 
-                <div className="space-y-1">
-                  <span className="text-[10px] text-muted font-mono uppercase block">Estimated Equity</span>
-                  <div className="text-lg font-bold font-mono text-foreground flex items-baseline gap-1.5">
-                    {usdtWalletBalance.toFixed(2)} <span className="text-xs text-muted font-normal">USDT</span>
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-muted font-mono uppercase block">Estimated Equity</span>
+                    <div className="text-lg font-bold font-mono text-foreground flex items-baseline gap-1.5">
+                      {usdtWalletBalance.toFixed(2)} <span className="text-xs text-muted font-normal">USDT</span>
+                    </div>
                   </div>
-                </div>
 
-                {/* Margin Ratio progress indicator */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between items-center text-[10px] font-mono">
-                    <span className="text-muted">Margin Ratio</span>
-                    <span className="text-trading-up font-bold">0.0% SAFE</span>
+                  {/* Margin Ratio progress indicator */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center text-[10px] font-mono">
+                      <span className="text-muted">Margin Ratio</span>
+                      <span className="text-trading-up font-bold">0.0% SAFE</span>
+                    </div>
+                    {/* Progress bar */}
+                    <div className="w-full h-1.5 bg-background rounded-full overflow-hidden">
+                      <div className="h-full bg-trading-up rounded-full" style={{ width: "0%" }} />
+                    </div>
                   </div>
-                  {/* Progress bar */}
-                  <div className="w-full h-1.5 bg-background rounded-full overflow-hidden">
-                    <div className="h-full bg-trading-up rounded-full" style={{ width: "0%" }} />
-                  </div>
-                </div>
 
-                {/* Mini risk/margin details */}
-                <div className="border border-transparent bg-background/40 rounded-2xl p-2.5 space-y-2 text-[10px] font-mono">
-                  <div className="flex justify-between items-center text-muted">
-                    <span>Margin Balance</span>
-                    <span className="text-foreground font-bold">{formatCurrency(usdtWalletBalance)}</span>
+                  {/* Mini risk/margin details */}
+                  <div className="border border-transparent bg-background/40 rounded-2xl p-2.5 space-y-2 text-[10px] font-mono">
+                    <div className="flex justify-between items-center text-muted">
+                      <span>Margin Balance</span>
+                      <span className="text-foreground font-bold">{formatCurrency(usdtWalletBalance)}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-t border-transparent pt-1.5">
+                      <span className="text-muted">Maintenance Margin</span>
+                      <span className="text-foreground font-bold">0.00 USDT</span>
+                    </div>
+                    <div className="flex justify-between items-center border-t border-transparent pt-1.5">
+                      <span className="text-muted">Active Leverage Mode</span>
+                      <span className="text-primary font-bold">{marginMode} {leverage}x</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center border-t border-transparent pt-1.5">
-                    <span className="text-muted">Maintenance Margin</span>
-                    <span className="text-foreground font-bold">0.00 USDT</span>
-                  </div>
-                  <div className="flex justify-between items-center border-t border-transparent pt-1.5">
-                    <span className="text-muted">Active Leverage Mode</span>
-                    <span className="text-primary font-bold">{marginMode} {leverage}x</span>
-                  </div>
-                </div>
 
-                {/* Quick actions grid */}
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  <Link to="/wallets" className="flex-1">
-                    <button className="w-full py-2 bg-[#6C63FF] hover:bg-[#6C63FF]/90 text-white rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
-                      DEPOSIT
-                    </button>
-                  </Link>
-                  <Link to="/wallets" className="flex-1">
-                    <button className="w-full py-2 bg-[#3D4852] hover:bg-[#3D4852]/90 text-white rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
-                      TRANSFER
-                    </button>
-                  </Link>
+                  {/* Quick actions grid */}
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <Link to="/wallets" className="flex-1">
+                      <button className="w-full py-2 bg-[#6C63FF] hover:bg-[#6C63FF]/90 text-white rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
+                        DEPOSIT
+                      </button>
+                    </Link>
+                    <Link to="/wallets" className="flex-1">
+                      <button className="w-full py-2 bg-[#3D4852] hover:bg-[#3D4852]/90 text-white rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
+                        TRANSFER
+                      </button>
+                    </Link>
+                  </div>
                 </div>
 
                 {/* Streaming Real-Time matched Trades Panel */}
-                <div className="border-t border-transparent pt-4">
+                <div className="border-t border-transparent pt-4 mt-auto">
                   <div className="flex justify-between items-center pb-2 mb-3">
                     <h4 className="font-heading text-[10px] font-bold text-muted uppercase flex items-center gap-1.5">
                       Recent Trades
@@ -1090,9 +1142,9 @@ export default function FuturesTradingPage() {
                     <span className="text-[9px] text-muted">{symbol} Live</span>
                   </div>
 
-                  <div className="flex justify-between text-muted text-[9px] uppercase font-semibold pb-1 border-b border-transparent mb-1.5">
-                    <span>Price(USDT)</span>
-                    <span>Amount({baseAsset})</span>
+                  <div className="grid grid-cols-3 text-muted text-[9px] uppercase font-semibold pb-1 border-b border-transparent mb-1.5">
+                    <span className="text-left">Price(USDT)</span>
+                    <span className="text-center">Amount({baseAsset})</span>
                     <span className="text-right">Time</span>
                   </div>
 
@@ -1101,11 +1153,11 @@ export default function FuturesTradingPage() {
                       <div className="py-2 text-center text-muted text-[9px]">Waiting...</div>
                     ) : (
                       recentTrades.slice(0, 5).map((t) => (
-                        <div key={t.id} className="flex justify-between items-center h-5 px-1 hover:bg-background/[0.02] rounded transition-colors text-[10px]">
-                          <span className={`font-bold ${t.side === "BUY" ? "text-trading-up" : "text-trading-down"}`}>
+                        <div key={t.id} className="grid grid-cols-3 items-center h-5 px-1 hover:bg-background/[0.02] rounded transition-colors text-[10px]">
+                          <span className={`font-bold text-left ${t.side === "BUY" ? "text-trading-up" : "text-trading-down"}`}>
                             {formatCurrency(t.price)}
                           </span>
-                          <span className="text-foreground font-medium">{t.amount}</span>
+                          <span className="text-foreground font-medium text-center">{t.amount}</span>
                           <span className="text-muted text-[9px] text-right">{t.time}</span>
                         </div>
                       ))

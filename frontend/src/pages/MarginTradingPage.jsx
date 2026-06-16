@@ -293,9 +293,11 @@ export default function MarginTradingPage() {
       };
       const res = await openMarginPosition(payload);
       setMessage(res?.message || "Margin position opened successfully");
+      setTimeout(() => setMessage(""), 4000);
       loadAllUserData();
     } catch (err) {
       setError(err.message || "Failed to open margin position");
+      setTimeout(() => setError(""), 4000);
     } finally {
       setLoading(false);
     }
@@ -906,16 +908,18 @@ export default function MarginTradingPage() {
                       </div>
                     </div>
 
-                    {message && (
-                      <div role="status" className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-trading-up/10 border border-trading-up/20 animate-slide-down">
-                        <p className="text-trading-up text-xs font-mono">{message}</p>
-                      </div>
-                    )}
-                    {error && (
-                      <div role="alert" className="text-trading-down text-xs mt-1 px-3 py-2.5 rounded-2xl bg-trading-down/10 border border-trading-down/20 animate-slide-down">
-                        {error}
-                      </div>
-                    )}
+                    {/* Feedback overlays with reserved space to prevent layout shifts */}
+                    <div className="h-[46px] flex items-center justify-center">
+                      {message ? (
+                        <div role="status" className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-2xl bg-trading-up/10 border border-trading-up/20 animate-slide-down">
+                          <p className="text-trading-up text-xs font-mono">{message}</p>
+                        </div>
+                      ) : error ? (
+                        <div role="alert" className="w-full text-trading-down text-xs px-3 py-2 rounded-2xl bg-trading-down/10 border border-trading-down/20 animate-slide-down text-center">
+                          {error}
+                        </div>
+                      ) : null}
+                    </div>
                   </CardContent>
 
                   <CardFooter className="pt-2 pb-4">
