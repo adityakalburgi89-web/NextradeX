@@ -138,7 +138,7 @@ const centerCoins = [
   { symbol: "SUI", icon: suiIcon }
 ];
 
-export default function HomePage() {
+export default function HomePage({ isLoggedIn }) {
   const [activeMarketTab, setActiveMarketTab] = useState("popular");
   const [userCount, setUserCount] = useState(316258026);
   const [prices, setPrices] = useState([]);
@@ -351,7 +351,7 @@ export default function HomePage() {
                   className="flex flex-col sm:flex-row items-center gap-4 justify-start w-full sm:w-auto"
                 >
                   <Button variant="primaryPill" className="w-full sm:w-auto" asChild>
-                    <Link to="/auth">Start Trading</Link>
+                    <Link to={isLoggedIn ? "/markets" : "/auth"}>Start Trading</Link>
                   </Button>
                   <Button variant="outline" className="w-full sm:w-auto text-foreground light:text-foreground hover:bg-background light:hover:bg-background" asChild>
                     <Link to="/markets">View Markets</Link>
@@ -868,7 +868,7 @@ export default function HomePage() {
                 </p>
               </div>
               <Button variant="default" className="w-full md:w-auto h-12 px-8 text-base font-semibold" asChild>
-                <Link ddto="/auth">Sign Up Now</Link>
+                <Link to={isLoggedIn ? "/markets" : "/auth"}>Sign Up Now</Link>
               </Button>
             </motion.div>
           </div>

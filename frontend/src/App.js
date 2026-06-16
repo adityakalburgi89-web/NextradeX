@@ -107,7 +107,7 @@ function App() {
         <ErrorBoundary>
           <div id="main-content" className="relative z-10 w-full">
             <Routes>
-              <Route path="/" element={<HomePage />} />
+              <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/dashboard" element={<ProtectedRoute isLoggedIn={isLoggedIn}><DashboardPage /></ProtectedRoute>} />
               <Route path="/markets" element={<MarketsPage />} />
