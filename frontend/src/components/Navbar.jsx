@@ -184,7 +184,7 @@ export default function Navbar({ theme, isLoggedIn, user, setSearchOpen, trigger
               <>
                 <div className="glow-line my-3" />
                 <Link to="/auth?mode=login" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
-                <Link to="/auth?mode=register" className="hidden block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
+                <Link to="/auth?mode=register" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
               </>
             )}
           </div>
