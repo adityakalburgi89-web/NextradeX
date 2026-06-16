@@ -80,6 +80,7 @@ export default function FuturesTradingPage() {
   // Pagination states
   const [positionsPage, setPositionsPage] = useState(1);
   const itemsPerPage = 5;
+  const [closingPositionIds, setClosingPositionIds] = useState([]);
 
   const totalPages = Math.ceil(positions.length / itemsPerPage);
 
@@ -320,12 +321,13 @@ export default function FuturesTradingPage() {
   };
   
   const handleClosePosition = async (positionId) => {
-    setLoadingPositions(true);
+    setClosingPositionIds((prev) => [...prev, positionId]);
     setError("");
     setMessage("");
     try {
       const res = await closeFuturesPosition(positionId);
       setMessage(res?.message || "Position closed successfully");
+      setTimeout(() => setMessage(""), 4000);
       await loadPositions();
       
       // Update balance
@@ -336,19 +338,21 @@ export default function FuturesTradingPage() {
       }
     } catch (err) {
       setError(err.message || "Failed to close position");
+      setTimeout(() => setError(""), 4000);
     } finally {
-      setLoadingPositions(false);
+      setClosingPositionIds((prev) => prev.filter((id) => id !== positionId));
     }
   };
 
   const handleCloseAllPositions = async () => {
     if (positions.length === 0) return;
-    setLoadingPositions(true);
+    setClosingPositionIds(positions.map((p) => p.id));
     setError("");
     setMessage("");
     try {
       await Promise.all(positions.map((p) => closeFuturesPosition(p.id)));
       setMessage("All open positions closed successfully");
+      setTimeout(() => setMessage(""), 4000);
       await loadPositions();
       
       // Update balance
@@ -359,9 +363,10 @@ export default function FuturesTradingPage() {
       }
     } catch (err) {
       setError(err.message || "Failed to close all positions");
+      setTimeout(() => setError(""), 4000);
       await loadPositions();
     } finally {
-      setLoadingPositions(false);
+      setClosingPositionIds([]);
     }
   };
 
@@ -705,17 +710,19 @@ export default function FuturesTradingPage() {
                                         <div className="flex items-center justify-center gap-2">
                                           <button
                                             type="button"
+                                            disabled={closingPositionIds.includes(p.id)}
                                             onClick={() => handleOpenSlTpModal(p)}
-                                            className="px-2 py-1 bg-background hover:bg-primary/15 hover:text-primary border border-transparent rounded text-[10px] font-semibold transition-all"
+                                            className="px-2 py-1 bg-background hover:bg-primary/15 hover:text-primary border border-transparent rounded text-[10px] font-semibold transition-all disabled:opacity-40 disabled:pointer-events-none"
                                           >
                                             Set TP/SL
                                           </button>
                                           <button
                                             type="button"
+                                            disabled={closingPositionIds.includes(p.id)}
                                             onClick={() => handleClosePosition(p.id)}
-                                            className="px-2 py-1 bg-trading-down/10 hover:bg-trading-down/25 text-trading-down border border-trading-down/20 rounded text-[10px] font-semibold transition-all"
+                                            className="px-2 py-1 bg-trading-down/10 hover:bg-trading-down/25 text-trading-down border border-trading-down/20 rounded text-[10px] font-semibold transition-all disabled:opacity-50 disabled:pointer-events-none"
                                           >
-                                            Close
+                                            {closingPositionIds.includes(p.id) ? "Closing..." : "Close"}
                                           </button>
                                         </div>
                                       </td>
