@@ -794,7 +794,7 @@ export default function HomePage({ isLoggedIn }) {
                         <img src={linkedInIcon} alt="LinkedIn" className="w-4 h-4 object-contain" />
                       </a>
                       <a href="https://github.com/aditykalburgi" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-2xl bg-background light:bg-background border border-transparent light:border-transparent flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
-                        <img src={githubIcon} alt="GitHub" className="w-4 h-4 object-contain brightness-0 invert light:invert-0" />
+                        <img src={githubIcon} alt="GitHub" className="w-4 h-4 object-contain" />
                       </a>
                     </div>
                   </div>
