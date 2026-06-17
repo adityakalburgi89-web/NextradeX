@@ -213,7 +213,7 @@ export default function FuturesTradingPage() {
       s.toLowerCase().includes(symbolSearch.toLowerCase())
     );
   }, [symbolsList, symbolSearch]);
-  
+
   // Real-time streaming mock recent trades
   const [recentTrades, setRecentTrades] = useState([]);
 
@@ -283,11 +283,11 @@ export default function FuturesTradingPage() {
         if (!prev || prev.length === 0) return prev;
         const lastIndex = prev.length - 1;
         const lastCandle = { ...prev[lastIndex] };
-        
+
         lastCandle.close = newPrice;
         if (newPrice > lastCandle.high) lastCandle.high = newPrice;
         if (newPrice < lastCandle.low) lastCandle.low = newPrice;
-        
+
         const next = [...prev];
         next[lastIndex] = lastCandle;
         return next;
@@ -400,7 +400,7 @@ export default function FuturesTradingPage() {
       setLoading(false);
     }
   };
-  
+
   const handleClosePosition = async (positionId) => {
     setClosingPositionIds((prev) => [...prev, positionId]);
     setError("");
@@ -411,7 +411,7 @@ export default function FuturesTradingPage() {
       setTimeout(() => setMessage(""), 4000);
       await loadPositions();
       await loadOrdersAndHistory();
-      
+
       // Update balance
       const walletsRes = await fetchWallets();
       const usdtWallet = walletsRes?.data?.find(w => w.walletType === "FUTURES");
@@ -437,7 +437,7 @@ export default function FuturesTradingPage() {
       setTimeout(() => setMessage(""), 4000);
       await loadPositions();
       await loadOrdersAndHistory();
-      
+
       // Update balance
       const walletsRes = await fetchWallets();
       const usdtWallet = walletsRes?.data?.find(w => w.walletType === "FUTURES");
@@ -576,10 +576,10 @@ export default function FuturesTradingPage() {
     <PageTransition>
       <div className="w-full bg-background text-foreground py-4 font-sans select-none min-h-screen">
         <div className="max-w-8xl mx-auto px-4 space-y-4">
-          
+
           {/* HIGH-DENSITY TICKER HEADER PANEL */}
           <div className="bg-background border border-transparent rounded-xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-6 shadow-elevation-md">
-            
+
             {/* Asset Symbol & Base Stats */}
             <div className="flex items-center gap-4 relative" ref={dropdownRef}>
               <button
@@ -630,9 +630,8 @@ export default function FuturesTradingPage() {
                               setSymbol(sym.toUpperCase());
                               setIsDropdownOpen(false);
                             }}
-                            className={`w-full text-left px-4 py-2.5 text-xs font-mono font-semibold flex items-center justify-between hover:bg-background transition-colors ${
-                              isSelected ? "text-primary bg-primary/[0.05]" : "text-foreground"
-                            }`}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-mono font-semibold flex items-center justify-between hover:bg-background transition-colors ${isSelected ? "text-primary bg-primary/[0.05]" : "text-foreground"
+                              }`}
                           >
                             <span>{sym.toUpperCase()}</span>
                             {isSelected && <span className="text-[9px] font-bold bg-primary/20 px-1.5 py-0.5 rounded text-primary uppercase">Active</span>}
@@ -706,7 +705,7 @@ export default function FuturesTradingPage() {
 
           {/* MAIN PRO TRADING WORKSPACE CONTAINER */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            
+
             {/* LEFT AREA: Chart (col-span-9) + Bottom Analytics */}
             <div className="lg:col-span-9 flex flex-col gap-4">
               <TradingChartPanel
@@ -742,15 +741,15 @@ export default function FuturesTradingPage() {
                               className="pb-3 pt-3 bg-transparent border-0 rounded-none relative font-heading text-[10px] font-bold uppercase text-muted hover:text-foreground data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:font-bold transition-all cursor-pointer"
                             >
                               {tab.label}{" "}
-                              {tab.id === "POSITIONS" 
-                                ? `(${positions.length})` 
-                                : tab.id === "OPEN ORDERS" 
-                                ? `(${activeOrdersCount})` 
-                                : tab.id === "ORDER HISTORY" 
-                                ? `(${orderHistory.length})` 
-                                : tab.id === "TRADE HISTORY" 
-                                ? `(${tradeHistoryList.length})` 
-                                : "(0)"}
+                              {tab.id === "POSITIONS"
+                                ? `(${positions.length})`
+                                : tab.id === "OPEN ORDERS"
+                                  ? `(${activeOrdersCount})`
+                                  : tab.id === "ORDER HISTORY"
+                                    ? `(${orderHistory.length})`
+                                    : tab.id === "TRADE HISTORY"
+                                      ? `(${tradeHistoryList.length})`
+                                      : "(0)"}
                               {activeBottomTab === tab.id && (
                                 <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full" />
                               )}
@@ -780,385 +779,380 @@ export default function FuturesTradingPage() {
                       </div>
 
                       <CardContent className="p-0 min-h-[160px] flex-1 flex flex-col">
-                      {activeBottomTab === "POSITIONS" ? (
-                        loadingPositions ? (
-                          <div className="p-6 space-y-2">
-                            <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
-                            <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
-                          </div>
-                        ) : positions.length === 0 ? (
-                          <div className="py-12 text-center text-muted font-mono text-xs">
-                            No active leveraged exposures.
-                          </div>
-                        ) : (
-                          <div className="overflow-x-auto flex-grow flex flex-col justify-between">
-                            <table className="w-full text-left border-collapse font-mono text-xs">
-                              <thead>
-                                <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
-                                  <th className="py-2.5 px-4">Symbol</th>
-                                  <th className="py-2.5 px-4">Mode</th>
-                                  <th className="py-2.5 px-4 text-right">Size</th>
-                                  <th className="py-2.5 px-4 text-right">Entry Price</th>
-                                  <th className="py-2.5 px-4 text-right">Leverage</th>
-                                  <th className="py-2.5 px-4 text-right">Unrealized PnL</th>
-                                  <th className="py-2.5 px-4 text-center">TP / SL</th>
-                                  <th className="py-2.5 px-4 text-center">Actions</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-hairline-on-dark">
-                                {paginatedPositions.map((p) => {
-                                  const currentPrice = pricesMap[p.symbol.toUpperCase()] || Number(p.markPrice || p.entryPrice);
-                                  const entryPrice = Number(p.entryPrice);
-                                  const qty = Number(p.quantity);
-                                  
-                                  let pnlVal;
-                                  if (p.positionMode === "LONG") {
-                                    pnlVal = (currentPrice - entryPrice) * qty;
-                                  } else { // SHORT
-                                    pnlVal = (entryPrice - currentPrice) * qty;
-                                  }
-                                  
-                                  const isProfit = pnlVal >= 0;
-                                  return (
-                                    <tr key={p.id} className="hover:bg-background/[0.01] transition-colors">
-                                      <td className="py-3 px-4 font-bold text-foreground">{p.symbol}</td>
-                                      <td className="py-3 px-4">
-                                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                                          p.positionMode === "LONG" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
-                                        }`}>
-                                          {p.positionMode}
-                                        </span>
-                                      </td>
-                                      <td className="py-3 px-4 text-right font-semibold">{p.quantity}</td>
-                                      <td className="py-3 px-4 text-right text-muted">{p.entryPrice}</td>
-                                      <td className="py-3 px-4 text-right text-primary font-bold">{p.leverage}x</td>
-                                      <td className={`py-3 px-4 text-right font-bold text-sm ${isProfit ? "text-trading-up" : "text-trading-down"}`}>
-                                        {isProfit ? "+" : ""}{pnlVal.toFixed(2)} USDT
-                                      </td>
-                                      <td className="py-3 px-4 text-center">
-                                        <div className="flex flex-col items-center gap-0.5">
-                                          <span className={p.takeProfit ? "text-trading-up text-[10px]" : "text-muted text-[10px]"}>
-                                            TP: {p.takeProfit ? `${p.takeProfit}` : "---"}
-                                          </span>
-                                          <span className={p.stopLoss ? "text-trading-down text-[10px]" : "text-muted text-[10px]"}>
-                                            SL: {p.stopLoss ? `${p.stopLoss}` : "---"}
-                                          </span>
-                                        </div>
-                                      </td>
-                                      <td className="py-3 px-4 text-center">
-                                        <div className="flex items-center justify-center gap-2">
-                                          <button
-                                            type="button"
-                                            disabled={closingPositionIds.includes(p.id)}
-                                            onClick={() => handleOpenSlTpModal(p)}
-                                            className="px-2 py-1 bg-background hover:bg-primary/15 hover:text-primary border border-transparent rounded text-[10px] font-semibold transition-all disabled:opacity-40 disabled:pointer-events-none"
-                                          >
-                                            Set TP/SL
-                                          </button>
-                                          <button
-                                            type="button"
-                                            disabled={closingPositionIds.includes(p.id)}
-                                            onClick={() => handleClosePosition(p.id)}
-                                            className="px-2 py-1 bg-trading-down/10 hover:bg-trading-down/25 text-trading-down border border-trading-down/20 rounded text-[10px] font-semibold transition-all disabled:opacity-50 disabled:pointer-events-none"
-                                          >
-                                            {closingPositionIds.includes(p.id) ? "Closing..." : "Close"}
-                                          </button>
-                                        </div>
-                                      </td>
-                                    </tr>
-                                  );
-                                })}
-                              </tbody>
-                            </table>
+                        {activeBottomTab === "POSITIONS" ? (
+                          loadingPositions ? (
+                            <div className="p-6 space-y-2">
+                              <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
+                              <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
+                            </div>
+                          ) : positions.length === 0 ? (
+                            <div className="py-12 text-center text-muted font-mono text-xs">
+                              No active leveraged exposures.
+                            </div>
+                          ) : (
+                            <div className="overflow-x-auto flex-grow flex flex-col justify-between">
+                              <table className="w-full text-left border-collapse font-mono text-xs">
+                                <thead>
+                                  <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
+                                    <th className="py-2.5 px-4">Symbol</th>
+                                    <th className="py-2.5 px-4">Mode</th>
+                                    <th className="py-2.5 px-4 text-right">Size</th>
+                                    <th className="py-2.5 px-4 text-right">Entry Price</th>
+                                    <th className="py-2.5 px-4 text-right">Leverage</th>
+                                    <th className="py-2.5 px-4 text-right">Unrealized PnL</th>
+                                    <th className="py-2.5 px-4 text-center">TP / SL</th>
+                                    <th className="py-2.5 px-4 text-center">Actions</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-hairline-on-dark">
+                                  {paginatedPositions.map((p) => {
+                                    const currentPrice = pricesMap[p.symbol.toUpperCase()] || Number(p.markPrice || p.entryPrice);
+                                    const entryPrice = Number(p.entryPrice);
+                                    const qty = Number(p.quantity);
 
-                            {/* Pagination Controls */}
-                            {totalPages > 1 && (
-                              <div className="flex items-center justify-between px-4 py-2 border-t border-white/[0.04] bg-background/20 mt-auto">
-                                <div className="text-[10px] text-muted font-mono">
-                                  Showing {(positionsPage - 1) * itemsPerPage + 1} to {Math.min(positionsPage * itemsPerPage, positions.length)} of {positions.length}
+                                    let pnlVal;
+                                    if (p.positionMode === "LONG") {
+                                      pnlVal = (currentPrice - entryPrice) * qty;
+                                    } else { // SHORT
+                                      pnlVal = (entryPrice - currentPrice) * qty;
+                                    }
+
+                                    const isProfit = pnlVal >= 0;
+                                    return (
+                                      <tr key={p.id} className="hover:bg-background/[0.01] transition-colors">
+                                        <td className="py-3 px-4 font-bold text-foreground">{p.symbol}</td>
+                                        <td className="py-3 px-4">
+                                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${p.positionMode === "LONG" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
+                                            }`}>
+                                            {p.positionMode}
+                                          </span>
+                                        </td>
+                                        <td className="py-3 px-4 text-right font-semibold">{p.quantity}</td>
+                                        <td className="py-3 px-4 text-right text-muted">{p.entryPrice}</td>
+                                        <td className="py-3 px-4 text-right text-primary font-bold">{p.leverage}x</td>
+                                        <td className={`py-3 px-4 text-right font-bold text-sm ${isProfit ? "text-trading-up" : "text-trading-down"}`}>
+                                          {isProfit ? "+" : ""}{pnlVal.toFixed(2)} USDT
+                                        </td>
+                                        <td className="py-3 px-4 text-center">
+                                          <div className="flex flex-col items-center gap-0.5">
+                                            <span className={p.takeProfit ? "text-trading-up text-[10px]" : "text-muted text-[10px]"}>
+                                              TP: {p.takeProfit ? `${p.takeProfit}` : "---"}
+                                            </span>
+                                            <span className={p.stopLoss ? "text-trading-down text-[10px]" : "text-muted text-[10px]"}>
+                                              SL: {p.stopLoss ? `${p.stopLoss}` : "---"}
+                                            </span>
+                                          </div>
+                                        </td>
+                                        <td className="py-3 px-4 text-center">
+                                          <div className="flex items-center justify-center gap-2">
+                                            <button
+                                              type="button"
+                                              disabled={closingPositionIds.includes(p.id)}
+                                              onClick={() => handleOpenSlTpModal(p)}
+                                              className="px-2 py-1 bg-background hover:bg-primary/15 hover:text-primary border border-transparent rounded text-[10px] font-semibold transition-all disabled:opacity-40 disabled:pointer-events-none"
+                                            >
+                                              Set TP/SL
+                                            </button>
+                                            <button
+                                              type="button"
+                                              disabled={closingPositionIds.includes(p.id)}
+                                              onClick={() => handleClosePosition(p.id)}
+                                              className="px-2 py-1 bg-trading-down/10 hover:bg-trading-down/25 text-trading-down border border-trading-down/20 rounded text-[10px] font-semibold transition-all disabled:opacity-50 disabled:pointer-events-none"
+                                            >
+                                              {closingPositionIds.includes(p.id) ? "Closing..." : "Close"}
+                                            </button>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+
+                              {/* Pagination Controls */}
+                              {totalPages > 1 && (
+                                <div className="flex items-center justify-between px-4 py-2 border-t border-white/[0.04] bg-background/20 mt-auto">
+                                  <div className="text-[10px] text-muted font-mono">
+                                    Showing {(positionsPage - 1) * itemsPerPage + 1} to {Math.min(positionsPage * itemsPerPage, positions.length)} of {positions.length}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setPositionsPage((p) => Math.max(p - 1, 1))}
+                                      disabled={positionsPage === 1}
+                                      className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
+                                    >
+                                      Prev
+                                    </button>
+                                    <span className="text-[10px] text-muted font-mono px-1">
+                                      {positionsPage} / {totalPages}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setPositionsPage((p) => Math.min(p + 1, totalPages))}
+                                      disabled={positionsPage === totalPages}
+                                      className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
+                                    >
+                                      Next
+                                    </button>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => setPositionsPage((p) => Math.max(p - 1, 1))}
-                                    disabled={positionsPage === 1}
-                                    className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
-                                  >
-                                    Prev
-                                  </button>
-                                  <span className="text-[10px] text-muted font-mono px-1">
-                                    {positionsPage} / {totalPages}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => setPositionsPage((p) => Math.min(p + 1, totalPages))}
-                                    disabled={positionsPage === totalPages}
-                                    className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
-                                  >
-                                    Next
-                                  </button>
-                                </div>
+                              )}
+                            </div>
+                          )
+                        ) : activeBottomTab === "ASSETS" ? (
+                          <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
+                            <div className="border border-transparent rounded-2xl p-3 bg-background/20">
+                              <span className="text-muted text-[10px] uppercase block">Total Futures Equity</span>
+                              <span className="text-lg font-bold text-foreground block mt-1">{formatCurrency(usdtWalletBalance)}</span>
+                            </div>
+                            <div className="border border-transparent rounded-2xl p-3 bg-background/20">
+                              <span className="text-muted text-[10px] uppercase block">Asset Sizing Base</span>
+                              <span className="text-sm font-bold text-primary block mt-1">USDT (Perpetual Margin)</span>
+                            </div>
+                            <div className="border border-transparent rounded-2xl p-3 bg-background/20 flex items-center justify-between">
+                              <div>
+                                <span className="text-muted text-[10px] uppercase block">Wallet Connection</span>
+                                <span className="text-[10px] text-trading-up font-bold block mt-1">● ONLINE (Simulated Perp)</span>
                               </div>
-                            )}
-                          </div>
-                        )
-                      ) : activeBottomTab === "ASSETS" ? (
-                        <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
-                          <div className="border border-transparent rounded-2xl p-3 bg-background/20">
-                            <span className="text-muted text-[10px] uppercase block">Total Futures Equity</span>
-                            <span className="text-lg font-bold text-foreground block mt-1">{formatCurrency(usdtWalletBalance)}</span>
-                          </div>
-                          <div className="border border-transparent rounded-2xl p-3 bg-background/20">
-                            <span className="text-muted text-[10px] uppercase block">Asset Sizing Base</span>
-                            <span className="text-sm font-bold text-primary block mt-1">USDT (Perpetual Margin)</span>
-                          </div>
-                          <div className="border border-transparent rounded-2xl p-3 bg-background/20 flex items-center justify-between">
-                            <div>
-                              <span className="text-muted text-[10px] uppercase block">Wallet Connection</span>
-                              <span className="text-[10px] text-trading-up font-bold block mt-1">● ONLINE (Simulated Perp)</span>
                             </div>
                           </div>
-                        </div>
-                      ) : activeBottomTab === "OPEN ORDERS" ? (
-                        loadingOrders ? (
-                          <div className="p-6 space-y-2">
-                            <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
-                          </div>
-                        ) : activeOrdersCount === 0 ? (
-                          <div className="py-12 text-center text-muted font-mono text-xs">
-                            No active open orders records.
-                          </div>
-                        ) : (
-                          <div className="overflow-x-auto flex-grow flex flex-col justify-between">
-                            <table className="w-full text-left border-collapse font-mono text-xs">
-                              <thead>
-                                <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
-                                  <th className="py-2.5 px-4">Symbol</th>
-                                  <th className="py-2.5 px-4">Side</th>
-                                  <th className="py-2.5 px-4">Type</th>
-                                  <th className="py-2.5 px-4 text-right">Quantity</th>
-                                  <th className="py-2.5 px-4 text-right">Price</th>
-                                  <th className="py-2.5 px-4 text-center">Action / Status</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-hairline-on-dark">
-                                {paginatedOrders.map((o) => (
-                                  <tr key={o.id} className="hover:bg-background/[0.01] transition-colors">
-                                    <td className="py-3 px-4 font-bold text-foreground uppercase">{o.symbol}</td>
-                                    <td className="py-3 px-4">
-                                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                                        o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
-                                      }`}>
-                                        {o.side}
-                                      </span>
-                                    </td>
-                                    <td className="py-3 px-4 text-muted">{o.orderType}</td>
-                                    <td className="py-3 px-4 text-right font-semibold">{o.quantity}</td>
-                                    <td className="py-3 px-4 text-right font-semibold">{formatCurrency(o.price)}</td>
-                                    <td className="py-3 px-4 text-center">
-                                      <button
-                                        type="button"
-                                        onClick={() => handleCancelOrder(o.id)}
-                                        className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all cursor-pointer"
-                                      >
-                                        Cancel
-                                      </button>
-                                    </td>
+                        ) : activeBottomTab === "OPEN ORDERS" ? (
+                          loadingOrders ? (
+                            <div className="p-6 space-y-2">
+                              <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
+                            </div>
+                          ) : activeOrdersCount === 0 ? (
+                            <div className="py-12 text-center text-muted font-mono text-xs">
+                              No active open orders records.
+                            </div>
+                          ) : (
+                            <div className="overflow-x-auto flex-grow flex flex-col justify-between">
+                              <table className="w-full text-left border-collapse font-mono text-xs">
+                                <thead>
+                                  <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
+                                    <th className="py-2.5 px-4">Symbol</th>
+                                    <th className="py-2.5 px-4">Side</th>
+                                    <th className="py-2.5 px-4">Type</th>
+                                    <th className="py-2.5 px-4 text-right">Quantity</th>
+                                    <th className="py-2.5 px-4 text-right">Price</th>
+                                    <th className="py-2.5 px-4 text-center">Action / Status</th>
                                   </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                            {/* Pagination Controls */}
-                            {totalOrdersPages > 1 && (
-                              <div className="flex items-center justify-between px-4 py-2 border-t border-white/[0.04] bg-background/20 mt-auto">
-                                <div className="text-[10px] text-muted font-mono">
-                                  Showing {(ordersPage - 1) * itemsPerPage + 1} to {Math.min(ordersPage * itemsPerPage, activeOrdersCount)} of {activeOrdersCount}
+                                </thead>
+                                <tbody className="divide-y divide-hairline-on-dark">
+                                  {paginatedOrders.map((o) => (
+                                    <tr key={o.id} className="hover:bg-background/[0.01] transition-colors">
+                                      <td className="py-3 px-4 font-bold text-foreground uppercase">{o.symbol}</td>
+                                      <td className="py-3 px-4">
+                                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
+                                          }`}>
+                                          {o.side}
+                                        </span>
+                                      </td>
+                                      <td className="py-3 px-4 text-muted">{o.orderType}</td>
+                                      <td className="py-3 px-4 text-right font-semibold">{o.quantity}</td>
+                                      <td className="py-3 px-4 text-right font-semibold">{formatCurrency(o.price)}</td>
+                                      <td className="py-3 px-4 text-center">
+                                        <button
+                                          type="button"
+                                          onClick={() => handleCancelOrder(o.id)}
+                                          className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all cursor-pointer"
+                                        >
+                                          Cancel
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                              {/* Pagination Controls */}
+                              {totalOrdersPages > 1 && (
+                                <div className="flex items-center justify-between px-4 py-2 border-t border-white/[0.04] bg-background/20 mt-auto">
+                                  <div className="text-[10px] text-muted font-mono">
+                                    Showing {(ordersPage - 1) * itemsPerPage + 1} to {Math.min(ordersPage * itemsPerPage, activeOrdersCount)} of {activeOrdersCount}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setOrdersPage((p) => Math.max(p - 1, 1))}
+                                      disabled={ordersPage === 1}
+                                      className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
+                                    >
+                                      Prev
+                                    </button>
+                                    <span className="text-[10px] text-muted font-mono px-1">
+                                      {ordersPage} / {totalOrdersPages}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setOrdersPage((p) => Math.min(p + 1, totalOrdersPages))}
+                                      disabled={ordersPage === totalOrdersPages}
+                                      className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
+                                    >
+                                      Next
+                                    </button>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => setOrdersPage((p) => Math.max(p - 1, 1))}
-                                    disabled={ordersPage === 1}
-                                    className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
-                                  >
-                                    Prev
-                                  </button>
-                                  <span className="text-[10px] text-muted font-mono px-1">
-                                    {ordersPage} / {totalOrdersPages}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => setOrdersPage((p) => Math.min(p + 1, totalOrdersPages))}
-                                    disabled={ordersPage === totalOrdersPages}
-                                    className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
-                                  >
-                                    Next
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )
-                      ) : activeBottomTab === "ORDER HISTORY" ? (
-                        loadingHistory ? (
-                          <div className="p-6 space-y-2">
-                            <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
-                          </div>
-                        ) : orderHistory.length === 0 ? (
-                          <div className="py-12 text-center text-muted font-mono text-xs">
-                            No active order history records.
-                          </div>
-                        ) : (
-                          <div className="overflow-x-auto flex-grow flex flex-col justify-between">
-                            <table className="w-full text-left border-collapse font-mono text-xs">
-                              <thead>
-                                <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
-                                  <th className="py-2.5 px-4">Symbol</th>
-                                  <th className="py-2.5 px-4">Side</th>
-                                  <th className="py-2.5 px-4">Type</th>
-                                  <th className="py-2.5 px-4 text-right">Quantity</th>
-                                  <th className="py-2.5 px-4 text-right">Price</th>
-                                  <th className="py-2.5 px-4 text-right">Status</th>
-                                  <th className="py-2.5 px-4 text-right">Date</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-hairline-on-dark">
-                                {paginatedOrderHist.map((o) => (
-                                  <tr key={o.id} className="hover:bg-background/[0.01] transition-colors">
-                                    <td className="py-3 px-4 font-bold text-foreground uppercase">{o.symbol}</td>
-                                    <td className="py-3 px-4">
-                                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                                        o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
-                                      }`}>
-                                        {o.side}
-                                      </span>
-                                    </td>
-                                    <td className="py-3 px-4 text-muted">{o.orderType}</td>
-                                    <td className="py-3 px-4 text-right font-semibold">{o.quantity}</td>
-                                    <td className="py-3 px-4 text-right font-semibold">{formatCurrency(o.price)}</td>
-                                    <td className="py-3 px-4 text-right">
-                                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                                        o.status === "FILLED" ? "bg-trading-up/10 text-trading-up" : o.status === "CANCELED" ? "bg-background text-muted" : "bg-primary/15 text-primary"
-                                      }`}>
-                                        {o.status}
-                                      </span>
-                                    </td>
-                                    <td className="py-3 px-4 text-right text-muted">{o.createdAt ? new Date(o.createdAt).toLocaleString() : "---"}</td>
+                              )}
+                            </div>
+                          )
+                        ) : activeBottomTab === "ORDER HISTORY" ? (
+                          loadingHistory ? (
+                            <div className="p-6 space-y-2">
+                              <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
+                            </div>
+                          ) : orderHistory.length === 0 ? (
+                            <div className="py-12 text-center text-muted font-mono text-xs">
+                              No active order history records.
+                            </div>
+                          ) : (
+                            <div className="overflow-x-auto flex-grow flex flex-col justify-between">
+                              <table className="w-full text-left border-collapse font-mono text-xs">
+                                <thead>
+                                  <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
+                                    <th className="py-2.5 px-4">Symbol</th>
+                                    <th className="py-2.5 px-4">Side</th>
+                                    <th className="py-2.5 px-4">Type</th>
+                                    <th className="py-2.5 px-4 text-right">Quantity</th>
+                                    <th className="py-2.5 px-4 text-right">Price</th>
+                                    <th className="py-2.5 px-4 text-right">Status</th>
+                                    <th className="py-2.5 px-4 text-right">Date</th>
                                   </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                            {/* Pagination Controls */}
-                            {totalOrderHistPages > 1 && (
-                              <div className="flex items-center justify-between px-4 py-2 border-t border-white/[0.04] bg-background/20 mt-auto">
-                                <div className="text-[10px] text-muted font-mono">
-                                  Showing {(orderHistPage - 1) * itemsPerPage + 1} to {Math.min(orderHistPage * itemsPerPage, orderHistory.length)} of {orderHistory.length}
+                                </thead>
+                                <tbody className="divide-y divide-hairline-on-dark">
+                                  {paginatedOrderHist.map((o) => (
+                                    <tr key={o.id} className="hover:bg-background/[0.01] transition-colors">
+                                      <td className="py-3 px-4 font-bold text-foreground uppercase">{o.symbol}</td>
+                                      <td className="py-3 px-4">
+                                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
+                                          }`}>
+                                          {o.side}
+                                        </span>
+                                      </td>
+                                      <td className="py-3 px-4 text-muted">{o.orderType}</td>
+                                      <td className="py-3 px-4 text-right font-semibold">{o.quantity}</td>
+                                      <td className="py-3 px-4 text-right font-semibold">{formatCurrency(o.price)}</td>
+                                      <td className="py-3 px-4 text-right">
+                                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${o.status === "FILLED" ? "bg-trading-up/10 text-trading-up" : o.status === "CANCELED" ? "bg-background text-muted" : "bg-primary/15 text-primary"
+                                          }`}>
+                                          {o.status}
+                                        </span>
+                                      </td>
+                                      <td className="py-3 px-4 text-right text-muted">{o.createdAt ? new Date(o.createdAt).toLocaleString() : "---"}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                              {/* Pagination Controls */}
+                              {totalOrderHistPages > 1 && (
+                                <div className="flex items-center justify-between px-4 py-2 border-t border-white/[0.04] bg-background/20 mt-auto">
+                                  <div className="text-[10px] text-muted font-mono">
+                                    Showing {(orderHistPage - 1) * itemsPerPage + 1} to {Math.min(orderHistPage * itemsPerPage, orderHistory.length)} of {orderHistory.length}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setOrderHistPage((p) => Math.max(p - 1, 1))}
+                                      disabled={orderHistPage === 1}
+                                      className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
+                                    >
+                                      Prev
+                                    </button>
+                                    <span className="text-[10px] text-muted font-mono px-1">
+                                      {orderHistPage} / {totalOrderHistPages}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setOrderHistPage((p) => Math.min(p + 1, totalOrderHistPages))}
+                                      disabled={orderHistPage === totalOrderHistPages}
+                                      className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
+                                    >
+                                      Next
+                                    </button>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => setOrderHistPage((p) => Math.max(p - 1, 1))}
-                                    disabled={orderHistPage === 1}
-                                    className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
-                                  >
-                                    Prev
-                                  </button>
-                                  <span className="text-[10px] text-muted font-mono px-1">
-                                    {orderHistPage} / {totalOrderHistPages}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => setOrderHistPage((p) => Math.min(p + 1, totalOrderHistPages))}
-                                    disabled={orderHistPage === totalOrderHistPages}
-                                    className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
-                                  >
-                                    Next
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )
-                      ) : activeBottomTab === "TRADE HISTORY" ? (
-                        loadingHistory ? (
-                          <div className="p-6 space-y-2">
-                            <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
-                          </div>
-                        ) : tradeHistoryList.length === 0 ? (
-                          <div className="py-12 text-center text-muted font-mono text-xs">
-                            No active trade history records.
-                          </div>
-                        ) : (
-                          <div className="overflow-x-auto flex-grow flex flex-col justify-between">
-                            <table className="w-full text-left border-collapse font-mono text-xs">
-                              <thead>
-                                <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
-                                  <th className="py-2.5 px-4">Symbol</th>
-                                  <th className="py-2.5 px-4">Side</th>
-                                  <th className="py-2.5 px-4 text-right">Filled Qty</th>
-                                  <th className="py-2.5 px-4 text-right">Avg Price</th>
-                                  <th className="py-2.5 px-4 text-right">Total Cost</th>
-                                  <th className="py-2.5 px-4 text-right">Date</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-hairline-on-dark">
-                                {paginatedTradeHist.map((o) => (
-                                  <tr key={o.id} className="hover:bg-background/[0.01] transition-colors">
-                                    <td className="py-3 px-4 font-bold text-foreground uppercase">{o.symbol}</td>
-                                    <td className="py-3 px-4">
-                                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                                        o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
-                                      }`}>
-                                        {o.side}
-                                      </span>
-                                    </td>
-                                    <td className="py-3 px-4 text-right font-semibold">{o.filledQuantity || o.quantity}</td>
-                                    <td className="py-3 px-4 text-right font-semibold">{formatCurrency(o.averagePrice || o.price)}</td>
-                                    <td className="py-3 px-4 text-right font-semibold">{formatCurrency((o.filledQuantity || o.quantity) * (o.averagePrice || o.price))}</td>
-                                    <td className="py-3 px-4 text-right text-muted">{o.filledAt ? new Date(o.filledAt).toLocaleString() : o.createdAt ? new Date(o.createdAt).toLocaleString() : "---"}</td>
+                              )}
+                            </div>
+                          )
+                        ) : activeBottomTab === "TRADE HISTORY" ? (
+                          loadingHistory ? (
+                            <div className="p-6 space-y-2">
+                              <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
+                            </div>
+                          ) : tradeHistoryList.length === 0 ? (
+                            <div className="py-12 text-center text-muted font-mono text-xs">
+                              No active trade history records.
+                            </div>
+                          ) : (
+                            <div className="overflow-x-auto flex-grow flex flex-col justify-between">
+                              <table className="w-full text-left border-collapse font-mono text-xs">
+                                <thead>
+                                  <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
+                                    <th className="py-2.5 px-4">Symbol</th>
+                                    <th className="py-2.5 px-4">Side</th>
+                                    <th className="py-2.5 px-4 text-right">Filled Qty</th>
+                                    <th className="py-2.5 px-4 text-right">Avg Price</th>
+                                    <th className="py-2.5 px-4 text-right">Total Cost</th>
+                                    <th className="py-2.5 px-4 text-right">Date</th>
                                   </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                            {/* Pagination Controls */}
-                            {totalTradeHistPages > 1 && (
-                              <div className="flex items-center justify-between px-4 py-2 border-t border-white/[0.04] bg-background/20 mt-auto">
-                                <div className="text-[10px] text-muted font-mono">
-                                  Showing {(tradeHistPage - 1) * itemsPerPage + 1} to {Math.min(tradeHistPage * itemsPerPage, tradeHistoryList.length)} of {tradeHistoryList.length}
+                                </thead>
+                                <tbody className="divide-y divide-hairline-on-dark">
+                                  {paginatedTradeHist.map((o) => (
+                                    <tr key={o.id} className="hover:bg-background/[0.01] transition-colors">
+                                      <td className="py-3 px-4 font-bold text-foreground uppercase">{o.symbol}</td>
+                                      <td className="py-3 px-4">
+                                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
+                                          }`}>
+                                          {o.side}
+                                        </span>
+                                      </td>
+                                      <td className="py-3 px-4 text-right font-semibold">{o.filledQuantity || o.quantity}</td>
+                                      <td className="py-3 px-4 text-right font-semibold">{formatCurrency(o.averagePrice || o.price)}</td>
+                                      <td className="py-3 px-4 text-right font-semibold">{formatCurrency((o.filledQuantity || o.quantity) * (o.averagePrice || o.price))}</td>
+                                      <td className="py-3 px-4 text-right text-muted">{o.filledAt ? new Date(o.filledAt).toLocaleString() : o.createdAt ? new Date(o.createdAt).toLocaleString() : "---"}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                              {/* Pagination Controls */}
+                              {totalTradeHistPages > 1 && (
+                                <div className="flex items-center justify-between px-4 py-2 border-t border-white/[0.04] bg-background/20 mt-auto">
+                                  <div className="text-[10px] text-muted font-mono">
+                                    Showing {(tradeHistPage - 1) * itemsPerPage + 1} to {Math.min(tradeHistPage * itemsPerPage, tradeHistoryList.length)} of {tradeHistoryList.length}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setTradeHistPage((p) => Math.max(p - 1, 1))}
+                                      disabled={tradeHistPage === 1}
+                                      className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
+                                    >
+                                      Prev
+                                    </button>
+                                    <span className="text-[10px] text-muted font-mono px-1">
+                                      {tradeHistPage} / {totalTradeHistPages}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setTradeHistPage((p) => Math.min(p + 1, totalTradeHistPages))}
+                                      disabled={tradeHistPage === totalTradeHistPages}
+                                      className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
+                                    >
+                                      Next
+                                    </button>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => setTradeHistPage((p) => Math.max(p - 1, 1))}
-                                    disabled={tradeHistPage === 1}
-                                    className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
-                                  >
-                                    Prev
-                                  </button>
-                                  <span className="text-[10px] text-muted font-mono px-1">
-                                    {tradeHistPage} / {totalTradeHistPages}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => setTradeHistPage((p) => Math.min(p + 1, totalTradeHistPages))}
-                                    disabled={tradeHistPage === totalTradeHistPages}
-                                    className="px-2.5 py-1 text-[10px] font-bold rounded border border-white/10 bg-background hover:bg-background/80 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer font-mono"
-                                  >
-                                    Next
-                                  </button>
-                                </div>
-                              </div>
-                            )}
+                              )}
+                            </div>
+                          )
+                        ) : (
+                          <div className="py-12 text-center text-muted font-mono text-xs">
+                            No active {activeBottomTab.toLowerCase()} records.
                           </div>
-                        )
-                      ) : (
-                        <div className="py-12 text-center text-muted font-mono text-xs">
-                          No active {activeBottomTab.toLowerCase()} records.
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Tabs>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Tabs>
                 </div>
 
                 {/* Order Book component (col-span-3) */}
@@ -1189,7 +1183,7 @@ export default function FuturesTradingPage() {
                     </Button>
                   </div>
                 )}
-                
+
                 {/* Isolated/Leverage Config Bar */}
                 <div className="bg-background/30 px-4 py-2 border-b border-transparent flex items-center justify-between text-[10px] font-mono">
                   <div className="flex gap-2">
@@ -1201,7 +1195,7 @@ export default function FuturesTradingPage() {
                       <option value="ISOLATED">Isolated</option>
                       <option value="CROSS">Cross</option>
                     </select>
-                    
+
                     <select
                       value={leverage}
                       onChange={(e) => setLeverage(e.target.value)}
@@ -1212,7 +1206,7 @@ export default function FuturesTradingPage() {
                       ))}
                     </select>
                   </div>
-                  
+
                   <TooltipProvider delayDuration={200}>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -1233,9 +1227,8 @@ export default function FuturesTradingPage() {
                   <button
                     type="button"
                     aria-pressed={orderMode === "OPEN"}
-                    className={`flex-1 min-h-[44px] text-center text-xs font-bold rounded transition-all ${
-                      orderMode === "OPEN" ? "bg-background text-foreground font-bold" : "text-muted hover:text-foreground"
-                    }`}
+                    className={`flex-1 min-h-[44px] text-center text-xs font-bold rounded transition-all ${orderMode === "OPEN" ? "bg-background text-foreground font-bold" : "text-muted hover:text-foreground"
+                      }`}
                     onClick={() => setOrderMode("OPEN")}
                   >
                     Open
@@ -1243,9 +1236,8 @@ export default function FuturesTradingPage() {
                   <button
                     type="button"
                     aria-pressed={orderMode === "CLOSE"}
-                    className={`flex-1 min-h-[44px] text-center text-xs font-bold rounded transition-all ${
-                      orderMode === "CLOSE" ? "bg-background text-foreground font-bold" : "text-muted hover:text-foreground"
-                    }`}
+                    className={`flex-1 min-h-[44px] text-center text-xs font-bold rounded transition-all ${orderMode === "CLOSE" ? "bg-background text-foreground font-bold" : "text-muted hover:text-foreground"
+                      }`}
                     onClick={() => setOrderMode("CLOSE")}
                   >
                     Close
@@ -1557,9 +1549,8 @@ export default function FuturesTradingPage() {
               <DialogHeader className="bg-background/30 px-6 py-4 border-b border-transparent flex flex-row justify-between items-center space-y-0">
                 <DialogTitle className="font-heading font-extrabold text-sm text-foreground flex items-center gap-2">
                   <span>Manage Trade Risk: {selectedPositionForSlTp.symbol}</span>
-                  <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                    selectedPositionForSlTp.positionMode === "LONG" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
-                  }`}>
+                  <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${selectedPositionForSlTp.positionMode === "LONG" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
+                    }`}>
                     {selectedPositionForSlTp.positionMode} {selectedPositionForSlTp.leverage}x
                   </span>
                 </DialogTitle>
@@ -1601,7 +1592,7 @@ export default function FuturesTradingPage() {
                     {[5, 10, 25].map((pct) => {
                       const entry = Number(selectedPositionForSlTp.entryPrice);
                       const isLong = selectedPositionForSlTp.positionMode === "LONG";
-                      const target = isLong 
+                      const target = isLong
                         ? entry * (1 + (pct / 100) / Number(selectedPositionForSlTp.leverage))
                         : entry * (1 - (pct / 100) / Number(selectedPositionForSlTp.leverage));
                       return (
@@ -1641,7 +1632,7 @@ export default function FuturesTradingPage() {
                     {[2, 5, 10].map((pct) => {
                       const entry = Number(selectedPositionForSlTp.entryPrice);
                       const isLong = selectedPositionForSlTp.positionMode === "LONG";
-                      const target = isLong 
+                      const target = isLong
                         ? entry * (1 - (pct / 100) / Number(selectedPositionForSlTp.leverage))
                         : entry * (1 + (pct / 100) / Number(selectedPositionForSlTp.leverage));
                       return (

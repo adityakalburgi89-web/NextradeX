@@ -34,15 +34,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("dashboard"); // "dashboard" or "settings"
   const [wallets, setWallets] = useState([]);
 
-  // API Keys state
-  const [apiKeys, setApiKeys] = useState([
-    { id: 1, label: "Automated Strategy Bot", access: "Trade & Read", created: "2026-05-18", key: "ntx_pub_392f...81aa" }
-  ]);
-  const [newKeyLabel, setNewKeyLabel] = useState("");
-  const [showKeyModal, setShowKeyModal] = useState(false);
-  const [generatedKey, setGeneratedKey] = useState(null);
-  const [copiedKey, setCopiedKey] = useState(false);
-  const [copiedSecret, setCopiedSecret] = useState(false);
+
 
   const [profile, setProfile] = useState({
     username: "",
@@ -111,40 +103,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleGenerateKey = (e) => {
-    e.preventDefault();
-    if (!newKeyLabel) return;
-    const randomKey = "ntx_pub_" + Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
-    const randomSecret = "ntx_sec_" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-    const newKeyItem = {
-      id: Date.now(),
-      label: newKeyLabel,
-      access: "Trade & Read",
-      created: new Date().toISOString().split("T")[0],
-      key: randomKey.substring(0, 12) + "..." + randomKey.substring(randomKey.length - 4)
-    };
-
-    setApiKeys(prev => [...prev, newKeyItem]);
-    setGeneratedKey({ key: randomKey, secret: randomSecret, label: newKeyLabel });
-    setShowKeyModal(true);
-    setNewKeyLabel("");
-  };
-
-  const handleRevokeKey = (id) => {
-    setApiKeys(prev => prev.filter(k => k.id !== id));
-  };
-
-  const copyToClipboard = (text, type) => {
-    navigator.clipboard.writeText(text);
-    if (type === "key") {
-      setCopiedKey(true);
-      setTimeout(() => setCopiedKey(false), 2000);
-    } else {
-      setCopiedSecret(true);
-      setTimeout(() => setCopiedSecret(false), 2000);
-    }
-  };
 
   const getWalletBalance = (type) => {
     const w = wallets.find(item => item.walletType === type);
@@ -386,144 +345,6 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* 3. API Keys Management Section */}
-                <div className="p-5 rounded-xl border border-transparent bg-background space-y-4">
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
-                    <div>
-                      <h4 className="text-sm font-bold text-foreground font-heading uppercase">Simulated API Keys</h4>
-                      <p className="text-xs text-muted mt-0.5">Generate client keys for programmatic trading in our sandboxed environment.</p>
-                    </div>
-
-                    <form onSubmit={handleGenerateKey} className="flex gap-2">
-                      <input
-                        type="text"
-                        required
-                        placeholder="Key label..."
-                        value={newKeyLabel}
-                        onChange={(e) => setNewKeyLabel(e.target.value)}
-                        className="bg-background border border-transparent hover:border-transparent/20 focus:border-primary/85 rounded px-2.5 py-1.5 text-xs text-foreground placeholder-muted outline-none font-sans transition-all w-[150px] sm:w-[180px]"
-                      />
-                      <button
-                        type="submit"
-                        className="p-2 bg-primary hover:bg-primary-active text-black rounded transition-colors flex items-center justify-center"
-                        title="Generate Key"
-                      >
-                        <Plus size={14} className="stroke-[3]" />
-                      </button>
-                    </form>
-                  </div>
-
-                  {/* API Keys Table */}
-                  <div className="overflow-x-auto border border-transparent rounded-2xl">
-                    <table className="w-full text-left font-mono text-xs">
-                      <thead className="bg-background text-muted uppercase text-[10px] font-bold border-b border-transparent">
-                        <tr>
-                          <th className="py-2.5 px-4">Label</th>
-                          <th className="py-2.5 px-4">Public Key</th>
-                          <th className="py-2.5 px-4 text-center">Perms</th>
-                          <th className="py-2.5 px-4 text-right">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/[0.03]">
-                        {apiKeys.length === 0 ? (
-                          <tr>
-                            <td colSpan="4" className="py-6 text-center text-muted font-sans italic text-xs">
-                              No keys active. Create one above for programmatic access.
-                            </td>
-                          </tr>
-                        ) : (
-                          apiKeys.map((k) => (
-                            <tr key={k.id} className="hover:bg-background/[0.01] transition-colors">
-                              <td className="py-3 px-4 font-sans font-bold text-foreground">{k.label}</td>
-                              <td className="py-3 px-4 text-muted">{k.key}</td>
-                              <td className="py-3 px-4 text-center">
-                                <span className="px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase">
-                                  {k.access}
-                                </span>
-                              </td>
-                              <td className="py-3 px-4 text-right">
-                                <button
-                                  onClick={() => handleRevokeKey(k.id)}
-                                  className="text-trading-down hover:text-foreground text-[10px] font-bold border border-trading-down/20 bg-trading-down/10 hover:bg-trading-down px-2 py-0.5 rounded transition-all uppercase"
-                                >
-                                  Revoke
-                                </button>
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* API Key Modal */}
-                <Dialog open={showKeyModal} onOpenChange={(open) => { setShowKeyModal(open); if (!open) setGeneratedKey(null); }}>
-                  <DialogContent className="bg-background border border-transparent rounded-xl p-6 space-y-4 shadow-2xl text-foreground max-w-md w-full">
-                    {generatedKey && (
-                      <>
-                        <DialogHeader className="border-b border-transparent pb-3 flex flex-row justify-between items-center space-y-0 pr-6">
-                          <DialogTitle className="flex items-center gap-2 text-primary font-bold text-sm uppercase font-heading">
-                            <FileCode size={18} />
-                            <span>Key Generated Successfully</span>
-                          </DialogTitle>
-                        </DialogHeader>
-
-                        <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-2xl flex gap-2 text-amber-500 text-xs">
-                          <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-                          <p className="leading-relaxed font-sans">
-                            <strong>Write down your secret key!</strong> It will not be shown again for security reasons. Copy both keys now.
-                          </p>
-                        </div>
-
-                        <div className="space-y-3 font-mono text-xs">
-                          <div>
-                            <label className="text-muted text-[10px] uppercase block mb-1">Key Label</label>
-                            <div className="bg-background border border-transparent p-2 rounded text-foreground font-sans">{generatedKey.label}</div>
-                          </div>
-
-                          <div>
-                            <label className="text-muted text-[10px] uppercase block mb-1">Public API Key</label>
-                            <div className="flex gap-2">
-                              <input
-                                type="text"
-                                readOnly
-                                value={generatedKey.key}
-                                className="bg-background border border-transparent p-2 rounded text-foreground flex-1 overflow-x-auto select-all"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => copyToClipboard(generatedKey.key, "key")}
-                                className="p-2 border border-transparent hover:border-primary bg-background rounded text-foreground flex items-center justify-center cursor-pointer"
-                              >
-                                {copiedKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                              </button>
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="text-muted text-[10px] uppercase block mb-1">Secret API Key</label>
-                            <div className="flex gap-2">
-                              <input
-                                type="text"
-                                readOnly
-                                value={generatedKey.secret}
-                                className="bg-background border border-transparent p-2 rounded text-foreground flex-1 overflow-x-auto select-all"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => copyToClipboard(generatedKey.secret, "secret")}
-                                className="p-2 border border-transparent hover:border-primary bg-background rounded text-foreground flex items-center justify-center cursor-pointer"
-                              >
-                                {copiedSecret ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </DialogContent>
-                </Dialog>)
               </div>
             )}
 
