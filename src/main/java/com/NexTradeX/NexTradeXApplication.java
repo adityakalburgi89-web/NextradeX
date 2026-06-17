@@ -44,6 +44,17 @@ public class NexTradeXApplication {
 	        // Initialize default prices
 	        marketService.initializeDefaultPrices();
 	        
+	        // Sync market prices from Binance/MEXC/Bybit asynchronously on startup
+	        java.util.concurrent.CompletableFuture.runAsync(() -> {
+	            try {
+	                System.out.println("[Startup] Syncing market prices asynchronously...");
+	                marketService.syncMarketPrices();
+	                System.out.println("[Startup] Market prices synced asynchronously successfully.");
+	            } catch (Exception e) {
+	                System.err.println("[Startup] Failed to sync market prices asynchronously: " + e.getMessage());
+	            }
+	        });
+	        
 	        // Create test user if not exists
 	        try {
 	            User testUser = userService.createUser(

@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import com.NexTradeX.market.MarketService;
 
 @Slf4j
 @Service
@@ -17,6 +18,7 @@ public class UserService {
     
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MarketService marketService;
     
     public User createUser(String username, String email, String password, 
                            String firstName, String lastName) {
@@ -59,7 +61,20 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setLastLogin(LocalDateTime.now());
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        
+        // Sync market prices asynchronously on login
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                log.info("[Login] Triggering async market price sync for user: {}", user.getUsername());
+                marketService.syncMarketPrices();
+                log.info("[Login] Async market price sync completed for user: {}", user.getUsername());
+            } catch (Exception e) {
+                log.error("[Login] Failed to sync market prices asynchronously: {}", e.getMessage());
+            }
+        });
+        
+        return savedUser;
     }
     
     public User verifyEmail(Long userId) {
