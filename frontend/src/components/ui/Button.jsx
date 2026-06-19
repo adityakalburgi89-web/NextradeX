@@ -12,10 +12,6 @@ const buttonVariants = cva(
                     "bg-primary text-on-primary px-6 py-3 shadow-neo hover:-translate-y-0.5 hover:bg-primary-active hover:shadow-neo-hover active:shadow-neo-inset-sm",
                 primaryPill:
                     "bg-primary text-on-primary rounded-full px-8 py-3.5 shadow-neo hover:-translate-y-0.5 hover:bg-primary-active hover:shadow-neo-hover active:shadow-neo-inset-sm",
-                primaryGradient:
-                    "bg-gradient-to-r from-primary to-accent-turquoise text-white px-6 py-3 shadow-neo hover:-translate-y-0.5 hover:shadow-glow-primary active:shadow-neo-inset-sm",
-                primaryGradientPill:
-                    "bg-gradient-to-r from-primary to-accent-turquoise text-white rounded-full px-8 py-3.5 shadow-neo hover:-translate-y-0.5 hover:shadow-glow-primary active:shadow-neo-inset-sm",
                 secondaryOnDark:
                     "bg-background text-foreground px-6 py-3 shadow-neo hover:-translate-y-0.5 hover:shadow-neo-hover active:shadow-neo-inset-sm",
                 secondaryOnLight:
