@@ -192,15 +192,8 @@ export default function SpotTradingPage() {
   const loadActiveOrders = async () => {
     try {
       const activeRes = await fetchActiveOrders();
-      const historyRes = await fetchOrderHistory();
-      
       const activeFiltered = (activeRes?.data || []).filter(o => o.tradeType === "SPOT");
-      const historyFiltered = (historyRes?.data || []).filter(o => o.tradeType === "SPOT");
-      
-      const combined = [...activeFiltered, ...historyFiltered];
-      combined.sort((a, b) => b.id - a.id);
-      
-      setActiveOrders(combined.slice(0, 50));
+      setActiveOrders(activeFiltered);
     } catch (err) {
       console.warn("Could not retrieve active orders:", err.message);
     } finally {

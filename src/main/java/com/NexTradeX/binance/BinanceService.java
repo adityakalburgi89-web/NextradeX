@@ -48,12 +48,12 @@ public class BinanceService {
         long now = System.currentTimeMillis();
         if (now >= binanceCooldownUntil) {
             return BINANCE_URL;
-        } else if (now >= mexcCooldownUntil) {
-            log.info("[Binance] Binance is on cooldown. Failing over to MEXC API: {}", MEXC_URL);
-            return MEXC_URL;
         } else if (now >= bybitCooldownUntil) {
-            log.info("[Binance] Binance and MEXC are on cooldown. Failing over to Bybit API: {}", BYBIT_URL);
+            log.info("[Binance] Binance is on cooldown. Failing over to Bybit API: {}", BYBIT_URL);
             return BYBIT_URL;
+        } else if (now >= mexcCooldownUntil) {
+            log.info("[Binance] Binance and Bybit are on cooldown. Failing over to MEXC API: {}", MEXC_URL);
+            return MEXC_URL;
         } else {
             return BINANCE_URL;
         }
@@ -133,13 +133,13 @@ public class BinanceService {
         long cooldownUntil = now + GLOBAL_COOLDOWN_MS;
         if (baseUrl.equals(BINANCE_URL)) {
             binanceCooldownUntil = cooldownUntil;
-            log.warn("[Binance] Binance rate limit/ban cooldown activated for 5 minutes (until {}). Failing over to MEXC.", new java.util.Date(cooldownUntil));
-        } else if (baseUrl.equals(MEXC_URL)) {
-            mexcCooldownUntil = cooldownUntil;
-            log.warn("[Binance] MEXC rate limit/ban cooldown activated for 5 minutes (until {}). Failing over to Bybit.", new java.util.Date(cooldownUntil));
+            log.warn("[Binance] Binance rate limit/ban cooldown activated for 5 minutes (until {}). Failing over to Bybit.", new java.util.Date(cooldownUntil));
         } else if (baseUrl.equals(BYBIT_URL)) {
             bybitCooldownUntil = cooldownUntil;
-            log.warn("[Binance] Bybit rate limit/ban cooldown activated for 5 minutes (until {}).", new java.util.Date(cooldownUntil));
+            log.warn("[Binance] Bybit rate limit/ban cooldown activated for 5 minutes (until {}). Failing over to MEXC.", new java.util.Date(cooldownUntil));
+        } else if (baseUrl.equals(MEXC_URL)) {
+            mexcCooldownUntil = cooldownUntil;
+            log.warn("[Binance] MEXC rate limit/ban cooldown activated for 5 minutes (until {}).", new java.util.Date(cooldownUntil));
         }
     }
 
@@ -148,88 +148,99 @@ public class BinanceService {
     }
 
     public BigDecimal getPrice(String symbol) {
-        if (!isRequestAllowed()) {
-            return null;
-        }
-        String activeUrl = getEffectiveBaseUrl();
-        try {
-            if (activeUrl.equals(BYBIT_URL)) {
-                String url = activeUrl + "/v5/market/tickers?category=spot&symbol=" + symbol.toUpperCase();
-                @SuppressWarnings("unchecked")
-                Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
-                if (response != null && response.containsKey("result")) {
-                    Map<String, Object> result = (Map<String, Object>) response.get("result");
-                    List<Map<String, Object>> list = (List<Map<String, Object>>) result.get("list");
-                    if (list != null && !list.isEmpty()) {
-                        return new BigDecimal(list.get(0).get("lastPrice").toString());
-                    }
-                }
+        int attempts = 0;
+        while (attempts < 3) {
+            if (!isRequestAllowed()) {
                 return null;
             }
+            String activeUrl = getEffectiveBaseUrl();
+            try {
+                if (activeUrl.equals(BYBIT_URL)) {
+                    String url = activeUrl + "/v5/market/tickers?category=spot&symbol=" + symbol.toUpperCase();
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
+                    if (response != null && response.containsKey("result")) {
+                        Map<String, Object> result = (Map<String, Object>) response.get("result");
+                        List<Map<String, Object>> list = (List<Map<String, Object>>) result.get("list");
+                        if (list != null && !list.isEmpty()) {
+                            return new BigDecimal(list.get(0).get("lastPrice").toString());
+                        }
+                    }
+                    return null;
+                }
 
-            String url = activeUrl + "/api/v3/ticker/price?symbol=" + symbol.toUpperCase();
-            Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
-            if (response != null && response.containsKey("price")) {
-                return new BigDecimal(response.get("price").toString());
-            }
-        } catch (RestClientResponseException e) {
-            log.error("[Binance] HTTP error fetching price for {} from {}: Status={}, Body={}", symbol, activeUrl, e.getStatusCode(), e.getResponseBodyAsString());
-            if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
+                String url = activeUrl + "/api/v3/ticker/price?symbol=" + symbol.toUpperCase();
+                Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
+                if (response != null && response.containsKey("price")) {
+                    return new BigDecimal(response.get("price").toString());
+                }
+            } catch (RestClientResponseException e) {
+                log.error("[Binance] HTTP error fetching price for {} from {}: Status={}, Body={}", symbol, activeUrl, e.getStatusCode(), e.getResponseBodyAsString());
+                if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
+                    triggerCooldown(activeUrl);
+                }
+            } catch (Exception e) {
+                log.error("[Binance] Failed to fetch price for {} from {}: {}", symbol, activeUrl, e.getMessage());
                 triggerCooldown(activeUrl);
             }
-        } catch (Exception e) {
-            log.error("[Binance] Failed to fetch price for {} from {}: {}", symbol, activeUrl, e.getMessage());
+            attempts++;
         }
         return null;
     }
 
     public Map<String, BigDecimal> getAllPrices() {
-        if (!isRequestAllowed()) {
-            return Map.of();
-        }
-        String activeUrl = getEffectiveBaseUrl();
-        Map<String, BigDecimal> prices = new HashMap<>();
-        try {
-            if (activeUrl.equals(BYBIT_URL)) {
-                String url = activeUrl + "/v5/market/tickers?category=spot";
-                @SuppressWarnings("unchecked")
-                Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
-                if (response != null && response.containsKey("result")) {
-                    Map<String, Object> result = (Map<String, Object>) response.get("result");
-                    List<Map<String, Object>> list = (List<Map<String, Object>>) result.get("list");
-                    if (list != null) {
-                        for (Map<String, Object> item : list) {
-                            String sym = item.get("symbol").toString();
-                            if (sym.endsWith("USDT")) {
-                                BigDecimal price = new BigDecimal(item.get("lastPrice").toString());
-                                prices.put(sym, price);
+        int attempts = 0;
+        while (attempts < 3) {
+            if (!isRequestAllowed()) {
+                return Map.of();
+            }
+            String activeUrl = getEffectiveBaseUrl();
+            Map<String, BigDecimal> prices = new HashMap<>();
+            try {
+                if (activeUrl.equals(BYBIT_URL)) {
+                    String url = activeUrl + "/v5/market/tickers?category=spot";
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
+                    if (response != null && response.containsKey("result")) {
+                        Map<String, Object> result = (Map<String, Object>) response.get("result");
+                        List<Map<String, Object>> list = (List<Map<String, Object>>) result.get("list");
+                        if (list != null) {
+                            for (Map<String, Object> item : list) {
+                                String sym = item.get("symbol").toString();
+                                if (sym.endsWith("USDT")) {
+                                    BigDecimal price = new BigDecimal(item.get("lastPrice").toString());
+                                    prices.put(sym, price);
+                                }
                             }
+                        }
+                    }
+                    return prices;
+                }
+
+                String url = activeUrl + "/api/v3/ticker/price";
+                List<Map<String, Object>> response = restClient.get().uri(url).retrieve().body(List.class);
+                if (response != null) {
+                    for (Map<String, Object> item : response) {
+                        String sym = item.get("symbol").toString();
+                        if (sym.endsWith("USDT")) {
+                            BigDecimal price = new BigDecimal(item.get("price").toString());
+                            prices.put(sym, price);
                         }
                     }
                 }
                 return prices;
-            }
-
-            String url = activeUrl + "/api/v3/ticker/price";
-            List<Map<String, Object>> response = restClient.get().uri(url).retrieve().body(List.class);
-            if (response != null) {
-                for (Map<String, Object> item : response) {
-                    String sym = item.get("symbol").toString();
-                    if (sym.endsWith("USDT")) {
-                        BigDecimal price = new BigDecimal(item.get("price").toString());
-                        prices.put(sym, price);
-                    }
+            } catch (RestClientResponseException e) {
+                log.error("[Binance] HTTP error fetching all prices from {}: Status={}, Body={}", activeUrl, e.getStatusCode(), e.getResponseBodyAsString());
+                if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
+                    triggerCooldown(activeUrl);
                 }
-            }
-        } catch (RestClientResponseException e) {
-            log.error("[Binance] HTTP error fetching all prices from {}: Status={}, Body={}", activeUrl, e.getStatusCode(), e.getResponseBodyAsString());
-            if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
+            } catch (Exception e) {
+                log.error("[Binance] Failed to fetch all prices from {}: {}", activeUrl, e.getMessage());
                 triggerCooldown(activeUrl);
             }
-        } catch (Exception e) {
-            log.error("[Binance] Failed to fetch all prices from {}: {}", activeUrl, e.getMessage());
+            attempts++;
         }
-        return prices;
+        return Map.of();
     }
 
     public Map<String, Object> getTicker24h(String symbol) {
@@ -239,151 +250,165 @@ public class BinanceService {
             return null;
         }
         
-        String activeUrl = getEffectiveBaseUrl();
-        try {
-            if (activeUrl.equals(BYBIT_URL)) {
-                String url = activeUrl + "/v5/market/tickers?category=spot&symbol=" + sym;
-                log.info("[Binance] Fetching Bybit 24h ticker for {} from: {}", sym, url);
-                @SuppressWarnings("unchecked")
-                Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
-                if (response != null && response.containsKey("result")) {
-                    Map<String, Object> result = (Map<String, Object>) response.get("result");
-                    List<Map<String, Object>> list = (List<Map<String, Object>>) result.get("list");
-                    if (list != null && !list.isEmpty()) {
-                        Map<String, Object> item = list.get(0);
-                        Map<String, Object> translated = new HashMap<>();
-                        translated.put("symbol", item.get("symbol"));
-                        translated.put("lastPrice", item.get("lastPrice"));
-                        translated.put("highPrice", item.get("highPrice24h"));
-                        translated.put("lowPrice", item.get("lowPrice24h"));
-                        
-                        BigDecimal last = new BigDecimal(item.get("lastPrice").toString());
-                        BigDecimal prev = new BigDecimal(item.get("prevPrice24h").toString());
-                        translated.put("openPrice", prev);
-                        
-                        BigDecimal priceChange = last.subtract(prev);
-                        translated.put("priceChange", priceChange);
-                        
-                        BigDecimal percentChange = prev.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ZERO 
-                                : priceChange.divide(prev, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
-                        translated.put("priceChangePercent", percentChange);
-                        
-                        translated.put("volume", item.get("volume24h"));
-                        log.info("[Binance] Successfully fetched ticker for {}. Last Price: {}", sym, last);
-                        return translated;
-                    }
-                }
+        int attempts = 0;
+        while (attempts < 3) {
+            if (!isRequestAllowed()) {
                 return null;
             }
+            String activeUrl = getEffectiveBaseUrl();
+            try {
+                if (activeUrl.equals(BYBIT_URL)) {
+                    String url = activeUrl + "/v5/market/tickers?category=spot&symbol=" + sym;
+                    log.info("[Binance] Fetching Bybit 24h ticker for {} from: {}", sym, url);
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
+                    if (response != null && response.containsKey("result")) {
+                        Map<String, Object> result = (Map<String, Object>) response.get("result");
+                        List<Map<String, Object>> list = (List<Map<String, Object>>) result.get("list");
+                        if (list != null && !list.isEmpty()) {
+                            Map<String, Object> item = list.get(0);
+                            Map<String, Object> translated = new HashMap<>();
+                            translated.put("symbol", item.get("symbol"));
+                            translated.put("lastPrice", item.get("lastPrice"));
+                            translated.put("highPrice", item.get("highPrice24h"));
+                            translated.put("lowPrice", item.get("lowPrice24h"));
+                            
+                            BigDecimal last = new BigDecimal(item.get("lastPrice").toString());
+                            BigDecimal prev = new BigDecimal(item.get("prevPrice24h").toString());
+                            translated.put("openPrice", prev);
+                            
+                            BigDecimal priceChange = last.subtract(prev);
+                            translated.put("priceChange", priceChange);
+                            
+                            BigDecimal percentChange = prev.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ZERO 
+                                    : priceChange.divide(prev, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+                            translated.put("priceChangePercent", percentChange);
+                            
+                            translated.put("volume", item.get("volume24h"));
+                            log.info("[Binance] Successfully fetched ticker for {}. Last Price: {}", sym, last);
+                            return translated;
+                        }
+                    }
+                    return null;
+                }
 
-            String url = activeUrl + "/api/v3/ticker/24hr?symbol=" + sym;
-            log.info("[Binance] Fetching 24h ticker for {} from: {}", sym, url);
-            @SuppressWarnings("unchecked")
-            Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
-            if (response != null) {
-                log.info("[Binance] Successfully fetched ticker for {}. Last Price: {}", sym, response.get("lastPrice"));
-            } else {
-                log.warn("[Binance] Received empty response for {}", sym);
-            }
-            return response;
-        } catch (RestClientResponseException e) {
-            log.error("[Binance] HTTP error fetching 24h ticker for {} from {}: Status={}, Body={}", sym, activeUrl, e.getStatusCode(), e.getResponseBodyAsString());
-            if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
+                String url = activeUrl + "/api/v3/ticker/24hr?symbol=" + sym;
+                log.info("[Binance] Fetching 24h ticker for {} from: {}", sym, url);
+                @SuppressWarnings("unchecked")
+                Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
+                if (response != null) {
+                    log.info("[Binance] Successfully fetched ticker for {}. Last Price: {}", sym, response.get("lastPrice"));
+                }
+                return response;
+            } catch (RestClientResponseException e) {
+                log.error("[Binance] HTTP error fetching 24h ticker for {} from {}: Status={}, Body={}", sym, activeUrl, e.getStatusCode(), e.getResponseBodyAsString());
+                if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
+                    triggerCooldown(activeUrl);
+                }
+            } catch (Exception e) {
+                log.error("[Binance] Failed to fetch 24h ticker for {} from {}: {}", sym, activeUrl, e.getMessage());
                 triggerCooldown(activeUrl);
             }
-            return null;
-        } catch (Exception e) {
-            log.error("[Binance] Failed to fetch 24h ticker for {} from {}: {}", sym, activeUrl, e.getMessage());
-            return null;
+            attempts++;
         }
+        return null;
     }
 
     public List<List<Object>> getKlines(String symbol, String interval, int limit) {
-        if (!isRequestAllowed()) {
-            log.debug("[Binance] Fetch klines for {} is blocked (both Binance and MEXC on cooldown).", symbol);
-            return null;
-        }
+        int attempts = 0;
+        while (attempts < 3) {
+            if (!isRequestAllowed()) {
+                log.debug("[Binance] Fetch klines for {} is blocked (all providers on cooldown).", symbol);
+                return null;
+            }
 
-        String activeUrl = getEffectiveBaseUrl();
-        String adaptedInterval = adaptInterval(activeUrl, interval);
-        try {
-            if (activeUrl.equals(BYBIT_URL)) {
-                String url = activeUrl + "/v5/market/kline?category=spot&symbol=" + symbol.toUpperCase() + "&interval=" + adaptedInterval + "&limit=" + limit;
-                log.info("[Binance] Fetching klines for {} from Bybit: {}", symbol, url);
-                @SuppressWarnings("unchecked")
-                Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
-                if (response != null && response.containsKey("result")) {
-                    Map<String, Object> result = (Map<String, Object>) response.get("result");
-                    List<List<Object>> list = (List<List<Object>>) result.get("list");
-                    if (list != null) {
-                        log.info("[Binance] Successfully fetched {} klines for {} from Bybit", list.size(), symbol);
-                        java.util.Collections.reverse(list);
-                        return list;
+            String activeUrl = getEffectiveBaseUrl();
+            String adaptedInterval = adaptInterval(activeUrl, interval);
+            try {
+                if (activeUrl.equals(BYBIT_URL)) {
+                    String url = activeUrl + "/v5/market/kline?category=spot&symbol=" + symbol.toUpperCase() + "&interval=" + adaptedInterval + "&limit=" + limit;
+                    log.info("[Binance] Fetching klines for {} from Bybit: {}", symbol, url);
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
+                    if (response != null && response.containsKey("result")) {
+                        Map<String, Object> result = (Map<String, Object>) response.get("result");
+                        List<List<Object>> list = (List<List<Object>>) result.get("list");
+                        if (list != null) {
+                            log.info("[Binance] Successfully fetched {} klines for {} from Bybit", list.size(), symbol);
+                            java.util.Collections.reverse(list);
+                            return list;
+                        }
                     }
+                    return List.of();
                 }
-                return List.of();
-            }
 
-            String url = activeUrl + "/api/v3/klines?symbol=" + symbol.toUpperCase() + "&interval=" + adaptedInterval + "&limit=" + limit;
-            log.info("[Binance] Fetching klines for {} from: {}", symbol, url);
-            @SuppressWarnings("unchecked")
-            List<List<Object>> response = restClient.get().uri(url).retrieve().body(List.class);
-            if (response != null) {
-                log.info("[Binance] Successfully fetched {} klines for {} from {}", response.size(), symbol, activeUrl);
-            }
-            return response;
-        } catch (RestClientResponseException e) {
-            log.error("[Binance] HTTP error fetching klines for {} from {}: Status={}, Body={}", symbol, activeUrl, e.getStatusCode(), e.getResponseBodyAsString());
-            if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
+                String url = activeUrl + "/api/v3/klines?symbol=" + symbol.toUpperCase() + "&interval=" + adaptedInterval + "&limit=" + limit;
+                log.info("[Binance] Fetching klines for {} from: {}", symbol, url);
+                @SuppressWarnings("unchecked")
+                List<List<Object>> response = restClient.get().uri(url).retrieve().body(List.class);
+                if (response != null) {
+                    log.info("[Binance] Successfully fetched {} klines for {} from {}", response.size(), symbol, activeUrl);
+                }
+                return response;
+            } catch (RestClientResponseException e) {
+                log.error("[Binance] HTTP error fetching klines for {} from {}: Status={}, Body={}", symbol, activeUrl, e.getStatusCode(), e.getResponseBodyAsString());
+                if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
+                    triggerCooldown(activeUrl);
+                }
+            } catch (Exception e) {
+                log.error("[Binance] Failed to fetch klines for {} from {}: {}", symbol, activeUrl, e.getMessage());
                 triggerCooldown(activeUrl);
             }
-            return null;
-        } catch (Exception e) {
-            log.error("[Binance] Failed to fetch klines for {} from {}: {}", symbol, activeUrl, e.getMessage());
-            return null;
+            attempts++;
         }
+        return null;
     }
 
     public List<String> getAvailableSymbols() {
-        if (!isRequestAllowed()) {
-            return List.of();
-        }
-        String activeUrl = getEffectiveBaseUrl();
-        try {
-            if (activeUrl.equals(BYBIT_URL)) {
-                String url = activeUrl + "/v5/market/instruments-info?category=spot";
-                @SuppressWarnings("unchecked")
-                Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
-                if (response != null && response.containsKey("result")) {
-                    Map<String, Object> result = (Map<String, Object>) response.get("result");
-                    List<Map<String, Object>> list = (List<Map<String, Object>>) result.get("list");
-                    if (list != null) {
-                        return list.stream()
-                                .map(s -> s.get("symbol").toString())
-                                .filter(sym -> sym.endsWith("USDT"))
-                                .toList();
-                    }
-                }
+        int attempts = 0;
+        while (attempts < 3) {
+            if (!isRequestAllowed()) {
                 return List.of();
             }
+            String activeUrl = getEffectiveBaseUrl();
+            try {
+                if (activeUrl.equals(BYBIT_URL)) {
+                    String url = activeUrl + "/v5/market/instruments-info?category=spot";
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
+                    if (response != null && response.containsKey("result")) {
+                        Map<String, Object> result = (Map<String, Object>) response.get("result");
+                        List<Map<String, Object>> list = (List<Map<String, Object>>) result.get("list");
+                        if (list != null) {
+                            return list.stream()
+                                    .map(s -> s.get("symbol").toString())
+                                    .filter(sym -> sym.endsWith("USDT"))
+                                    .toList();
+                        }
+                    }
+                    return List.of();
+                }
 
-            String url = activeUrl + "/api/v3/exchangeInfo";
-            Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
-            if (response != null && response.containsKey("symbols")) {
-                @SuppressWarnings("unchecked")
-                List<Map<String, String>> symbols = (List<Map<String, String>>) response.get("symbols");
-                return symbols.stream()
-                        .filter(s -> "USDT".equals(s.get("quoteAsset")))
-                        .map(s -> s.get("symbol"))
-                        .toList();
-            }
-        } catch (RestClientResponseException e) {
-            log.error("[Binance] HTTP error fetching available symbols from {}: Status={}, Body={}", activeUrl, e.getStatusCode(), e.getResponseBodyAsString());
-            if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
+                String url = activeUrl + "/api/v3/exchangeInfo";
+                Map<String, Object> response = restClient.get().uri(url).retrieve().body(Map.class);
+                if (response != null && response.containsKey("symbols")) {
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, String>> symbols = (List<Map<String, String>>) response.get("symbols");
+                    return symbols.stream()
+                            .filter(s -> "USDT".equals(s.get("quoteAsset")))
+                            .map(s -> s.get("symbol"))
+                            .toList();
+                }
+            } catch (RestClientResponseException e) {
+                log.error("[Binance] HTTP error fetching available symbols from {}: Status={}, Body={}", activeUrl, e.getStatusCode(), e.getResponseBodyAsString());
+                if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
+                    triggerCooldown(activeUrl);
+                }
+            } catch (Exception e) {
+                log.error("[Binance] Failed to fetch available symbols from {}: {}", activeUrl, e.getMessage());
                 triggerCooldown(activeUrl);
             }
-        } catch (Exception e) {
-            log.error("[Binance] Failed to fetch available symbols from {}: {}", activeUrl, e.getMessage());
+            attempts++;
         }
         return List.of();
     }
