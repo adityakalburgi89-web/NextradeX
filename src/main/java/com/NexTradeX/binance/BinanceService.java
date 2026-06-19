@@ -30,8 +30,12 @@ public class BinanceService {
     private static final long GLOBAL_COOLDOWN_MS = 300000; // 5 minutes (300 seconds)
 
     private final BinanceProperties binanceProperties;
-    private final RestTemplate restTemplate;
-    private final RestClient restClient = RestClient.create();
+    private final RestClient restClient = RestClient.builder()
+            .requestFactory(new org.springframework.http.client.SimpleClientHttpRequestFactory() {{
+                setConnectTimeout(2000);
+                setReadTimeout(3000);
+            }})
+            .build();
 
     @Value("${bybit.api-key:}")
     private String bybitApiKey;
