@@ -1,6 +1,7 @@
 package com.NexTradeX.auth;
 
 import com.NexTradeX.common.ApiResponse;
+import com.NexTradeX.common.RateLimit;
 import com.NexTradeX.dto.AuthResponse;
 import com.NexTradeX.dto.LoginRequest;
 import com.NexTradeX.dto.RegisterRequest;
@@ -22,6 +23,7 @@ public class AuthController {
     private final AuthService authService;
     private final JwtService jwtService;
 
+    @RateLimit(capacity = 5, refillRate = 0.2)
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(
             @Valid @RequestBody RegisterRequest request) {
@@ -53,6 +55,7 @@ public class AuthController {
         }
     }
 
+    @RateLimit(capacity = 5, refillRate = 0.2)
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(
             @Valid @RequestBody LoginRequest request) {

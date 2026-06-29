@@ -151,6 +151,11 @@ public class BinanceService {
         triggerCooldown(BINANCE_URL);
     }
 
+    private boolean shouldTriggerCooldown(org.springframework.http.HttpStatusCode statusCode) {
+        int val = statusCode.value();
+        return val == 429 || val == 418 || val == 403 || val == 451 || statusCode.is5xxServerError();
+    }
+
     public BigDecimal getPrice(String symbol) {
         int attempts = 0;
         while (attempts < 3) {
@@ -180,7 +185,7 @@ public class BinanceService {
                 }
             } catch (RestClientResponseException e) {
                 log.error("[Binance] HTTP error fetching price for {} from {}: Status={}, Body={}", symbol, activeUrl, e.getStatusCode(), e.getResponseBodyAsString());
-                if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
+                if (shouldTriggerCooldown(e.getStatusCode())) {
                     triggerCooldown(activeUrl);
                 }
             } catch (Exception e) {
@@ -235,7 +240,7 @@ public class BinanceService {
                 return prices;
             } catch (RestClientResponseException e) {
                 log.error("[Binance] HTTP error fetching all prices from {}: Status={}, Body={}", activeUrl, e.getStatusCode(), e.getResponseBodyAsString());
-                if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
+                if (shouldTriggerCooldown(e.getStatusCode())) {
                     triggerCooldown(activeUrl);
                 }
             } catch (Exception e) {
@@ -306,7 +311,7 @@ public class BinanceService {
                 return response;
             } catch (RestClientResponseException e) {
                 log.error("[Binance] HTTP error fetching 24h ticker for {} from {}: Status={}, Body={}", sym, activeUrl, e.getStatusCode(), e.getResponseBodyAsString());
-                if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
+                if (shouldTriggerCooldown(e.getStatusCode())) {
                     triggerCooldown(activeUrl);
                 }
             } catch (Exception e) {
@@ -356,7 +361,7 @@ public class BinanceService {
                 return response;
             } catch (RestClientResponseException e) {
                 log.error("[Binance] HTTP error fetching klines for {} from {}: Status={}, Body={}", symbol, activeUrl, e.getStatusCode(), e.getResponseBodyAsString());
-                if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
+                if (shouldTriggerCooldown(e.getStatusCode())) {
                     triggerCooldown(activeUrl);
                 }
             } catch (Exception e) {
@@ -405,7 +410,7 @@ public class BinanceService {
                 }
             } catch (RestClientResponseException e) {
                 log.error("[Binance] HTTP error fetching available symbols from {}: Status={}, Body={}", activeUrl, e.getStatusCode(), e.getResponseBodyAsString());
-                if (e.getStatusCode().value() == 429 || e.getStatusCode().value() == 418) {
+                if (shouldTriggerCooldown(e.getStatusCode())) {
                     triggerCooldown(activeUrl);
                 }
             } catch (Exception e) {

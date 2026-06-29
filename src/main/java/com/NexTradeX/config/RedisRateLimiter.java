@@ -81,7 +81,7 @@ public class RedisRateLimiter {
             
             return result != null && result == 1L;
         } catch (Exception e) {
-            log.error("[RedisRateLimiter] Error executing rate limiting script for " + clientKey, e);
+            log.error("[RedisRateLimiter] CRITICAL: Redis execution failed for client {}. Rate limiting is temporarily BYPASSED (returning allowed=true). Reason: {}", clientKey, e.getMessage(), e);
             // Fallback: allow request in case of Redis failure so we don't block users due to Redis downtime
             return true;
         }

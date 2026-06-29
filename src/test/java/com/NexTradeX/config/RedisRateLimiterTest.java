@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @SpringBootTest
 public class RedisRateLimiterTest {
@@ -13,8 +14,15 @@ public class RedisRateLimiterTest {
 
     @Test
     public void testRateLimiterAllowed() {
-        boolean allowed = redisRateLimiter.isAllowed("test_client", "test_endpoint", 5, 2.0);
-        System.out.println("Rate Limiter isAllowed: " + allowed);
-        assertTrue(allowed);
+        String client = "test_client_" + System.currentTimeMillis();
+        String endpoint = "test_endpoint";
+
+        // Request 1-5 should be allowed (capacity is 5)
+        for (int i = 0; i < 5; i++) {
+            assertTrue(redisRateLimiter.isAllowed(client, endpoint, 5, 1.0));
+        }
+
+        // Request 6 should be blocked
+        assertFalse(redisRateLimiter.isAllowed(client, endpoint, 5, 1.0));
     }
 }
