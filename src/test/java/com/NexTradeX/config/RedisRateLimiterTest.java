@@ -19,10 +19,10 @@ public class RedisRateLimiterTest {
 
         // Request 1-5 should be allowed (capacity is 5)
         for (int i = 0; i < 5; i++) {
-            assertTrue(redisRateLimiter.isAllowed(client, endpoint, 5, 1.0));
+            assertTrue(redisRateLimiter.isAllowed(client, endpoint, 5, 0.00001));
         }
 
         // Request 6 should be blocked
-        assertFalse(redisRateLimiter.isAllowed(client, endpoint, 5, 1.0));
+        assertFalse(redisRateLimiter.isAllowed(client, endpoint, 5, 0.00001));
     }
 }
