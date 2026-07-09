@@ -422,6 +422,33 @@ public class BinanceService {
         return List.of();
     }
 
+    public String getEffectiveWebSocketUrl() {
+        String activeUrl = getEffectiveBaseUrl();
+        if (activeUrl.equals(BYBIT_URL)) {
+            return "wss://stream.bybit.com/v5/public/spot";
+        } else if (activeUrl.equals(MEXC_URL)) {
+            return "wss://wbs.mexc.com/ws";
+        } else {
+            return "wss://stream.binance.com:9443/stream?streams="
+                    + "btcusdt@ticker/"
+                    + "ethusdt@ticker/"
+                    + "bnbusdt@ticker/"
+                    + "solusdt@ticker/"
+                    + "dotusdt@ticker";
+        }
+    }
+
+    public String getActiveProviderName() {
+        String activeUrl = getEffectiveBaseUrl();
+        if (activeUrl.equals(BYBIT_URL)) {
+            return "BYBIT";
+        } else if (activeUrl.equals(MEXC_URL)) {
+            return "MEXC";
+        } else {
+            return "BINANCE";
+        }
+    }
+
     public boolean isConfigured() {
         String key = binanceProperties.getApiKey();
         String secret = binanceProperties.getApiSecret();
