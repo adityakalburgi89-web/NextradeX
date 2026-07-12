@@ -327,17 +327,17 @@ oauth.frontend.callback-url=http://localhost:3000/auth
 
 ## Support
 
-All documentation is included in your project:
+All documentation is included in your project under the `docs/` folder:
 
 ```
-C:\Users\adity\OneDrive\Desktop\NexTradeX\
+C:\Users\adity\OneDrive\Desktop\NexTradeX\docs\
 ├── COMPLETE_FIX_SUMMARY.md          ← Start here
 ├── CODE_CHANGES_COMPARISON.md        ← See exact changes
 ├── DEBUG_OAUTH_401.md                ← Deep debugging
 ├── OAUTH_401_FIX_SUMMARY.md          ← Technical details
 ├── QUICK_VERIFICATION.md             ← Quick test
 ├── VISUAL_REFERENCE.md               ← Diagrams
-└── README.md                          ← This file
+└── README_OAUTH_FIX.md               ← This file
 ```
 
 ---

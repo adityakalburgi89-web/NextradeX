@@ -417,12 +417,12 @@ curl -X OPTIONS http://localhost:8080/api/oauth2/complete-profile \
 
 ##  Reference Docs Location
 
-All guides are in your project root (`C:\Users\adity\OneDrive\Desktop\NexTradeX\`):
+All guides are in your project's docs folder (`C:\Users\adity\OneDrive\Desktop\NexTradeX\docs\`):
 
-1. `DEBUG_OAUTH_401.md` - Deep dive debugging guide
-2. `OAUTH_401_FIX_SUMMARY.md` - Technical solution summary  
-3. `QUICK_VERIFICATION.md` - 2-minute quick test
-4. `VISUAL_REFERENCE.md` - Diagrams and flows
+1. `docs/DEBUG_OAUTH_401.md` - Deep dive debugging guide
+2. `docs/OAUTH_401_FIX_SUMMARY.md` - Technical solution summary  
+3. `docs/QUICK_VERIFICATION.md` - 2-minute quick test
+4. `docs/VISUAL_REFERENCE.md` - Diagrams and flows
 
 **Bookmark these for future reference!** They explain exactly what was broken and how it's fixed.
 

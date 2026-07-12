@@ -101,7 +101,7 @@ FRONTEND_CALLBACK_URL=http://localhost:3000/auth
 ```
 
 > [!NOTE]
-> For detailed instructions on OAuth2 configuration, CORS, and credential settings, refer to the [OAuth2 Fix Quick Start](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/README_OAUTH_FIX.md) and the [OAuth Fix Index Guide](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/OAUTH_FIX_INDEX.md).
+> For detailed instructions on OAuth2 configuration, CORS, and credential settings, refer to the [OAuth2 Fix Quick Start](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/docs/README_OAUTH_FIX.md) and the [OAuth Fix Index Guide](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/docs/OAUTH_FIX_INDEX.md).
 
 ---
 

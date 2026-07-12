@@ -148,15 +148,15 @@ Code Changes:
 ├── src/main/java/com/NexTradeX/user/UserController.java 
 └── frontend/src/api.js 
 
-Documentation:
-├── OAUTH_FIX_INDEX.md 
-├── README_OAUTH_FIX.md 
-├── COMPLETE_FIX_SUMMARY.md 
-├── CODE_CHANGES_COMPARISON.md 
-├── QUICK_VERIFICATION.md 
-├── OAUTH_401_FIX_SUMMARY.md 
-├── DEBUG_OAUTH_401.md 
-└── VISUAL_REFERENCE.md 
+Documentation (in docs/ directory):
+├── docs/OAUTH_FIX_INDEX.md 
+├── docs/README_OAUTH_FIX.md 
+├── docs/COMPLETE_FIX_SUMMARY.md 
+├── docs/CODE_CHANGES_COMPARISON.md 
+├── docs/QUICK_VERIFICATION.md 
+├── docs/OAUTH_401_FIX_SUMMARY.md 
+├── docs/DEBUG_OAUTH_401.md 
+└── docs/VISUAL_REFERENCE.md 
 ```
 
 ---

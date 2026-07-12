@@ -12,43 +12,43 @@
 - **Duration:** 5 minutes
 - **Content:** Quick overview, key changes, troubleshooting
 - **Best for:** Getting started, understanding what happened
-- **Location:** `C:\Users\adity\OneDrive\Desktop\NexTradeX\README_OAUTH_FIX.md`
+- **Location:** `C:\Users\adity\OneDrive\Desktop\NexTradeX\docs\README_OAUTH_FIX.md`
 
 ### 2. **COMPLETE_FIX_SUMMARY.md** 
 - **Duration:** 10 minutes
 - **Content:** What was done, files modified, testing procedures
 - **Best for:** Project managers, team leads, understanding scope
-- **Location:** `C:\Users\adity\OneDrive\Desktop\NexTradeX\COMPLETE_FIX_SUMMARY.md`
+- **Location:** `C:\Users\adity\OneDrive\Desktop\NexTradeX\docs\COMPLETE_FIX_SUMMARY.md`
 
 ### 3. **CODE_CHANGES_COMPARISON.md**
 - **Duration:** 15 minutes
 - **Content:** Before/after code for all 5 files, side-by-side comparison
 - **Best for:** Code reviewers, developers implementing similar fixes
-- **Location:** `C:\Users\adity\OneDrive\Desktop\NexTradeX\CODE_CHANGES_COMPARISON.md`
+- **Location:** `C:\Users\adity\OneDrive\Desktop\NexTradeX\docs\CODE_CHANGES_COMPARISON.md`
 
 ### 4. **QUICK_VERIFICATION.md**
 - **Duration:** 2 minutes (testing)
 - **Content:** Quick test checklist, network tab inspection, debug commands
 - **Best for:** Verifying the fix works, quick troubleshooting
-- **Location:** `C:\Users\adity\OneDrive\Desktop\NexTradeX\QUICK_VERIFICATION.md`
+- **Location:** `C:\Users\adity\OneDrive\Desktop\NexTradeX\docs\QUICK_VERIFICATION.md`
 
 ### 5. **OAUTH_401_FIX_SUMMARY.md**
 - **Duration:** 20 minutes
 - **Content:** Problem statement, root causes, complete technical solution
 - **Best for:** Deep understanding, detailed debugging, production deployment
-- **Location:** `C:\Users\adity\OneDrive\Desktop\NexTradeX\OAUTH_401_FIX_SUMMARY.md`
+- **Location:** `C:\Users\adity\OneDrive\Desktop\NexTradeX\docs\OAUTH_401_FIX_SUMMARY.md`
 
 ### 6. **DEBUG_OAUTH_401.md**
 - **Duration:** 25 minutes
 - **Content:** Root cause analysis, debugging techniques, production checklist
 - **Best for:** Debugging similar issues, understanding CORS/JWT, production prep
-- **Location:** `C:\Users\adity\OneDrive\Desktop\NexTradeX\DEBUG_OAUTH_401.md`
+- **Location:** `C:\Users\adity\OneDrive\Desktop\NexTradeX\docs\DEBUG_OAUTH_401.md`
 
 ### 7. **VISUAL_REFERENCE.md**
 - **Duration:** 10 minutes (reading diagrams)
 - **Content:** Flow diagrams, architecture, timeline, visual comparisons
 - **Best for:** Visual learners, understanding request flow, presentations
-- **Location:** `C:\Users\adity\OneDrive\Desktop\NexTradeX\VISUAL_REFERENCE.md`
+- **Location:** `C:\Users\adity\OneDrive\Desktop\NexTradeX\docs\VISUAL_REFERENCE.md`
 
 ---
 
@@ -272,7 +272,7 @@ You'll know the fix is working when:
 
 All documentation is stored in:
 ```
-C:\Users\adity\OneDrive\Desktop\NexTradeX\
+C:\Users\adity\OneDrive\Desktop\NexTradeX\docs\
 ```
 
 Recommended: Keep these in a shared drive or wiki for team reference.
