@@ -29,6 +29,16 @@ The platform provides a range of mock trading capabilities, integrations, and de
 
 ---
 
+## System Architecture
+
+The following diagram illustrates the high-level architecture and request-flow routing within the NexTradeX platform, showing integrations with Redis rate limiting, external exchange endpoints (Binance, Bybit, MEXC) with active/inactive routing, database structure, and the OpenTelemetry/Prometheus/Grafana telemetry pipeline:
+
+![System Architecture](docs/assets/system_architecture.png)
+
+A detailed description of the components shown in this diagram can be found in the [System Architecture Guide](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/docs/ARCHITECTURE.md).
+
+---
+
 ## Technology Stack
 
 | Layer | Technologies | Key Features |
@@ -107,30 +117,11 @@ FRONTEND_CALLBACK_URL=http://localhost:3000/auth
 
 ## Architecture & Key Services
 
-### 1. Redis-Backed Token Bucket Rate Limiter
-The rate limiting mechanism protects critical controllers against abuse:
-*   **Implementation**: Done using an interceptor (`RateLimitInterceptor`) that looks for `@RateLimit` annotations on methods or classes. It runs an atomic Lua script in Redis.
-*   **Annotation**:
-    ```java
-    @RateLimit(capacity = 5, refillRate = 0.2) // Capacity of 5 tokens, refilling 0.2 tokens/second
-    ```
-*   **Fail-Safe**: If Redis becomes unavailable, the system logs the error and temporarily **bypasses rate limiting** (allowing requests) to guarantee uninterrupted user operations.
-*   **Identity Mapping**: Matches users by JWT token user ID (`user_<id>`) and falls back to IP address (`ip_<address>`) if the request is unauthenticated.
+For an in-depth breakdown of the main platform subsystems, including implementation specifics, configurations, and failover workflows, refer to the [System Architecture Guide](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/docs/ARCHITECTURE.md).
 
-### 2. Multi-Exchange Failover Service
-To avoid interruptions in live/mock candlestick data feeds, `BinanceService` implements a failover protocol:
-*   **Providers**: Binance (`https://api.binance.com`) -> Bybit (`https://api.bybit.com`) -> MEXC (`https://api.mexc.com`).
-*   **Failover Conditions**: If an API request fails, hits rate-limit restrictions, or times out, the service sets a cooldown flag:
-    *   **Symbol Cooldown**: 60 seconds for specific symbol requests.
-    *   **Global Cooldown**: 5 minutes (300 seconds) for the entire exchange.
-*   **Adaptive Interval Translation**: Automatically converts standard intervals (like `1h`, `1d`, `5m`) into formats recognized by the active provider.
-
-### 3. Monitoring System
-Prometheus metrics are collected via the Spring Actuator endpoint `/api/actuator/prometheus`.
-*   **Prometheus**: Scraping the Spring Boot application every 15s (`host.docker.internal:8080`).
-*   **Grafana**: View real-time graphs for CPU/memory, JVM metrics, active WebSocket sessions, database connection pools, and Redis rate limit stats.
-    *   **Port**: `http://localhost:3000`
-    *   **Default Login**: `admin` / `admin`
+*   **Redis-Backed Token Bucket Rate Limiter**: Atomic token refilling using Redis Lua scripts with graceful fail-safe capabilities.
+*   **Multi-Exchange Failover Service**: High-availability external price feeds routing across Binance, Bybit, and MEXC API endpoints.
+*   **Monitoring System**: Prometheus metrics collection scraped via Actuator `/api/actuator/prometheus` coupled with Grafana dashboards.
 
 ---
 
@@ -155,6 +146,8 @@ NexTradeX/
 │   ├── user/           # User profile and watchlist controllers
 │   └── wallet/         # Multi-wallet ledger service (Spot, Margin, Futures)
 │
+├── docs/               # Technical manuals, API references, architecture guides
+│
 ├── frontend/           # React application built with Vite and Tailwind
 │   ├── src/
 │   │   ├── pages/      # Page components (Dashboard, Spot, Margin, Futures, OAuth Auth)
@@ -172,62 +165,7 @@ NexTradeX/
 
 ## API Endpoints
 
-All endpoints have a `/api` context path.
-
-### Authentication & Users
-*   `POST /api/auth/register` (Rate-limited) - Register a new account
-*   `POST /api/auth/login` (Rate-limited) - Login and receive JWT
-*   `GET /api/auth/validate` - Validate current token validity
-*   `POST /api/oauth2/complete-profile` - Complete Google login profile setup
-*   `GET /api/user/profile` - Retrieve logged-in user profile details
-*   `PUT /api/user/profile` - Update profile settings (name/email)
-
-### Market Data & Alerts
-*   `GET /api/market/prices` (Rate-limited) - Get mock prices for symbols
-*   `GET /api/market/price/{symbol}` (Rate-limited) - Get mock price of symbol
-*   `GET /api/market/candles/{symbol}` - Get mock candlestick charts data
-*   `GET /api/market/binance/price/{symbol}` - Fetch live price from active exchange (Binance/Bybit/MEXC)
-*   `GET /api/market/binance/prices` - Fetch live prices for all symbols from active exchange
-*   `GET /api/market/binance/symbols` - Fetch supported active exchange symbols
-*   `GET /api/market/binance/status` - Check exchange endpoint health and active cooldowns
-*   `GET /api/market/alerts` - Get active price alerts
-*   `POST /api/market/alerts` - Set a new price alert trigger
-*   `DELETE /api/market/alerts/{alertId}` - Remove an existing price alert
-
-### Wallets
-*   `GET /api/wallets` - Get all wallet balances
-*   `GET /api/wallets/{walletType}` - Retrieve balance by type (`SPOT`, `MARGIN`, `FUTURES`)
-*   `POST /api/wallets/deposit` - Deposit mock funds (cryptocurrencies or fiat)
-*   `POST /api/wallets/transfer` - Transfer funds internally between wallets
-*   `POST /api/wallets/withdraw` - Withdraw mock funds from SPOT wallet
-*   `POST /api/wallets/reset` - Reset all wallets to default state
-
-### Trading Operations
-*   `POST /api/orders/spot` - Place a spot market/limit order
-*   `GET /api/orders/active` - View active spot orders
-*   `GET /api/orders/history` - View spot order history
-*   `DELETE /api/orders/{orderId}` - Cancel a pending spot order
-*   `GET /api/orders/dca` - List current DCA schedules
-*   `POST /api/orders/dca` - Create a new DCA recurring order schedule
-*   `POST /api/orders/dca/{scheduleId}/toggle` - Pause or resume DCA schedule
-*   `POST /api/margin/open` - Open a leveraged margin position
-*   `POST /api/margin/close/{positionId}` - Close an active margin position
-*   `GET /api/margin/positions/open` - Get open margin positions
-*   `GET /api/margin/positions/all` - List margin positions history
-*   `POST /api/futures/open` - Open a futures contract (with leverage / SL / TP)
-*   `GET /api/futures/positions/open` - View current open futures positions
-*   `POST /api/futures/close/{positionId}` - Close an open futures position
-*   `POST /api/futures/update-sl-tp/{positionId}` - Adjust stop loss/take profit triggers
-*   `POST /api/options/buy` - Purchase a call/put options contract
-*   `POST /api/options/settle/{contractId}` - Settle an option contract
-*   `GET /api/options/positions` - View active options positions
-*   `GET /api/options/positions/history` - View option trade history
-
-### System & Notifications
-*   `GET /api/notifications` - Retrieve list of notifications
-*   `POST /api/notifications/read-all` - Clear/Read all notification flags
-*   `GET /api/health` - Simple server heart-beat check
-*   `GET /api/actuator/prometheus` - Scrape metrics for system monitoring
+A complete mapping of all REST endpoints exposed by the backend services is detailed in the [API Endpoints Reference Guide](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/docs/API_ENDPOINTS.md).
 
 ---
 
