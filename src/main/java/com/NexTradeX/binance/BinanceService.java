@@ -47,6 +47,9 @@ public class BinanceService {
     private volatile long binanceCooldownUntil = 0L;
     private volatile long mexcCooldownUntil = 0L;
     private volatile long bybitCooldownUntil = 0L;
+    private volatile long binanceWsCooldownUntil = 0L;
+    private volatile long mexcWsCooldownUntil = 0L;
+    private volatile long bybitWsCooldownUntil = 0L;
 
     public String getEffectiveBaseUrl() {
         long now = System.currentTimeMillis();
@@ -57,6 +60,19 @@ public class BinanceService {
             return BYBIT_URL;
         } else if (now >= mexcCooldownUntil) {
             log.info("[Binance] Binance and Bybit are on cooldown. Failing over to MEXC API: {}", MEXC_URL);
+            return MEXC_URL;
+        } else {
+            return BINANCE_URL;
+        }
+    }
+
+    public String getEffectiveWsBaseUrl() {
+        long now = System.currentTimeMillis();
+        if (now >= binanceWsCooldownUntil) {
+            return BINANCE_URL;
+        } else if (now >= bybitWsCooldownUntil) {
+            return BYBIT_URL;
+        } else if (now >= mexcWsCooldownUntil) {
             return MEXC_URL;
         } else {
             return BINANCE_URL;
@@ -147,6 +163,21 @@ public class BinanceService {
         }
     }
 
+    public synchronized void triggerWsCooldown(String baseUrl) {
+        long now = System.currentTimeMillis();
+        long cooldownUntil = now + GLOBAL_COOLDOWN_MS;
+        if (baseUrl.equals(BINANCE_URL)) {
+            binanceWsCooldownUntil = cooldownUntil;
+            log.warn("[Binance] WebSocket: Binance cooldown activated for 5 minutes (until {}). Failing over to Bybit.", new java.util.Date(cooldownUntil));
+        } else if (baseUrl.equals(BYBIT_URL)) {
+            bybitWsCooldownUntil = cooldownUntil;
+            log.warn("[Binance] WebSocket: Bybit cooldown activated for 5 minutes (until {}). Failing over to MEXC.", new java.util.Date(cooldownUntil));
+        } else if (baseUrl.equals(MEXC_URL)) {
+            mexcWsCooldownUntil = cooldownUntil;
+            log.warn("[Binance] WebSocket: MEXC cooldown activated for 5 minutes (until {}).", new java.util.Date(cooldownUntil));
+        }
+    }
+
     public synchronized void triggerGlobalCooldown() {
         triggerCooldown(BINANCE_URL);
     }
@@ -190,7 +221,6 @@ public class BinanceService {
                 }
             } catch (Exception e) {
                 log.error("[Binance] Failed to fetch price for {} from {}: {}", symbol, activeUrl, e.getMessage());
-                triggerCooldown(activeUrl);
             }
             attempts++;
         }
@@ -245,7 +275,6 @@ public class BinanceService {
                 }
             } catch (Exception e) {
                 log.error("[Binance] Failed to fetch all prices from {}: {}", activeUrl, e.getMessage());
-                triggerCooldown(activeUrl);
             }
             attempts++;
         }
@@ -316,7 +345,6 @@ public class BinanceService {
                 }
             } catch (Exception e) {
                 log.error("[Binance] Failed to fetch 24h ticker for {} from {}: {}", sym, activeUrl, e.getMessage());
-                triggerCooldown(activeUrl);
             }
             attempts++;
         }
@@ -366,7 +394,6 @@ public class BinanceService {
                 }
             } catch (Exception e) {
                 log.error("[Binance] Failed to fetch klines for {} from {}: {}", symbol, activeUrl, e.getMessage());
-                triggerCooldown(activeUrl);
             }
             attempts++;
         }
@@ -415,7 +442,6 @@ public class BinanceService {
                 }
             } catch (Exception e) {
                 log.error("[Binance] Failed to fetch available symbols from {}: {}", activeUrl, e.getMessage());
-                triggerCooldown(activeUrl);
             }
             attempts++;
         }
@@ -423,7 +449,7 @@ public class BinanceService {
     }
 
     public String getEffectiveWebSocketUrl() {
-        String activeUrl = getEffectiveBaseUrl();
+        String activeUrl = getEffectiveWsBaseUrl();
         if (activeUrl.equals(BYBIT_URL)) {
             return "wss://stream.bybit.com/v5/public/spot";
         } else if (activeUrl.equals(MEXC_URL)) {
@@ -439,7 +465,7 @@ public class BinanceService {
     }
 
     public String getActiveProviderName() {
-        String activeUrl = getEffectiveBaseUrl();
+        String activeUrl = getEffectiveWsBaseUrl();
         if (activeUrl.equals(BYBIT_URL)) {
             return "BYBIT";
         } else if (activeUrl.equals(MEXC_URL)) {

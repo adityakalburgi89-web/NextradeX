@@ -188,7 +188,7 @@ public class BinanceWebSocketService {
                 baseUrl = "https://api.mexc.com";
             }
             
-            binanceService.triggerCooldown(baseUrl);
+            binanceService.triggerWsCooldown(baseUrl);
         }
         
         triggerReconnect();
