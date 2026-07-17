@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "../components/ui/accordion";
-import { Headphones, Mail, Globe, Play } from "lucide-react";
+import { Headphones, Mail, Globe } from "lucide-react";
 import { fetchAllPrices, cachePrices } from "../api";
 import { useWebSocket } from "../hooks/useWebSocket";
 import xIcon from "../assets/Icons/x.com_icon.png";
@@ -15,15 +15,7 @@ import gmailIcon from "../assets/Icons/Gmail_icon_svg.webp";
 import creatorLogo from "../assets/images/Logo.png";
 import qrCodeImg from "../assets/QrCode/QrCode.png";
 
-// Platform Videos
-import vidAboutCrypto from "../assets/videos/Platfrom Video/AboutCrypto.mp4";
-import vidCryptoTrading from "../assets/videos/Platfrom Video/CryptoTrading.mp4";
-import vidHowPriceWorks from "../assets/videos/Platfrom Video/HowPriceWorks.mp4";
-import vidHowToTrade from "../assets/videos/Platfrom Video/HowToTrade.mp4";
-import vidExplainer from "../assets/videos/Platfrom Video/NexTradeX_explainer_video_animation_202606090201.mp4";
-import vidRiskManagement from "../assets/videos/Platfrom Video/RiskManagment.mp4";
-import vidTraders from "../assets/videos/Platfrom Video/Traders.mp4";
-import vidTradingRisk from "../assets/videos/Platfrom Video/TradingRisk.mp4";
+
 
 // Cryptocurrency SVG Icons from cryptologos.cc
 import btcIcon from "../assets/Icons/btc.svg";
@@ -142,15 +134,7 @@ export default function HomePage({ isLoggedIn }) {
   const [activeMarketTab, setActiveMarketTab] = useState("popular");
   const [userCount, setUserCount] = useState(316258026);
   const [prices, setPrices] = useState([]);
-  const [showAllVideos, setShowAllVideos] = useState(false);
-  const [activeVideo, setActiveVideo] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [shouldAutoplay, setShouldAutoplay] = useState(false);
-  const videoRef = useRef(null);
 
-  useEffect(() => {
-    setIsPlaying(shouldAutoplay);
-  }, [activeVideo, shouldAutoplay]);
   const btcData = prices.find(p => p.symbol === "BTCUSDT");
   const btcPrice = btcData ? Number(btcData.currentPrice) : 96482.50;
   const btcChange = btcData ? Number(btcData.percentChange24h) : 3.45;
@@ -180,16 +164,7 @@ export default function HomePage({ isLoggedIn }) {
     return variants;
   };
 
-  const platformVideos = [
-    { src: vidExplainer, title: "NexTradeX Overview", desc: "A complete walkthrough of the NexTradeX simulated trading platform and its core features." },
-    { src: vidAboutCrypto, title: "About Cryptocurrency", desc: "Understand what cryptocurrency is, how blockchain works, and why it matters for traders." },
-    { src: vidCryptoTrading, title: "Crypto Trading Basics", desc: "Learn the fundamentals of buying, selling, and managing crypto positions on an exchange." },
-    { src: vidHowPriceWorks, title: "How Price Works", desc: "Discover how supply and demand, order books, and market makers drive asset prices." },
-    { src: vidHowToTrade, title: "How To Trade", desc: "Step-by-step guide to placing spot, margin, and futures orders on NexTradeX." },
-    { src: vidRiskManagement, title: "Risk Management", desc: "Essential strategies for stop-losses, position sizing, and protecting your capital." },
-    { src: vidTraders, title: "Meet The Traders", desc: "Explore different trader profiles — scalpers, swing traders, and long-term holders." },
-    { src: vidTradingRisk, title: "Understanding Trading Risk", desc: "A deep dive into volatility, leverage risk, and how to trade responsibly." },
-  ];
+
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -644,97 +619,7 @@ export default function HomePage({ isLoggedIn }) {
         </section>
 
 
-        {/* PLATFORM VIDEOS SECTION */}
-        <section className="py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">
-          <div className="max-w-7xl mx-auto px-6">
-            <motion.div
-              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              className="text-center mb-12"
-            >
-              <span className="font-mono text-xs text-primary uppercase mb-4 block font-semibold">Learn &amp; Explore</span>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold text-foreground light:text-foreground mb-4">Trixie Explains</h2>
-              <p className="text-muted text-sm md:text-base max-w-xl mx-auto font-sans">
-                Your AI trading guide breaks down concepts, strategies, and platform features — one video at a time.
-              </p>
-            </motion.div>
 
-            {/* Featured player + full sidebar */}
-            <motion.div
-              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-            >
-              {/* Main player */}
-              <div className="lg:col-span-2 bg-background light:bg-background border border-transparent light:border-transparent rounded-xl overflow-hidden shadow-elevation-md">
-                <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-                  <video
-                    ref={videoRef}
-                    key={platformVideos[activeVideo].src}
-                    src={platformVideos[activeVideo].src}
-                    controls
-                    autoPlay={shouldAutoplay}
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                    onEnded={() => setIsPlaying(false)}
-                    className="absolute inset-0 w-full h-full object-cover bg-black"
-                  />
-                  {!isPlaying && (
-                    <div
-                      onClick={() => {
-                        if (videoRef.current) {
-                          videoRef.current.play().catch((err) => console.error(err));
-                        }
-                      }}
-                      className="absolute inset-0 flex items-center justify-center bg-black/45 cursor-pointer group transition-all duration-300 z-10"
-                    >
-                      <div className="w-16 h-16 rounded-full bg-primary/20 backdrop-blur-md border border-primary/40 flex items-center justify-center text-primary shadow-glow-primary group-hover:scale-110 group-hover:bg-primary/30 transition-all duration-300">
-                        <Play size={28} className="text-primary fill-primary ml-1" />
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="p-5">
-                  <h3 className="font-heading text-lg font-bold text-foreground light:text-foreground mb-1">{platformVideos[activeVideo].title}</h3>
-                  <p className="text-muted text-sm font-sans leading-relaxed">{platformVideos[activeVideo].desc}</p>
-                </div>
-              </div>
-
-              {/* Sidebar — all 7 non-explainer videos */}
-              <div className="flex flex-col gap-2 max-h-[520px] overflow-y-auto pr-1">
-                {platformVideos.slice(1).map((v, i) => {
-                  const idx = i + 1;
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setActiveVideo(idx);
-                        setShouldAutoplay(true);
-                      }}
-                      className={`flex items-center gap-3 p-3 rounded-2xl border text-left transition-all duration-200 group flex-shrink-0 ${activeVideo === idx
-                        ? "border-primary/60 bg-primary/10"
-                        : "border-transparent light:border-transparent bg-background light:bg-background hover:border-primary/30"
-                        }`}
-                    >
-                      <div className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0 ${activeVideo === idx ? "bg-primary" : "bg-background group-hover:bg-primary/20"
-                        } transition-colors`}>
-                        <Play size={14} className={activeVideo === idx ? "text-black" : "text-primary"} fill="currentColor" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-foreground light:text-foreground font-heading truncate">{v.title}</p>
-                        <p className="text-[10px] text-muted font-sans truncate mt-0.5">{v.desc.slice(0, 60)}…</p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </motion.div>
-          </div>
-        </section>
 
         {/* SUPPORT + FAQ */}
         <section className="py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">

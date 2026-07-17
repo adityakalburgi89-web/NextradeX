@@ -54,7 +54,7 @@ export default function Footer() {
               <Link to="/support" className={linkClass}>Support Center</Link>
               <Link to="/user-guide" className={linkClass}>User Guide</Link>
               <Link to="/api-docs" className={linkClass}>API Docs</Link>
-              <Link to="/bug-bounty" className={linkClass}>Bug Bounty</Link>
+              <Link to="/trixie-explains" className={linkClass}>Trixie Explains</Link>
             </nav>
           </div>
 

@@ -25,7 +25,7 @@ import PrivacyPage from "./pages/Company/PrivacyPage";
 import ContractSpecsPage from "./pages/Information/ContractSpecsPage";
 import TradingFeesPage from "./pages/Information/TradingFeesPage";
 import SettlementPricesPage from "./pages/Information/SettlementPricesPage";
-import BugBountyPage from "./pages/Information/BugBountyPage";
+import TrixieExplainsPage from "./pages/Information/TrixieExplainsPage";
 import APIDocsPage from "./pages/resources/APIDocsPage";
 import SupportPage from "./pages/support/SupportPage";
 import UserGuidePage from "./pages/resources/UserGuidePage";
@@ -130,7 +130,7 @@ function App() {
               <Route path="/contract-specs" element={<ContractSpecsPage />} />
               <Route path="/trading-fees" element={<TradingFeesPage />} />
               <Route path="/settlement-prices" element={<SettlementPricesPage />} />
-              <Route path="/bug-bounty" element={<BugBountyPage />} />
+              <Route path="/trixie-explains" element={<TrixieExplainsPage />} />
               <Route path="/api-docs" element={<APIDocsPage />} />
               <Route path="/support" element={<SupportPage />} />
               <Route path="/user-guide" element={<UserGuidePage />} />
