@@ -226,7 +226,7 @@ export default function Chatbot() {
       const rateLimitMsg = {
         id: Math.random().toString(),
         sender: "trixie",
-        text: "⚠️ **Please slow down!** Wait a moment before sending another message.",
+        text: "**Please slow down!** Wait a moment before sending another message.",
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages((prev) => [...prev, rateLimitMsg]);
