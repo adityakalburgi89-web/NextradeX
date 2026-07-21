@@ -3,6 +3,7 @@ package com.NexTradeX.common;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -30,7 +31,7 @@ public class EmailService {
   @Value("${cors.allowed.origins:http://localhost:3000}")
   private String corsAllowedOrigins;
 
-  private final JavaMailSender javaMailSender;
+  private final ObjectProvider<JavaMailSender> mailSenderProvider;
   private final RestClient restClient = RestClient.builder().build();
 
   public boolean sendPasswordResetEmail(String toEmail, String resetToken) {
@@ -86,12 +87,16 @@ public class EmailService {
   }
 
   private void sendViaBrevo(String toEmail, String subject, String htmlContent) throws Exception {
-    MimeMessage message = javaMailSender.createMimeMessage();
+    JavaMailSender mailSender = mailSenderProvider.getIfAvailable();
+    if (mailSender == null) {
+      throw new IllegalStateException("JavaMailSender is not configured or available");
+    }
+    MimeMessage message = mailSender.createMimeMessage();
     MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
     helper.setTo(toEmail);
     helper.setSubject(subject);
     helper.setText(htmlContent, true);
-    javaMailSender.send(message);
+    mailSender.send(message);
   }
 
   private String buildResetEmailHtml(String userEmail, String resetUrl) {
