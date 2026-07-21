@@ -87,6 +87,14 @@ public class UserService {
     public boolean validatePassword(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);
     }
+
+    public User updatePassword(String email, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found: " + email));
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        log.info("Password successfully updated for user email: {}", email);
+        return userRepository.save(user);
+    }
     
     public User updateUser(Long userId, String firstName, String lastName, String email) {
         User user = userRepository.findById(userId)
