@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class AuthService implements UserDetailsService {
 
     private final UserService userService;
@@ -41,6 +40,7 @@ public class AuthService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
     }
 
+    @Transactional
     public String registerUser(String username, String email, String password,
             String firstName, String lastName) {
         User user = userService.createUser(username, email, password, firstName, lastName);
@@ -120,6 +120,7 @@ public class AuthService implements UserDetailsService {
         return emailService.sendPasswordResetEmail(user.getEmail(), token);
     }
 
+    @Transactional
     public boolean resetPassword(String token, String newPassword) {
         if (token == null || token.isBlank() || newPassword == null || newPassword.isBlank()) {
             throw new IllegalArgumentException("Token and new password are required");
