@@ -91,41 +91,79 @@ public class EmailService {
     }
 
     private String buildResetEmailHtml(String userEmail, String resetUrl) {
-        return """
+        String html = """
             <!DOCTYPE html>
-            <html>
+            <html lang="en">
             <head>
               <meta charset="utf-8">
-              <style>
-                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d1117; color: #c9d1d9; margin: 0; padding: 40px 20px; }
-                .container { max-width: 560px; margin: 0 auto; background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 32px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
-                .logo { font-size: 24px; font-weight: bold; color: #38bdf8; margin-bottom: 24px; text-align: center; }
-                h2 { color: #f0f6fc; font-size: 20px; margin-top: 0; }
-                p { line-height: 1.6; color: #8b949e; font-size: 14px; }
-                .btn-container { text-align: center; margin: 32px 0; }
-                .btn { background-color: #0284c7; color: #ffffff !important; font-weight: 600; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-size: 15px; display: inline-block; transition: background-color 0.2s; }
-                .link-box { background-color: #0d1117; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 12px; color: #38bdf8; word-break: break-all; margin-top: 16px; border: 1px solid #21262d; }
-                .footer { margin-top: 32px; pt: 16px; border-top: 1px solid #21262d; font-size: 12px; color: #484f58; text-align: center; }
-              </style>
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Reset Your Password - NexTradeX</title>
             </head>
-            <body>
-              <div class="container">
-                <div class="logo">NexTradeX</div>
-                <h2>Password Reset Request</h2>
-                <p>Hello,</p>
-                <p>We received a request to reset the password for your NexTradeX account (<strong>%s</strong>). Click the button below to set a new password:</p>
-                <div class="btn-container">
-                  <a href="%s" class="btn" target="_blank">Reset Password</a>
-                </div>
-                <p>If the button doesn't work, copy and paste this link into your web browser:</p>
-                <div class="link-box">%s</div>
-                <p>This password reset link will expire in <strong>15 minutes</strong>. If you did not request a password reset, you can safely ignore this email.</p>
-                <div class="footer">
-                  &copy; 2026 NexTradeX Inc. All rights reserved. Secure Trading Platform.
-                </div>
-              </div>
+            <body style="margin:0; padding:40px 16px; background-color:#00191c; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing:antialiased;">
+              <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:540px; margin:0 auto;">
+                <tr>
+                  <td style="background-color:#032125; border:1px solid #0b363b; border-radius:6px; padding:40px 32px;">
+                    
+                    <!-- Header / Logo -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:32px;">
+                      <tr>
+                        <td align="center">
+                          <span style="font-size:26px; font-weight:700; color:#ffffff; letter-spacing:-0.5px;">Nex<span style="color:#abffae;">TradeX</span></span>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- Title -->
+                    <h1 style="color:#ffffff; font-size:22px; font-weight:600; margin:0 0 16px 0; letter-spacing:-0.3px; text-align:left;">Reset Your Password</h1>
+                    
+                    <!-- Body Text -->
+                    <p style="color:#a1c2c6; font-size:15px; line-height:1.6; margin:0 0 28px 0; text-align:left;">
+                      Hello,<br><br>
+                      We received a request to reset the password for your NexTradeX account (<strong style="color:#ffffff;">{{USER_EMAIL}}</strong>). Click the pill button below to set a new password:
+                    </p>
+
+                    <!-- Primary Pill Button (Verdant 300 Glow CTA) -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:32px 0;">
+                      <tr>
+                        <td align="center">
+                          <a href="{{RESET_URL}}" target="_blank" style="background-color:#abffae; color:#032125 !important; font-size:15px; font-weight:700; text-decoration:none; padding:14px 32px; border-radius:9999px; display:inline-block; letter-spacing:0.2px;">Reset Password</a>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- Direct Link Box -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#00191c; border:1px solid #0b363b; border-radius:4px; margin-top:24px;">
+                      <tr>
+                        <td style="padding:16px;">
+                          <div style="font-size:11px; font-weight:600; color:#437278; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;">Direct Reset Link</div>
+                          <a href="{{RESET_URL}}" target="_blank" style="color:#abffae !important; font-family:'SFMono-Regular', Consolas, monospace; font-size:12px; word-break:break-all; text-decoration:underline;">{{RESET_URL}}</a>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- Expiry Note -->
+                    <p style="color:#437278; font-size:13px; margin-top:28px; margin-bottom:0; text-align:center; line-height:1.5;">
+                      ⏱️ This link expires in <strong style="color:#a1c2c6;">15 minutes</strong>.<br>If you did not request this reset, you can safely ignore this email.
+                    </p>
+
+                    <!-- Footer -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:32px; border-top:1px solid #0b363b;">
+                      <tr>
+                        <td style="padding-top:20px; font-size:12px; color:#437278; text-align:center; line-height:1.5;">
+                          &copy; 2026 NexTradeX Inc. All rights reserved.<br>
+                          Next-Generation Algorithmic Trading Platform.
+                        </td>
+                      </tr>
+                    </table>
+
+                  </td>
+                </tr>
+              </table>
             </body>
             </html>
-            """.formatted(userEmail, resetUrl, resetUrl);
+            """;
+
+        return html.replace("{{USER_EMAIL}}", userEmail)
+                   .replace("{{RESET_URL}}", resetUrl);
     }
 }
