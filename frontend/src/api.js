@@ -130,6 +130,20 @@ export async function validateToken() {
   return handleResponse(res);
 }
 
+export async function logoutUser() {
+  console.log("[API] POST /auth/logout");
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/logout`,
+      createFetchOptions("POST", null, authHeaders())
+    );
+    await handleResponse(res);
+  } catch (err) {
+    console.warn("[API] Server logout error:", err.message);
+  } finally {
+    clearAuthToken();
+  }
+}
+
 export function googleLogin() {
   console.log("[API] Redirecting to Google OAuth2 login");
   window.location.href = `${API_BASE_URL}/oauth2/authorization/google`;

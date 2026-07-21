@@ -28,7 +28,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> register(
             @Valid @RequestBody RegisterRequest request) {
         try {
-            authService.registerUser(
+            String token = authService.registerUser(
                     request.getUsername(),
                     request.getEmail(),
                     request.getPassword(),
@@ -37,7 +37,6 @@ public class AuthController {
             );
 
             User user = authService.getUserByUsername(request.getUsername());
-            String token = jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
 
             AuthResponse authResponse = AuthResponse.builder()
                     .token(token)
@@ -60,9 +59,8 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> login(
             @Valid @RequestBody LoginRequest request) {
         try {
-            authService.loginUser(request.getUsername(), request.getPassword());
+            String token = authService.loginUser(request.getUsername(), request.getPassword());
             User user = authService.getUserByUsername(request.getUsername());
-            String token = jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
 
             AuthResponse authResponse = AuthResponse.builder()
                     .token(token)
@@ -100,5 +98,16 @@ public class AuthController {
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Token is invalid", false));
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @RequestHeader(value = "Authorization", required = false) String bearerToken) {
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            String token = bearerToken.substring(7);
+            jwtService.invalidateToken(token);
+        }
+        return ResponseEntity.ok()
+                .body(new ApiResponse<>(200, "Logout successful", null));
     }
 }

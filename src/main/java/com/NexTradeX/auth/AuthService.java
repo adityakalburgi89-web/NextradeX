@@ -38,7 +38,7 @@ public class AuthService implements UserDetailsService {
             String firstName, String lastName) {
         User user = userService.createUser(username, email, password, firstName, lastName);
         log.info("User registered: {}", username);
-        return jwtService.generateToken(username);
+        return jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
     }
 
     public String loginUser(String username, String password) {
@@ -55,7 +55,7 @@ public class AuthService implements UserDetailsService {
 
         userService.updateLastLogin(user.getId());
         log.info("User logged in: {}", username);
-        return jwtService.generateToken(username);
+        return jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
     }
 
     public User getUserByUsername(String username) {

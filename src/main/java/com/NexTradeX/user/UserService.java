@@ -112,6 +112,27 @@ public class UserService {
         return userRepository.findByGoogleId(googleId);
     }
     
+    public User linkOrCreateGoogleUser(String googleId, String email, String firstName, String lastName, String profilePictureUrl) {
+        Optional<User> existingGoogleUser = userRepository.findByGoogleId(googleId);
+        if (existingGoogleUser.isPresent()) {
+            return existingGoogleUser.get();
+        }
+
+        Optional<User> existingEmailUser = userRepository.findByEmail(email);
+        if (existingEmailUser.isPresent()) {
+            User user = existingEmailUser.get();
+            user.setGoogleId(googleId);
+            if (profilePictureUrl != null && !profilePictureUrl.isBlank()) {
+                user.setProfilePictureUrl(profilePictureUrl);
+            }
+            user.setEmailVerified(true);
+            log.info("Linked Google ID {} to existing user email {}", googleId, email);
+            return userRepository.save(user);
+        }
+
+        return createGoogleUser(googleId, email, firstName, lastName, profilePictureUrl);
+    }
+    
     public User createGoogleUser(String googleId, String email, String firstName, String lastName, String profilePictureUrl) {
         User user = User.builder()
                 .username(generateTempUsername(email))
