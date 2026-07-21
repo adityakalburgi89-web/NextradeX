@@ -140,10 +140,8 @@ public class EmailService {
                   If you did not request this reset, you can safely ignore this email.
                 </p>
 
-                <!-- Divider, Sign-off & Social Links -->
+                <!-- Divider & Social Links -->
                 <div style="border-top:1px solid #e8e8e8; padding-top:24px; text-align:center;">
-                  <p style="color:#666666; font-size:14px; letter-spacing:-0.32px; margin:0 0 4px 0; text-align:center;">Thank you,</p>
-                  <p style="color:#181925; font-size:16px; font-weight:600; letter-spacing:-0.32px; margin:0 0 20px 0; text-align:center;">NexTradeX Team</p>
 
                   <!-- Footer Social & Portfolio Links -->
                   <div style="margin-top:16px; text-align:center;">
@@ -153,6 +151,9 @@ public class EmailService {
                     <span style="color:#e8e8e8;">&bull;</span>
                     <a href="https://x.com/AdityaKalb4818" target="_blank" style="color:#918df6 !important; font-size:13px; font-weight:500; letter-spacing:-0.32px; text-decoration:none; margin:0 10px; display:inline-block;">X (Twitter)</a>
                   </div>
+                  <p style="color:#999999; font-size:12px; letter-spacing:-0.2px; margin:16px 0 0 0; text-align:center;">
+                    &copy; 2026 NexTradeX. All Rights Reserved.
+                  </p>
                 </div>
 
               </td>
