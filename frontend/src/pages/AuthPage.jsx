@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
-import { loginUser, registerUser, googleLogin, completeProfile, setAuthToken } from "../api";
+import { loginUser, registerUser, googleLogin, completeProfile, setAuthToken, forgotPassword, resetPassword } from "../api";
 import { useToast } from "../hooks/useToast";
 
 const initialForm = { username: "", email: "", password: "", firstName: "", lastName: "" };
@@ -153,12 +154,28 @@ export default function AuthPage() {
     }
   }, [location.search]);
 
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSuccess, setForgotSuccess] = useState("");
+  const [forgotError, setForgotError] = useState("");
+
+  const [urlResetToken, setUrlResetToken] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
     const setup = params.get("setup");
     const errorParam = params.get("error");
     const errorMsg = params.get("message");
+    const resetTokenParam = params.get("resetToken");
+
+    if (resetTokenParam) {
+      setUrlResetToken(resetTokenParam);
+    }
 
     if (token) {
       setAuthToken(token);
@@ -174,6 +191,45 @@ export default function AuthPage() {
       window.history.replaceState({}, document.title, "/auth");
     }
   }, []);
+
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    if (!forgotEmail || !/\S+@\S+\.\S+/.test(forgotEmail)) {
+      setForgotError("Please enter a valid email address.");
+      return;
+    }
+    setForgotError("");
+    setForgotSuccess("");
+    setForgotLoading(true);
+    try {
+      await forgotPassword(forgotEmail);
+      setForgotSuccess(`If an account exists for ${forgotEmail}, a password reset link has been sent to your email.`);
+      toast.success("Password reset email sent! Check your inbox.");
+    } catch (err) {
+      setForgotError(err.message || "Failed to process request.");
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleResetSubmit = async (e) => {
+    e.preventDefault();
+    if (!newPassword || newPassword.length < 6) {
+      setError("New password must be at least 6 characters long.");
+      return;
+    }
+    setError("");
+    setResetLoading(true);
+    try {
+      await resetPassword(urlResetToken, newPassword);
+      setResetSuccess(true);
+      toast.success("Password reset successfully! You can now log in.");
+    } catch (err) {
+      setError(err.message || "Failed to reset password. The link may have expired.");
+    } finally {
+      setResetLoading(false);
+    }
+  };
 
   // Clear field error when user starts typing
   const handleChange = (e) => {
@@ -342,6 +398,56 @@ export default function AuthPage() {
     width: '50%',
     transform: mode === 'login' ? 'translateX(0%)' : 'translateX(100%)',
   });
+
+  if (urlResetToken) {
+    return (
+      <PageTransition>
+        <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12">
+          <Card className="w-full max-w-md overflow-hidden border border-transparent light:border-transparent">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl">🔑 Set New Password</CardTitle>
+              <CardDescription className="text-sm mt-1">Enter a strong new password for your NexTradeX account.</CardDescription>
+            </CardHeader>
+            {resetSuccess ? (
+              <CardContent className="space-y-4 text-center py-6">
+                <div className="text-trading-up font-semibold text-base">Password Updated Successfully!</div>
+                <p className="text-sm text-muted">Your password has been reset. You can now log in with your new password.</p>
+                <Button onClick={() => { setUrlResetToken(""); window.location.href = "/auth"; }} className="w-full font-mono font-bold mt-4">
+                  Proceed to Login
+                </Button>
+              </CardContent>
+            ) : (
+              <form onSubmit={handleResetSubmit} noValidate>
+                <CardContent className="space-y-5">
+                  {error && (
+                    <div role="alert" className="flex items-start gap-2 p-3 rounded-2xl bg-trading-down/10 border border-trading-down/20 text-trading-down text-sm">
+                      <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+                      <span>{error}</span>
+                    </div>
+                  )}
+                  <div>
+                    <label className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">New Password</label>
+                    <Input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Enter new password (min 6 chars)"
+                      required
+                    />
+                  </div>
+                </CardContent>
+                <CardFooter className="pt-2">
+                  <Button type="submit" className="w-full font-mono font-bold" loading={resetLoading} disabled={resetLoading}>
+                    Update Password
+                  </Button>
+                </CardFooter>
+              </form>
+            )}
+          </Card>
+        </div>
+      </PageTransition>
+    );
+  }
 
   // Profile setup form
   if (needsSetup) {
@@ -713,6 +819,17 @@ export default function AuthPage() {
                   show={mode === "register"}
                 />
                 <FieldError id="auth-password-error" message={fieldErrors.password} />
+                {mode === "login" && (
+                  <div className="flex justify-end mt-2">
+                    <button
+                      type="button"
+                      onClick={() => { setForgotError(""); setForgotSuccess(""); setShowForgotModal(true); }}
+                      className="text-xs font-mono text-primary hover:underline focus:outline-none"
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
+                )}
               </div>
             </CardContent>
 
@@ -749,6 +866,48 @@ export default function AuthPage() {
           </form>
         </Card>
       </div>
+
+      {/* Forgot Password Modal */}
+      <Dialog open={showForgotModal} onOpenChange={setShowForgotModal}>
+        <DialogContent className="max-w-md bg-background border-border">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold">🔑 Forgot Password</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleForgotSubmit} className="space-y-4 pt-2">
+            <p className="text-xs text-muted">
+              Enter your registered email address below and we will send you a link to reset your password.
+            </p>
+            {forgotError && (
+              <div role="alert" className="p-3 rounded-xl bg-trading-down/10 border border-trading-down/20 text-trading-down text-xs">
+                {forgotError}
+              </div>
+            )}
+            {forgotSuccess && (
+              <div role="status" className="p-3 rounded-xl bg-trading-up/10 border border-trading-up/20 text-trading-up text-xs">
+                {forgotSuccess}
+              </div>
+            )}
+            <div>
+              <label className="font-mono text-[10px] text-muted uppercase mb-1 block font-semibold">Email Address</label>
+              <Input
+                type="email"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                placeholder="name@example.com"
+                required
+              />
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button type="button" variant="outline" onClick={() => setShowForgotModal(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" loading={forgotLoading} disabled={forgotLoading}>
+                Send Reset Link
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </PageTransition>
   );
 }
