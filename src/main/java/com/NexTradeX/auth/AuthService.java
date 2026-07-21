@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -47,25 +48,49 @@ public class AuthService implements UserDetailsService {
         return jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
     }
 
-    public String loginUser(String username, String password) {
-        User user = userService.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public String loginUser(String identifier, String password) {
+        String cleanIdentifier = identifier != null ? identifier.trim() : "";
+        String cleanPassword = password != null ? password.trim() : "";
 
-        if (!userService.validatePassword(password, user.getPasswordHash())) {
+        // 1. Try to match by username case-insensitively first
+        Optional<User> userByUsername = userService.findByUsername(cleanIdentifier);
+        if (userByUsername.isPresent()) {
+            User user = userByUsername.get();
+            if (userService.validatePassword(cleanPassword, user.getPasswordHash())) {
+                if (!user.getActive()) {
+                    throw new RuntimeException("User account is inactive");
+                }
+                userService.updateLastLogin(user.getId());
+                log.info("User logged in by username: {}", user.getUsername());
+                return jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
+            }
+        }
+
+        // 2. Try to match by email across all matching user accounts
+        java.util.List<User> usersByEmail = userService.findAllByEmail(cleanIdentifier);
+        for (User user : usersByEmail) {
+            if (userService.validatePassword(cleanPassword, user.getPasswordHash())) {
+                if (!user.getActive()) {
+                    throw new RuntimeException("User account is inactive");
+                }
+                userService.updateLastLogin(user.getId());
+                log.info("User logged in by email: {} (username: {})", cleanIdentifier, user.getUsername());
+                return jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
+            }
+        }
+
+        // If account exists by username or email but password check failed above
+        if (userByUsername.isPresent() || !usersByEmail.isEmpty()) {
             throw new RuntimeException("Invalid password");
         }
 
-        if (!user.getActive()) {
-            throw new RuntimeException("User account is inactive");
-        }
-
-        userService.updateLastLogin(user.getId());
-        log.info("User logged in: {}", username);
-        return jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
+        throw new RuntimeException("User not found");
     }
 
-    public User getUserByUsername(String username) {
-        return userService.findByUsername(username)
+    public User getUserByUsername(String identifier) {
+        String cleanIdentifier = identifier != null ? identifier.trim() : "";
+        return userService.findByUsername(cleanIdentifier)
+                .or(() -> userService.findByEmail(cleanIdentifier))
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
