@@ -46,11 +46,18 @@ public class UserService {
     }
     
     public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
+        if (username == null || username.isBlank()) return Optional.empty();
+        return userRepository.findByUsernameIgnoreCase(username.trim());
     }
     
     public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        if (email == null || email.isBlank()) return Optional.empty();
+        return userRepository.findByEmailIgnoreCase(email.trim());
+    }
+
+    public java.util.List<User> findAllByEmail(String email) {
+        if (email == null || email.isBlank()) return java.util.Collections.emptyList();
+        return userRepository.findAllByEmailIgnoreCase(email.trim());
     }
     
     public Optional<User> findById(Long id) {
@@ -89,11 +96,19 @@ public class UserService {
     }
 
     public User updatePassword(String email, String newPassword) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found: " + email));
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
-        log.info("Password successfully updated for user email: {}", email);
-        return userRepository.save(user);
+        String cleanEmail = email != null ? email.trim() : "";
+        java.util.List<User> users = userRepository.findAllByEmailIgnoreCase(cleanEmail);
+        if (users.isEmpty()) {
+            throw new RuntimeException("User not found: " + email);
+        }
+        String newHash = passwordEncoder.encode(newPassword.trim());
+        User primaryUser = users.get(0);
+        for (User u : users) {
+            u.setPasswordHash(newHash);
+            userRepository.save(u);
+            log.info("Password updated for user ID {} ({})", u.getId(), u.getUsername());
+        }
+        return primaryUser;
     }
     
     public User updateUser(Long userId, String firstName, String lastName, String email) {
