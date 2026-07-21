@@ -52,7 +52,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
                 response.setStatus(429); // Too Many Requests
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
-                response.getWriter().write("{\"error\": \"Too many requests. Please try again later.\"}");
+                response.getWriter().write("{\"status\":429,\"message\":\"Too many requests. Please wait a moment before trying again.\",\"data\":null}");
                 return false;
             }
         }
