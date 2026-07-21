@@ -34,7 +34,7 @@ public class EmailService {
         String baseUrl = corsAllowedOrigins.split(",")[0].trim();
         String resetUrl = baseUrl + "/auth?resetToken=" + resetToken;
 
-        String subject = "🔑 Reset Your NexTradeX Password";
+        String subject = "Reset Your NexTradeX Password";
         String htmlContent = buildResetEmailHtml(toEmail, resetUrl);
 
         // 1. Try Primary: Resend API (Fast HTTP REST)
@@ -110,7 +110,7 @@ public class EmailService {
             </head>
             <body>
               <div class="container">
-                <div class="logo">⚡ NexTradeX</div>
+                <div class="logo">NexTradeX</div>
                 <h2>Password Reset Request</h2>
                 <p>Hello,</p>
                 <p>We received a request to reset the password for your NexTradeX account (<strong>%s</strong>). Click the button below to set a new password:</p>

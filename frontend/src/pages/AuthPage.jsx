@@ -405,7 +405,7 @@ export default function AuthPage() {
         <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12">
           <Card className="w-full max-w-md overflow-hidden border border-transparent light:border-transparent">
             <CardHeader className="pb-4">
-              <CardTitle className="text-xl">🔑 Set New Password</CardTitle>
+              <CardTitle className="text-xl">Set New Password</CardTitle>
               <CardDescription className="text-sm mt-1">Enter a strong new password for your NexTradeX account.</CardDescription>
             </CardHeader>
             {resetSuccess ? (
@@ -871,7 +871,7 @@ export default function AuthPage() {
       <Dialog open={showForgotModal} onOpenChange={setShowForgotModal}>
         <DialogContent className="max-w-md bg-background border-border">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold">🔑 Forgot Password</DialogTitle>
+            <DialogTitle className="text-lg font-bold">Forgot Password</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleForgotSubmit} className="space-y-4 pt-2">
             <p className="text-xs text-muted">
