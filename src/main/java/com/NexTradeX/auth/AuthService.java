@@ -94,6 +94,10 @@ public class AuthService implements UserDetailsService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    private final java.util.Map<String, ResetTokenInfo> inMemoryResetTokens = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private record ResetTokenInfo(String email, long expiryTimestamp) {}
+
     public boolean processForgotPassword(String email) {
         User user = userService.findByEmail(email.trim().toLowerCase())
                 .orElse(null);
@@ -105,7 +109,12 @@ public class AuthService implements UserDetailsService {
 
         String token = UUID.randomUUID().toString();
         String redisKey = "password_reset:" + token;
-        redisTemplate.opsForValue().set(redisKey, user.getEmail(), 15, TimeUnit.MINUTES);
+        try {
+            redisTemplate.opsForValue().set(redisKey, user.getEmail(), 15, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            log.warn("Redis unavailable for password reset storage ({}). Utilizing in-memory fallback.", e.getMessage());
+            inMemoryResetTokens.put(token, new ResetTokenInfo(user.getEmail(), System.currentTimeMillis() + (15 * 60 * 1000)));
+        }
 
         log.info("Generated password reset token for email: {}", user.getEmail());
         return emailService.sendPasswordResetEmail(user.getEmail(), token);
@@ -117,14 +126,32 @@ public class AuthService implements UserDetailsService {
         }
 
         String redisKey = "password_reset:" + token.trim();
-        String email = redisTemplate.opsForValue().get(redisKey);
+        String email = null;
+        try {
+            email = redisTemplate.opsForValue().get(redisKey);
+        } catch (Exception e) {
+            log.warn("Redis unavailable during password reset lookup ({}). Checking in-memory fallback.", e.getMessage());
+        }
+
+        if (email == null || email.isBlank()) {
+            ResetTokenInfo info = inMemoryResetTokens.get(token.trim());
+            if (info != null && System.currentTimeMillis() <= info.expiryTimestamp()) {
+                email = info.email();
+            }
+        }
 
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Invalid or expired password reset link. Please request a new one.");
         }
 
         userService.updatePassword(email, newPassword.trim());
-        redisTemplate.delete(redisKey);
+        try {
+            redisTemplate.delete(redisKey);
+        } catch (Exception e) {
+            // Ignore redis exception if offline
+        }
+        inMemoryResetTokens.remove(token.trim());
+
         log.info("Password reset successfully completed for email: {}", email);
         return true;
     }
