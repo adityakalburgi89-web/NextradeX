@@ -63,12 +63,39 @@ public class EmailService {
         }
     }
 
+    private java.io.File findLogoFile() {
+        java.nio.file.Path[] possiblePaths = new java.nio.file.Path[]{
+            java.nio.file.Paths.get("frontend/src/assets/images/Logo.png"),
+            java.nio.file.Paths.get("src/main/resources/static/images/Logo.png")
+        };
+        for (java.nio.file.Path path : possiblePaths) {
+            if (java.nio.file.Files.exists(path)) {
+                return path.toFile();
+            }
+        }
+        return null;
+    }
+
     private boolean sendViaResend(String toEmail, String subject, String htmlContent) {
         Map<String, Object> body = new HashMap<>();
         body.put("from", "NexTradeX <" + resendFromEmail + ">");
         body.put("to", new String[]{toEmail});
         body.put("subject", subject);
         body.put("html", htmlContent);
+
+        java.io.File logoFile = findLogoFile();
+        if (logoFile != null && logoFile.exists()) {
+            try {
+                byte[] bytes = java.nio.file.Files.readAllBytes(logoFile.toPath());
+                String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
+                Map<String, String> attachment = new HashMap<>();
+                attachment.put("filename", "Logo.png");
+                attachment.put("content", base64);
+                body.put("attachments", new Map[]{attachment});
+            } catch (Exception e) {
+                log.warn("[EmailService] Failed to attach logo to Resend payload: {}", e.getMessage());
+            }
+        }
 
         Map<?, ?> response = restClient.post()
                 .uri("https://api.resend.com/emails")
@@ -87,6 +114,12 @@ public class EmailService {
         helper.setTo(toEmail);
         helper.setSubject(subject);
         helper.setText(htmlContent, true);
+
+        java.io.File logoFile = findLogoFile();
+        if (logoFile != null && logoFile.exists()) {
+            helper.addInline("logoImage", logoFile);
+        }
+
         javaMailSender.send(message);
     }
 
@@ -99,57 +132,57 @@ public class EmailService {
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
               <title>Reset Your Password - NexTradeX</title>
             </head>
-            <body style="margin:0; padding:40px 16px; background-color:#00191c; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing:antialiased;">
-              <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:540px; margin:0 auto;">
+            <body style="margin:0; padding:48px 16px; background-color:#fafafa; font-family:'OpenRunde', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing:antialiased;">
+              <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:520px; margin:0 auto;">
                 <tr>
-                  <td style="background-color:#032125; border:1px solid #0b363b; border-radius:6px; padding:40px 32px;">
+                  <td style="background-color:#ffffff; border:1px solid #e8e8e8; border-radius:16px; padding:40px 32px; box-shadow:rgba(0, 0, 0, 0.06) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 8px 16px 0px;">
                     
                     <!-- Header / Logo -->
                     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:32px;">
                       <tr>
                         <td align="center">
-                          <span style="font-size:26px; font-weight:700; color:#ffffff; letter-spacing:-0.5px;">Nex<span style="color:#abffae;">TradeX</span></span>
+                          <img src="cid:logoImage" alt="NexTradeX" height="48" style="height:48px; width:auto; display:inline-block; vertical-align:middle; border:0;" />
                         </td>
                       </tr>
                     </table>
 
                     <!-- Title -->
-                    <h1 style="color:#ffffff; font-size:22px; font-weight:600; margin:0 0 16px 0; letter-spacing:-0.3px; text-align:left;">Reset Your Password</h1>
+                    <h1 style="color:#181925; font-size:24px; font-weight:600; margin:0 0 16px 0; letter-spacing:-0.31px; text-align:left;">Reset Your Password</h1>
                     
                     <!-- Body Text -->
-                    <p style="color:#a1c2c6; font-size:15px; line-height:1.6; margin:0 0 28px 0; text-align:left;">
+                    <p style="color:#666666; font-size:15px; line-height:1.5; letter-spacing:-0.32px; margin:0 0 28px 0; text-align:left;">
                       Hello,<br><br>
-                      We received a request to reset the password for your NexTradeX account (<strong style="color:#ffffff;">{{USER_EMAIL}}</strong>). Click the pill button below to set a new password:
+                      We received a password reset request for your NexTradeX account (<strong style="color:#181925; font-weight:600;">{{USER_EMAIL}}</strong>). Click the pill button below to set your new password:
                     </p>
 
-                    <!-- Primary Pill Button (Verdant 300 Glow CTA) -->
+                    <!-- Primary Pill Button (Lavender #918df6 CTA) -->
                     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:32px 0;">
                       <tr>
                         <td align="center">
-                          <a href="{{RESET_URL}}" target="_blank" style="background-color:#abffae; color:#032125 !important; font-size:15px; font-weight:700; text-decoration:none; padding:14px 32px; border-radius:9999px; display:inline-block; letter-spacing:0.2px;">Reset Password</a>
+                          <a href="{{RESET_URL}}" target="_blank" style="background-color:#918df6; color:#ffffff !important; font-size:15px; font-weight:500; text-decoration:none; padding:14px 32px; border-radius:9999px; display:inline-block; letter-spacing:-0.32px; box-shadow:rgba(0, 0, 0, 0.08) 0px 1px 1px 1px, rgba(0, 0, 0, 0.06) 0px 0px 0px 0.5px;">Reset Password</a>
                         </td>
                       </tr>
                     </table>
 
-                    <!-- Direct Link Box -->
-                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#00191c; border:1px solid #0b363b; border-radius:4px; margin-top:24px;">
+                    <!-- Direct Reset Link Box -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#fafafa; border:1px solid #e8e8e8; border-radius:8px; margin-top:24px;">
                       <tr>
                         <td style="padding:16px;">
-                          <div style="font-size:11px; font-weight:600; color:#437278; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;">Direct Reset Link</div>
-                          <a href="{{RESET_URL}}" target="_blank" style="color:#abffae !important; font-family:'SFMono-Regular', Consolas, monospace; font-size:12px; word-break:break-all; text-decoration:underline;">{{RESET_URL}}</a>
+                          <div style="font-size:11px; font-weight:500; color:#999999; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Direct Reset Link</div>
+                          <a href="{{RESET_URL}}" target="_blank" style="color:#918df6 !important; font-family:'SFMono-Regular', Consolas, monospace; font-size:12px; word-break:break-all; text-decoration:underline;">{{RESET_URL}}</a>
                         </td>
                       </tr>
                     </table>
 
                     <!-- Expiry Note -->
-                    <p style="color:#437278; font-size:13px; margin-top:28px; margin-bottom:0; text-align:center; line-height:1.5;">
-                      ⏱️ This link expires in <strong style="color:#a1c2c6;">15 minutes</strong>.<br>If you did not request this reset, you can safely ignore this email.
+                    <p style="color:#999999; font-size:13px; margin-top:28px; margin-bottom:0; text-align:center; line-height:1.4; letter-spacing:-0.32px;">
+                      ⏱️ This link expires in <strong style="color:#666666;">15 minutes</strong>.<br>If you did not request this reset, you can safely ignore this email.
                     </p>
 
                     <!-- Footer -->
-                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:32px; border-top:1px solid #0b363b;">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:32px; border-top:1px solid #e8e8e8;">
                       <tr>
-                        <td style="padding-top:20px; font-size:12px; color:#437278; text-align:center; line-height:1.5;">
+                        <td style="padding-top:20px; font-size:12px; color:#999999; text-align:center; line-height:1.5; letter-spacing:-0.32px;">
                           &copy; 2026 NexTradeX Inc. All rights reserved.<br>
                           Next-Generation Algorithmic Trading Platform.
                         </td>
