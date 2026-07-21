@@ -428,12 +428,23 @@ export default function AuthPage() {
                   <div>
                     <label className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">New Password</label>
                     <Input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Enter new password (min 6 chars)"
                       required
+                      rightIcon={
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/40 rounded text-muted hover:text-foreground"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      }
                     />
+                    <PasswordStrengthMeter password={newPassword} show={true} />
                   </div>
                 </CardContent>
                 <CardFooter className="pt-2">
