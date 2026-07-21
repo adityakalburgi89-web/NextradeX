@@ -33,7 +33,7 @@ import ReferralPage from "./pages/resources/ReferralPage";
 import EarnPage from "./pages/EarnPage";
 import FundingPage from "./pages/FundingPage";
 import SubAccountsPage from "./pages/SubAccountsPage";
-import { hasAuthToken, clearAuthToken, fetchUserProfile } from "./api";
+import { hasAuthToken, clearAuthToken, fetchUserProfile, logoutUser } from "./api";
 import Chatbot from "./components/Chatbot";
 
 import Navbar from "./components/Navbar";
@@ -77,8 +77,8 @@ function App() {
     checkAuth();
   }, []);
 
-  const handleLogout = () => {
-    clearAuthToken();
+  const handleLogout = async () => {
+    await logoutUser();
     setIsLoggedIn(false);
     setUser(null);
     setShowLogoutConfirm(false);

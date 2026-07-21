@@ -53,14 +53,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             
             if ("google".equals(provider)) {
                 String googleId = oauth2User.getName();
-                
-                user = userService.findByGoogleId(googleId)
-                        .orElseGet(() -> {
-                            if (userService.findByEmail(email).isPresent()) {
-                                throw new RuntimeException("EMAIL_EXISTS");
-                            }
-                            return userService.createGoogleUser(googleId, email, firstName, lastName, picture);
-                        });
+                user = userService.linkOrCreateGoogleUser(googleId, email, firstName, lastName, picture);
             } else {
                 throw new RuntimeException("Unsupported provider: " + provider);
             }

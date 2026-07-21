@@ -46,11 +46,18 @@ public class UserService {
     }
     
     public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
+        if (username == null || username.isBlank()) return Optional.empty();
+        return userRepository.findByUsernameIgnoreCase(username.trim());
     }
     
     public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        if (email == null || email.isBlank()) return Optional.empty();
+        return userRepository.findByEmailIgnoreCase(email.trim());
+    }
+
+    public java.util.List<User> findAllByEmail(String email) {
+        if (email == null || email.isBlank()) return java.util.Collections.emptyList();
+        return userRepository.findAllByEmailIgnoreCase(email.trim());
     }
     
     public Optional<User> findById(Long id) {
@@ -87,6 +94,22 @@ public class UserService {
     public boolean validatePassword(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);
     }
+
+    public User updatePassword(String email, String newPassword) {
+        String cleanEmail = email != null ? email.trim() : "";
+        java.util.List<User> users = userRepository.findAllByEmailIgnoreCase(cleanEmail);
+        if (users.isEmpty()) {
+            throw new RuntimeException("User not found: " + email);
+        }
+        String newHash = passwordEncoder.encode(newPassword.trim());
+        User primaryUser = users.get(0);
+        for (User u : users) {
+            u.setPasswordHash(newHash);
+            userRepository.save(u);
+            log.info("Password updated for user ID {} ({})", u.getId(), u.getUsername());
+        }
+        return primaryUser;
+    }
     
     public User updateUser(Long userId, String firstName, String lastName, String email) {
         User user = userRepository.findById(userId)
@@ -110,6 +133,27 @@ public class UserService {
     
     public Optional<User> findByGoogleId(String googleId) {
         return userRepository.findByGoogleId(googleId);
+    }
+    
+    public User linkOrCreateGoogleUser(String googleId, String email, String firstName, String lastName, String profilePictureUrl) {
+        Optional<User> existingGoogleUser = userRepository.findByGoogleId(googleId);
+        if (existingGoogleUser.isPresent()) {
+            return existingGoogleUser.get();
+        }
+
+        Optional<User> existingEmailUser = userRepository.findByEmail(email);
+        if (existingEmailUser.isPresent()) {
+            User user = existingEmailUser.get();
+            user.setGoogleId(googleId);
+            if (profilePictureUrl != null && !profilePictureUrl.isBlank()) {
+                user.setProfilePictureUrl(profilePictureUrl);
+            }
+            user.setEmailVerified(true);
+            log.info("Linked Google ID {} to existing user email {}", googleId, email);
+            return userRepository.save(user);
+        }
+
+        return createGoogleUser(googleId, email, firstName, lastName, profilePictureUrl);
     }
     
     public User createGoogleUser(String googleId, String email, String firstName, String lastName, String profilePictureUrl) {

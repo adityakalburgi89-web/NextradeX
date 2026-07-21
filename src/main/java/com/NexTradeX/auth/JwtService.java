@@ -18,6 +18,7 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,19 @@ public class JwtService {
     
     @Value("${jwt.expiration}")
     private long jwtExpiration;
+    
+    private final java.util.Set<String> blacklistedTokens = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    
+    public void invalidateToken(String token) {
+        if (token != null && !token.isBlank()) {
+            blacklistedTokens.add(token.trim());
+            log.info("JWT Token invalidated/blacklisted successfully.");
+        }
+    }
+    
+    public boolean isTokenBlacklisted(String token) {
+        return token != null && blacklistedTokens.contains(token.trim());
+    }
     
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
@@ -99,11 +113,21 @@ public class JwtService {
     }
     
     public boolean isTokenValid(String token, UserDetails userDetails) {
+        if (isTokenBlacklisted(token)) {
+            return false;
+        }
         final String username = extractUsername(token);
-        return username != null && username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        return username != null 
+                && username.equals(userDetails.getUsername()) 
+                && !isTokenExpired(token)
+                && userDetails.isEnabled() 
+                && userDetails.isAccountNonLocked();
     }
     
     public boolean isTokenValid(String token, String username) {
+        if (isTokenBlacklisted(token)) {
+            return false;
+        }
         final String tokenUsername = extractUsername(token);
         return tokenUsername != null && tokenUsername.equals(username) && !isTokenExpired(token);
     }

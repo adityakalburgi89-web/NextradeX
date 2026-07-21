@@ -6,6 +6,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import com.NexTradeX.common.EmailService;
 import com.NexTradeX.user.User;
 import com.NexTradeX.user.UserService;
 
@@ -20,6 +25,8 @@ public class AuthService implements UserDetailsService {
 
     private final UserService userService;
     private final JwtService jwtService;
+    private final StringRedisTemplate redisTemplate;
+    private final EmailService emailService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -38,29 +45,88 @@ public class AuthService implements UserDetailsService {
             String firstName, String lastName) {
         User user = userService.createUser(username, email, password, firstName, lastName);
         log.info("User registered: {}", username);
-        return jwtService.generateToken(username);
+        return jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
     }
 
-    public String loginUser(String username, String password) {
-        User user = userService.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public String loginUser(String identifier, String password) {
+        String cleanIdentifier = identifier != null ? identifier.trim() : "";
+        String cleanPassword = password != null ? password.trim() : "";
 
-        if (!userService.validatePassword(password, user.getPasswordHash())) {
+        // 1. Try to match by username case-insensitively first
+        Optional<User> userByUsername = userService.findByUsername(cleanIdentifier);
+        if (userByUsername.isPresent()) {
+            User user = userByUsername.get();
+            if (userService.validatePassword(cleanPassword, user.getPasswordHash())) {
+                if (!user.getActive()) {
+                    throw new RuntimeException("User account is inactive");
+                }
+                userService.updateLastLogin(user.getId());
+                log.info("User logged in by username: {}", user.getUsername());
+                return jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
+            }
+        }
+
+        // 2. Try to match by email across all matching user accounts
+        java.util.List<User> usersByEmail = userService.findAllByEmail(cleanIdentifier);
+        for (User user : usersByEmail) {
+            if (userService.validatePassword(cleanPassword, user.getPasswordHash())) {
+                if (!user.getActive()) {
+                    throw new RuntimeException("User account is inactive");
+                }
+                userService.updateLastLogin(user.getId());
+                log.info("User logged in by email: {} (username: {})", cleanIdentifier, user.getUsername());
+                return jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
+            }
+        }
+
+        // If account exists by username or email but password check failed above
+        if (userByUsername.isPresent() || !usersByEmail.isEmpty()) {
             throw new RuntimeException("Invalid password");
         }
 
-        if (!user.getActive()) {
-            throw new RuntimeException("User account is inactive");
-        }
-
-        userService.updateLastLogin(user.getId());
-        log.info("User logged in: {}", username);
-        return jwtService.generateToken(username);
+        throw new RuntimeException("User not found");
     }
 
-    public User getUserByUsername(String username) {
-        return userService.findByUsername(username)
+    public User getUserByUsername(String identifier) {
+        String cleanIdentifier = identifier != null ? identifier.trim() : "";
+        return userService.findByUsername(cleanIdentifier)
+                .or(() -> userService.findByEmail(cleanIdentifier))
                 .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    public boolean processForgotPassword(String email) {
+        User user = userService.findByEmail(email.trim().toLowerCase())
+                .orElse(null);
+
+        if (user == null) {
+            log.warn("Forgot password requested for non-existent email: {}", email);
+            return true; // Return true to avoid email enumeration security risk
+        }
+
+        String token = UUID.randomUUID().toString();
+        String redisKey = "password_reset:" + token;
+        redisTemplate.opsForValue().set(redisKey, user.getEmail(), 15, TimeUnit.MINUTES);
+
+        log.info("Generated password reset token for email: {}", user.getEmail());
+        return emailService.sendPasswordResetEmail(user.getEmail(), token);
+    }
+
+    public boolean resetPassword(String token, String newPassword) {
+        if (token == null || token.isBlank() || newPassword == null || newPassword.isBlank()) {
+            throw new IllegalArgumentException("Token and new password are required");
+        }
+
+        String redisKey = "password_reset:" + token.trim();
+        String email = redisTemplate.opsForValue().get(redisKey);
+
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Invalid or expired password reset link. Please request a new one.");
+        }
+
+        userService.updatePassword(email, newPassword.trim());
+        redisTemplate.delete(redisKey);
+        log.info("Password reset successfully completed for email: {}", email);
+        return true;
     }
 
     private UserDetails buildUserDetails(User user) {

@@ -87,11 +87,12 @@ function toQueryString(params) {
   return query ? `?${query}` : "";
 }
 
-// FIX: Create fetch options with credentials for CORS
+// FIX: Create fetch options with credentials and JSON headers for CORS
 function createFetchOptions(method = "GET", body = null, headers = {}) {
+  const defaultHeaders = body ? { "Content-Type": "application/json", ...headers } : { ...headers };
   const options = {
     method,
-    headers,
+    headers: defaultHeaders,
     // FIX #1: Include credentials to send Authorization header with CORS requests
     credentials: "include",
   };
@@ -126,6 +127,36 @@ export async function validateToken() {
   console.log("[API] GET /auth/validate");
   const res = await fetch(`${API_BASE_URL}/auth/validate`,
     createFetchOptions("GET", null, authHeaders())
+  );
+  return handleResponse(res);
+}
+
+export async function logoutUser() {
+  console.log("[API] POST /auth/logout");
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/logout`,
+      createFetchOptions("POST", null, authHeaders())
+    );
+    await handleResponse(res);
+  } catch (err) {
+    console.warn("[API] Server logout error:", err.message);
+  } finally {
+    clearAuthToken();
+  }
+}
+
+export async function forgotPassword(email) {
+  console.log("[API] POST /auth/forgot-password");
+  const res = await fetch(`${API_BASE_URL}/auth/forgot-password`,
+    createFetchOptions("POST", { email }, { "Content-Type": "application/json" })
+  );
+  return handleResponse(res);
+}
+
+export async function resetPassword(token, newPassword) {
+  console.log("[API] POST /auth/reset-password");
+  const res = await fetch(`${API_BASE_URL}/auth/reset-password`,
+    createFetchOptions("POST", { token, newPassword }, { "Content-Type": "application/json" })
   );
   return handleResponse(res);
 }

@@ -28,7 +28,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> register(
             @Valid @RequestBody RegisterRequest request) {
         try {
-            authService.registerUser(
+            String token = authService.registerUser(
                     request.getUsername(),
                     request.getEmail(),
                     request.getPassword(),
@@ -37,7 +37,6 @@ public class AuthController {
             );
 
             User user = authService.getUserByUsername(request.getUsername());
-            String token = jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
 
             AuthResponse authResponse = AuthResponse.builder()
                     .token(token)
@@ -60,9 +59,8 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> login(
             @Valid @RequestBody LoginRequest request) {
         try {
-            authService.loginUser(request.getUsername(), request.getPassword());
+            String token = authService.loginUser(request.getUsername(), request.getPassword());
             User user = authService.getUserByUsername(request.getUsername());
-            String token = jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
 
             AuthResponse authResponse = AuthResponse.builder()
                     .token(token)
@@ -99,6 +97,52 @@ public class AuthController {
             log.error("Token validation failed: {}", e.getMessage());
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Token is invalid", false));
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @RequestHeader(value = "Authorization", required = false) String bearerToken) {
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            String token = bearerToken.substring(7);
+            jwtService.invalidateToken(token);
+        }
+        return ResponseEntity.ok()
+                .body(new ApiResponse<>(200, "Logout successful", null));
+    }
+
+    @RateLimit(capacity = 10, refillRate = 0.5)
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestBody java.util.Map<String, String> body) {
+        try {
+            String email = body.get("email");
+            if (email == null || email.isBlank()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse<>(400, "Email address is required", null));
+            }
+            authService.processForgotPassword(email);
+            return ResponseEntity.ok()
+                    .body(new ApiResponse<>(200, "If an account exists with that email, a password reset link has been sent.", "Sent"));
+        } catch (Exception e) {
+            log.error("Forgot password process failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        }
+    }
+
+    @RateLimit(capacity = 10, refillRate = 0.5)
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody java.util.Map<String, String> body) {
+        try {
+            String token = body.get("token");
+            String newPassword = body.get("newPassword");
+            authService.resetPassword(token, newPassword);
+            return ResponseEntity.ok()
+                    .body(new ApiResponse<>(200, "Password has been successfully reset. You may now log in.", "Reset Successful"));
+        } catch (Exception e) {
+            log.error("Reset password process failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
         }
     }
 }
