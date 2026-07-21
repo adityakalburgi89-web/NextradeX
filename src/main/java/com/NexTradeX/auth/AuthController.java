@@ -110,4 +110,39 @@ public class AuthController {
         return ResponseEntity.ok()
                 .body(new ApiResponse<>(200, "Logout successful", null));
     }
+
+    @RateLimit(capacity = 3, refillRate = 0.1)
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestBody java.util.Map<String, String> body) {
+        try {
+            String email = body.get("email");
+            if (email == null || email.isBlank()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse<>(400, "Email address is required", null));
+            }
+            authService.processForgotPassword(email);
+            return ResponseEntity.ok()
+                    .body(new ApiResponse<>(200, "If an account exists with that email, a password reset link has been sent.", "Sent"));
+        } catch (Exception e) {
+            log.error("Forgot password process failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        }
+    }
+
+    @RateLimit(capacity = 5, refillRate = 0.2)
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody java.util.Map<String, String> body) {
+        try {
+            String token = body.get("token");
+            String newPassword = body.get("newPassword");
+            authService.resetPassword(token, newPassword);
+            return ResponseEntity.ok()
+                    .body(new ApiResponse<>(200, "Password has been successfully reset. You may now log in.", "Reset Successful"));
+        } catch (Exception e) {
+            log.error("Reset password process failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        }
+    }
 }
