@@ -24,6 +24,9 @@ public class EmailService {
     @Value("${resend.from.email:onboarding@resend.dev}")
     private String resendFromEmail;
 
+    @Value("${app.logo.url:https://raw.githubusercontent.com/adityakalburgi89-web/NextradeX/main/frontend/src/assets/images/Logo.png}")
+    private String logoUrl;
+
     @Value("${cors.allowed.origins:http://localhost:3000}")
     private String corsAllowedOrigins;
 
@@ -63,39 +66,12 @@ public class EmailService {
         }
     }
 
-    private java.io.File findLogoFile() {
-        java.nio.file.Path[] possiblePaths = new java.nio.file.Path[]{
-            java.nio.file.Paths.get("frontend/src/assets/images/Logo.png"),
-            java.nio.file.Paths.get("src/main/resources/static/images/Logo.png")
-        };
-        for (java.nio.file.Path path : possiblePaths) {
-            if (java.nio.file.Files.exists(path)) {
-                return path.toFile();
-            }
-        }
-        return null;
-    }
-
     private boolean sendViaResend(String toEmail, String subject, String htmlContent) {
         Map<String, Object> body = new HashMap<>();
         body.put("from", "NexTradeX <" + resendFromEmail + ">");
         body.put("to", new String[]{toEmail});
         body.put("subject", subject);
         body.put("html", htmlContent);
-
-        java.io.File logoFile = findLogoFile();
-        if (logoFile != null && logoFile.exists()) {
-            try {
-                byte[] bytes = java.nio.file.Files.readAllBytes(logoFile.toPath());
-                String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
-                Map<String, String> attachment = new HashMap<>();
-                attachment.put("filename", "Logo.png");
-                attachment.put("content", base64);
-                body.put("attachments", new Map[]{attachment});
-            } catch (Exception e) {
-                log.warn("[EmailService] Failed to attach logo to Resend payload: {}", e.getMessage());
-            }
-        }
 
         Map<?, ?> response = restClient.post()
                 .uri("https://api.resend.com/emails")
@@ -114,12 +90,6 @@ public class EmailService {
         helper.setTo(toEmail);
         helper.setSubject(subject);
         helper.setText(htmlContent, true);
-
-        java.io.File logoFile = findLogoFile();
-        if (logoFile != null && logoFile.exists()) {
-            helper.addInline("logoImage", logoFile);
-        }
-
         javaMailSender.send(message);
     }
 
@@ -137,11 +107,11 @@ public class EmailService {
                 <tr>
                   <td style="background-color:#ffffff; border:1px solid #e8e8e8; border-radius:16px; padding:40px 32px; box-shadow:rgba(0, 0, 0, 0.06) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 8px 16px 0px;">
                     
-                    <!-- Header / Logo -->
+                    <!-- Header / Direct Public Image Logo -->
                     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:32px;">
                       <tr>
                         <td align="center">
-                          <img src="cid:logoImage" alt="NexTradeX" height="48" style="height:48px; width:auto; display:inline-block; vertical-align:middle; border:0;" />
+                          <img src="{{LOGO_URL}}" alt="NexTradeX" height="48" style="height:48px; width:auto; display:inline-block; vertical-align:middle; border:0;" />
                         </td>
                       </tr>
                     </table>
@@ -160,16 +130,6 @@ public class EmailService {
                       <tr>
                         <td align="center">
                           <a href="{{RESET_URL}}" target="_blank" style="background-color:#918df6; color:#ffffff !important; font-size:15px; font-weight:500; text-decoration:none; padding:14px 32px; border-radius:9999px; display:inline-block; letter-spacing:-0.32px; box-shadow:rgba(0, 0, 0, 0.08) 0px 1px 1px 1px, rgba(0, 0, 0, 0.06) 0px 0px 0px 0.5px;">Reset Password</a>
-                        </td>
-                      </tr>
-                    </table>
-
-                    <!-- Direct Reset Link Box -->
-                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#fafafa; border:1px solid #e8e8e8; border-radius:8px; margin-top:24px;">
-                      <tr>
-                        <td style="padding:16px;">
-                          <div style="font-size:11px; font-weight:500; color:#999999; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Direct Reset Link</div>
-                          <a href="{{RESET_URL}}" target="_blank" style="color:#918df6 !important; font-family:'SFMono-Regular', Consolas, monospace; font-size:12px; word-break:break-all; text-decoration:underline;">{{RESET_URL}}</a>
                         </td>
                       </tr>
                     </table>
@@ -196,7 +156,8 @@ public class EmailService {
             </html>
             """;
 
-        return html.replace("{{USER_EMAIL}}", userEmail)
+        return html.replace("{{LOGO_URL}}", logoUrl)
+                   .replace("{{USER_EMAIL}}", userEmail)
                    .replace("{{RESET_URL}}", resetUrl);
     }
 }
