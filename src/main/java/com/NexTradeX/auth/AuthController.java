@@ -111,7 +111,6 @@ public class AuthController {
                 .body(new ApiResponse<>(200, "Logout successful", null));
     }
 
-    @RateLimit(capacity = 10, refillRate = 0.5)
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestBody java.util.Map<String, String> body) {
         try {
@@ -130,7 +129,6 @@ public class AuthController {
         }
     }
 
-    @RateLimit(capacity = 10, refillRate = 0.5)
     @PostMapping("/reset-password")
     public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody java.util.Map<String, String> body) {
         try {
