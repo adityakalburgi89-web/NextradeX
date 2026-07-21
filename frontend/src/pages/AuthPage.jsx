@@ -402,42 +402,43 @@ export default function AuthPage() {
   if (urlResetToken) {
     return (
       <PageTransition>
-        <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12">
-          <Card className="w-full max-w-md overflow-hidden border border-transparent light:border-transparent">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl">Set New Password</CardTitle>
-              <CardDescription className="text-sm mt-1">Enter a strong new password for your NexTradeX account.</CardDescription>
+        <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12 bg-[#fafafa]">
+          <Card className="w-full max-w-md overflow-hidden bg-white border border-[#e8e8e8] rounded-[16px] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_8px_16px_rgba(0,0,0,0.06)]">
+            <CardHeader className="pb-4 pt-8 px-8">
+              <CardTitle className="text-[24px] font-semibold text-[#181925] tracking-[-0.31px]">Set New Password</CardTitle>
+              <CardDescription className="text-[15px] text-[#666666] tracking-[-0.32px] mt-1">Enter a strong new password for your NexTradeX account.</CardDescription>
             </CardHeader>
             {resetSuccess ? (
-              <CardContent className="space-y-4 text-center py-6">
-                <div className="text-trading-up font-semibold text-base">Password Updated Successfully!</div>
-                <p className="text-sm text-muted">Your password has been reset. You can now log in with your new password.</p>
-                <Button onClick={() => { setUrlResetToken(""); window.location.href = "/auth"; }} className="w-full font-mono font-bold mt-4">
+              <CardContent className="space-y-4 text-center py-6 px-8">
+                <div className="p-4 rounded-[12px] bg-[#def6e4] text-[#33c758] font-medium text-[15px] tracking-[-0.32px]">Password Updated Successfully!</div>
+                <p className="text-[14px] text-[#666666] tracking-[-0.32px]">Your password has been reset. You can now log in with your new password.</p>
+                <Button onClick={() => { setUrlResetToken(""); window.location.href = "/auth"; }} className="w-full bg-[#918df6] hover:bg-[#807ce5] text-white rounded-full font-medium text-[15px] tracking-[-0.32px] mt-4 py-3">
                   Proceed to Login
                 </Button>
               </CardContent>
             ) : (
               <form onSubmit={handleResetSubmit} noValidate>
-                <CardContent className="space-y-5">
+                <CardContent className="space-y-5 px-8">
                   {error && (
-                    <div role="alert" className="flex items-start gap-2 p-3 rounded-2xl bg-trading-down/10 border border-trading-down/20 text-trading-down text-sm">
+                    <div role="alert" className="flex items-start gap-2 p-3.5 rounded-[8px] bg-[#fff0ed] border border-[#ff3e00]/20 text-[#ff3e00] text-[13px] tracking-[-0.32px]">
                       <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
                       <span>{error}</span>
                     </div>
                   )}
                   <div>
-                    <label className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">New Password</label>
+                    <label className="text-[12px] text-[#181925] tracking-[-0.32px] uppercase mb-2 block font-semibold">New Password</label>
                     <Input
                       type={showPassword ? "text" : "password"}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Enter new password (min 6 chars)"
                       required
+                      className="border-[#e8e8e8] text-[#181925] placeholder:text-[#999999] rounded-[8px] focus:border-[#918df6] focus:ring-[#918df6]/20"
                       rightIcon={
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/40 rounded text-muted hover:text-foreground"
+                          className="focus:outline-none focus-visible:ring-1 focus-visible:ring-[#918df6]/40 rounded text-[#999999] hover:text-[#181925]"
                           aria-label={showPassword ? "Hide password" : "Show password"}
                         >
                           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -447,8 +448,8 @@ export default function AuthPage() {
                     <PasswordStrengthMeter password={newPassword} show={true} />
                   </div>
                 </CardContent>
-                <CardFooter className="pt-2">
-                  <Button type="submit" className="w-full font-mono font-bold" loading={resetLoading} disabled={resetLoading}>
+                <CardFooter className="pt-2 pb-8 px-8">
+                  <Button type="submit" className="w-full bg-[#918df6] hover:bg-[#807ce5] text-white rounded-full font-medium text-[15px] tracking-[-0.32px] py-3 shadow-[0_1px_1px_rgba(0,0,0,0.08)]" loading={resetLoading} disabled={resetLoading}>
                     Update Password
                   </Button>
                 </CardFooter>
@@ -880,39 +881,40 @@ export default function AuthPage() {
 
       {/* Forgot Password Modal */}
       <Dialog open={showForgotModal} onOpenChange={setShowForgotModal}>
-        <DialogContent className="max-w-md bg-background border-border">
+        <DialogContent className="max-w-md bg-white border border-[#e8e8e8] rounded-[16px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_8px_16px_rgba(0,0,0,0.06)]">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold">Forgot Password</DialogTitle>
+            <DialogTitle className="text-[20px] font-semibold text-[#181925] tracking-[-0.31px]">Forgot Password</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleForgotSubmit} className="space-y-4 pt-2">
-            <p className="text-xs text-muted">
+            <p className="text-[14px] text-[#666666] tracking-[-0.32px] leading-relaxed">
               Enter your registered email address below and we will send you a link to reset your password.
             </p>
             {forgotError && (
-              <div role="alert" className="p-3 rounded-xl bg-trading-down/10 border border-trading-down/20 text-trading-down text-xs">
+              <div role="alert" className="p-3.5 rounded-[8px] bg-[#fff0ed] border border-[#ff3e00]/20 text-[#ff3e00] text-[13px] tracking-[-0.32px]">
                 {forgotError}
               </div>
             )}
             {forgotSuccess && (
-              <div role="status" className="p-3 rounded-xl bg-trading-up/10 border border-trading-up/20 text-trading-up text-xs">
+              <div role="status" className="p-3.5 rounded-[8px] bg-[#def6e4] border border-[#33c758]/20 text-[#33c758] text-[13px] tracking-[-0.32px]">
                 {forgotSuccess}
               </div>
             )}
             <div>
-              <label className="font-mono text-[10px] text-muted uppercase mb-1 block font-semibold">Email Address</label>
+              <label className="text-[12px] font-medium text-[#181925] tracking-[-0.32px] uppercase mb-1.5 block">Email Address</label>
               <Input
                 type="email"
                 value={forgotEmail}
                 onChange={(e) => setForgotEmail(e.target.value)}
                 placeholder="name@example.com"
                 required
+                className="border-[#e8e8e8] text-[#181925] placeholder:text-[#999999] rounded-[8px] focus:border-[#918df6] focus:ring-[#918df6]/20"
               />
             </div>
-            <div className="flex justify-end gap-3 pt-2">
-              <Button type="button" variant="outline" onClick={() => setShowForgotModal(false)}>
+            <div className="flex justify-end gap-3 pt-3">
+              <Button type="button" variant="outline" onClick={() => setShowForgotModal(false)} className="rounded-full border border-[#e8e8e8] text-[#666666] hover:bg-[#fafafa] font-medium text-[14px] px-5">
                 Cancel
               </Button>
-              <Button type="submit" loading={forgotLoading} disabled={forgotLoading}>
+              <Button type="submit" loading={forgotLoading} disabled={forgotLoading} className="bg-[#918df6] hover:bg-[#807ce5] text-white rounded-full font-medium text-[14px] tracking-[-0.32px] px-6 shadow-[0_1px_1px_rgba(0,0,0,0.08)]">
                 Send Reset Link
               </Button>
             </div>
