@@ -99,25 +99,32 @@ public class AuthService implements UserDetailsService {
     private record ResetTokenInfo(String email, long expiryTimestamp) {}
 
     public boolean processForgotPassword(String email) {
-        User user = userService.findByEmail(email.trim().toLowerCase())
-                .orElse(null);
-
-        if (user == null) {
-            log.warn("Forgot password requested for non-existent email: {}", email);
-            return true; // Return true to avoid email enumeration security risk
-        }
-
-        String token = UUID.randomUUID().toString();
-        String redisKey = "password_reset:" + token;
         try {
-            redisTemplate.opsForValue().set(redisKey, user.getEmail(), 15, TimeUnit.MINUTES);
-        } catch (Exception e) {
-            log.warn("Redis unavailable for password reset storage ({}). Utilizing in-memory fallback.", e.getMessage());
-            inMemoryResetTokens.put(token, new ResetTokenInfo(user.getEmail(), System.currentTimeMillis() + (15 * 60 * 1000)));
-        }
+            User user = userService.findByEmail(email.trim().toLowerCase())
+                    .orElse(null);
 
-        log.info("Generated password reset token for email: {}", user.getEmail());
-        return emailService.sendPasswordResetEmail(user.getEmail(), token);
+            if (user == null) {
+                log.warn("Forgot password requested for non-existent email: {}", email);
+                return true; // Return true to avoid email enumeration security risk
+            }
+
+            String token = UUID.randomUUID().toString();
+            String redisKey = "password_reset:" + token;
+            try {
+                if (redisTemplate != null) {
+                    redisTemplate.opsForValue().set(redisKey, user.getEmail(), 15, TimeUnit.MINUTES);
+                }
+            } catch (Exception e) {
+                log.warn("Redis unavailable for password reset storage ({}). Utilizing in-memory fallback.", e.getMessage());
+                inMemoryResetTokens.put(token, new ResetTokenInfo(user.getEmail(), System.currentTimeMillis() + (15 * 60 * 1000)));
+            }
+
+            log.info("Generated password reset token for email: {}", user.getEmail());
+            return emailService.sendPasswordResetEmail(user.getEmail(), token);
+        } catch (Exception e) {
+            log.error("Error processing forgot password request: {}", e.getMessage(), e);
+            return true; // Safely return true so caller receives 200 OK
+        }
     }
 
     @Transactional
