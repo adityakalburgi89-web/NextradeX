@@ -144,6 +144,22 @@ export async function logoutUser() {
   }
 }
 
+export async function forgotPassword(email) {
+  console.log("[API] POST /auth/forgot-password");
+  const res = await fetch(`${API_BASE_URL}/auth/forgot-password`,
+    createFetchOptions("POST", { email })
+  );
+  return handleResponse(res);
+}
+
+export async function resetPassword(token, newPassword) {
+  console.log("[API] POST /auth/reset-password");
+  const res = await fetch(`${API_BASE_URL}/auth/reset-password`,
+    createFetchOptions("POST", { token, newPassword })
+  );
+  return handleResponse(res);
+}
+
 export function googleLogin() {
   console.log("[API] Redirecting to Google OAuth2 login");
   window.location.href = `${API_BASE_URL}/oauth2/authorization/google`;
