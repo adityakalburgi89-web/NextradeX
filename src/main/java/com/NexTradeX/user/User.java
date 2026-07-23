@@ -29,58 +29,58 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class User {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(nullable = false, unique = true)
     private String username;
-    
+
     @Column(nullable = false, unique = true)
     private String email;
-    
+
     @Column(nullable = false)
     private String passwordHash;
-    
+
     @Column(nullable = false)
     private String firstName;
-    
+
     @Column(nullable = false)
     private String lastName;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
     private UserRole role = UserRole.USER;
-    
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean active = true;
-    
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean emailVerified = false;
-    
+
     @Column(nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
-    
+
     @Column(nullable = false)
     @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
-    
+
     private LocalDateTime lastLogin;
-    
+
     @Column(unique = true)
     private String googleId;
-    
+
     private String profilePictureUrl;
-    
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean needsProfileSetup = true;
-    
+
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
@@ -90,7 +90,7 @@ public class User {
             updatedAt = LocalDateTime.now();
         }
     }
-    
+
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
