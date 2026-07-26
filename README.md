@@ -185,3 +185,6 @@ Please follow standard Java/Maven formatting configurations, and add unit/integr
 ## License
 
 This project is open-source and intended solely for educational/simulation purposes. All rights reserved.
+
+
+https://foglamp.dev/scan/nextradex-knbxwi
