@@ -1,195 +1,98 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import Logo from "../assets/images/Logo.png";
-import { Button } from "./ui/Button";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "./ui/dropdown-menu";
-import { Search, User, ChevronDown, Layers, LogOut, X, Menu } from "lucide-react";
-import TradeDropdown from "./TradeDropdown";
-import NavLink from "./NavLink";
+import { Search, User, ChevronDown, LogOut, Menu, X } from "lucide-react";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "./ui/dropdown-menu";
 
 export default function Navbar({ theme, isLoggedIn, user, setSearchOpen, triggerLogoutConfirm }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const hamburgerRef = useRef(null);
-  const mobileMenuRef = useRef(null);
-
-  // Escape key closes mobile menu
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && mobileMenuOpen) {
-        setMobileMenuOpen(false);
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [mobileMenuOpen]);
-
-  // Focus management for mobile menu
-  useEffect(() => {
-    if (mobileMenuOpen && mobileMenuRef.current) {
-      // Focus the first focusable element in the menu
-      const focusable = mobileMenuRef.current.querySelector('a, button');
-      if (focusable) {
-        focusable.focus();
-      }
-    } else if (!mobileMenuOpen && hamburgerRef.current) {
-      // Restore focus to hamburger button when menu closes
-      hamburgerRef.current.focus();
-    }
-  }, [mobileMenuOpen]);
 
   return (
-    <>
-      <nav className="sticky top-0 z-50 h-16 bg-background text-foreground shadow-neo-sm transition-all duration-300 flex items-center">
-        <div className="flex items-center justify-between px-6 w-full max-w-none">
-          <div className="flex items-center gap-8">
-            <Link to="/" className="font-heading font-bold text-xl flex items-center gap-1 hover:opacity-90 transition-opacity">
-              <img src={Logo} alt="NexTradeX Logo" className="h-12 sm:h-14 w-auto object-contain" />
-              <span className="text-foreground hidden sm:inline">
-                NexTrade<span className="text-primary">X</span>
-              </span>
-            </Link>
-          </div>
+    <header className="sticky top-0 z-50 w-full bg-[#ebf5ff]/90 backdrop-blur-md transition-all">
+      <div className="max-w-[1200px] mx-auto px-6 h-20 flex items-center justify-between">
+        
+        {/* Left: Brand Logo */}
+        <Link to="/" className="flex items-center gap-3 text-[#0a0d12] no-underline">
+          <img src={Logo} alt="Genie Studio / NexTradeX" className="h-10 w-auto object-contain" />
+          <span className="font-['Inter'] font-medium text-xl tracking-tight text-[#0a0d12]">
+            Genie<span className="text-[#0069e0]">Studio</span>
+          </span>
+        </Link>
 
-          <div className="flex items-center gap-3">
-            {/* Search Button */}
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="flex h-12 w-12 items-center justify-center rounded-2xl text-muted shadow-neo-sm transition-all hover:text-primary hover:shadow-neo active:shadow-neo-inset-sm"
-              title="Search"
-            >
-              <Search size={18} />
-            </button>
+        {/* Center: Ghost Nav Links (Plain typography on canvas) */}
+        <nav className="hidden md:flex items-center gap-8 font-['Geist'] font-medium text-base text-[#0a0d12]">
+          <Link to="/markets" className="ghost-nav-link">Markets</Link>
+          <Link to="/trade/spot" className="ghost-nav-link">Spot Trade</Link>
+          <Link to="/trade/futures" className="ghost-nav-link">Futures</Link>
+          <Link to="/trixie-explains" className="ghost-nav-link">Features</Link>
+          <Link to="/support" className="ghost-nav-link">Support</Link>
+        </nav>
 
-            {/* Desktop Nav — moved to right side */}
-            <div className="hidden md:flex items-center gap-6 font-mono text-xs">
-              <TradeDropdown theme={theme} />
-              <NavLink to="/markets">Markets</NavLink>
-            </div>
+        {/* Right Actions: Search + Dark CTA Pill */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="p-2.5 rounded-full text-[#535862] hover:text-[#0a0d12] transition-colors"
+            title="Search"
+          >
+            <Search size={20} />
+          </button>
 
-            {isLoggedIn ? (
-              <DropdownMenu onOpenChange={setDropdownOpen}>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className="flex min-h-11 items-center gap-2 rounded-2xl bg-background px-3 py-1.5 shadow-neo-sm transition-all duration-300 hover:shadow-neo focus-visible:outline-none"
-                    aria-haspopup="true"
-                    aria-expanded={dropdownOpen}
-                  >
-                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                      <User size={12} className="text-on-primary" />
-                    </div>
-                    <span className="font-mono text-xs font-semibold hidden sm:inline">{user?.username}</span>
-                    <ChevronDown size={12} className="text-muted" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="z-50 min-w-[180px] rounded-[24px] bg-background py-2 text-foreground shadow-neo"
+          {isLoggedIn ? (
+            <DropdownMenu onOpenChange={setDropdownOpen}>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 rounded-full bg-[#fafdff] px-4 py-2 text-[#0a0d12] font-['Geist'] text-sm font-medium border border-black/5 hover:border-black/10">
+                  <div className="w-6 h-6 rounded-full bg-[#0069e0] text-white flex items-center justify-center font-bold text-xs">
+                    {user?.username?.charAt(0)?.toUpperCase() || "U"}
+                  </div>
+                  <span>{user?.username}</span>
+                  <ChevronDown size={14} className="text-[#93979f]" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="z-50 min-w-[200px] rounded-[24px] bg-[#fafdff] p-3 shadow-lg border border-black/5">
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard" className="block px-4 py-2 text-sm text-[#0a0d12] hover:bg-[#f6f7f8] rounded-xl font-medium">Dashboard</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="block px-4 py-2 text-sm text-[#0a0d12] hover:bg-[#f6f7f8] rounded-xl font-medium">Profile</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/wallets" className="block px-4 py-2 text-sm text-[#0a0d12] hover:bg-[#f6f7f8] rounded-xl font-medium">Wallets</Link>
+                </DropdownMenuItem>
+                <button
+                  onClick={triggerLogoutConfirm}
+                  className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-[#e05263] hover:bg-[#f6f7f8] rounded-xl font-medium mt-1"
                 >
-                  <DropdownMenuItem asChild>
-                    <Link
-                      to="/profile"
-                      className="flex items-center gap-3 px-4 py-2 text-xs w-full hover:bg-background hover:text-primary transition-colors font-semibold cursor-pointer"
-                    >
-                      <User size={14} />
-                      Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      to="/wallets"
-                      className="flex items-center gap-3 px-4 py-2 text-xs w-full hover:bg-background hover:text-primary transition-colors font-semibold cursor-pointer"
-                    >
-                      <Layers size={14} />
-                      Wallets
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="my-2" />
-                  <DropdownMenuItem asChild>
-                    <button
-                      onClick={triggerLogoutConfirm}
-                      className="flex items-center gap-3 px-4 py-2 text-xs w-full text-left hover:bg-background hover:text-trading-down transition-colors font-semibold cursor-pointer"
-                    >
-                      <LogOut size={14} />
-                      Logout
-                    </button>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <>
-                <Button variant="tertiaryText" className="hidden sm:inline-flex text-xs" asChild>
-                  <Link to="/auth?mode=login">Log In</Link>
-                </Button>
-                <Button className="hidden sm:inline-flex text-xs h-9 px-3 sm:px-4" asChild>
-                  <Link to="/auth?mode=register">Sign Up</Link>
-                </Button>
-              </>
-            )}
+                  <LogOut size={14} /> Log out
+                </button>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link to="/auth" className="btn-primary-genie">
+              Sign up
+            </Link>
+          )}
 
-
-            {/* Mobile hamburger */}
-            <button
-              ref={hamburgerRef}
-              className="md:hidden flex h-12 w-12 items-center justify-center rounded-2xl text-muted shadow-neo-sm transition-all hover:text-primary hover:shadow-neo active:shadow-neo-inset-sm"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={mobileMenuOpen}
-              aria-controls="mobile-menu"
-            >
-              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-          </div>
+          {/* Mobile menu trigger */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 text-[#0a0d12]"
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
-      </nav>
+      </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div
-          ref={mobileMenuRef}
-          id="mobile-menu"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Navigation menu"
-          className="md:hidden animate-slide-down bg-background text-foreground shadow-neo">
-          <div className="flex justify-end px-4 pt-3">
-            <button
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex h-12 w-12 items-center justify-center rounded-2xl text-muted shadow-neo-sm transition-all hover:text-primary hover:shadow-neo"
-              aria-label="Close menu"
-            >
-              <X size={20} />
-            </button>
-          </div>
-          <div className="px-6 py-4 space-y-1 font-mono text-sm">
-            <Link to="/trade/spot" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Spot Trading</Link>
-            <Link to="/trade/futures" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Futures Trading</Link>
-            <Link to="/trade/options" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Options Trading</Link>
-            <div className="glow-line my-3" />
-            <Link to="/markets" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Markets</Link>
-            {isLoggedIn && (
-              <>
-                <Link to="/wallets" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Wallets</Link>
-                <Link to="/orders" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Orders</Link>
-                <Link to="/analytics" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Analytics</Link>
-              </>
-            )}
-            {isLoggedIn ? (
-              <>
-                <div className="glow-line my-3" />
-                <Link to="/profile" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Profile</Link>
-                <button onClick={() => { triggerLogoutConfirm(); setMobileMenuOpen(false); }} className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-trading-down transition-colors w-full text-left">Logout</button>
-              </>
-            ) : (
-              <>
-                <div className="glow-line my-3" />
-                <Link to="/auth?mode=login" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
-                <Link to="/auth?mode=register" className="block py-3 px-3 rounded-2xl hover:bg-background text-muted hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
-              </>
-            )}
-          </div>
+        <div className="md:hidden bg-[#fafdff] border-t border-black/5 px-6 py-6 space-y-4">
+          <Link to="/markets" onClick={() => setMobileMenuOpen(false)} className="block text-lg font-medium text-[#0a0d12]">Markets</Link>
+          <Link to="/trade/spot" onClick={() => setMobileMenuOpen(false)} className="block text-lg font-medium text-[#0a0d12]">Spot Trade</Link>
+          <Link to="/trade/futures" onClick={() => setMobileMenuOpen(false)} className="block text-lg font-medium text-[#0a0d12]">Futures</Link>
+          <Link to="/support" onClick={() => setMobileMenuOpen(false)} className="block text-lg font-medium text-[#0a0d12]">Support</Link>
         </div>
       )}
-    </>
+    </header>
   );
 }
