@@ -144,7 +144,8 @@
 }
 
 @layer components {
-  /* Geniestudio Primary Filled Dark CTA Button */
+  /* NexTradeX Primary Filled Dark CTA Button */
+  .btn-primary-nextrade,
   .btn-primary-genie {
     background-color: var(--color-charcoal);
     color: #ffffff;
@@ -164,17 +165,20 @@
     cursor: pointer;
   }
 
+  .btn-primary-nextrade:hover,
   .btn-primary-genie:hover {
     background-color: #0a0d12;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(10, 13, 18, 0.25), 0 0 0 1px #0a0d12;
   }
 
+  .btn-primary-nextrade:active,
   .btn-primary-genie:active {
     transform: translateY(0);
   }
 
-  /* Geniestudio Secondary Pill Button */
+  /* NexTradeX Secondary Pill Button */
+  .btn-secondary-nextrade,
   .btn-secondary-genie {
     background-color: var(--color-charcoal);
     color: #ffffff;
@@ -192,6 +196,7 @@
     cursor: pointer;
   }
 
+  .btn-secondary-nextrade:hover,
   .btn-secondary-genie:hover {
     background-color: #0a0d12;
     transform: translateY(-1px);
@@ -214,6 +219,7 @@
   }
 
   /* Feature Card (32px radius bone white) */
+  .card-nextrade,
   .card-genie {
     background-color: var(--color-bone-white);
     border-radius: 32px;
@@ -223,6 +229,7 @@
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
+  .card-nextrade:hover,
   .card-genie:hover {
     transform: translateY(-3px);
   }

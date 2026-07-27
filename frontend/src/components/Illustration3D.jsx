@@ -1,7 +1,7 @@
 import React from "react";
 
 /**
- * Geniestudio 3D Illustrations Component
+ * NexTradeX 3D Illustrations Component
  * Render whimsical, soft, dimensional 3D objects with soft pastel washes
  * and iris-blue accent shapes on transparent background.
  */

@@ -15,7 +15,7 @@ module.exports = {
         muted: "var(--color-fog)",
         border: "transparent",
         
-        /* Geniestudio Tokens */
+        /* NexTradeX Design Tokens */
         "sky-tint": "#ebf5ff",
         "paper-white": "#ffffff",
         "bone-white": "#fafdff",
@@ -36,9 +36,15 @@ module.exports = {
         "peach-gradient": "#ffd1b8",
         
         primary: "#181d27",
+        "primary-active": "#0a0d12",
         secondary: "#0069e0",
         "trading-up": "#13A978",
         "trading-down": "#E05263",
+        "accent-turquoise": "#38B2AC",
+        info: "#4F7DFF",
+        "info-ring": "#6C63FF",
+        "on-primary": "#FFFFFF",
+        "on-dark": "#3D4852",
       },
       fontFamily: {
         aeonik: [
@@ -76,6 +82,7 @@ module.exports = {
           "BlinkMacSystemFont",
           "sans-serif",
         ],
+        mono: ['"JetBrains Mono"', '"IBM Plex Mono"', "ui-monospace", "monospace"],
       },
       boxShadow: {
         "genie-cta": "0 1px 2px rgba(10, 13, 18, 0.8), 0 0 0 1px #0a0d12",
@@ -83,6 +90,16 @@ module.exports = {
         "genie-subtle": "rgba(10, 13, 18, 0.06) 0px 4px 12px 0px",
         neo: "0 1px 2px rgba(10, 13, 18, 0.8), 0 0 0 1px #0a0d12",
         "neo-hover": "rgba(4, 69, 144, 0.08) 0px 14px 20px 4px",
+        "neo-sm": "0 1px 2px rgba(10, 13, 18, 0.3), 0 0 0 1px rgba(10, 13, 18, 0.05)",
+        "neo-inset": "inset 0 2px 4px rgba(10, 13, 18, 0.06)",
+        "neo-inset-deep": "inset 0 4px 8px rgba(10, 13, 18, 0.08)",
+        "neo-inset-sm": "inset 0 1px 2px rgba(10, 13, 18, 0.04)",
+        "glow-primary": "0 0 15px rgba(0, 105, 224, 0.3)",
+        "glow-soft": "0 0 10px rgba(0, 105, 224, 0.15)",
+        "elevation-sm": "0 2px 4px rgba(10, 13, 18, 0.04)",
+        "elevation-md": "0 4px 12px rgba(10, 13, 18, 0.06)",
+        "elevation-lg": "rgba(4, 69, 144, 0.08) 0px 14px 20px 4px",
+        "inner-glow": "inset 0 0 10px rgba(0, 105, 224, 0.1)",
       },
       borderRadius: {
         tags: "9999px",
@@ -109,6 +126,31 @@ module.exports = {
         120: "120px",
         160: "160px",
       },
+      animation: {
+        float: "float 3s ease-in-out infinite",
+        "float-slow": "float 6s ease-in-out infinite",
+        "slide-down": "slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "slide-up": "slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "fade-in": "fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+      },
+      keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        slideDown: {
+          "0%": { opacity: "0", transform: "translateY(-10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        slideUp: {
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        fadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+      },
     },
   },
   plugins: [
@@ -117,3 +159,4 @@ module.exports = {
     }),
   ],
 };
+

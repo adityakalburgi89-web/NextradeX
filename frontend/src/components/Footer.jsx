@@ -11,18 +11,19 @@ export default function Footer() {
       <div className="max-w-[1200px] mx-auto px-6 space-y-20">
 
         {/* Wide Centered CTA Block */}
-        <div className="card-genie text-center py-16 px-8 max-w-[1100px] mx-auto space-y-6">
+        {/* Wide Centered CTA Block */}
+        <div className="card-nextrade text-center py-16 px-8 max-w-[1100px] mx-auto space-y-6">
           <span className="inline-block px-4 py-1.5 rounded-full bg-[#cce7ff] text-[#0069e0] text-xs font-['Geist'] font-medium">
-            Start creating today
+            Start paper trading today
           </span>
           <h2 className="font-['Inter'] text-4xl md:text-5xl font-medium text-[#0a0d12] tracking-tight max-w-2xl mx-auto">
-            Ready to experience daylight-studio trading?
+            Ready to experience next-generation trading?
           </h2>
           <p className="font-['Geist'] text-base text-[#535862] max-w-xl mx-auto">
-            Join thousands of traders building strategies with confident typography, zero visual noise, and real-time execution.
+            Join thousands of traders building strategies with confident execution, real-time telemetry, and zero financial risk.
           </p>
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/auth" className="btn-primary-genie text-base px-8 py-3.5">
+            <Link to="/auth" className="btn-primary-nextrade text-base px-8 py-3.5">
               Get Started Free <ArrowRight size={18} />
             </Link>
             <Link to="/markets" className="ghost-nav-link text-base">
@@ -35,11 +36,11 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-10 pt-8 border-t border-black/5">
           <div className="col-span-2 md:col-span-1 space-y-4">
             <div className="flex items-center gap-2">
-              <img src={logoIcon} alt="Logo" className="h-7 w-auto" />
-              <span className="font-['Inter'] font-medium text-lg text-[#0a0d12]">GenieStudio</span>
+              <img src={logoIcon} alt="NexTradeX Logo" className="h-7 w-auto" />
+              <span className="font-['Inter'] font-bold text-lg text-[#0a0d12]">NexTrade<span className="text-[#0069e0]">X</span></span>
             </div>
             <p className="font-['Geist'] text-sm text-[#93979f] leading-relaxed">
-              Soft daylight notebook UI for modern finance and algorithmic paper trading.
+              High-performance paper trading platform for modern spot, futures, and derivatives simulation.
             </p>
           </div>
 
@@ -85,8 +86,8 @@ export default function Footer() {
 
         {/* Bottom Credits */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 text-xs font-['Geist'] text-[#93979f]">
-          <p>© {new Date().getFullYear()} GenieStudio / NexTradeX. Engineered with restraint.</p>
-          <p>Theme: Soft Daylight Notebook (#ebf5ff)</p>
+          <p>© {new Date().getFullYear()} NexTradeX. All rights reserved.</p>
+          <p>NexTradeX Engine v1.0</p>
         </div>
       </div>
     </footer>

@@ -14,9 +14,9 @@ export default function Navbar({ theme, isLoggedIn, user, setSearchOpen, trigger
         
         {/* Left: Brand Logo */}
         <Link to="/" className="flex items-center gap-3 text-[#0a0d12] no-underline">
-          <img src={Logo} alt="Genie Studio / NexTradeX" className="h-10 w-auto object-contain" />
-          <span className="font-['Inter'] font-medium text-xl tracking-tight text-[#0a0d12]">
-            Genie<span className="text-[#0069e0]">Studio</span>
+          <img src={Logo} alt="NexTradeX Logo" className="h-10 w-auto object-contain" />
+          <span className="font-['Inter'] font-bold text-xl tracking-tight text-[#0a0d12]">
+            NexTrade<span className="text-[#0069e0]">X</span>
           </span>
         </Link>
 

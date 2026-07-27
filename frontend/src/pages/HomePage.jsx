@@ -46,8 +46,8 @@ const testimonials = [
 
 const faqData = [
   {
-    q: "What makes the GenieStudio style reference unique?",
-    a: "GenieStudio operates on an airy, daylight-studio canvas (#ebf5ff) with bone-white (#fafdff) 32px radius surfaces and dark charcoal (#181d27) CTA buttons. Display type is fixed at 500 weight with tight negative letter-spacing for an engraved, sculpted typographic feel."
+    q: "What makes NexTradeX unique?",
+    a: "NexTradeX combines sub-millisecond paper trading execution with an ultra-clean, daylight-inspired interface, real-time WebSocket feeds, and advanced portfolio analytics."
   },
   {
     q: "Is NexTradeX completely free for paper trading?",
@@ -58,7 +58,7 @@ const faqData = [
     a: "Marquee strips scroll endlessly using a custom organic timing curve. Content flows smoothly across the viewport on pure canvas without heavy borders or containers."
   },
   {
-    q: "Can I integrate custom APIs into GenieStudio?",
+    q: "Can I integrate custom APIs into NexTradeX?",
     a: "Absolutely. Our platform exposes clean REST and WebSocket endpoints for strategy automation, market data streaming, and portfolio telemetry."
   }
 ];
@@ -96,16 +96,16 @@ export default function HomePage({ isLoggedIn }) {
         
         {/* Category Pill Tag */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#cce7ff] text-[#0069e0] font-['Geist'] text-xs font-medium tracking-tight mb-8">
-          <Sparkles size={14} /> Soft Daylight Notebook — Genie 1.0
+          <Sparkles size={14} /> Next-Gen Derivatives Platform — NexTradeX 1.0
         </div>
 
         {/* Display Headline — Aeonik weight 500 up to 148px, tracking tight -2.96px */}
-        <h1 className="font-['Inter'] font-medium text-[56px] sm:text-[96px] lg:text-[132px] xl:text-[148px] leading-[1.03] tracking-[-0.025em] text-[#0a0d12] max-w-[1100px] mx-auto select-none">
-          Daylight Studio
+        <h1 className="font-['Inter'] font-bold text-[52px] sm:text-[90px] lg:text-[120px] xl:text-[136px] leading-[1.03] tracking-[-0.025em] text-[#0a0d12] max-w-[1100px] mx-auto select-none">
+          NexTrade<span className="text-[#0069e0]">X</span>
         </h1>
 
         <p className="font-['Geist'] text-lg md:text-xl text-[#535862] max-w-2xl mx-auto mt-6 mb-10 leading-snug">
-          An airy sky-blue canvas hosting an almost-monochrome interface where near-black controls provide dense visual weight.
+          An ultra-responsive daylight trading platform featuring simulated spot, perpetual futures, options desk, and real-time execution telemetry.
         </p>
 
         {/* 3D Rendered Hero Artwork in 3px Iris Polaroid Frame */}
@@ -115,7 +115,7 @@ export default function HomePage({ isLoggedIn }) {
 
         {/* Primary CTA Button */}
         <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
-          <Link to={isLoggedIn ? "/dashboard" : "/auth"} className="btn-primary-genie text-lg px-9 py-4">
+          <Link to={isLoggedIn ? "/dashboard" : "/auth"} className="btn-primary-nextrade text-lg px-9 py-4">
             {isLoggedIn ? "Open Dashboard" : "Start Paper Trading"} <ArrowRight size={20} />
           </Link>
           <Link to="/markets" className="ghost-nav-link text-base">
@@ -329,7 +329,7 @@ export default function HomePage({ isLoggedIn }) {
       <section className="max-w-[1000px] mx-auto px-6 py-20 space-y-8">
         <div className="text-center space-y-4">
           <h2 className="font-['Inter'] text-4xl md:text-5xl font-medium text-[#0a0d12]">Frequently Asked</h2>
-          <p className="font-['Geist'] text-base text-[#535862]">Everything you need to know about the GenieStudio architecture.</p>
+          <p className="font-['Geist'] text-base text-[#535862]">Everything you need to know about the NexTradeX platform.</p>
         </div>
 
         <div className="space-y-4">
