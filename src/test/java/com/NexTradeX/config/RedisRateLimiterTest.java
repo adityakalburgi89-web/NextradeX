@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 public class RedisRateLimiterTest {
 
     @Autowired
-    private RedisRateLimiter redisRateLimiter;
+    private IRateLimiter redisRateLimiter;
 
     @Test
     public void testRateLimiterAllowed() {

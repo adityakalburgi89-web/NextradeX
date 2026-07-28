@@ -18,9 +18,9 @@ import jakarta.servlet.http.HttpServletResponse;
 public class RateLimitInterceptor implements HandlerInterceptor {
 
     private static final Logger log = LoggerFactory.getLogger(RateLimitInterceptor.class);
-    private final RedisRateLimiter redisRateLimiter;
+    private final IRateLimiter redisRateLimiter;
 
-    public RateLimitInterceptor(RedisRateLimiter redisRateLimiter) {
+    public RateLimitInterceptor(IRateLimiter redisRateLimiter) {
         this.redisRateLimiter = redisRateLimiter;
     }
 

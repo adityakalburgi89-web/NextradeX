@@ -20,8 +20,8 @@ import jakarta.validation.Valid;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
-    private final JwtService jwtService;
+    private final IAuthService authService;
+    private final IJwtService jwtService;
 
     @RateLimit(capacity = 5, refillRate = 0.2)
     @PostMapping("/register")
