@@ -268,28 +268,15 @@ export default function AuthPage() {
   const handleBlur = (e) => {
     const { name, value } = e.target;
     setTouched((prev) => ({ ...prev, [name]: true }));
-    let err = null;
-    switch (name) {
-      case "username":
-        err = validateUsername(value);
-        break;
-      case "email":
-        err = validateEmail(value);
-        break;
-      case "password":
-        err = mode === "register"
-          ? validatePasswordRegister(value)
-          : validatePasswordLogin(value);
-        break;
-      case "firstName":
-        if (mode === "register" && !value.trim()) err = "First name is required";
-        break;
-      case "lastName":
-        if (mode === "register" && !value.trim()) err = "Last name is required";
-        break;
-      default:
-        break;
-    }
+    const fieldValidators = {
+      username: (val) => validateUsername(val),
+      email: (val) => validateEmail(val),
+      password: (val) => mode === "register" ? validatePasswordRegister(val) : validatePasswordLogin(val),
+      firstName: (val) => (mode === "register" && !val.trim() ? "First name is required" : null),
+      lastName: (val) => (mode === "register" && !val.trim() ? "Last name is required" : null),
+    };
+    const validator = fieldValidators[name];
+    let err = validator ? validator(value) : null;
     setFieldErrors((prev) => ({
       ...prev,
       ...(err ? { [name]: err } : {}),
