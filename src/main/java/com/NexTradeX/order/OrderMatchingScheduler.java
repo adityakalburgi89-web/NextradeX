@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.NexTradeX.order.strategy.OrderMatchingStrategy;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -18,6 +20,7 @@ public class OrderMatchingScheduler {
     private final OrderRepository orderRepository;
     private final SpotTradingService spotTradingService;
     private final MarketService marketService;
+    private final OrderMatchingStrategy orderMatchingStrategy;
 
     @Scheduled(fixedDelay = 5000)
     public void matchOpenOrders() {
@@ -30,33 +33,7 @@ public class OrderMatchingScheduler {
         for (Order order : openOrders) {
             try {
                 BigDecimal currentPrice = marketService.getPrice(order.getSymbol()).getCurrentPrice();
-                boolean shouldTrigger = false;
-
-                if (order.getOrderType() == OrderType.LIMIT) {
-                    if (order.getSide() == OrderSide.BUY && currentPrice.compareTo(order.getPrice()) <= 0) {
-                        shouldTrigger = true;
-                    } else if (order.getSide() == OrderSide.SELL && currentPrice.compareTo(order.getPrice()) >= 0) {
-                        shouldTrigger = true;
-                    }
-                } else if (order.getOrderType() == OrderType.STOP_MARKET || order.getOrderType() == OrderType.STOP_LIMIT) {
-                    BigDecimal stopPrice = order.getStopPrice();
-                    if (stopPrice != null) {
-                        if (order.getSide() == OrderSide.BUY && currentPrice.compareTo(stopPrice) >= 0) {
-                            shouldTrigger = true;
-                        } else if (order.getSide() == OrderSide.SELL && currentPrice.compareTo(stopPrice) <= 0) {
-                            shouldTrigger = true;
-                        }
-                    }
-                } else if (order.getOrderType() == OrderType.TAKE_PROFIT_MARKET || order.getOrderType() == OrderType.TAKE_PROFIT_LIMIT) {
-                    BigDecimal stopPrice = order.getStopPrice();
-                    if (stopPrice != null) {
-                        if (order.getSide() == OrderSide.BUY && currentPrice.compareTo(stopPrice) <= 0) {
-                            shouldTrigger = true;
-                        } else if (order.getSide() == OrderSide.SELL && currentPrice.compareTo(stopPrice) >= 0) {
-                            shouldTrigger = true;
-                        }
-                    }
-                }
+                boolean shouldTrigger = orderMatchingStrategy.shouldTrigger(order, currentPrice);
 
                 if (shouldTrigger) {
                     if (order.getTradeType() == TradeType.SPOT) {

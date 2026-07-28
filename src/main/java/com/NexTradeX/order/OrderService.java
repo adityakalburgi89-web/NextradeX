@@ -20,7 +20,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class OrderService {
+public class OrderService implements IOrderService {
     
     private final OrderRepository orderRepository;
     private final UserService userService;
