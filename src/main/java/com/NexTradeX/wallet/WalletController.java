@@ -16,14 +16,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.NexTradeX.auth.IJwtService;
+
 @Slf4j
 @RestController
 @RequestMapping("/wallets")
 @RequiredArgsConstructor
 public class WalletController {
     
-    private final WalletService walletService;
-    private final JwtService jwtService;
+    private final IWalletService walletService;
+    private final IJwtService jwtService;
     
     @GetMapping
     public ResponseEntity<ApiResponse<List<WalletResponse>>> getUserWallets(

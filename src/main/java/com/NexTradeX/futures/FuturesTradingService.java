@@ -25,7 +25,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class FuturesTradingService {
+public class FuturesTradingService implements IFuturesTradingService {
 
     private final FuturesPositionRepository futuresPositionRepository;
     private final OrderRepository orderRepository;

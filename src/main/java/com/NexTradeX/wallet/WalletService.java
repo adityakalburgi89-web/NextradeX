@@ -15,7 +15,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class WalletService {
+public class WalletService implements IWalletService {
     
     private final WalletRepository walletRepository;
     private final UserService userService;

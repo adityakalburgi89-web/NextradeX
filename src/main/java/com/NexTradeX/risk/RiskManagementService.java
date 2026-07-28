@@ -21,18 +21,23 @@ import java.math.RoundingMode;
 import java.util.List;
 import jakarta.persistence.EntityManager;
 
+import com.NexTradeX.futures.IFuturesTradingService;
+import com.NexTradeX.margin.IMarginTradingService;
+import com.NexTradeX.market.IMarketService;
+import com.NexTradeX.user.IUserService;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class RiskManagementService {
+public class RiskManagementService implements IRiskManagementService {
     
     private final FuturesPositionRepository futuresPositionRepository;
     private final MarginPositionRepository marginPositionRepository;
-    private final FuturesTradingService futuresTradingService;
-    private final MarginTradingService marginTradingService;
-    private final MarketService marketService;
-    private final UserService userService;
+    private final IFuturesTradingService futuresTradingService;
+    private final IMarginTradingService marginTradingService;
+    private final IMarketService marketService;
+    private final IUserService userService;
     private final EntityManager entityManager;
     
     private static final BigDecimal FUTURES_MAINTENANCE_MARGIN = new BigDecimal("0.05");

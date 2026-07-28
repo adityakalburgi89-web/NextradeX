@@ -25,7 +25,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class MarginTradingService {
+public class MarginTradingService implements IMarginTradingService {
 
     private final MarginPositionRepository marginPositionRepository;
     private final OrderRepository orderRepository;
