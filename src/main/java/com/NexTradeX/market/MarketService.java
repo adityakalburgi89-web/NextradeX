@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class MarketService {
+public class MarketService implements IMarketService {
 
     private static final String COINMARKETCAP_API = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest";
     private static final java.util.Set<String> ALLOWED_SYMBOLS = java.util.Set.of("BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "DOTUSDT");
@@ -40,6 +40,7 @@ public class MarketService {
     private final CryptoPriceRepository cryptoPriceRepository;
     private final RestTemplate restTemplate;
     private final BinanceService binanceService;
+    private final TechnicalAnalysisService technicalAnalysisService;
 
     private final Map<String, CryptoPrice> l1Cache = new ConcurrentHashMap<>();
     private final Map<String, Long> lastDbWriteTimes = new ConcurrentHashMap<>();
