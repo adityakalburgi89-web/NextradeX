@@ -1,22 +1,20 @@
 package com.NexTradeX.binance;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.NexTradeX.config.BinanceProperties;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
-public class BinanceServiceTest {
+class BinanceServiceTest {
 
-    @Autowired
-    private BinanceService binanceService;
+    private final BinanceService binanceService = new BinanceService(new BinanceProperties());
 
     @Test
-    public void testShouldTriggerCooldown() {
+    void testShouldTriggerCooldown() {
         // Test 429, 418, 403, 451, 500 should trigger cooldown
         assertTrue(invokeShouldTriggerCooldown(HttpStatus.TOO_MANY_REQUESTS));
         assertTrue(invokeShouldTriggerCooldown(HttpStatus.I_AM_A_TEAPOT));
@@ -30,7 +28,7 @@ public class BinanceServiceTest {
     }
 
     @Test
-    public void testFailoverBaseUrl() {
+    void testFailoverBaseUrl() {
         // Initially, the effective base URL should be Binance
         String initialUrl = binanceService.getEffectiveBaseUrl();
         assertEquals("https://api.binance.com", initialUrl);
