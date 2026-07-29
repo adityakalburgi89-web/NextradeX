@@ -91,37 +91,123 @@ export default function HomePage({ isLoggedIn }) {
   return (
     <div className="w-full bg-[#ebf5ff] text-[#0a0d12] overflow-x-hidden">
 
-      {/* 1. HERO SECTION — Centered single-column stack, 148px display type, 3D artwork, dark CTA */}
-      <section className="min-h-[85vh] pt-16 pb-20 flex flex-col items-center justify-center text-center px-6 max-w-[1200px] mx-auto">
+      {/* 1. HERO SECTION — Neumorphic Daylight Concept (Redesigned per reference images) */}
+      <section className="min-h-[90vh] pt-12 pb-24 flex flex-col items-center justify-center text-center px-4 sm:px-6 max-w-[1280px] mx-auto relative overflow-hidden">
         
         {/* Category Pill Tag */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#cce7ff] text-[#0069e0] font-['Geist'] text-xs font-medium tracking-tight mb-8">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#cce7ff] text-[#0069e0] font-['Geist'] text-xs font-semibold tracking-tight mb-6 shadow-sm">
           <Sparkles size={14} /> Next-Gen Derivatives Platform — NexTradeX 1.0
         </div>
 
-        {/* Display Headline — Aeonik weight 500 up to 148px, tracking tight -2.96px */}
-        <h1 className="font-['Inter'] font-bold text-[52px] sm:text-[90px] lg:text-[120px] xl:text-[136px] leading-[1.03] tracking-[-0.025em] text-[#0a0d12] max-w-[1100px] mx-auto select-none">
+        {/* Display Headline */}
+        <h1 className="font-['Inter'] font-bold text-[48px] sm:text-[80px] lg:text-[110px] xl:text-[128px] leading-[1.02] tracking-[-0.03em] text-[#0a0d12] max-w-[1100px] mx-auto select-none">
           NexTrade<span className="text-[#0069e0]">X</span>
         </h1>
 
-        <p className="font-['Geist'] text-lg md:text-xl text-[#535862] max-w-2xl mx-auto mt-6 mb-10 leading-snug">
+        <p className="font-['Geist'] text-base sm:text-xl text-[#535862] max-w-2xl mx-auto mt-4 mb-10 leading-relaxed">
           An ultra-responsive daylight trading platform featuring simulated spot, perpetual futures, options desk, and real-time execution telemetry.
         </p>
 
-        {/* 3D Rendered Hero Artwork in 3px Iris Polaroid Frame */}
-        <div className="my-8 polaroid-frame p-6 sm:p-10 bg-[#ebf5ff] shadow-genie-lg max-w-xl w-full flex items-center justify-center">
-          <Illustration3D type="hero-cloud" size={180} />
+        {/* --- NEUMORPHIC HERO GRAPHIC & FLOATING CARDS CONTAINER --- */}
+        <div className="relative my-6 w-full max-w-[700px] h-[360px] sm:h-[420px] flex items-center justify-center select-none">
+          
+          {/* Background Concentric Neumorphic Rings */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-[300px] sm:w-[540px] h-[300px] sm:h-[540px] rounded-full border border-white/60 shadow-[inset_0_0_40px_rgba(166,180,200,0.18)]" />
+            <div className="absolute w-[220px] sm:w-[400px] h-[220px] sm:h-[400px] rounded-full border border-white/50 shadow-[inset_0_0_30px_rgba(166,180,200,0.15)]" />
+            <div className="absolute w-[140px] sm:w-[260px] h-[140px] sm:h-[260px] rounded-full border border-white/40 shadow-[inset_0_0_20px_rgba(166,180,200,0.12)]" />
+            <div className="absolute w-[80px] sm:w-[130px] h-[80px] sm:h-[130px] rounded-full border border-white/30" />
+          </div>
+
+          {/* Center Floating Bitcoin Neumorphic Target */}
+          <div className="absolute z-10 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#e8f0fe] shadow-neumorphic-btn flex items-center justify-center border border-white/80 animate-pulse">
+            <img src={btcIcon} alt="BTC" className="w-7 h-7 sm:w-9 sm:h-9" />
+          </div>
+
+          {/* Main Hero Pill Artwork Container (Image 2 Concept) */}
+          <div className="relative z-0 w-[280px] sm:w-[480px] h-[150px] sm:h-[210px] rounded-[48px] border-[2.5px] border-[#3b82f6] bg-[#eef6ff]/95 shadow-[0_16px_40px_rgba(59,130,246,0.18)] flex items-center justify-center p-4 backdrop-blur-md">
+            <Illustration3D type="hero-cloud" size={160} />
+          </div>
+
+          {/* Floating Card 1 (Top-Left): Live BTC Price & Sparkline (Image 1 Concept) */}
+          <div className="absolute -top-4 -left-2 sm:top-2 sm:left-2 z-20 bg-[#eaf1fb] p-4 sm:p-5 rounded-[28px] shadow-neumorphic border border-white/70 w-[230px] sm:w-[270px] text-left transition-all duration-300 hover:scale-105">
+            {/* Header: BTC / USDT */}
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-9 h-9 rounded-full bg-[#f7931a] p-1.5 shadow-sm flex items-center justify-center">
+                <img src={btcIcon} alt="BTC" className="w-full h-full" />
+              </div>
+              <div>
+                <div className="font-['Inter'] font-bold text-sm sm:text-base text-[#1e293b] leading-tight">BTC / USDT</div>
+                <div className="text-xs text-[#64748b] font-medium">Bitcoin</div>
+              </div>
+            </div>
+
+            {/* Live Price Inset Well */}
+            <div className="bg-[#deebf8] p-3 rounded-2xl shadow-neumorphic-inset mb-3 flex items-center justify-between">
+              <div>
+                <div className="text-[11px] text-[#64748b] font-medium uppercase tracking-wide">Live Price</div>
+                <div className="font-['Inter'] font-bold text-base sm:text-lg text-[#4f46e5] tracking-tight">
+                  ${typeof btcPrice === 'number' ? btcPrice.toLocaleString() : btcPrice}
+                </div>
+              </div>
+              <span className="bg-[#dcfce7] text-[#15803d] text-xs font-bold px-2 py-0.5 rounded-full shadow-xs">
+                +3.45%
+              </span>
+            </div>
+
+            {/* Purple Sparkline Inset Well */}
+            <div className="bg-[#deebf8] p-2.5 rounded-2xl shadow-neumorphic-inset h-12 flex items-center justify-center overflow-hidden">
+              <svg className="w-full h-full" viewBox="0 0 200 40" fill="none">
+                <path
+                  d="M0 30 Q 30 15, 60 28 T 120 10 T 170 32 T 200 8"
+                  stroke="#6366f1"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+              </svg>
+            </div>
+          </div>
+
+          {/* Floating Card 2 (Bottom-Right): Matching Engine (Image 1 Concept) */}
+          <div className="absolute -bottom-4 -right-2 sm:bottom-2 sm:right-2 z-20 bg-[#eaf1fb] p-4 sm:p-5 rounded-[28px] shadow-neumorphic border border-white/70 w-[230px] sm:w-[270px] text-left transition-all duration-300 hover:scale-105">
+            <div className="text-[11px] font-bold text-[#64748b] tracking-wider uppercase mb-3">
+              MATCHING ENGINE
+            </div>
+
+            {/* BID Row */}
+            <div className="flex items-center justify-between py-1.5 border-b border-black/5 text-xs sm:text-sm">
+              <span className="font-bold text-[#10b981] bg-[#d1fae5] px-2 py-0.5 rounded-md text-[11px]">BID</span>
+              <span className="font-['Inter'] font-bold text-[#1e293b]">96,482.00</span>
+              <span className="text-[#64748b] font-medium text-xs">0.450 BTC</span>
+            </div>
+
+            {/* ASK Row */}
+            <div className="flex items-center justify-between pt-2 text-xs sm:text-sm">
+              <span className="font-bold text-[#ef4444] bg-[#fee2e2] px-2 py-0.5 rounded-md text-[11px]">ASK</span>
+              <span className="font-['Inter'] font-bold text-[#1e293b]">96,483.50</span>
+              <span className="text-[#64748b] font-medium text-xs">1.124 BTC</span>
+            </div>
+          </div>
+
         </div>
 
-        {/* Primary CTA Button */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
-          <Link to={isLoggedIn ? "/dashboard" : "/auth"} className="btn-primary-nextrade text-lg px-9 py-4">
-            {isLoggedIn ? "Open Dashboard" : "Start Paper Trading"} <ArrowRight size={20} />
+        {/* Primary CTA Buttons (Image 2 Concept) */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center gap-5">
+          <Link
+            to={isLoggedIn ? "/dashboard" : "/auth"}
+            className="rounded-full bg-[#0f172a] hover:bg-[#020617] text-white px-8 py-3.5 font-medium text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-2"
+          >
+            {isLoggedIn ? "Open Dashboard" : "Start Paper Trading"} <ArrowRight size={18} />
           </Link>
-          <Link to="/markets" className="ghost-nav-link text-base">
+          <Link
+            to="/markets"
+            className="text-[#0f172a] hover:text-[#2563eb] font-semibold text-base px-5 py-3 transition-colors flex items-center gap-1"
+          >
             Explore Markets →
           </Link>
         </div>
+
       </section>
 
       {/* 2. MARQUEE LOGO STRIP — Continuous horizontal scroll without card wrapper */}

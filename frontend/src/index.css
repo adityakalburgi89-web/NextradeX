@@ -316,6 +316,23 @@
     animation-delay: -1.5s;
   }
 
+  /* Neumorphic Daylight Utility Classes */
+  .shadow-neumorphic {
+    box-shadow: 14px 18px 32px rgba(166, 180, 200, 0.45), -14px -18px 32px #ffffff;
+  }
+
+  .shadow-neumorphic-sm {
+    box-shadow: 8px 10px 22px rgba(166, 180, 200, 0.4), -8px -10px 22px #ffffff;
+  }
+
+  .shadow-neumorphic-inset {
+    box-shadow: inset 3px 3px 6px rgba(166, 180, 200, 0.45), inset -3px -3px 6px #ffffff;
+  }
+
+  .shadow-neumorphic-btn {
+    box-shadow: 6px 6px 14px rgba(166, 180, 200, 0.45), -6px -6px 14px #ffffff;
+  }
+
   @keyframes genieFloat {
     0% {
       transform: translateY(0px) rotate(0deg);
