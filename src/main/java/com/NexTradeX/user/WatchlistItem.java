@@ -29,5 +29,6 @@ public class WatchlistItem {
     private String symbol;
 
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime addedAt = LocalDateTime.now();
 }
