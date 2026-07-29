@@ -91,7 +91,8 @@ public class OrderController {
             @PathVariable Long orderId,
             Authentication authentication) {
         try {
-            Order order = orderService.cancelOrder(orderId);
+            Long userId = extractUserIdFromAuth(authentication);
+            Order order = orderService.cancelOrder(orderId, userId);
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Order cancelled", toOrderResponse(order)));
         } catch (Exception e) {
