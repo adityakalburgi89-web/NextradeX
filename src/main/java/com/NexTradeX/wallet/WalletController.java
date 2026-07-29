@@ -1,6 +1,5 @@
 package com.NexTradeX.wallet;
 
-import com.NexTradeX.auth.JwtService;
 import com.NexTradeX.common.ApiResponse;
 import com.NexTradeX.dto.WalletResponse;
 import com.NexTradeX.dto.DepositRequest;
@@ -26,6 +25,7 @@ public class WalletController {
     
     private final IWalletService walletService;
     private final IJwtService jwtService;
+    private final PortfolioResetService portfolioResetService;
     
     @GetMapping
     public ResponseEntity<ApiResponse<List<WalletResponse>>> getUserWallets(
@@ -122,7 +122,7 @@ public class WalletController {
     public ResponseEntity<ApiResponse<Void>> resetWallets(Authentication authentication) {
         try {
             Long userId = extractUserIdFromAuth(authentication);
-            walletService.resetUserWallets(userId);
+            portfolioResetService.reset(userId);
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Wallets successfully reset to default simulated capital", null));
         } catch (Exception e) {
