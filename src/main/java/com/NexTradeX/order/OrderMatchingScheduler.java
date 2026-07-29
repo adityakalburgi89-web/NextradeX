@@ -1,6 +1,6 @@
 package com.NexTradeX.order;
 
-import com.NexTradeX.market.MarketService;
+import com.NexTradeX.market.IMarketService;
 import com.NexTradeX.spot.SpotTradingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ public class OrderMatchingScheduler {
 
     private final OrderRepository orderRepository;
     private final SpotTradingService spotTradingService;
-    private final MarketService marketService;
+    private final IMarketService marketService;
     private final OrderMatchingStrategy orderMatchingStrategy;
 
     @Scheduled(fixedDelay = 5000)
