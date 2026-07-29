@@ -1,12 +1,9 @@
 package com.NexTradeX.order;
 
-import com.NexTradeX.exception.InsufficientBalanceException;
 import com.NexTradeX.exception.InvalidOrderException;
 import com.NexTradeX.exception.OrderNotFoundException;
+import com.NexTradeX.user.IUserService;
 import com.NexTradeX.user.User;
-import com.NexTradeX.user.UserService;
-import com.NexTradeX.wallet.WalletService;
-import com.NexTradeX.wallet.WalletType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,8 +20,7 @@ import java.util.List;
 public class OrderService implements IOrderService {
     
     private final OrderRepository orderRepository;
-    private final UserService userService;
-    private final WalletService walletService;
+    private final IUserService userService;
     
     public Order createOrder(Long userId, String symbol, OrderSide side, 
                             OrderType orderType, BigDecimal quantity, 
@@ -72,17 +68,23 @@ public class OrderService implements IOrderService {
             throw new InvalidOrderException("Cannot fill cancelled or rejected order");
         }
         
-        BigDecimal totalFilled = order.getFilledQuantity().add(filledQuantity);
+        if (filledQuantity == null || filledQuantity.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidOrderException("Filled quantity must be greater than zero");
+        }
+        if (filledPrice == null || filledPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidOrderException("Filled price must be greater than zero");
+        }
+
+        BigDecimal previouslyFilled = order.getFilledQuantity();
+        BigDecimal totalFilled = previouslyFilled.add(filledQuantity);
         
         if (totalFilled.compareTo(order.getQuantity()) > 0) {
             throw new InvalidOrderException("Filled quantity exceeds order quantity");
         }
         
-        order.setFilledQuantity(totalFilled);
-        
-        // Calculate average price
-        BigDecimal totalCost = order.getAveragePrice().multiply(order.getFilledQuantity())
+        BigDecimal totalCost = order.getAveragePrice().multiply(previouslyFilled)
                 .add(filledPrice.multiply(filledQuantity));
+        order.setFilledQuantity(totalFilled);
         order.setAveragePrice(totalCost.divide(totalFilled, 8, java.math.RoundingMode.HALF_UP));
         
         if (totalFilled.compareTo(order.getQuantity()) == 0) {
@@ -97,12 +99,14 @@ public class OrderService implements IOrderService {
         return updatedOrder;
     }
     
-    public Order cancelOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId)
+    public Order cancelOrder(Long orderId, Long userId) {
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Order order = orderRepository.findByIdAndUser(orderId, user)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found"));
         
-        if (order.getStatus() == OrderStatus.FILLED) {
-            throw new InvalidOrderException("Cannot cancel filled order");
+        if (order.getStatus() != OrderStatus.OPEN && order.getStatus() != OrderStatus.PARTIALLY_FILLED) {
+            throw new InvalidOrderException("Only open or partially filled orders can be cancelled");
         }
         
         order.setStatus(OrderStatus.CANCELLED);
