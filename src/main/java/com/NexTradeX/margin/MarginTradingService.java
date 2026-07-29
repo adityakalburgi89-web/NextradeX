@@ -1,15 +1,16 @@
 package com.NexTradeX.margin;
 
 import com.NexTradeX.exception.InvalidOrderException;
-import com.NexTradeX.market.MarketService;
+import com.NexTradeX.market.IMarketService;
 import com.NexTradeX.order.Order;
 import com.NexTradeX.order.OrderRepository;
 import com.NexTradeX.order.OrderSide;
 import com.NexTradeX.order.OrderStatus;
 import com.NexTradeX.order.TradeType;
+import com.NexTradeX.risk.PositionRiskCalculator;
 import com.NexTradeX.user.User;
-import com.NexTradeX.user.UserService;
-import com.NexTradeX.wallet.WalletService;
+import com.NexTradeX.user.IUserService;
+import com.NexTradeX.wallet.IWalletService;
 import com.NexTradeX.wallet.WalletType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,12 +30,11 @@ public class MarginTradingService implements IMarginTradingService {
 
     private final MarginPositionRepository marginPositionRepository;
     private final OrderRepository orderRepository;
-    private final UserService userService;
-    private final WalletService walletService;
-    private final MarketService marketService;
+    private final IUserService userService;
+    private final IWalletService walletService;
+    private final IMarketService marketService;
+    private final PositionRiskCalculator riskCalculator;
 
-    private static final BigDecimal MAINTENANCE_MARGIN_RATIO = new BigDecimal("0.20"); // 20%
-    private static final BigDecimal INITIAL_MARGIN_RATIO = new BigDecimal("0.50"); // 50%
     private static final BigDecimal DAILY_INTEREST_RATE = new BigDecimal("0.0005"); // 0.05% per day
 
     public Order openMarginPosition(Long userId, String symbol, OrderSide side,
@@ -61,6 +61,8 @@ public class MarginTradingService implements IMarginTradingService {
         }
         BigDecimal collateral = totalCost.divide(leverage, 8, RoundingMode.HALF_UP);
         BigDecimal borrowedAmount = totalCost.subtract(collateral);
+        BigDecimal initialMarginRatio = riskCalculator.marginRatio(
+                collateral, BigDecimal.ZERO, BigDecimal.ZERO, borrowedAmount);
 
         // Check wallet balance
         var wallet = walletService.getWallet(userId, WalletType.MARGIN);
@@ -83,7 +85,7 @@ public class MarginTradingService implements IMarginTradingService {
                 .collateral(collateral)
                 .borrowedAmount(borrowedAmount)
                 .interestRate(DAILY_INTEREST_RATE)
-                .marginRatio(INITIAL_MARGIN_RATIO)
+                .marginRatio(initialMarginRatio)
                 .build();
 
         MarginPosition savedPosition = marginPositionRepository.save(position);
@@ -114,25 +116,19 @@ public class MarginTradingService implements IMarginTradingService {
                 .orElseThrow(() -> new RuntimeException("Position not found"));
 
         // Calculate unrealized PnL
-        BigDecimal pnlPerUnit;
-        if ("BUY".equals(position.getSide())) {
-            pnlPerUnit = currentPrice.subtract(position.getEntryPrice());
-        } else {
-            pnlPerUnit = position.getEntryPrice().subtract(currentPrice);
-        }
-
-        BigDecimal unrealizedPnL = pnlPerUnit.multiply(position.getQuantity());
+        BigDecimal unrealizedPnL = riskCalculator.calculatePnl(
+                OrderSide.valueOf(position.getSide()), position.getEntryPrice(), currentPrice, position.getQuantity());
         position.setUnrealizedPnL(unrealizedPnL);
 
         // Update margin ratio
-        BigDecimal equity = position.getCollateral().add(unrealizedPnL).subtract(position.getInterestAccrued());
-        BigDecimal marginRatio = equity.divide(position.getBorrowedAmount(), 4, RoundingMode.HALF_UP);
+        BigDecimal marginRatio = riskCalculator.marginRatio(
+                position.getCollateral(), unrealizedPnL, position.getInterestAccrued(), position.getBorrowedAmount());
         position.setMarginRatio(marginRatio);
 
         marginPositionRepository.save(position);
 
         // Check liquidation
-        if (marginRatio.compareTo(MAINTENANCE_MARGIN_RATIO) < 0) {
+        if (marginRatio.compareTo(PositionRiskCalculator.MARGIN_MAINTENANCE_RATIO) < 0) {
             liquidatePosition(positionId);
         }
     }
@@ -152,15 +148,10 @@ public class MarginTradingService implements IMarginTradingService {
         position.setExitPrice(exitPrice);
 
         // Calculate realized PnL
-        BigDecimal pnlPerUnit;
-        if ("BUY".equals(position.getSide())) {
-            pnlPerUnit = exitPrice.subtract(position.getEntryPrice());
-        } else {
-            pnlPerUnit = position.getEntryPrice().subtract(exitPrice);
-        }
-
-        BigDecimal realizedPnL = pnlPerUnit.multiply(position.getQuantity())
+        BigDecimal realizedPnL = riskCalculator.calculatePnl(
+                OrderSide.valueOf(position.getSide()), position.getEntryPrice(), exitPrice, position.getQuantity())
                 .subtract(position.getInterestAccrued());
+        realizedPnL = riskCalculator.capLossAtCollateral(realizedPnL, position.getCollateral());
         position.setRealizedPnL(realizedPnL);
         position.setStatus("CLOSED");
         position.setClosedAt(LocalDateTime.now());
@@ -178,7 +169,7 @@ public class MarginTradingService implements IMarginTradingService {
         MarginPosition position = marginPositionRepository.findById(positionId)
                 .orElseThrow(() -> new RuntimeException("Position not found"));
 
-        if ("LIQUIDATED".equals(position.getStatus())) {
+        if (!"OPEN".equals(position.getStatus())) {
             return;
         }
 
@@ -186,6 +177,16 @@ public class MarginTradingService implements IMarginTradingService {
         position.setExitPrice(liquidationPrice);
         position.setStatus("LIQUIDATED");
         position.setClosedAt(LocalDateTime.now());
+
+        BigDecimal rawPnl = riskCalculator.calculatePnl(
+                OrderSide.valueOf(position.getSide()), position.getEntryPrice(), liquidationPrice, position.getQuantity())
+                .subtract(position.getInterestAccrued());
+        BigDecimal realizedPnl = riskCalculator.capLossAtCollateral(rawPnl, position.getCollateral());
+        position.setRealizedPnL(realizedPnl);
+
+        var wallet = walletService.getWallet(position.getUser().getId(), WalletType.MARGIN);
+        walletService.unlockFunds(wallet.getId(), position.getCollateral());
+        walletService.updateBalance(wallet.getId(), realizedPnl);
 
         marginPositionRepository.save(position);
         log.warn("Margin position {} liquidated at price {}", positionId, liquidationPrice);

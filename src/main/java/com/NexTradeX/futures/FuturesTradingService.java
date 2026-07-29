@@ -1,15 +1,16 @@
 package com.NexTradeX.futures;
 
 import com.NexTradeX.exception.InvalidOrderException;
-import com.NexTradeX.market.MarketService;
+import com.NexTradeX.market.IMarketService;
 import com.NexTradeX.order.Order;
 import com.NexTradeX.order.OrderRepository;
 import com.NexTradeX.order.OrderSide;
 import com.NexTradeX.order.OrderStatus;
 import com.NexTradeX.order.TradeType;
+import com.NexTradeX.risk.PositionRiskCalculator;
 import com.NexTradeX.user.User;
-import com.NexTradeX.user.UserService;
-import com.NexTradeX.wallet.WalletService;
+import com.NexTradeX.user.IUserService;
+import com.NexTradeX.wallet.IWalletService;
 import com.NexTradeX.wallet.WalletType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,12 +30,10 @@ public class FuturesTradingService implements IFuturesTradingService {
 
     private final FuturesPositionRepository futuresPositionRepository;
     private final OrderRepository orderRepository;
-    private final UserService userService;
-    private final WalletService walletService;
-    private final MarketService marketService;
-
-    private static final BigDecimal MAINTENANCE_MARGIN_RATIO = new BigDecimal("0.05"); // 5%
-    private static final BigDecimal INITIAL_MARGIN_RATIO = new BigDecimal("0.10"); // 10%
+    private final IUserService userService;
+    private final IWalletService walletService;
+    private final IMarketService marketService;
+    private final PositionRiskCalculator riskCalculator;
 
     public Order openFuturesPosition(Long userId, String symbol, OrderSide side,
             BigDecimal quantity, BigDecimal leverage) {
@@ -59,6 +58,8 @@ public class FuturesTradingService implements IFuturesTradingService {
             throw new InvalidOrderException("Total position value exceeds maximum allowed precision");
         }
         BigDecimal collateral = totalCost.divide(leverage, 8, RoundingMode.HALF_UP);
+        BigDecimal initialMarginRatio = riskCalculator.futuresMarginRatio(
+                entryPrice, quantity, collateral, BigDecimal.ZERO);
 
         // Check wallet balance
         var wallet = walletService.getWallet(userId, WalletType.FUTURES);
@@ -81,7 +82,7 @@ public class FuturesTradingService implements IFuturesTradingService {
                 .leverage(leverage)
                 .collateral(collateral)
                 .markPrice(entryPrice)
-                .marginRatio(INITIAL_MARGIN_RATIO)
+                .marginRatio(initialMarginRatio)
                 .build();
 
         FuturesPosition savedPosition = futuresPositionRepository.save(position);
@@ -114,26 +115,19 @@ public class FuturesTradingService implements IFuturesTradingService {
         position.setMarkPrice(markPrice);
 
         // Calculate unrealized PnL
-        BigDecimal pnlPerUnit;
-        if (position.getPositionMode() == PositionMode.LONG) {
-            pnlPerUnit = markPrice.subtract(position.getEntryPrice());
-        } else {
-            pnlPerUnit = position.getEntryPrice().subtract(markPrice);
-        }
-
-        BigDecimal unrealizedPnL = pnlPerUnit.multiply(position.getQuantity());
+        BigDecimal unrealizedPnL = riskCalculator.calculatePnl(
+                position.getPositionMode(), position.getEntryPrice(), markPrice, position.getQuantity());
         position.setUnrealizedPnL(unrealizedPnL);
 
-        // Update margin ratio
-        BigDecimal marginRatio = position.getCollateral()
-                .divide(position.getCollateral().add(unrealizedPnL), 4, RoundingMode.HALF_UP);
+        BigDecimal marginRatio = riskCalculator.futuresMarginRatio(
+                markPrice, position.getQuantity(), position.getCollateral(), unrealizedPnL);
         position.setMarginRatio(marginRatio);
 
         futuresPositionRepository.save(position);
         log.debug("Updated mark price for position {}: {}", positionId, markPrice);
 
         // Check liquidation
-        if (marginRatio.compareTo(MAINTENANCE_MARGIN_RATIO) < 0) {
+        if (marginRatio.compareTo(BigDecimal.ONE) < 0) {
             liquidatePosition(positionId);
         }
     }
@@ -157,14 +151,9 @@ public class FuturesTradingService implements IFuturesTradingService {
         position.setExitPrice(exitPrice);
 
         // Calculate realized PnL
-        BigDecimal pnlPerUnit;
-        if (position.getPositionMode() == PositionMode.LONG) {
-            pnlPerUnit = exitPrice.subtract(position.getEntryPrice());
-        } else {
-            pnlPerUnit = position.getEntryPrice().subtract(exitPrice);
-        }
-
-        BigDecimal realizedPnL = pnlPerUnit.multiply(position.getQuantity());
+        BigDecimal realizedPnL = riskCalculator.calculatePnl(
+                position.getPositionMode(), position.getEntryPrice(), exitPrice, position.getQuantity());
+        realizedPnL = riskCalculator.capLossAtCollateral(realizedPnL, position.getCollateral());
         position.setRealizedPnL(realizedPnL);
         position.setStatus(PositionStatus.CLOSED);
         position.setClosedAt(LocalDateTime.now());
@@ -224,7 +213,7 @@ public class FuturesTradingService implements IFuturesTradingService {
         FuturesPosition position = futuresPositionRepository.findById(positionId)
                 .orElseThrow(() -> new RuntimeException("Position not found"));
 
-        if (position.getStatus() == PositionStatus.LIQUIDATED) {
+        if (position.getStatus() != PositionStatus.OPEN) {
             return;
         }
 
@@ -235,15 +224,14 @@ public class FuturesTradingService implements IFuturesTradingService {
         position.setRemarks("Position liquidated");
 
         // Calculate loss
-        BigDecimal pnlPerUnit;
-        if (position.getPositionMode() == PositionMode.LONG) {
-            pnlPerUnit = liquidationPrice.subtract(position.getEntryPrice());
-        } else {
-            pnlPerUnit = position.getEntryPrice().subtract(liquidationPrice);
-        }
-
-        BigDecimal realizedPnL = pnlPerUnit.multiply(position.getQuantity());
+        BigDecimal rawPnl = riskCalculator.calculatePnl(
+                position.getPositionMode(), position.getEntryPrice(), liquidationPrice, position.getQuantity());
+        BigDecimal realizedPnL = riskCalculator.capLossAtCollateral(rawPnl, position.getCollateral());
         position.setRealizedPnL(realizedPnL);
+
+        var wallet = walletService.getWallet(position.getUser().getId(), WalletType.FUTURES);
+        walletService.unlockFunds(wallet.getId(), position.getCollateral());
+        walletService.updateBalance(wallet.getId(), realizedPnL);
 
         futuresPositionRepository.save(position);
         log.warn("Position {} liquidated at price {}", positionId, liquidationPrice);
