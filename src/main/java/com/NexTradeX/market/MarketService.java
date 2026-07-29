@@ -4,10 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import com.NexTradeX.binance.BinanceService;
+import com.NexTradeX.binance.IBinanceService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -39,7 +37,7 @@ public class MarketService implements IMarketService {
 
     private final CryptoPriceRepository cryptoPriceRepository;
     private final RestTemplate restTemplate;
-    private final BinanceService binanceService;
+    private final IBinanceService binanceService;
     private final TechnicalAnalysisService technicalAnalysisService;
 
     private final Map<String, CryptoPrice> l1Cache = new ConcurrentHashMap<>();
@@ -136,7 +134,8 @@ public class MarketService implements IMarketService {
         } catch (Exception exception) {
             log.warn("Falling back to cached market price for {}: {}", normalizedSymbol, exception.getMessage());
             CryptoPrice fallback = cryptoPriceRepository.findBySymbol(normalizedSymbol)
-                    .orElseGet(() -> createFallbackPrice(normalizedSymbol));
+                    .orElseThrow(() -> new IllegalStateException(
+                            "No market price is available for " + normalizedSymbol, exception));
             l1Cache.put(normalizedSymbol, fallback);
             return fallback;
         }
@@ -209,10 +208,7 @@ public class MarketService implements IMarketService {
                 log.warn("[MarketService] Failed to fetch fresh klines from Binance/Bybit for {}, returning stale cached data", normalizedSymbol);
                 return cached.candles;
             }
-            log.warn("Failed to fetch klines from Binance/Bybit for {}, returning generated fallback mock candles", normalizedSymbol);
-            List<CandlestickDataPoint> fallbackCandles = generateMockCandles(normalizedSymbol, interval, sanitizedLimit);
-            candleCache.put(cacheKey, new CachedCandles(fallbackCandles));
-            return fallbackCandles;
+            throw new IllegalStateException("No candlestick data is available for " + normalizedSymbol);
         }
 
         List<CandlestickDataPoint> points = klines.stream().map(kline -> {
@@ -234,37 +230,31 @@ public class MarketService implements IMarketService {
 
     @Transactional
     public synchronized void syncMarketPrices() {
-        List<CryptoPrice> trackedPrices = cryptoPriceRepository.findAll();
-        if (trackedPrices.isEmpty()) {
-            initializeDefaultPrices();
-            trackedPrices = cryptoPriceRepository.findAll();
-        }
+        cryptoPriceRepository.findAll().stream()
+                .filter(price -> !ALLOWED_SYMBOLS.contains(price.getSymbol()))
+                .forEach(price -> {
+                    cryptoPriceRepository.delete(price);
+                    l1Cache.remove(price.getSymbol());
+                    log.info("Deleted unsupported market price entry from database: {}", price.getSymbol());
+                });
 
-        log.debug("Syncing market prices from Binance for {} symbols", trackedPrices.size());
+        List<String> trackedSymbols = ALLOWED_SYMBOLS.stream().sorted().toList();
+        log.debug("Syncing live market prices for {} symbols", trackedSymbols.size());
 
-        for (CryptoPrice price : trackedPrices) {
-            if (binanceService.isTickerFetchAllowed(price.getSymbol())) {
+        for (String symbol : trackedSymbols) {
+            if (binanceService.isTickerFetchAllowed(symbol)) {
                 try {
-                    Map<String, Object> ticker = binanceService.getTicker24h(price.getSymbol());
+                    Map<String, Object> ticker = binanceService.getTicker24h(symbol);
                     if (ticker != null) {
-                        price.setCurrentPrice(new BigDecimal(ticker.get("lastPrice").toString()));
-                        price.setHighPrice(new BigDecimal(ticker.get("highPrice").toString()));
-                        price.setLowPrice(new BigDecimal(ticker.get("lowPrice").toString()));
-                        price.setOpenPrice(new BigDecimal(ticker.get("openPrice").toString()));
-                        price.setPriceChange24h(new BigDecimal(ticker.get("priceChange").toString()));
-                        price.setPercentChange24h(new BigDecimal(ticker.get("priceChangePercent").toString()));
-                        price.setVolume24h(new BigDecimal(ticker.get("volume").toString()));
-                        price.setUpdatedAt(LocalDateTime.now());
+                        updateOrCreatePriceFromBinance(symbol, ticker);
                     }
                 } catch (Exception e) {
-                    log.warn("Failed to sync price for {}: {}", price.getSymbol(), e.getMessage());
+                    log.warn("Failed to sync price for {}: {}", symbol, e.getMessage());
                 }
             } else {
-                log.debug("[MarketService] Ticker sync for {} skipped (on cooldown)", price.getSymbol());
+                log.debug("[MarketService] Ticker sync for {} skipped (on cooldown)", symbol);
             }
         }
-
-        cryptoPriceRepository.saveAll(trackedPrices);
     }
 
     private String mapToBinanceInterval(String interval) {
@@ -361,44 +351,6 @@ public class MarketService implements IMarketService {
         return saved;
     }
 
-    public synchronized void initializeDefaultPrices() {
-        // Clean up stale or unsupported symbols from the database
-        List<CryptoPrice> allExisting = cryptoPriceRepository.findAll();
-        for (CryptoPrice p : allExisting) {
-            if (!ALLOWED_SYMBOLS.contains(p.getSymbol())) {
-                try {
-                    cryptoPriceRepository.delete(p);
-                    log.info("Deleted unsupported market price entry from database: {}", p.getSymbol());
-                } catch (Exception e) {
-                    log.error("Failed to delete unsupported market price: {}", p.getSymbol(), e);
-                }
-            }
-        }
-
-        Map<String, Double[]> defaults = new HashMap<>();
-        defaults.put("BTCUSDT", new Double[]{43250.50, 44000.00, 42500.00, 43100.00, 1250.50, 2.97, 28000000000.0, 850000000000.0});
-        defaults.put("ETHUSDT", new Double[]{2280.75, 2350.00, 2200.00, 2250.00, 30.75, 1.38, 15000000000.0, 273000000000.0});
-        defaults.put("BNBUSDT", new Double[]{605.40, 630.00, 580.00, 615.00, 3.50, 0.57, 3000000000.0, 94000000000.0});
-        defaults.put("SOLUSDT", new Double[]{145.20, 150.00, 138.50, 142.10, 3.10, 2.18, 2000000000.0, 65000000000.0});
-        defaults.put("DOTUSDT", new Double[]{6.20, 6.50, 6.00, 6.10, 0.10, 1.61, 350000000.0, 8000000000.0});
-
-        for (Map.Entry<String, Double[]> entry : defaults.entrySet()) {
-            String symbol = entry.getKey();
-            if (!cryptoPriceRepository.existsBySymbol(symbol)) {
-                Double[] v = entry.getValue();
-                updateOrCreatePrice(symbol,
-                        BigDecimal.valueOf(v[0]),
-                        BigDecimal.valueOf(v[1]),
-                        BigDecimal.valueOf(v[2]),
-                        BigDecimal.valueOf(v[3]),
-                        BigDecimal.valueOf(v[4]),
-                        BigDecimal.valueOf(v[5]),
-                        BigDecimal.valueOf(v[6]),
-                        BigDecimal.valueOf(v[7]));
-            }
-        }
-    }
-
     public String fetchCoinMarketCapPrice(String symbol) {
         String url = COINMARKETCAP_API + "?symbol=" + symbol;
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
@@ -427,7 +379,7 @@ public class MarketService implements IMarketService {
             case "BNBUSDT" -> "binancecoin";
             case "SOLUSDT" -> "solana";
             case "DOTUSDT" -> "polkadot";
-            default -> "bitcoin";
+            default -> throw new IllegalArgumentException("CoinGecko does not support symbol " + normalized);
         };
     }
 
@@ -537,25 +489,6 @@ public class MarketService implements IMarketService {
         return cryptoPriceRepository.save(existing);
     }
 
-    private CryptoPrice createFallbackPrice(String symbol) {
-        BigDecimal seeded = switch (symbol) {
-            case "ETHUSDT" -> BigDecimal.valueOf(2280.75);
-            case "BNBUSDT" -> BigDecimal.valueOf(618.50);
-            default -> BigDecimal.valueOf(43250.50);
-        };
-
-        return updateOrCreatePrice(
-                symbol,
-                seeded,
-                seeded.multiply(BigDecimal.valueOf(1.02)),
-                seeded.multiply(BigDecimal.valueOf(0.98)),
-                seeded.multiply(BigDecimal.valueOf(0.99)),
-                seeded.multiply(BigDecimal.valueOf(0.01)),
-                BigDecimal.valueOf(1.10),
-                BigDecimal.valueOf(1_500_000_000L),
-                BigDecimal.valueOf(90_000_000_000L));
-    }
-
     private String extractProviderSymbol(String symbol) {
         String normalized = normalizeSymbol(symbol);
         for (String suffix : List.of("USDT", "USDC", "BUSD")) {
@@ -567,108 +500,21 @@ public class MarketService implements IMarketService {
     }
 
     private String normalizeSymbol(String symbol) {
-        if (symbol == null) {
-            return "BTCUSDT";
+        if (symbol == null || symbol.isBlank()) {
+            throw new IllegalArgumentException("Symbol is required");
         }
         String clean = symbol.trim().toUpperCase();
-        if (clean.equals("BTC") || clean.equals("BTCUSDT")) return "BTCUSDT";
-        if (clean.equals("ETH") || clean.equals("ETHUSDT")) return "ETHUSDT";
-        if (clean.equals("BNB") || clean.equals("BNBUSDT")) return "BNBUSDT";
-        if (clean.equals("SOL") || clean.equals("SOLUSDT")) return "SOLUSDT";
-        if (clean.equals("DOT") || clean.equals("DOTUSDT")) return "DOTUSDT";
-        return "BTCUSDT";
-    }
-
-    private long getIntervalSeconds(String interval) {
-        if (interval == null || interval.isBlank()) return 3600;
-        return switch (interval.trim().toLowerCase()) {
-            case "1m" -> 60;
-            case "5m" -> 300;
-            case "15m" -> 900;
-            case "30m" -> 1800;
-            case "1h", "60m" -> 3600;
-            case "4h" -> 14400;
-            case "1d" -> 86400;
-            case "1w" -> 604800;
-            default -> 3600;
-        };
-    }
-
-    public List<CandlestickDataPoint> generateMockCandles(String symbol, String interval, int limit) {
-        String normalizedSymbol = normalizeSymbol(symbol);
-        BigDecimal currentPrice;
-        try {
-            Optional<CryptoPrice> cachedOpt = cryptoPriceRepository.findBySymbol(normalizedSymbol);
-            currentPrice = cachedOpt.map(CryptoPrice::getCurrentPrice).orElseGet(() -> {
-                return switch (normalizedSymbol) {
-                    case "ETHUSDT" -> BigDecimal.valueOf(2280.75);
-                    case "BNBUSDT" -> BigDecimal.valueOf(618.50);
-                    case "SOLUSDT" -> BigDecimal.valueOf(145.20);
-                    case "DOTUSDT" -> BigDecimal.valueOf(6.20);
-                    default -> BigDecimal.valueOf(43250.50);
-                };
-            });
-        } catch (Exception e) {
-            currentPrice = BigDecimal.valueOf(43250.50);
+        if (!clean.endsWith("USDT") && !clean.endsWith("USDC") && !clean.endsWith("BUSD")
+                && clean.matches("[A-Z0-9]{2,12}")) {
+            clean = clean + "USDT";
         }
-
-        long intervalSec = getIntervalSeconds(interval);
-        long nowSec = System.currentTimeMillis() / 1000;
-        
-        List<CandlestickDataPoint> points = new java.util.ArrayList<>();
-        BigDecimal price = currentPrice;
-        
-        for (int i = limit - 1; i >= 0; i--) {
-            long time = nowSec - (i * intervalSec);
-            
-            // Random walk fluctuation: -1.5% to +1.5%
-            double changePercent = ThreadLocalRandom.current().nextDouble(-0.015, 0.015);
-            BigDecimal open = price;
-            BigDecimal close = price.multiply(BigDecimal.valueOf(1.0 + changePercent)).setScale(4, RoundingMode.HALF_UP);
-            BigDecimal high = open.max(close).multiply(BigDecimal.valueOf(1.0 + ThreadLocalRandom.current().nextDouble(0.0, 0.01))).setScale(4, RoundingMode.HALF_UP);
-            BigDecimal low = open.min(close).multiply(BigDecimal.valueOf(1.0 - ThreadLocalRandom.current().nextDouble(0.0, 0.01))).setScale(4, RoundingMode.HALF_UP);
-            
-            BigDecimal volume = BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(100.0, 5000.0)).setScale(2, RoundingMode.HALF_UP);
-            if (normalizedSymbol.contains("BTC") || normalizedSymbol.contains("ETH")) {
-                volume = volume.divide(BigDecimal.valueOf(10), 2, RoundingMode.HALF_UP);
-            }
-            
-            points.add(CandlestickDataPoint.builder()
-                    .time(time)
-                    .open(open)
-                    .high(high)
-                    .low(low)
-                    .close(close)
-                    .volume(volume)
-                    .build());
-            
-            // Move price backward
-            price = close;
+        if (!clean.matches("[A-Z0-9]{2,15}(USDT|USDC|BUSD)")) {
+            throw new IllegalArgumentException("Unsupported market symbol: " + symbol);
         }
-        
-        return points;
-    }
-
-    private int resolveIntervalMinutes(String interval) {
-        if (interval == null || interval.isBlank()) {
-            return 60;
-        }
-
-        return switch (interval.trim().toLowerCase()) {
-            case "5m" -> 5;
-            case "15m" -> 15;
-            case "30m" -> 30;
-            case "4h" -> 240;
-            case "1d" -> 1440;
-            default -> 60;
-        };
+        return clean;
     }
 
     private BigDecimal safe(BigDecimal value, BigDecimal fallback) {
         return value == null ? fallback : value;
-    }
-
-    private double randomRange(double min, double max) {
-        return ThreadLocalRandom.current().nextDouble(min, max);
     }
 }

@@ -15,8 +15,6 @@ public interface IMarketService {
     void syncMarketPrices();
     CryptoPrice updateOrCreatePrice(String symbol, BigDecimal currentPrice, BigDecimal highPrice, BigDecimal lowPrice, BigDecimal openPrice, BigDecimal priceChange24h, BigDecimal percentChange24h, BigDecimal volume24h, BigDecimal marketCap);
     CryptoPrice updatePrice(String symbol, BigDecimal currentPrice);
-    void initializeDefaultPrices();
-    List<CandlestickDataPoint> generateMockCandles(String symbol, String interval, int limit);
     String fetchCoinMarketCapPrice(String symbol);
     String fetchCoinGeckoPrice(String coinId);
 }
