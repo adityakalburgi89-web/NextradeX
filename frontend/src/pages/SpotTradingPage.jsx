@@ -8,6 +8,7 @@ import {
   fetchOrderHistory,
   cancelOrder,
   fetchWallets,
+  fetchSpotHoldings,
   hasAuthToken,
   fetchAllPrices
 } from "../api";
@@ -80,6 +81,7 @@ export default function SpotTradingPage() {
   const [loadingWallets, setLoadingWallets] = useState(true);
   const [pricesMap, setPricesMap] = useState({});
   const [recentTrades, setRecentTrades] = useState([]);
+  const [spotHoldings, setSpotHoldings] = useState([]);
 
   // Pre-populate recent trades when currentPrice is loaded or symbol changes
   useEffect(() => {
@@ -228,10 +230,21 @@ export default function SpotTradingPage() {
     }
   };
 
+  const loadSpotHoldings = async () => {
+    try {
+      const res = await fetchSpotHoldings();
+      setSpotHoldings(res?.data || []);
+    } catch (err) {
+      console.warn("Could not retrieve spot holdings:", err.message);
+      setSpotHoldings([]);
+    }
+  };
+
   const loadAllUserData = () => {
     loadActiveOrders();
     loadOrderHistory();
     loadWallet();
+    loadSpotHoldings();
   };
 
   useEffect(() => {
@@ -335,56 +348,17 @@ export default function SpotTradingPage() {
     }
   };
 
-  // Calculate spot positions dynamically from order history
+  // Use the server ledger as the authoritative source for spot inventory.
   const spotPositions = useMemo(() => {
-    const allOrdersMap = new Map();
-    activeOrders.forEach(o => {
-      if (o.tradeType === "SPOT") {
-        allOrdersMap.set(o.id, o);
-      }
-    });
-    orderHistory.forEach(o => {
-      if (o.tradeType === "SPOT") {
-        allOrdersMap.set(o.id, o);
-      }
-    });
-
-    const uniqueOrders = Array.from(allOrdersMap.values());
-    uniqueOrders.sort((a, b) => a.id - b.id);
-
-    const posMap = {};
-
-    uniqueOrders.forEach((o) => {
-      const filledQty = Number(o.filledQuantity || 0);
-      const avgPrice = Number(o.averagePrice || o.price || 0);
-      if (filledQty <= 0) return;
-
-      const symbol = o.symbol.toUpperCase();
-      if (!posMap[symbol]) {
-        posMap[symbol] = {
-          symbol,
-          quantity: 0,
-          averageEntryPrice: 0,
-          totalCost: 0,
-        };
-      }
-
-      const pos = posMap[symbol];
-      if (o.side === "BUY") {
-        const newQty = pos.quantity + filledQty;
-        const newCost = pos.totalCost + (filledQty * avgPrice);
-        pos.averageEntryPrice = newQty > 0 ? newCost / newQty : 0;
-        pos.quantity = newQty;
-        pos.totalCost = newCost;
-      } else if (o.side === "SELL") {
-        const newQty = Math.max(0, pos.quantity - filledQty);
-        pos.quantity = newQty;
-        pos.totalCost = newQty * pos.averageEntryPrice;
-      }
-    });
-
-    return Object.values(posMap).filter(pos => pos.quantity > 0.00001);
-  }, [activeOrders, orderHistory]);
+    return spotHoldings
+      .map((holding) => ({
+        symbol: `${holding.asset}USDT`,
+        quantity: Number(holding.quantity || 0),
+        averageEntryPrice: Number(holding.averageEntryPrice || 0),
+        totalCost: Number(holding.quantity || 0) * Number(holding.averageEntryPrice || 0),
+      }))
+      .filter((position) => position.quantity > 0.00001);
+  }, [spotHoldings]);
 
   const handleCloseSpotPosition = (pos) => {
     setForm({

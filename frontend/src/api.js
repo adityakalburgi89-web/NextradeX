@@ -274,6 +274,13 @@ export async function createSpotOrder(payload) {
   return data;
 }
 
+export async function fetchSpotHoldings() {
+  const res = await fetch(`${API_BASE_URL}/spot/holdings`,
+    createFetchOptions("GET", null, authHeaders())
+  );
+  return handleResponse(res);
+}
+
 export async function fetchActiveOrders() {
   console.log("[API] GET /orders/active");
   const res = await fetch(`${API_BASE_URL}/orders/active`,
