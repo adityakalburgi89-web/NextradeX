@@ -132,7 +132,12 @@
   }
 
   /* Headlines strict fixed weight 500 & tight tracking */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-aeonik);
     font-weight: 500 !important;
     color: var(--color-ink);
@@ -144,6 +149,7 @@
 }
 
 @layer components {
+
   /* NexTradeX Primary Filled Dark CTA Button */
   .btn-primary-nextrade,
   .btn-primary-genie {
@@ -280,6 +286,7 @@
 }
 
 @layer utilities {
+
   /* Continuous Marquee Animation */
   .animate-marquee {
     display: flex;
@@ -301,6 +308,7 @@
     0% {
       transform: translateX(0%);
     }
+
     100% {
       transform: translateX(-50%);
     }
@@ -337,6 +345,7 @@
     0% {
       transform: translateY(0px) rotate(0deg);
     }
+
     100% {
       transform: translateY(-14px) rotate(3deg);
     }
