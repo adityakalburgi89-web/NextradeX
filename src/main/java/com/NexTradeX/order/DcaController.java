@@ -75,7 +75,10 @@ public class DcaController {
             @PathVariable Long scheduleId,
             Authentication authentication) {
         try {
-            DcaSchedule schedule = dcaScheduleRepository.findById(scheduleId)
+            Long userId = jwtService.extractUserIdFromAuthentication(authentication);
+            User user = userService.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            DcaSchedule schedule = dcaScheduleRepository.findByIdAndUser(scheduleId, user)
                     .orElseThrow(() -> new RuntimeException("DCA schedule not found"));
 
             schedule.setActive(!schedule.isActive());
