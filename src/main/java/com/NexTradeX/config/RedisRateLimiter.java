@@ -1,3 +1,4 @@
+
 package com.NexTradeX.config;
 
 import java.util.Collections;
@@ -11,7 +12,7 @@ import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RedisRateLimiter {
+public class RedisRateLimiter implements IRateLimiter {
 
     private static final Logger log = LoggerFactory.getLogger(RedisRateLimiter.class);
     private final StringRedisTemplate redisTemplate;
