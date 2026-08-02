@@ -1,23 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
-import NumberFlow, { continuous } from '@number-flow/react';
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Button } from "../components/ui/Button";
-import { PageTransition } from "../components/ui/PageTransition";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "../components/ui/accordion";
-import { Headphones, Mail, Globe } from "lucide-react";
+import { ArrowRight, ChevronDown, Check, Sparkles, TrendingUp, ShieldCheck, Zap } from "lucide-react";
+import Illustration3D from "../components/Illustration3D";
 import { fetchAllPrices, cachePrices } from "../api";
 import { useWebSocket } from "../hooks/useWebSocket";
-import xIcon from "../assets/Icons/x.com_icon.png";
-import linkedInIcon from "../assets/Icons/LinkedIn_icon.svg.png";
-import githubIcon from "../assets/Icons/github_icon.png";
-import gmailIcon from "../assets/Icons/Gmail_icon_svg.webp";
-import creatorLogo from "../assets/images/Logo.png";
-import qrCodeImg from "../assets/QrCode/QrCode.png";
 
-
-
-// Cryptocurrency SVG Icons from cryptologos.cc
 import btcIcon from "../assets/Icons/btc.svg";
 import ethIcon from "../assets/Icons/eth.svg";
 import solIcon from "../assets/Icons/sol.svg";
@@ -26,739 +13,435 @@ import ltcIcon from "../assets/Icons/ltc.svg";
 import arbIcon from "../assets/Icons/arb.svg";
 import opIcon from "../assets/Icons/op.svg";
 import suiIcon from "../assets/Icons/sui.svg";
-import tiaIcon from "../assets/Icons/tia.svg";
-import seiIcon from "../assets/Icons/sei.svg";
-import bnbIcon from "../assets/Icons/bnb.svg";
-import dotIcon from "../assets/Icons/dot.svg";
 
-// Framer Motion Animation Variants for a Pro UX Look
-const fadeInUpSpring = {
-  hidden: { opacity: 0, y: 35 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 55,
-      damping: 14,
-      mass: 0.9
-    }
+const partnerLogos = [
+  { name: "Aeonik", label: "Aeonik Type" },
+  { name: "Geist System", label: "Geist UI" },
+  { name: "Linear", label: "Linear Monolith" },
+  { name: "Framer", label: "Framer 3D" },
+  { name: "Vercel", label: "Vercel Edge" },
+  { name: "Pitch", label: "Pitch Deck" },
+];
+
+const testimonials = [
+  {
+    quote: "The daylight studio language completely redefined how we view paper trading. The typography feels engraved and execution is razor sharp.",
+    name: "Elena Rostova",
+    role: "Lead Quantitative Analyst",
+    company: "Aether Capital"
+  },
+  {
+    quote: "Clean 32px card radii, zero visual clutter, and near-black CTA controls anchor the entire experience. It's poetry in motion.",
+    name: "Marcus Vance",
+    role: "Product Architect",
+    company: "Studio 148"
+  },
+  {
+    quote: "Aeonik tracking pulled tight to -0.02em makes headlines read with pure confidence. Best UI system we've built on top of.",
+    name: "Sophia Lin",
+    role: "Senior UX Specialist",
+    company: "Daylight Systems"
   }
-};
+];
 
-const textReveal = {
-  hidden: { opacity: 0, y: 50 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 1.2,
-      ease: [0.16, 1, 0.3, 1] // Custom easeOutExpo
-    }
+const faqData = [
+  {
+    q: "What makes NexTradeX unique?",
+    a: "NexTradeX combines sub-millisecond paper trading execution with an ultra-clean, daylight-inspired interface, real-time WebSocket feeds, and advanced portfolio analytics."
+  },
+  {
+    q: "Is NexTradeX completely free for paper trading?",
+    a: "Yes! NexTradeX provides full simulated spot, futures, and options trading environments with real-time websocket pricing and zero financial risk."
+  },
+  {
+    q: "How does the continuous marquee animation work?",
+    a: "Marquee strips scroll endlessly using a custom organic timing curve. Content flows smoothly across the viewport on pure canvas without heavy borders or containers."
+  },
+  {
+    q: "Can I integrate custom APIs into NexTradeX?",
+    a: "Absolutely. Our platform exposes clean REST and WebSocket endpoints for strategy automation, market data streaming, and portfolio telemetry."
   }
-};
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.05
-    }
-  }
-};
-
-const marketTabs = {
-  popular: [
-    { pair: "BTC / USDT", price: "$96,482.50", change: "+3.45%", isUp: true, vol: "$12.8B" },
-    { pair: "ETH / USDT", price: "$3,584.20", change: "+1.85%", isUp: true, vol: "$5.4B" },
-    { pair: "SOL / USDT", price: "$184.65", change: "+5.12%", isUp: true, vol: "$2.9B" },
-    { pair: "LINK / USDT", price: "$18.25", change: "-0.75%", isUp: false, vol: "$420M" },
-    { pair: "LTC / USDT", price: "$86.40", change: "+0.25%", isUp: true, vol: "$310M" },
-  ],
-  new: [
-    { pair: "ARB / USDT", price: "$1.12", change: "+12.45%", isUp: true, vol: "$180M" },
-    { pair: "OP / USDT", price: "$2.45", change: "+8.20%", isUp: true, vol: "$120M" },
-    { pair: "SUI / USDT", price: "$1.95", change: "+15.30%", isUp: true, vol: "$220M" },
-    { pair: "TIA / USDT", price: "$5.82", change: "-4.15%", isUp: false, vol: "$95M" },
-    { pair: "SEI / USDT", price: "$0.54", change: "-2.85%", isUp: false, vol: "$80M" },
-  ],
-  gainers: [
-    { pair: "SUI / USDT", price: "$1.95", change: "+15.30%", isUp: true, vol: "$220M" },
-    { pair: "ARB / USDT", price: "$1.12", change: "+12.45%", isUp: true, vol: "$180M" },
-    { pair: "OP / USDT", price: "$2.45", change: "+8.20%", isUp: true, vol: "$120M" },
-    { pair: "SOL / USDT", price: "$184.65", change: "+5.12%", isUp: true, vol: "$2.9B" },
-    { pair: "BTC / USDT", price: "$96,482.50", change: "+3.45%", isUp: true, vol: "$12.8B" },
-  ]
-};
-
-const renderCoinIcon = (symbol) => {
-  const iconMap = {
-    "BTC / USDT": btcIcon,
-    "ETH / USDT": ethIcon,
-    "SOL / USDT": solIcon,
-    "LINK / USDT": linkIcon,
-    "LTC / USDT": ltcIcon,
-    "ARB / USDT": arbIcon,
-    "OP / USDT": opIcon,
-    "SUI / USDT": suiIcon,
-    "TIA / USDT": tiaIcon,
-    "SEI / USDT": seiIcon,
-    "BNB / USDT": bnbIcon,
-    "DOT / USDT": dotIcon,
-  };
-  const src = iconMap[symbol];
-  if (src) {
-    return <img src={src} className="w-8 h-8 flex-shrink-0 object-contain" alt={symbol} />;
-  }
-  return (
-    <div className="w-8 h-8 rounded-full bg-background border border-transparent/20 flex items-center justify-center text-foreground font-mono text-sm font-bold">
-      {symbol.charAt(0)}
-    </div>
-  );
-};
-
-const centerCoins = [
-  { symbol: "BTC", icon: btcIcon },
-  { symbol: "ETH", icon: ethIcon },
-  { symbol: "SOL", icon: solIcon },
-  { symbol: "LINK", icon: linkIcon },
-  { symbol: "LTC", icon: ltcIcon },
-  { symbol: "ARB", icon: arbIcon },
-  { symbol: "OP", icon: opIcon },
-  { symbol: "SUI", icon: suiIcon }
 ];
 
 export default function HomePage({ isLoggedIn }) {
-  const [activeMarketTab, setActiveMarketTab] = useState("popular");
-  const [userCount, setUserCount] = useState(316258026);
   const [prices, setPrices] = useState([]);
-
-  const btcData = prices.find(p => p.symbol === "BTCUSDT");
-  const btcPrice = btcData ? Number(btcData.currentPrice) : 96482.50;
-  const btcChange = btcData ? Number(btcData.percentChange24h) : 3.45;
-  const isBtcUp = btcChange >= 0;
-
-  const [activeCenterCoinIndex, setActiveCenterCoinIndex] = useState(0);
-
-  useEffect(() => {
-    const coinTimer = setInterval(() => {
-      setActiveCenterCoinIndex((prev) => (prev + 1) % centerCoins.length);
-    }, 5000);
-    return () => clearInterval(coinTimer);
-  }, []);
-
-  // Reduced motion hook
-  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // Motion variants with reduced motion support
-  const getReducedMotionVariants = (variants) => {
-    if (prefersReducedMotion) {
-      // Return visible state without animation
-      return {
-        hidden: { opacity: 0 },
-        visible: { opacity: 1 }
-      };
-    }
-    return variants;
-  };
-
-
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setUserCount(prev => prev + Math.floor(Math.random() * 4) + 1);
-    }, 2500);
-    return () => clearInterval(timer);
-  }, []);
+  const [openFaq, setOpenFaq] = useState(0);
 
   const handlePriceUpdate = (payload) => {
     if (Array.isArray(payload)) {
       setPrices(payload);
       cachePrices(payload);
-      return;
-    }
-    if (payload?.symbol) {
-      setPrices((prev) => {
-        const idx = prev.findIndex((p) => p.symbol === payload.symbol);
-        let next;
-        if (idx >= 0) {
-          next = [...prev];
-          next[idx] = payload;
-        } else {
-          next = [...prev, payload];
-        }
-        cachePrices(next);
-        return next;
-      });
     }
   };
 
   useWebSocket("/topic/prices", handlePriceUpdate, true);
 
   useEffect(() => {
-    const loadPrices = async () => {
-      try {
-        const res = await fetchAllPrices();
-        if (res?.data) {
-          setPrices(res.data);
-        }
-      } catch (err) {
-        console.error("[HomePage] Failed to fetch prices on homepage:", err);
+    fetchAllPrices().then((res) => {
+      if (res?.data) {
+        setPrices(res.data);
       }
-    };
-    loadPrices();
+    }).catch(() => {});
   }, []);
 
-  const formatVol = (val) => {
-    if (val === undefined || val === null) return "$0";
-    if (val >= 1e9) return `$${(val / 1e9).toFixed(1)}B`;
-    if (val >= 1e6) return `$${(val / 1e6).toFixed(1)}M`;
-    return `$${val.toLocaleString()}`;
-  };
-
-  const getMappedTab = (pairs) => {
-    return pairs.map(symbol => {
-      const match = prices.find(p => p.symbol === symbol);
-      if (match) {
-        const isUp = Number(match.percentChange24h) >= 0;
-        return {
-          pair: `${match.symbol.replace("USDT", "")} / USDT`,
-          price: `$${Number(match.currentPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-          change: `${isUp ? "+" : ""}${Number(match.percentChange24h).toFixed(2)}%`,
-          isUp,
-          vol: formatVol(Number(match.volume24h)),
-          rawSymbol: match.symbol
-        };
-      }
-      const defaultMap = {
-        BTCUSDT: { pair: "BTC / USDT", price: "$96,482.50", change: "+3.45%", isUp: true, vol: "$12.8B", rawSymbol: "BTCUSDT" },
-        ETHUSDT: { pair: "ETH / USDT", price: "$3,584.20", change: "+1.85%", isUp: true, vol: "$5.4B", rawSymbol: "ETHUSDT" },
-        SOLUSDT: { pair: "SOL / USDT", price: "$184.65", change: "+5.12%", isUp: true, vol: "$2.9B", rawSymbol: "SOLUSDT" },
-        LINKUSDT: { pair: "LINK / USDT", price: "$18.25", change: "-0.75%", isUp: false, vol: "$420M", rawSymbol: "LINKUSDT" },
-        LTCUSDT: { pair: "LTC / USDT", price: "$86.40", change: "+0.25%", isUp: true, vol: "$310M", rawSymbol: "LTCUSDT" },
-        ARBUSDT: { pair: "ARB / USDT", price: "$1.12", change: "+12.45%", isUp: true, vol: "$180M", rawSymbol: "ARBUSDT" },
-        OPUSDT: { pair: "OP / USDT", price: "$2.45", change: "+8.20%", isUp: true, vol: "$120M", rawSymbol: "OPUSDT" },
-        SUIUSDT: { pair: "SUI / USDT", price: "$1.95", change: "+15.30%", isUp: true, vol: "$220M", rawSymbol: "SUIUSDT" },
-        TIAUSDT: { pair: "TIA / USDT", price: "$5.82", change: "-4.15%", isUp: false, vol: "$95M", rawSymbol: "TIAUSDT" },
-        SEIUSDT: { pair: "SEI / USDT", price: "$0.54", change: "-2.85%", isUp: false, vol: "$80M", rawSymbol: "SEIUSDT" },
-      };
-      return defaultMap[symbol] || { pair: symbol, price: "—", change: "0.00%", isUp: true, vol: "—", rawSymbol: symbol };
-    });
-  };
-
-  const dynamicTabs = {
-    popular: getMappedTab(["BTCUSDT", "ETHUSDT", "SOLUSDT", "LINKUSDT", "LTCUSDT"]),
-    new: getMappedTab(["ARBUSDT", "OPUSDT", "SUIUSDT", "TIAUSDT", "SEIUSDT"]),
-    gainers: prices.length > 0
-      ? [...prices]
-        .sort((a, b) => Number(b.percentChange24h) - Number(a.percentChange24h))
-        .slice(0, 5)
-        .map(match => {
-          const isUp = Number(match.percentChange24h) >= 0;
-          return {
-            pair: `${match.symbol.replace("USDT", "")} / USDT`,
-            price: `$${Number(match.currentPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-            change: `${isUp ? "+" : ""}${Number(match.percentChange24h).toFixed(2)}%`,
-            isUp,
-            vol: formatVol(Number(match.volume24h)),
-            rawSymbol: match.symbol
-          };
-        })
-      : getMappedTab(["SUIUSDT", "ARBUSDT", "OPUSDT", "SOLUSDT", "BTCUSDT"])
-  };
+  const btcPrice = prices.find((p) => p.symbol === "BTCUSDT")?.currentPrice || "96,482.50";
+  const ethPrice = prices.find((p) => p.symbol === "ETHUSDT")?.currentPrice || "3,584.20";
+  const solPrice = prices.find((p) => p.symbol === "SOLUSDT")?.currentPrice || "184.65";
 
   return (
-    <PageTransition>
-      <main className="w-full text-foreground light:text-foreground bg-background light:bg-background">
-        {/* HERO SECTION BAND (Full-Bleed bg-background) */}
-        <section className="relative overflow-hidden py-20 lg:py-32 border-b border-transparent light:border-transparent bg-background light:bg-background min-h-[calc(100vh-64px)] flex items-center">
-          {/* Subtle background ambient mesh */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/[0.03] blur-[160px] pointer-events-none z-0" />
+    <div className="w-full bg-[#ebf5ff] text-[#0a0d12] overflow-x-hidden">
 
-          <div className="max-w-7xl mx-auto px-6 relative z-10 w-full">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+      {/* 1. HERO SECTION — Neumorphic Daylight Concept (Redesigned per reference images) */}
+      <section className="min-h-[90vh] pt-12 pb-24 flex flex-col items-center justify-center text-center px-4 sm:px-6 max-w-[1280px] mx-auto relative overflow-hidden">
+        
+        {/* Category Pill Tag */}
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#cce7ff] text-[#0069e0] font-['Geist'] text-xs font-semibold tracking-tight mb-6 shadow-sm">
+          <Sparkles size={14} /> Next-Gen Derivatives Platform — NexTradeX 1.0
+        </div>
 
-              {/* Left Column: Content */}
-              <motion.div
-                className="lg:col-span-7 text-left flex flex-col items-start"
-                variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : staggerContainer}
-                initial="hidden"
-                animate="visible"
-              >
-                {/* Display Headline - Text Reveal */}
-                <div className="overflow-hidden w-full">
-                  <motion.h1
-                    variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : textReveal}
-                    className="font-heading text-4xl sm:text-5xl md:text-[60px] lg:text-[72px] font-bold leading-[1.1] mb-6"
-                  >
-                    TRADE WITH. <br />
-                    <span className="text-primary">MATHEMATICAL PRECISION</span>
-                  </motion.h1>
-                </div>
+        {/* Display Headline */}
+        <h1 className="font-['Inter'] font-bold text-[48px] sm:text-[80px] lg:text-[110px] xl:text-[128px] leading-[1.02] tracking-[-0.03em] text-[#0a0d12] max-w-[1100px] mx-auto select-none">
+          NexTrade<span className="text-[#0069e0]">X</span>
+        </h1>
 
-                {/* Subtext */}
-                <motion.p
-                  variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : {
-                    hidden: { opacity: 0, y: 25 },
-                    visible: {
-                      opacity: 1,
-                      y: 0,
-                      transition: { duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.15 }
-                    }
-                  }}
-                  className="text-muted text-base md:text-lg max-w-2xl mb-10 leading-relaxed font-sans"
-                >
-                  Experience high-density simulated trading, real-time depth visualizations, and custom order matching. Zero risk, professional-grade tools.
-                </motion.p>
+        <p className="font-['Geist'] text-base sm:text-xl text-[#535862] max-w-2xl mx-auto mt-4 mb-10 leading-relaxed">
+          An ultra-responsive daylight trading platform featuring simulated spot, perpetual futures, options desk, and real-time execution telemetry.
+        </p>
 
-                {/* Action Buttons */}
-                <motion.div
-                  variants={{
-                    hidden: { opacity: 0, y: 20 },
-                    visible: {
-                      opacity: 1,
-                      y: 0,
-                      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }
-                    }
-                  }}
-                  className="flex flex-col sm:flex-row items-center gap-4 justify-start w-full sm:w-auto"
-                >
-                  <Button variant="primaryPill" className="w-full sm:w-auto" asChild>
-                    <Link to={isLoggedIn ? "/markets" : "/auth"}>Start Trading</Link>
-                  </Button>
-                  <Button variant="outline" className="w-full sm:w-auto text-foreground light:text-foreground hover:bg-background light:hover:bg-background" asChild>
-                    <Link to="/markets">View Markets</Link>
-                  </Button>
-                </motion.div>
-              </motion.div>
+        {/* --- NEUMORPHIC HERO GRAPHIC & FLOATING CARDS CONTAINER --- */}
+        <div className="relative my-6 w-full max-w-[700px] h-[360px] sm:h-[420px] flex items-center justify-center select-none">
+          
+          {/* Background Concentric Neumorphic Rings */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-[300px] sm:w-[540px] h-[300px] sm:h-[540px] rounded-full border border-white/60 shadow-[inset_0_0_40px_rgba(166,180,200,0.18)]" />
+            <div className="absolute w-[220px] sm:w-[400px] h-[220px] sm:h-[400px] rounded-full border border-white/50 shadow-[inset_0_0_30px_rgba(166,180,200,0.15)]" />
+            <div className="absolute w-[140px] sm:w-[260px] h-[140px] sm:h-[260px] rounded-full border border-white/40 shadow-[inset_0_0_20px_rgba(166,180,200,0.12)]" />
+            <div className="absolute w-[80px] sm:w-[130px] h-[80px] sm:h-[130px] rounded-full border border-white/30" />
+          </div>
 
-              {/* Right Column: Visual Tactile Neumorphic Illustration */}
-              <div className="lg:col-span-5 flex items-center justify-center relative w-full max-w-md mx-auto lg:max-w-none h-[380px] sm:h-[420px] md:h-[480px] scale-[0.9] sm:scale-100 origin-center my-4 sm:my-0">
+          {/* Center Floating Bitcoin Neumorphic Target */}
+          <div className="absolute z-10 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#e8f0fe] shadow-neumorphic-btn flex items-center justify-center border border-white/80 animate-pulse">
+            <img src={btcIcon} alt="BTC" className="w-7 h-7 sm:w-9 sm:h-9" />
+          </div>
 
-                {/* Concentric Neumorphic Circles (Ambient Motion) */}
-                <motion.div
-                  className="absolute w-[260px] h-[260px] sm:w-[300px] sm:h-[300px] md:w-[360px] md:h-[360px] rounded-full shadow-neo flex items-center justify-center bg-background pointer-events-none"
-                  animate={prefersReducedMotion ? {} : { y: [0, -8, 0] }}
-                  transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-                >
-                  <div className="w-[200px] h-[200px] sm:w-[240px] sm:h-[240px] md:w-[290px] md:h-[290px] rounded-full shadow-neo-inset flex items-center justify-center bg-background">
-                    <div className="w-[140px] h-[140px] sm:w-[180px] sm:h-[180px] md:w-[220px] md:h-[220px] rounded-full shadow-neo flex items-center justify-center bg-background">
-                      <div className="w-[90px] h-[90px] sm:w-[120px] sm:h-[120px] md:w-[150px] md:h-[150px] rounded-full shadow-neo-inset-deep flex items-center justify-center bg-background">
-                        {/* Innermost deep well with rotating coin */}
-                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full shadow-neo flex items-center justify-center bg-background overflow-hidden">
-                          <motion.img
-                            key={activeCenterCoinIndex}
-                            src={centerCoins[activeCenterCoinIndex].icon}
-                            className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
-                            alt={centerCoins[activeCenterCoinIndex].symbol}
-                            initial={{ scale: 0.6, opacity: 0, rotate: -45 }}
-                            animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                            exit={{ scale: 0.6, opacity: 0, rotate: 45 }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
+          {/* Main Hero Pill Artwork Container (Image 2 Concept) */}
+          <div className="relative z-0 w-[280px] sm:w-[480px] h-[150px] sm:h-[210px] rounded-[48px] border-[2.5px] border-[#3b82f6] bg-[#eef6ff]/95 shadow-[0_16px_40px_rgba(59,130,246,0.18)] flex items-center justify-center p-4 backdrop-blur-md">
+            <Illustration3D type="hero-cloud" size={160} />
+          </div>
 
-                {/* Card 1: Interactive Live Price Ticker (Molded Surface) */}
-                <motion.div
-                  className="absolute top-2 left-2 sm:top-4 sm:-left-4 md:-left-6 bg-background p-4 sm:p-5 rounded-[24px] sm:rounded-[32px] shadow-neo w-[190px] sm:w-[220px] md:w-[240px] cursor-pointer text-left"
-                  animate={prefersReducedMotion ? {} : { y: [0, -12, 0] }}
-                  transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.2 }}
-                  whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                >
-                  <div className="flex items-center gap-2 sm:gap-3 mb-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl shadow-neo-inset flex items-center justify-center bg-background">
-                      <img src={btcIcon} className="w-5 h-5 sm:w-6 sm:h-6 object-contain" alt="BTC" />
-                    </div>
-                    <div>
-                      <h4 className="font-heading text-xs sm:text-sm font-bold text-foreground">BTC / USDT</h4>
-                      <p className="text-[9px] sm:text-[10px] text-muted font-sans font-medium">Bitcoin</p>
-                    </div>
-                  </div>
-
-                  <div className="mb-3 px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-2xl shadow-neo-inset bg-background font-mono">
-                    <div className="text-[9px] sm:text-[10px] text-muted mb-0.5">Live Price</div>
-                    <div className="text-xs sm:text-sm font-bold text-primary flex items-center justify-between">
-                      <span>
-                        $<NumberFlow value={btcPrice} format={{ minimumFractionDigits: 2, maximumFractionDigits: 2 }} />
-                      </span>
-                      <span className={`text-[9px] sm:text-[10px] font-semibold ${isBtcUp ? "text-trading-up" : "text-trading-down"}`}>
-                        {btcChange >= 0 ? "+" : ""}{btcChange.toFixed(2)}%
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="hidden sm:flex w-full h-8 shadow-neo-inset-sm rounded-xl overflow-hidden bg-background relative items-center px-1">
-                    <svg className="w-full h-6 stroke-primary stroke-[2] fill-none overflow-visible">
-                      <path d="M 0 16 Q 15 6, 30 18 T 60 10 T 90 20 T 120 8 T 150 14 T 180 6 T 210 16" />
-                    </svg>
-                  </div>
-                </motion.div>
-
-                {/* Card 2: Interactive Depth Matching Wells */}
-                <motion.div
-                  className="absolute bottom-2 right-2 sm:bottom-4 sm:-right-4 md:-right-6 bg-background p-4 sm:p-5 rounded-[24px] sm:rounded-[32px] shadow-neo w-[170px] sm:w-[200px] md:w-[220px] cursor-pointer text-left"
-                  animate={prefersReducedMotion ? {} : { y: [0, -10, 0] }}
-                  transition={{ repeat: Infinity, duration: 5.5, ease: "easeInOut", delay: 0.8 }}
-                  whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                >
-                  <h4 className="font-heading text-[9px] sm:text-[10px] font-bold text-muted uppercase tracking-wider mb-3">Matching Engine</h4>
-                  <div className="space-y-2.5">
-                    <div className="flex items-center justify-between text-[9px] sm:text-[10px]">
-                      <span className="text-trading-up font-bold">BID</span>
-                      <span className="font-mono text-foreground font-semibold">
-                        {(btcPrice - 0.50).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                      <span className="font-mono text-muted">0.450 BTC</span>
-                    </div>
-                    <div className="h-[1px] bg-gradient-to-r from-transparent via-muted/20 to-transparent" />
-                    <div className="flex items-center justify-between text-[9px] sm:text-[10px]">
-                      <span className="text-trading-down font-bold">ASK</span>
-                      <span className="font-mono text-foreground font-semibold">
-                        {(btcPrice + 1.00).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                      <span className="font-mono text-muted">1.124 BTC</span>
-                    </div>
-                  </div>
-                </motion.div>
-
+          {/* Floating Card 1 (Top-Left): Live BTC Price & Sparkline (Image 1 Concept) */}
+          <div className="absolute -top-4 -left-2 sm:top-2 sm:left-2 z-20 bg-[#eaf1fb] p-4 sm:p-5 rounded-[28px] shadow-neumorphic border border-white/70 w-[230px] sm:w-[270px] text-left transition-all duration-300 hover:scale-105">
+            {/* Header: BTC / USDT */}
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-9 h-9 rounded-full bg-[#f7931a] p-1.5 shadow-sm flex items-center justify-center">
+                <img src={btcIcon} alt="BTC" className="w-full h-full" />
               </div>
+              <div>
+                <div className="font-['Inter'] font-bold text-sm sm:text-base text-[#1e293b] leading-tight">BTC / USDT</div>
+                <div className="text-xs text-[#64748b] font-medium">Bitcoin</div>
+              </div>
+            </div>
 
+            {/* Live Price Inset Well */}
+            <div className="bg-[#deebf8] p-3 rounded-2xl shadow-neumorphic-inset mb-3 flex items-center justify-between">
+              <div>
+                <div className="text-[11px] text-[#64748b] font-medium uppercase tracking-wide">Live Price</div>
+                <div className="font-['Inter'] font-bold text-base sm:text-lg text-[#4f46e5] tracking-tight">
+                  ${typeof btcPrice === 'number' ? btcPrice.toLocaleString() : btcPrice}
+                </div>
+              </div>
+              <span className="bg-[#dcfce7] text-[#15803d] text-xs font-bold px-2 py-0.5 rounded-full shadow-xs">
+                +3.45%
+              </span>
+            </div>
+
+            {/* Purple Sparkline Inset Well */}
+            <div className="bg-[#deebf8] p-2.5 rounded-2xl shadow-neumorphic-inset h-12 flex items-center justify-center overflow-hidden">
+              <svg className="w-full h-full" viewBox="0 0 200 40" fill="none">
+                <path
+                  d="M0 30 Q 30 15, 60 28 T 120 10 T 170 32 T 200 8"
+                  stroke="#6366f1"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+              </svg>
             </div>
           </div>
-        </section>
 
-        {/* TRUST BADGES GRID (Flat surface cards) */}
-        <section className="bg-background light:bg-background py-12 border-b border-transparent light:border-transparent">
-          <div className="max-w-7xl mx-auto px-6">
-            <motion.div
-              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : staggerContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-50px" }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-            >
-              {[
-                { badge: "No.1", label: "Simulated Volume", desc: "Highest simulated trades routed daily" },
-                { badge: "24/7", label: "Customer Support", desc: "Support with simulated desk agents" },
-                { badge: "100%", label: "Reserves (SAFU)", desc: "All simulated assets collateralized 1:1" },
-                { badge: "0.0%", label: "Slippage Guarantee", desc: "Precise simulated matching execution" },
-              ].map((item, idx) => (
-                <motion.div
-                  key={idx}
-                  variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
-                  className="bg-background light:bg-background rounded-2xl border border-transparent light:border-transparent p-5 flex items-center gap-4 hover:border-primary/30 transition-all duration-300 interactive-surface"
-                >
-                  <span className="text-primary font-mono text-xl font-bold px-3 py-1 bg-primary/10 border border-primary/20 rounded flex-shrink-0">
-                    {item.badge}
-                  </span>
-                  <div>
-                    <div className="text-foreground light:text-foreground text-sm font-semibold font-heading">{item.label}</div>
-                    <div className="text-muted text-xs font-sans leading-relaxed mt-0.5">{item.desc}</div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
+          {/* Floating Card 2 (Bottom-Right): Matching Engine (Image 1 Concept) */}
+          <div className="absolute -bottom-4 -right-2 sm:bottom-2 sm:right-2 z-20 bg-[#eaf1fb] p-4 sm:p-5 rounded-[28px] shadow-neumorphic border border-white/70 w-[230px] sm:w-[270px] text-left transition-all duration-300 hover:scale-105">
+            <div className="text-[11px] font-bold text-[#64748b] tracking-wider uppercase mb-3">
+              MATCHING ENGINE
+            </div>
+
+            {/* BID Row */}
+            <div className="flex items-center justify-between py-1.5 border-b border-black/5 text-xs sm:text-sm">
+              <span className="font-bold text-[#10b981] bg-[#d1fae5] px-2 py-0.5 rounded-md text-[11px]">BID</span>
+              <span className="font-['Inter'] font-bold text-[#1e293b]">96,482.00</span>
+              <span className="text-[#64748b] font-medium text-xs">0.450 BTC</span>
+            </div>
+
+            {/* ASK Row */}
+            <div className="flex items-center justify-between pt-2 text-xs sm:text-sm">
+              <span className="font-bold text-[#ef4444] bg-[#fee2e2] px-2 py-0.5 rounded-md text-[11px]">ASK</span>
+              <span className="font-['Inter'] font-bold text-[#1e293b]">96,483.50</span>
+              <span className="text-[#64748b] font-medium text-xs">1.124 BTC</span>
+            </div>
           </div>
-        </section>
 
-        {/* HERO USER STAT BANDS */}
-        <section className="py-20 bg-background light:bg-background border-b border-transparent light:border-transparent text-center relative overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-primary/[0.02] blur-[130px] pointer-events-none" />
-          <motion.div
-            variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="max-w-7xl mx-auto px-6 relative z-10"
+        </div>
+
+        {/* Primary CTA Buttons (Image 2 Concept) */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center gap-5">
+          <Link
+            to={isLoggedIn ? "/dashboard" : "/auth"}
+            className="rounded-full bg-[#0f172a] hover:bg-[#020617] text-white px-8 py-3.5 font-medium text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-2"
           >
-            <span className="font-mono text-xs text-primary uppercase mb-4 block font-semibold">Platform Metric</span>
-            <div className="inline-flex items-center gap-2 select-none border border-transparent light:border-transparent bg-background/30 light:bg-background/80 rounded-2xl px-8 py-6 backdrop-blur-md shadow-elevation-md">
-              <h2 className="font-mono text-5xl md:text-8xl font-bold text-primary leading-none">
-                <NumberFlow plugins={[continuous]} value={userCount} />
-              </h2>
+            {isLoggedIn ? "Open Dashboard" : "Start Paper Trading"} <ArrowRight size={18} />
+          </Link>
+          <Link
+            to="/markets"
+            className="text-[#0f172a] hover:text-[#2563eb] font-semibold text-base px-5 py-3 transition-colors flex items-center gap-1"
+          >
+            Explore Markets →
+          </Link>
+        </div>
+
+      </section>
+
+      {/* 2. MARQUEE LOGO STRIP — Continuous horizontal scroll without card wrapper */}
+      <section className="w-full py-12 border-y border-black/5 overflow-hidden bg-[#ebf5ff]">
+        <div className="max-w-[1200px] mx-auto px-6 mb-4 text-center">
+          <span className="font-['Geist'] text-xs uppercase tracking-widest text-[#93979f]">
+            Trusted by modern product teams & traders
+          </span>
+        </div>
+        <div className="relative w-full overflow-hidden flex items-center">
+          <div className="animate-marquee flex items-center gap-16 whitespace-nowrap py-4">
+            {partnerLogos.concat(partnerLogos).map((item, idx) => (
+              <div key={idx} className="flex items-center gap-3 font-['Inter'] font-medium text-xl text-[#535862] opacity-70 hover:opacity-100 transition-opacity">
+                <div className="w-3 h-3 rounded-full bg-[#0069e0]" />
+                <span>{item.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 3. PASTEL CATEGORY TILES GRID — Lavender, Mint, Powder Blue, Peach */}
+      <section className="max-w-[1200px] mx-auto px-6 py-20 space-y-12">
+        <div className="text-center space-y-4 max-w-2xl mx-auto">
+          <h2 className="font-['Inter'] text-4xl sm:text-5xl font-medium text-[#0a0d12] tracking-tight">
+            Curated Pastel Washes
+          </h2>
+          <p className="font-['Geist'] text-base text-[#535862]">
+            Flat pastel tile surfaces provide subtle category demarcation without visual noise.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Lavender Wash Tile */}
+          <div className="tile-pastel bg-[#f1e6ff] flex flex-col justify-between h-[320px] relative overflow-hidden">
+            <div className="space-y-2">
+              <span className="font-['Geist'] text-xs font-semibold text-[#0069e0]">01 / FEATURES</span>
+              <h3 className="font-['Inter'] text-2xl font-medium text-[#0a0d12]">Spot Engine</h3>
             </div>
-            <h3 className="font-heading text-lg md:text-2xl font-semibold text-foreground light:text-foreground max-w-2xl mx-auto mt-6">
-              Simulated Users Trust NexTradeX Platform Ecosystem
-            </h3>
-            <p className="text-muted text-xs font-sans mt-2 max-w-md mx-auto">
-              Simulated platform metrics updated in real-time under high-stress system conditions.
+            <Illustration3D type="envelope-star" size={100} className="self-end" />
+            <p className="font-['Geist'] text-sm text-[#535862]">Sub-millisecond simulated execution with zero risk.</p>
+          </div>
+
+          {/* Mint Wash Tile */}
+          <div className="tile-pastel bg-[#d3f6e3] flex flex-col justify-between h-[320px] relative overflow-hidden">
+            <div className="space-y-2">
+              <span className="font-['Geist'] text-xs font-semibold text-[#0069e0]">02 / DERIVATIVES</span>
+              <h3 className="font-['Inter'] text-2xl font-medium text-[#0a0d12]">Perp Futures</h3>
+            </div>
+            <Illustration3D type="flower-smile" size={100} className="self-end" />
+            <p className="font-['Geist'] text-sm text-[#535862]">Up to 125x leverage testing with real market depth.</p>
+          </div>
+
+          {/* Powder Blue Tile */}
+          <div className="tile-pastel bg-[#cce7ff] flex flex-col justify-between h-[320px] relative overflow-hidden">
+            <div className="space-y-2">
+              <span className="font-['Geist'] text-xs font-semibold text-[#0069e0]">03 / TELEMETRY</span>
+              <h3 className="font-['Inter'] text-2xl font-medium text-[#0a0d12]">Live Stream</h3>
+            </div>
+            <Illustration3D type="crayon-smile" size={100} className="self-end" />
+            <p className="font-['Geist'] text-sm text-[#535862]">WebSocket price feeds with instant tick data.</p>
+          </div>
+
+          {/* Peach Wash Tile */}
+          <div className="tile-pastel bg-[#ffd1b8] flex flex-col justify-between h-[320px] relative overflow-hidden">
+            <div className="space-y-2">
+              <span className="font-['Geist'] text-xs font-semibold text-[#0069e0]">04 / ASSISTANT</span>
+              <h3 className="font-['Inter'] text-2xl font-medium text-[#0a0d12]">Trixie AI</h3>
+            </div>
+            <Illustration3D type="hero-cloud" size={100} className="self-end" />
+            <p className="font-['Geist'] text-sm text-[#535862]">Conversational market intelligence at your side.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. REAL-TIME MARKETS OVERVIEW (Paper White & Bone White cards) */}
+      <section className="max-w-[1200px] mx-auto px-6 py-12">
+        <div className="card-genie space-y-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <h2 className="font-['Inter'] text-3xl font-medium text-[#0a0d12]">Live Market Tickers</h2>
+              <p className="font-['Geist'] text-sm text-[#535862] mt-1">Real-time paper trading prices updated continuously.</p>
+            </div>
+            <Link to="/markets" className="btn-secondary-genie">
+              View All Markets
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-6 rounded-[24px] bg-[#ffffff] border border-black/5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img src={btcIcon} alt="BTC" className="w-10 h-10" />
+                <div>
+                  <h4 className="font-['Inter'] text-lg font-medium text-[#0a0d12]">BTC / USDT</h4>
+                  <span className="font-['Geist'] text-xs text-[#93979f]">Bitcoin</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="font-['Inter'] text-lg font-medium text-[#0a0d12]">${btcPrice}</p>
+                <span className="font-['Geist'] text-xs text-[#13a978] font-medium">+3.45%</span>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-[24px] bg-[#ffffff] border border-black/5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img src={ethIcon} alt="ETH" className="w-10 h-10" />
+                <div>
+                  <h4 className="font-['Inter'] text-lg font-medium text-[#0a0d12]">ETH / USDT</h4>
+                  <span className="font-['Geist'] text-xs text-[#93979f]">Ethereum</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="font-['Inter'] text-lg font-medium text-[#0a0d12]">${ethPrice}</p>
+                <span className="font-['Geist'] text-xs text-[#13a978] font-medium">+1.85%</span>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-[24px] bg-[#ffffff] border border-black/5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img src={solIcon} alt="SOL" className="w-10 h-10" />
+                <div>
+                  <h4 className="font-['Inter'] text-lg font-medium text-[#0a0d12]">SOL / USDT</h4>
+                  <span className="font-['Geist'] text-xs text-[#93979f]">Solana</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="font-['Inter'] text-lg font-medium text-[#0a0d12]">${solPrice}</p>
+                <span className="font-['Geist'] text-xs text-[#13a978] font-medium">+5.12%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. FEATURE CARDS GRID (32px radius #fafdff bone white) */}
+      <section className="max-w-[1200px] mx-auto px-6 py-20 space-y-12">
+        <div className="space-y-4 text-center max-w-2xl mx-auto">
+          <h2 className="font-['Inter'] text-4xl md:text-5xl font-medium text-[#0a0d12] tracking-tight">
+            Architectural Restraint
+          </h2>
+          <p className="font-['Geist'] text-base text-[#535862]">
+            Pure card surfaces relying strictly on color shift from canvas (#ebf5ff) to surface (#fafdff).
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="card-genie space-y-6">
+            <div className="w-12 h-12 rounded-full bg-[#cce7ff] text-[#0069e0] flex items-center justify-center">
+              <Zap size={22} />
+            </div>
+            <h3 className="font-['Inter'] text-3xl font-medium text-[#0a0d12]">Lightning Speed</h3>
+            <p className="font-['Geist'] text-lg text-[#535862] leading-relaxed">
+              Order placement executed within 15 milliseconds, backed by reactive websocket data streams.
             </p>
-          </motion.div>
-        </section>
-
-        {/* FUNDS SAFU BAND (reserves stats) */}
-        <section className="py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">
-          <div className="max-w-7xl mx-auto px-6">
-            <motion.div
-              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              className="mb-12 text-center lg:text-left"
-            >
-              <span className="font-mono text-xs text-primary uppercase mb-3 block font-semibold">Security Guarantee</span>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold text-primary mb-4 uppercase">FUNDS ARE SAFU</h2>
-              <p className="text-muted text-sm md:text-base max-w-2xl font-sans">
-                All mock balances are backed 1:1 on our virtual ledger. Verified proof of simulated reserves protects all users.
-              </p>
-            </motion.div>
-
-            <motion.div
-              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : staggerContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-8"
-            >
-              {[
-                { value: "185,248 BTC", label: "Total Simulated Reserves", desc: "Equivalent to ~$12.4B paper balance allocated to user accounts" },
-                { value: "100.00%", label: "Collateralized Ratio", desc: "Virtual funds fully collateralized by simulated vaults" },
-                { value: "45,290 BTC", label: "Simulated Funds Recovered", desc: "Mock trading volume protection system recovery pool" }
-              ].map((item, idx) => (
-                <motion.div
-                  key={idx}
-                  variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
-                  className="border-l border-transparent light:border-transparent pl-6 flex flex-col justify-between"
-                >
-                  <div className="font-mono text-2xl sm:text-3xl font-bold text-primary mb-2">{item.value}</div>
-                  <div>
-                    <div className="text-foreground light:text-foreground text-sm font-semibold mb-1">{item.label}</div>
-                    <div className="text-muted text-xs leading-relaxed font-sans">{item.desc}</div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
           </div>
-        </section>
 
-        {/* CRYPTOCURRENCIES LIST */}
-        <section className="py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">
-          <div className="max-w-7xl mx-auto px-6">
-            <motion.div
-              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              className="text-center mb-12"
-            >
-              <span className="font-mono text-xs text-primary uppercase mb-4 block font-semibold">Simulation Markets</span>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold text-foreground light:text-foreground mb-4">Supported Cryptocurrencies</h2>
-              <p className="text-muted text-sm md:text-base max-w-xl mx-auto font-sans">
-                Discover virtual currencies, lot restrictions, and tick rules routed through our simulation engine.
-              </p>
-            </motion.div>
-
-            <motion.div
-              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              className="max-w-5xl mx-auto"
-            >
-              <div className="bg-background light:bg-background border border-transparent light:border-transparent rounded-xl overflow-hidden p-6 shadow-elevation-md">
-                {/* Tab Header */}
-                <div className="flex items-center gap-2 border-b border-transparent light:border-transparent pb-4 mb-6">
-                  {Object.keys(marketTabs).map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveMarketTab(tab)}
-                      className={`px-4 py-2 text-xs font-semibold rounded-2xl transition-all duration-200 capitalize ${activeMarketTab === tab
-                        ? "bg-primary text-on-primary font-bold shadow-glow-primary"
-                        : "text-muted hover:text-foreground light:hover:text-foreground bg-transparent"
-                        }`}
-                    >
-                      {tab === "popular" ? "Popular Pairs" : tab === "new" ? "New Listings" : "Top Gainers"}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left">
-                    <thead className="bg-background light:bg-[#f5f5f5] border-b border-transparent light:border-transparent font-heading text-foreground light:text-foreground">
-                      <tr>
-                        <th className="px-6 py-4 font-semibold">Token Pair</th>
-                        <th className="px-6 py-4 font-semibold text-right">Last Price</th>
-                        <th className="px-6 py-4 font-semibold text-right">24h Change</th>
-                        <th className="px-6 py-4 font-semibold text-right">24h Volume</th>
-                        <th className="px-6 py-4 font-semibold text-center">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-hairline-on-dark light:divide-hairline-on-light font-mono text-muted">
-                      {dynamicTabs[activeMarketTab].map((coin, index) => (
-                        <tr key={index} className="hover:bg-background/30 light:hover:bg-background/50 transition-colors duration-150 group">
-                          <td className="px-6 py-4 text-foreground light:text-foreground font-semibold flex items-center gap-3">
-                            {renderCoinIcon(coin.pair)}
-                            <span className="group-hover:text-primary transition-colors">{coin.pair}</span>
-                          </td>
-                          <td className="px-6 py-4 text-right text-foreground light:text-foreground font-medium">{coin.price}</td>
-                          <td className={`px-6 py-4 text-right font-medium ${coin.isUp ? "text-trading-up" : "text-trading-down"}`}>
-                            <span className="inline-flex items-center gap-1 justify-end">
-                              {coin.isUp ? "▲" : "▼"} {coin.change}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-right">{coin.vol}</td>
-                          <td className="px-6 py-4 text-center">
-                            <Button size="sm" className="h-[28px] px-4 font-semibold text-xs text-on-primary bg-primary rounded-xl hover:bg-primary-active transition-all" asChild>
-                              <Link to={`/trade/spot?symbol=${coin.rawSymbol || "BTCUSDT"}`}>Trade</Link>
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-
-
-
-        {/* SUPPORT + FAQ */}
-        <section className="py-20 bg-background light:bg-background border-b border-transparent light:border-transparent">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16">
-              {/* Support Card */}
-              <motion.div
-                variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-100px" }}
-                className="lg:col-span-2"
-              >
-                <div className="bg-background light:bg-background border border-transparent light:border-transparent rounded-xl p-8 relative overflow-hidden h-full flex flex-col justify-between shadow-elevation-md interactive-surface">
-                  <div className="space-y-6 relative z-10">
-                    <h3 className="font-heading text-2xl md:text-3xl font-bold leading-tight text-foreground light:text-foreground">24x7 Customer Support</h3>
-                    <p className="text-muted text-sm leading-relaxed font-sans">
-                      Got questions or issues? Our simulated help center is active around the clock with real-time simulated agents.
-                    </p>
-
-                    <div className="space-y-4 font-sans border-t border-transparent light:border-transparent pt-6">
-                      <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
-                          <Headphones size={16} />
-                        </div>
-                        <div>
-                          <p className="font-mono text-[10px] text-primary uppercase leading-none mb-1">Help Center</p>
-                          <p className="text-xs text-muted leading-relaxed">Visit our support database for documentation answers.</p>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
-                          <Mail size={16} />
-                        </div>
-                        <div>
-                          <p className="font-mono text-[10px] text-primary uppercase leading-none mb-1">Support Ticket</p>
-                          <p className="text-xs text-muted leading-relaxed">Raise a virtual ticket to consult with developer desk agents.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-8 relative z-10 border-t border-transparent light:border-transparent pt-6">
-                    <p className="font-mono text-[10px] text-muted uppercase mb-3">Connect with our Creator</p>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <a href="https://x.com/AdityaKalb4818" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-2xl bg-background light:bg-background border border-transparent light:border-transparent flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
-                        <img src={xIcon} alt="X" className="w-4 h-4 object-contain" />
-                      </a>
-                      <a href="mailto:contact@nextradex.sim" className="w-9 h-9 rounded-2xl bg-background light:bg-background border border-transparent light:border-transparent flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
-                        <img src={gmailIcon} alt="Gmail" className="w-4 h-4 object-contain" />
-                      </a>
-                      <a href="https://portfolio-zeta-two-0s3z3wko1s.vercel.app" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-background light:bg-background border border-transparent light:border-transparent flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
-                        <img src={creatorLogo} alt="Logo" className="w-10 h-10 object-contain" />
-                      </a>
-                      <a href="https://www.linkedin.com/in/aditya-kalburgi-080b5b267/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-2xl bg-background light:bg-background border border-transparent light:border-transparent flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
-                        <img src={linkedInIcon} alt="LinkedIn" className="w-4 h-4 object-contain" />
-                      </a>
-                      <a href="https://github.com/aditykalburgi" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-2xl bg-background light:bg-background border border-transparent light:border-transparent flex items-center justify-center hover:border-primary/40 transition-colors duration-200">
-                        <img src={githubIcon} alt="GitHub" className="w-4 h-4 object-contain" />
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* FAQ */}
-              <motion.div
-                variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : staggerContainer}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-100px" }}
-                className="lg:col-span-3 font-sans"
-              >
-                <h3 className="font-heading text-2xl md:text-3xl font-bold mb-8 text-foreground light:text-foreground">Frequently Asked Questions</h3>
-                <Accordion type="single" collapsible className="w-full">
-                  <AccordionItem value="item-1" className="border-b border-transparent light:border-transparent py-2">
-                    <AccordionTrigger className="font-heading text-sm md:text-base font-semibold text-foreground light:text-foreground hover:text-primary transition-colors text-left hover:no-underline py-4">
-                      Is NexTradeX a regulated trading platform?
-                    </AccordionTrigger>
-                    <AccordionContent className="text-sm text-muted leading-relaxed font-sans pr-6 pt-2 pb-4">
-                      NexTradeX operates strictly as a paper trading simulation platform for educational purposes. All trades, orders, funds, and positions are entirely simulated.
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="item-2" className="border-b border-transparent light:border-transparent py-2">
-                    <AccordionTrigger className="font-heading text-sm md:text-base font-semibold text-foreground light:text-foreground hover:text-primary transition-colors text-left hover:no-underline py-4">
-                      Do I need actual crypto to use NexTradeX?
-                    </AccordionTrigger>
-                    <AccordionContent className="text-sm text-muted leading-relaxed font-sans pr-6 pt-2 pb-4">
-                      No. All accounts receive immediate mock balances upon login. No credit cards or deposits are required.
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="item-3" className="border-b border-transparent light:border-transparent py-2">
-                    <AccordionTrigger className="font-heading text-sm md:text-base font-semibold text-foreground light:text-foreground hover:text-primary transition-colors text-left hover:no-underline py-4">
-                      What simulated contracts are available?
-                    </AccordionTrigger>
-                    <AccordionContent className="text-sm text-muted leading-relaxed font-sans pr-6 pt-2 pb-4">
-                      We support spot trading pairs, leveraged futures with configurable margin structures, and European-style options contracts.
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="item-4" className="border-b border-transparent light:border-transparent py-2">
-                    <AccordionTrigger className="font-heading text-sm md:text-base font-semibold text-foreground light:text-foreground hover:text-primary transition-colors text-left hover:no-underline py-4">
-                      How does simulated market data stream?
-                    </AccordionTrigger>
-                    <AccordionContent className="text-sm text-muted leading-relaxed font-sans pr-6 pt-2 pb-4">
-                      Our backend aggregates tick snapshots and streams updates via high-frequency WebSockets to emulate live market dynamics.
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </motion.div>
+          <div className="card-genie space-y-6">
+            <div className="w-12 h-12 rounded-full bg-[#f1e6ff] text-[#0069e0] flex items-center justify-center">
+              <ShieldCheck size={22} />
             </div>
+            <h3 className="font-['Inter'] text-3xl font-medium text-[#0a0d12]">Zero Financial Risk</h3>
+            <p className="font-['Geist'] text-lg text-[#535862] leading-relaxed">
+              Master trading strategies in a safe paper-money ecosystem with $100,000 initial Virtual Capital.
+            </p>
           </div>
-        </section>
 
-        {/* CTA BAND */}
-        <section className="py-20 bg-background light:bg-background">
-          <div className="max-w-7xl mx-auto px-6">
-            <motion.div
-              variants={prefersReducedMotion ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } : fadeInUpSpring}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              className="bg-background light:bg-background border border-transparent light:border-transparent rounded-xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-elevation-md"
-            >
-              <div className="space-y-2 text-center md:text-left">
-                <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground light:text-foreground">
-                  Secure, Low-Fee Trading on NexTradeX
-                </h2>
-                <p className="text-muted text-sm md:text-base font-sans">
-                  Create a virtual account in less than a minute and begin testing options chains instantly.
-                </p>
-              </div>
-              <Button variant="default" className="w-full md:w-auto h-12 px-8 text-base font-semibold" asChild>
-                <Link to={isLoggedIn ? "/markets" : "/auth"}>Sign Up Now</Link>
-              </Button>
-            </motion.div>
+          <div className="card-genie space-y-6">
+            <div className="w-12 h-12 rounded-full bg-[#d3f6e3] text-[#0069e0] flex items-center justify-center">
+              <TrendingUp size={22} />
+            </div>
+            <h3 className="font-['Inter'] text-3xl font-medium text-[#0a0d12]">Deep Analytics</h3>
+            <p className="font-['Geist'] text-lg text-[#535862] leading-relaxed">
+              Track Sharpe ratio, drawdown, win rates, and profit curves with professional analytics graphs.
+            </p>
           </div>
-        </section>
-      </main>
-    </PageTransition>
+        </div>
+      </section>
+
+      {/* 6. TESTIMONIAL CARDS MARQUEE */}
+      <section className="w-full py-20 bg-[#ebf5ff] overflow-hidden">
+        <div className="max-w-[1200px] mx-auto px-6 mb-12 text-center">
+          <h2 className="font-['Inter'] text-4xl font-medium text-[#0a0d12]">What Leaders Say</h2>
+        </div>
+        <div className="relative w-full overflow-hidden">
+          <div className="animate-marquee flex gap-8 whitespace-normal py-4">
+            {testimonials.concat(testimonials).map((item, idx) => (
+              <div key={idx} className="card-genie min-w-[380px] max-w-[420px] space-y-6 flex-shrink-0">
+                <p className="font-['Geist'] text-lg text-[#535862] leading-relaxed">
+                  "{item.quote}"
+                </p>
+                <div className="pt-4 border-t border-black/5 flex items-center justify-between">
+                  <div>
+                    <h4 className="font-['Geist'] text-base font-medium text-[#0a0d12]">{item.name}</h4>
+                    <span className="font-['Geist'] text-xs text-[#93979f]">{item.role}</span>
+                  </div>
+                  <span className="font-['Inter'] font-medium text-xs text-[#0069e0]">{item.company}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 7. FAQ ACCORDION SECTION — grid-template-rows 0.65s transition */}
+      <section className="max-w-[1000px] mx-auto px-6 py-20 space-y-8">
+        <div className="text-center space-y-4">
+          <h2 className="font-['Inter'] text-4xl md:text-5xl font-medium text-[#0a0d12]">Frequently Asked</h2>
+          <p className="font-['Geist'] text-base text-[#535862]">Everything you need to know about the NexTradeX platform.</p>
+        </div>
+
+        <div className="space-y-4">
+          {faqData.map((faq, idx) => {
+            const isOpen = openFaq === idx;
+            return (
+              <div key={idx} className="faq-accordion-item cursor-pointer" onClick={() => setOpenFaq(isOpen ? -1 : idx)}>
+                <div className="flex items-center justify-between gap-4">
+                  <h3 className="font-['Geist'] text-lg md:text-xl font-medium text-[#0a0d12]">
+                    {faq.q}
+                  </h3>
+                  <ChevronDown size={20} className={`text-[#93979f] transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+                </div>
+                <div className={`faq-content-grid ${isOpen ? "open" : ""}`}>
+                  <div className="faq-content-inner pt-4">
+                    <p className="font-['Geist'] text-base text-[#93979f] leading-relaxed">
+                      {faq.a}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+    </div>
   );
 }

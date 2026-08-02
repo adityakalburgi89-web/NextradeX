@@ -88,6 +88,7 @@ public class RiskManagementService implements IRiskManagementService {
         
         position.setMarginRatio(marginRatio);
         
+        
         // Check SL/TP triggers
         boolean triggered = false;
         String triggerRemark = "";

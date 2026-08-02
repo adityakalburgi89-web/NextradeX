@@ -561,17 +561,17 @@ export default function AuthPage() {
   // Main login / register form
   return (
     <PageTransition>
-      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md overflow-hidden border border-transparent light:border-transparent">
-          <CardHeader className="pb-4">
+      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12 bg-[#ebf5ff]">
+        <Card className="w-full max-w-md bg-[#fafdff] rounded-[32px] p-8 border-0 shadow-none">
+          <CardHeader className="pb-4 px-0 pt-0">
             {/* Login / Register toggle */}
             <div className="relative mb-6">
-              <div className="flex items-center bg-background light:bg-background rounded-xl p-1 border border-transparent light:border-transparent relative overflow-hidden">
+              <div className="flex items-center bg-[#f6f7f8] rounded-full p-1 border border-black/5 relative overflow-hidden">
                 <div
-                  className="absolute top-1 bottom-1 rounded-2xl bg-primary"
+                  className="absolute top-1 bottom-1 rounded-full bg-[#181d27]"
                   style={{
                     ...getToggleStyle(),
-                    transition: 'transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1), width 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)',
+                    transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
                 />
                 <button
