@@ -3,12 +3,12 @@
 
 set -e
 
-echo "🔍 Verifying NexTradeX Backend & Frontend Builds..."
+echo "[INFO] Verifying NexTradeX Backend & Frontend Builds..."
 
-echo "☕ Running Backend Compilation..."
+echo "[INFO] Running Backend Compilation..."
 (cd backend && ./mvnw clean test-compile)
 
-echo "⚛️ Running Frontend Build..."
+echo "[INFO] Running Frontend Build..."
 (cd frontend && npm run build)
 
-echo "🎉 All system verification checks passed successfully!"
+echo "[SUCCESS] All system verification checks passed successfully!"

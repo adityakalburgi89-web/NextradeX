@@ -1,4 +1,4 @@
-# 🚜 Bulldozer MQ (Agentic Edition) — Pure Architectural Theory & Engineering Blueprint
+# Bulldozer MQ (Agentic Edition) — Pure Architectural Theory & Engineering Blueprint
 
 This specification is a dedicated technical masterclass and architectural reference for building **Bulldozer MQ**: a lightweight, high-performance, **Agentic Message Queue** implemented in **Go (Golang)**.
 
@@ -138,14 +138,14 @@ The core engine communicates using an **Intelligent Message Envelope**:
 
 ## 4. Architectural Comparison: Bulldozer MQ vs. Industry Standard MQs
 
-| Architectural Dimension | 🔴 **Redis Pub/Sub** | 🟠 **RabbitMQ** | 🟡 **Apache Kafka** | 🟢 **Bulldozer MQ (Go Engine)** |
+| Architectural Dimension | **Redis Pub/Sub** | **RabbitMQ** | **Apache Kafka** | **Bulldozer MQ (Go Engine)** |
 | :--- | :--- | :--- | :--- | :--- |
 | **Primary Design Target** | Ultra-fast in-memory caching & pub/sub | Enterprise AMQP task queuing & exchanges | High-throughput distributed log streaming | Agentic Intent & Role Task Dispatch |
 | **Runtime & Dependencies** | C engine (Separate service) | Erlang VM (Requires RabbitMQ server) | JVM (Requires Java, ZooKeeper/KRaft cluster) | **Single Go Static Binary (~15MB)** |
 | **Memory Footprint** | Low (~30MB) | Moderate (~150MB - 300MB) | Heavy (~1GB+ JVM Heap) | **Ultra-Low (~15MB RAM)** |
-| **Message Persistence** | ❌ None (Fire-and-forget; lost if offline) | ✅ Durable disk queues | ✅ Immutable append-only commit logs | ✅ Embedded SQLite WAL store |
+| **Message Persistence** | None (Fire-and-forget; lost if offline) | Durable disk queues | Immutable append-only commit logs | Embedded SQLite WAL store |
 | **Routing Paradigm** | Channel string matching | AMQP exchanges & routing keys | Topic partitions & key hashes | **Native `Intent` & `TargetAgentRole` matching** |
-| **Lease & Ack Management** | ❌ None | ✅ Manual / Auto ACK | ✅ Offset commit tracking | ✅ Built-in Lease Timer & Automatic DLQ |
+| **Lease & Ack Management** | None | Manual / Auto ACK | Offset commit tracking | Built-in Lease Timer & Automatic DLQ |
 | **Setup Complexity** | Zero (If Redis already running) | Moderate (Server config & management) | High (Cluster config, topics, partitions) | **Minimal (Deploy single Go container on Render)** |
 
 ### Deep Dive Comparison Takeaways:
@@ -166,7 +166,7 @@ The core engine communicates using an **Intelligent Message Envelope**:
 
 ### 5.1 System Capacity Matrix Across Deployment Tiers
 
-| Scale Metric | 🥉 Free Tier (Render Free: 512MB RAM) | 🥈 Starter Prod (1 Server: 4GB RAM, 2 vCPU) | 🥇 Scaled Enterprise (Multi-Node + Read Replicas) |
+| Scale Metric | Free Tier (Render Free: 512MB RAM) | Starter Prod (1 Server: 4GB RAM, 2 vCPU) | Scaled Enterprise (Multi-Node + Read Replicas) |
 | :--- | :--- | :--- | :--- |
 | **Concurrent Active Users (Online)** | **500 – 1,200 users** | **5,000 – 10,000 users** | **50,000 – 100,000+ users** |
 | **Order Execution Speed** | **150 – 300 orders/sec** | **1,500 – 3,000 orders/sec** | **20,000+ orders/sec** |

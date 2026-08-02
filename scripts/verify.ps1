@@ -1,29 +1,29 @@
 # PowerShell script for full system build verification
 
-Write-Host "🔍 Verifying NexTradeX Backend & Frontend Builds..." -ForegroundColor Cyan
+Write-Host "[INFO] Verifying NexTradeX Backend & Frontend Builds..." -ForegroundColor Cyan
 
 # 1. Verify Backend
-Write-Host "☕ Running Backend Compilation & Test Compile..." -ForegroundColor Yellow
+Write-Host "[INFO] Running Backend Compilation & Test Compile..." -ForegroundColor Yellow
 Push-Location backend
 .\mvnw clean test-compile
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "❌ Backend compilation failed!" -ForegroundColor Red
+    Write-Host "[ERROR] Backend compilation failed!" -ForegroundColor Red
     Pop-Location
     exit 1
 }
 Pop-Location
-Write-Host "✅ Backend Build Passed!" -ForegroundColor Green
+Write-Host "[SUCCESS] Backend Build Passed!" -ForegroundColor Green
 
 # 2. Verify Frontend
-Write-Host "⚛️ Running Frontend Build..." -ForegroundColor Yellow
+Write-Host "[INFO] Running Frontend Build..." -ForegroundColor Yellow
 Push-Location frontend
 npm run build
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "❌ Frontend build failed!" -ForegroundColor Red
+    Write-Host "[ERROR] Frontend build failed!" -ForegroundColor Red
     Pop-Location
     exit 1
 }
 Pop-Location
-Write-Host "✅ Frontend Build Passed!" -ForegroundColor Green
+Write-Host "[SUCCESS] Frontend Build Passed!" -ForegroundColor Green
 
-Write-Host "🎉 All system verification checks passed successfully!" -ForegroundColor Green
+Write-Host "[SUCCESS] All system verification checks passed successfully!" -ForegroundColor Green
