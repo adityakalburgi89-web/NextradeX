@@ -1,9 +1,9 @@
 package com.NexTradeX.options;
 
-import com.NexTradeX.market.MarketService;
+import com.NexTradeX.market.IMarketService;
+import com.NexTradeX.user.IUserService;
 import com.NexTradeX.user.User;
-import com.NexTradeX.user.UserService;
-import com.NexTradeX.wallet.WalletService;
+import com.NexTradeX.wallet.IWalletService;
 import com.NexTradeX.wallet.WalletType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,9 +21,9 @@ import java.util.List;
 public class OptionsService {
     
     private final OptionsContractRepository optionsContractRepository;
-    private final UserService userService;
-    private final WalletService walletService;
-    private final MarketService marketService;
+    private final IUserService userService;
+    private final IWalletService walletService;
+    private final IMarketService marketService;
     
     public OptionsContract buyOption(Long userId, String symbol, OptionType optionType,
                                     BigDecimal strikePrice, BigDecimal premium,
@@ -59,9 +59,15 @@ public class OptionsService {
         return saved;
     }
     
-    public void settleOption(Long contractId) {
-        OptionsContract contract = optionsContractRepository.findById(contractId)
+    public void settleOption(Long contractId, Long userId) {
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        OptionsContract contract = optionsContractRepository.findByIdAndUser(contractId, user)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
+
+        if (contract.getStatus() != OptionStatus.ACTIVE) {
+            throw new IllegalStateException("Contract has already been settled");
+        }
         
         if (LocalDateTime.now().isBefore(contract.getExpiryDate())) {
             throw new RuntimeException("Contract has not expired yet");

@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class BinanceService {
+public class BinanceService implements IBinanceService {
 
     private static final String BINANCE_URL = "https://api.binance.com";
     private static final String MEXC_URL = "https://api.mexc.com";

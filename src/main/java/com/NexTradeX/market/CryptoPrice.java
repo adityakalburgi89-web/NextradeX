@@ -52,6 +52,7 @@ public class CryptoPrice {
     private BigDecimal marketCap;
     
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
     
     @PreUpdate

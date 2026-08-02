@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.NexTradeX.binance.BinanceService;
+import com.NexTradeX.binance.IBinanceService;
 import com.NexTradeX.common.ApiResponse;
 import com.NexTradeX.common.RateLimit;
 
@@ -25,8 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MarketController {
 
-    private final MarketService marketService;
-    private final BinanceService binanceService;
+    private final IMarketService marketService;
+    private final IBinanceService binanceService;
     
     @RateLimit(capacity = 5, refillRate = 2.0)
     @GetMapping("/prices")

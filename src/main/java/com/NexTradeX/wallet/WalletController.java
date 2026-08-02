@@ -1,6 +1,5 @@
 package com.NexTradeX.wallet;
 
-import com.NexTradeX.auth.JwtService;
 import com.NexTradeX.common.ApiResponse;
 import com.NexTradeX.dto.WalletResponse;
 import com.NexTradeX.dto.DepositRequest;
@@ -16,14 +15,17 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.NexTradeX.auth.IJwtService;
+
 @Slf4j
 @RestController
 @RequestMapping("/wallets")
 @RequiredArgsConstructor
 public class WalletController {
     
-    private final WalletService walletService;
-    private final JwtService jwtService;
+    private final IWalletService walletService;
+    private final IJwtService jwtService;
+    private final PortfolioResetService portfolioResetService;
     
     @GetMapping
     public ResponseEntity<ApiResponse<List<WalletResponse>>> getUserWallets(
@@ -120,7 +122,7 @@ public class WalletController {
     public ResponseEntity<ApiResponse<Void>> resetWallets(Authentication authentication) {
         try {
             Long userId = extractUserIdFromAuth(authentication);
-            walletService.resetUserWallets(userId);
+            portfolioResetService.reset(userId);
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Wallets successfully reset to default simulated capital", null));
         } catch (Exception e) {

@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "margin_positions", indexes = {
-        @Index(name = "idx_margin_user_symbol", columnList = "user_id,symbol", unique = true),
+        @Index(name = "idx_margin_user_symbol", columnList = "user_id,symbol"),
         @Index(name = "idx_margin_user_status", columnList = "user_id,status")
 })
 @Data
@@ -24,6 +24,9 @@ public class MarginPosition {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Version
+    private Long version;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

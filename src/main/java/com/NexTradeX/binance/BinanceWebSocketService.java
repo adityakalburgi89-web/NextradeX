@@ -6,6 +6,7 @@ import java.net.URI;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
+@ConditionalOnProperty(prefix = "nextradex.market.websocket", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class BinanceWebSocketService {
 
     private final SimpMessagingTemplate messagingTemplate;

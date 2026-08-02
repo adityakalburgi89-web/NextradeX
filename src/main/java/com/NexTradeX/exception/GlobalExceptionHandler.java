@@ -16,7 +16,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(InsufficientBalanceException.class)
-    public ResponseEntity<ApiResponse<String>> handleInsufficientBalance(
+    ResponseEntity<ApiResponse<String>> handleInsufficientBalance(
             InsufficientBalanceException ex, WebRequest request) {
         log.error("Insufficient balance: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED)
@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(OrderNotFoundException.class)
-    public ResponseEntity<ApiResponse<String>> handleOrderNotFound(
+    ResponseEntity<ApiResponse<String>> handleOrderNotFound(
             OrderNotFoundException ex, WebRequest request) {
         log.error("Order not found: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(InvalidOrderException.class)
-    public ResponseEntity<ApiResponse<String>> handleInvalidOrder(
+    ResponseEntity<ApiResponse<String>> handleInvalidOrder(
             InvalidOrderException ex, WebRequest request) {
         log.error("Invalid order: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(LiquidationException.class)
-    public ResponseEntity<ApiResponse<String>> handleLiquidation(
+    ResponseEntity<ApiResponse<String>> handleLiquidation(
             LiquidationException ex, WebRequest request) {
         log.error("Liquidation occurred: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<String>> handleValidationException(
+    ResponseEntity<ApiResponse<String>> handleValidationException(
             MethodArgumentNotValidException ex, WebRequest request) {
         String message = ex.getBindingResult().getFieldErrors()
                 .stream()
@@ -62,7 +62,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
-    public ResponseEntity<ApiResponse<String>> handleConstraintViolation(
+    ResponseEntity<ApiResponse<String>> handleConstraintViolation(
             jakarta.validation.ConstraintViolationException ex, WebRequest request) {
         String message = ex.getConstraintViolations()
                 .stream()
@@ -76,7 +76,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiResponse<String>> handleAccessDenied(
+    ResponseEntity<ApiResponse<String>> handleAccessDenied(
             AccessDeniedException ex, WebRequest request) {
         log.error("Access denied: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -84,7 +84,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ApiResponse<String>> handleNoResourceFound(
+    ResponseEntity<ApiResponse<String>> handleNoResourceFound(
             NoResourceFoundException ex, WebRequest request) {
         log.error("No resource found: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -92,7 +92,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<String>> handleGlobalException(
+    ResponseEntity<ApiResponse<String>> handleGlobalException(
             Exception ex, WebRequest request) {
         log.error("Unexpected error: ", ex);
         String msg = ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName();

@@ -2,11 +2,12 @@ package com.NexTradeX.spot;
 
 import com.NexTradeX.exception.InsufficientBalanceException;
 import com.NexTradeX.exception.InvalidOrderException;
-import com.NexTradeX.market.MarketService;
+import com.NexTradeX.exception.OrderNotFoundException;
+import com.NexTradeX.market.IMarketService;
 import com.NexTradeX.order.*;
 import com.NexTradeX.user.User;
-import com.NexTradeX.user.UserService;
-import com.NexTradeX.wallet.WalletService;
+import com.NexTradeX.user.IUserService;
+import com.NexTradeX.wallet.IWalletService;
 import com.NexTradeX.wallet.WalletType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,11 +24,12 @@ import java.util.List;
 public class SpotTradingService {
     
     private final SpotTradeRepository spotTradeRepository;
-    private final OrderService orderService;
+    private final IOrderService orderService;
     private final OrderRepository orderRepository;
-    private final UserService userService;
-    private final WalletService walletService;
-    private final MarketService marketService;
+    private final IUserService userService;
+    private final IWalletService walletService;
+    private final IMarketService marketService;
+    private final SpotHoldingService spotHoldingService;
     
     private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.001"); // 0.1%
     
@@ -91,10 +93,14 @@ public class SpotTradingService {
         return savedOrder;
     }
     
-    @Transactional
+    @Transactional(noRollbackFor = InsufficientBalanceException.class)
     public void executeSpotOrder(Long orderId, Long userId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (!order.getUser().getId().equals(userId)) {
+            throw new OrderNotFoundException("Order not found");
+        }
         
         if (order.getStatus() != OrderStatus.OPEN) {
             throw new InvalidOrderException("Order is not open");
@@ -108,6 +114,7 @@ public class SpotTradingService {
         BigDecimal totalCost = executionPrice.multiply(order.getQuantity());
         BigDecimal commission = totalCost.multiply(COMMISSION_RATE);
         BigDecimal totalWithCommission = totalCost.add(commission);
+        String baseAsset = extractBaseAsset(order.getSymbol());
         
         // Get wallet
         var wallet = walletService.getWallet(userId, WalletType.SPOT);
@@ -123,15 +130,17 @@ public class SpotTradingService {
             
             // Deduct from balance
             walletService.updateBalance(wallet.getId(), totalWithCommission.negate());
+            spotHoldingService.recordPurchase(order.getUser(), baseAsset, order.getQuantity(), executionPrice);
         } else { // SELL
-            // Check balance
-            if (!walletService.hasEnoughBalance(wallet.getId(), order.getQuantity())) {
+            try {
+                spotHoldingService.recordSale(order.getUser(), baseAsset, order.getQuantity());
+            } catch (InsufficientBalanceException exception) {
                 order.setStatus(OrderStatus.REJECTED);
-                order.setRemarks("Insufficient quantity");
+                order.setRemarks(exception.getMessage());
                 orderRepository.save(order);
-                throw new InsufficientBalanceException("Insufficient quantity for sale");
+                throw exception;
             }
-            
+
             // Add to balance after commission
             BigDecimal netProceeds = totalCost.subtract(commission);
             walletService.updateBalance(wallet.getId(), netProceeds);
@@ -165,5 +174,15 @@ public class SpotTradingService {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return spotTradeRepository.findAllByUserAndSymbol(user, symbol);
+    }
+
+    private String extractBaseAsset(String symbol) {
+        String normalized = symbol == null ? "" : symbol.trim().toUpperCase();
+        for (String quoteAsset : List.of("USDT", "USDC", "BUSD")) {
+            if (normalized.endsWith(quoteAsset) && normalized.length() > quoteAsset.length()) {
+                return normalized.substring(0, normalized.length() - quoteAsset.length());
+            }
+        }
+        throw new InvalidOrderException("Unsupported spot symbol: " + symbol);
     }
 }

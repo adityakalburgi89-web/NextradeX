@@ -35,11 +35,14 @@ public class DcaSchedule {
     private int frequencySeconds; // e.g. 10s or daily (86400s)
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean active = true;
 
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime nextRunTime = LocalDateTime.now();
 
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }

@@ -35,8 +35,10 @@ public class PriceAlert {
     private String alertCondition; // ABOVE or BELOW
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean active = true;
 
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }
