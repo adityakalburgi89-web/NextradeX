@@ -8,7 +8,7 @@
         <version>3.3.0</version>
         <relativePath/>
     </parent>
-    <groupId>com.NexTradeX</groupId>
+    <groupId>com.nextradex</groupId>
     <artifactId>NexTradeX</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>NexTradeX</name>
