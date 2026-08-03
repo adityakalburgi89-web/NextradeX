@@ -4,20 +4,20 @@ import { cva } from "class-variance-authority"
 import { cn } from "../../lib/utils"
 
 const cardVariants = cva(
-    "rounded-[32px] transition-all duration-300 ease-out relative overflow-hidden animate-fade-in bg-background text-foreground shadow-neo",
+    "rounded-[16px] border border-fog bg-white text-carbon transition-all duration-200 ease-out relative overflow-hidden",
     {
         variants: {
             variant: {
                 default:
-                    "bg-background text-foreground",
+                    "bg-white text-carbon border-fog",
                 glass:
-                    "bg-surface-glass text-foreground backdrop-blur-xl",
+                    "bg-white text-carbon border-fog",
                 elevated:
-                    "bg-background text-foreground shadow-neo-hover",
+                    "bg-white text-carbon border-fog shadow-subtle-3",
                 pricing:
-                    "bg-background text-foreground",
+                    "bg-white text-carbon border-fog rounded-[24px]",
                 pricingActive:
-                    "bg-background z-10 text-foreground ring-2 ring-primary ring-offset-2 ring-offset-background shadow-neo-hover",
+                    "bg-white text-carbon border-lavender ring-2 ring-lavender/30 rounded-[24px] shadow-subtle-3",
             },
         },
         defaultVariants: {
@@ -26,12 +26,12 @@ const cardVariants = cva(
     }
 )
 
-const Card = React.forwardRef(({ className, variant, interactive = true, ...props }, ref) => (
+const Card = React.forwardRef(({ className, variant, interactive = false, ...props }, ref) => (
     <div
         ref={ref}
         className={cn(
             cardVariants({ variant, className }),
-            interactive && "hover:-translate-y-0.5 hover:shadow-neo-hover transition-all duration-300 cursor-pointer"
+            interactive && "hover:-translate-y-0.5 hover:border-ash transition-all duration-200 cursor-pointer"
         )}
         aria-label={props['aria-label']}
         aria-labelledby={props['aria-labelledby']}
@@ -43,7 +43,7 @@ Card.displayName = "Card"
 const CardHeader = React.forwardRef(({ className, ...props }, ref) => (
     <div
         ref={ref}
-        className={cn("flex flex-col space-y-2 p-6 pb-4", className)}
+        className={cn("flex flex-col space-y-1.5 p-6 pb-3", className)}
         {...props}
     />
 ))
@@ -53,7 +53,7 @@ const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
     <h3
         ref={ref}
         className={cn(
-            "font-heading font-semibold leading-none text-xl text-[var(--foreground)]",
+            "font-openrunde font-medium leading-tight text-xl text-carbon tracking-[-0.31px]",
             className
         )}
         {...props}
@@ -64,7 +64,7 @@ CardTitle.displayName = "CardTitle"
 const CardDescription = React.forwardRef(({ className, ...props }, ref) => (
     <p
         ref={ref}
-        className={cn("text-sm text-[var(--muted)] font-body leading-relaxed", className)}
+        className={cn("text-sm text-graphite font-openrunde leading-relaxed tracking-[-0.32px]", className)}
         {...props}
     />
 ))

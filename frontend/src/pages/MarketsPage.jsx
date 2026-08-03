@@ -9,7 +9,6 @@ import { TradingChartPanel } from "../components/ui/TradingChartPanel";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { formatCompactNumber, formatCurrency, formatPercent } from "../lib/utils";
 
-// Offline Cryptocurrency SVG Icons
 import btcIcon from "../assets/Icons/btc.svg";
 import ethIcon from "../assets/Icons/eth.svg";
 import solIcon from "../assets/Icons/sol.svg";
@@ -80,7 +79,6 @@ export default function MarketsPage() {
           nextPrices[existingIndex] = payload;
           return nextPrices;
         }
-
         return [...previousPrices, payload];
       });
 
@@ -197,11 +195,11 @@ export default function MarketsPage() {
 
   return (
     <PageTransition>
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+      <div className="max-w-[1200px] mx-auto px-6 py-8 space-y-8 font-openrunde">
         {/* Trading Chart Panel */}
         <TradingChartPanel
           title="Market Pulse"
-          description="Live charting powered by the NexTradeX backend, tuned for paper trading flows and ready for a production-grade trading shell."
+          description="Live charting powered by the NexTradeX engine, tuned for paper trading telemetry."
           symbol={selectedSymbol}
           interval={interval}
           onIntervalChange={setInterval}
@@ -214,9 +212,9 @@ export default function MarketsPage() {
         {/* Page Header and search */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h1 className="font-heading text-3xl font-bold text-foreground light:text-foreground">Markets</h1>
-            <p className="text-sm leading-relaxed text-muted">
-              Browse supported pairs, inspect simulated depth, and choose the market you want to route into the trading workspace.
+            <h1 className="font-openrunde text-3xl font-medium text-carbon tracking-[-0.61px]">Markets</h1>
+            <p className="text-sm text-graphite tracking-[-0.32px] mt-1">
+              Browse supported pairs, inspect simulated depth, and choose the market you want to route into trading.
             </p>
           </div>
 
@@ -231,134 +229,124 @@ export default function MarketsPage() {
         </div>
 
         {/* High-density price table board */}
-        <Card className="rounded-xl shadow-elevation-md overflow-hidden">
-          <CardHeader className="border-b border-transparent light:border-transparent bg-background/20 py-4 px-6 flex flex-row items-center justify-between">
+        <div className="table-container-visitors">
+          <div className="bg-white border-b border-fog py-4 px-6 flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg font-bold text-foreground light:text-foreground">Price Board</CardTitle>
-              <CardDescription className="mt-1 text-xs text-muted">
-                Streaming symbol prices with instant selection, smoother hover states, and backend-driven pricing.
-              </CardDescription>
+              <h3 className="text-base font-semibold text-carbon tracking-[-0.31px]">Price Board</h3>
+              <p className="mt-0.5 text-xs text-ash tracking-[-0.32px]">
+                Streaming symbol prices with instant selection and real-time websocket updates.
+              </p>
             </div>
-            <div className={`status-badge text-[10px] font-bold ${connected ? "status-badge--active" : "status-badge--neutral"}`}>
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${connected ? "bg-mint-wash text-mint" : "bg-mist text-ash"}`}>
               {connected ? "LIVE" : "PAUSED"}
-            </div>
-          </CardHeader>
+            </span>
+          </div>
 
-          <CardContent className="p-0">
+          <div className="p-0">
             {loading ? (
               <div className="p-6 space-y-4">
                 {[...Array(6)].map((_, idx) => (
-                  <div key={idx} className="flex justify-between items-center py-4 border-b border-transparent last:border-0">
-                    <Skeleton className="h-5 w-24" />
-                    <Skeleton className="h-5 w-20" />
-                    <Skeleton className="h-5 w-16" />
-                    <Skeleton className="h-5 w-24" />
-                    <Skeleton className="h-8 w-16" />
+                  <div key={idx} className="flex justify-between items-center py-3 border-b border-fog">
+                    <Skeleton className="h-4 w-24 rounded-full" />
+                    <Skeleton className="h-4 w-20 rounded-full" />
+                    <Skeleton className="h-4 w-16 rounded-full" />
+                    <Skeleton className="h-4 w-24 rounded-full" />
+                    <Skeleton className="h-6 w-16 rounded-full" />
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-transparent light:border-transparent text-[11px] font-bold text-muted uppercase font-mono bg-background/10 light:bg-background">
-                      <th className="py-4 px-6">Asset Pair</th>
-                      <th className="py-4 px-6 text-right">Last Price</th>
-                      <th className="py-4 px-6 text-right">24H Change</th>
-                      <th className="py-4 px-6 text-right">24H High / Low</th>
-                      <th className="py-4 px-6 text-right">24H Volume</th>
-                      <th className="py-4 px-6 text-center">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-hairline-on-dark light:divide-hairline-on-light">
-                    {(showAllPrices ? filteredPrices : filteredPrices.slice(0, 5)).map((price) => {
-                      const isUp = Number(price.percentChange24h) >= 0;
-                      const isSelected = selectedSymbol === price.symbol;
-                      return (
-                        <tr
-                          key={price.id || price.symbol}
-                          className={`group transition-all hover:bg-background/25 light:hover:bg-background/50 cursor-pointer ${isSelected ? "bg-primary/[0.04] border-l-2 border-l-primary" : ""
-                            }`}
-                          onClick={() => setSelectedSymbol(price.symbol)}
-                        >
-                          <td className="py-4 px-6 font-mono text-sm text-foreground light:text-foreground">
-                            <div className="flex items-center gap-3">
-                              <div className="relative w-7 h-7 flex-shrink-0 flex items-center justify-center">
-                                <img
-                                  src={getCryptoIcon(price.symbol)}
-                                  alt={price.symbol}
-                                  className="w-7 h-7 object-contain rounded-full bg-background p-0.5"
-                                  onError={(e) => {
-                                    e.target.style.display = 'none';
-                                    e.target.nextSibling.style.display = 'flex';
-                                  }}
-                                />
-                                <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-[8px] font-mono hidden">
-                                  {price.symbol?.replace("USDT", "")}
-                                </div>
-                              </div>
-                              <div>
-                                <span className="group-hover:text-primary transition-colors text-foreground light:text-foreground font-bold">{price.symbol}</span>
-                                <span className="block text-[10px] text-muted font-normal">SPOT</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-4 px-6 text-right font-mono text-sm font-semibold text-foreground light:text-foreground">
-                            {formatCurrency(price.currentPrice)}
-                          </td>
-                          <td className={`py-4 px-6 text-right font-mono text-sm font-semibold ${isUp ? "text-trading-up" : "text-trading-down"
-                            }`}>
-                            <div className="flex items-center justify-end gap-1.5">
-                              <span>{isUp ? "▲" : "▼"}</span>
-                              <span>{isUp ? "+" : ""}{formatPercent(price.percentChange24h)}</span>
-                            </div>
-                          </td>
-                          <td className="py-4 px-6 text-right font-mono text-xs text-muted">
-                            {formatCurrency(price.highPrice || price.currentPrice)} / {formatCurrency(price.lowPrice || price.currentPrice)}
-                          </td>
-                          <td className="py-4 px-6 text-right font-mono text-sm text-foreground light:text-foreground">
-                            {formatCompactNumber(price.volume24h)}
-                          </td>
-                          <td className="py-4 px-6 text-center">
-                            <button
-                              type="button"
-                              className="px-4 py-1.5 text-xs font-bold font-mono rounded bg-primary text-on-primary hover:bg-[#8B84FF] transition-all"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/trade/spot?symbol=${price.symbol}`);
+              <table className="table-visitors">
+                <thead>
+                  <tr>
+                    <th>Asset Pair</th>
+                    <th className="text-right">Last Price</th>
+                    <th className="text-right">24H Change</th>
+                    <th className="text-right">24H High / Low</th>
+                    <th className="text-right">24H Volume</th>
+                    <th className="text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(showAllPrices ? filteredPrices : filteredPrices.slice(0, 5)).map((price) => {
+                    const isUp = Number(price.percentChange24h) >= 0;
+                    const isSelected = selectedSymbol === price.symbol;
+                    return (
+                      <tr
+                        key={price.id || price.symbol}
+                        className={`cursor-pointer transition-colors ${isSelected ? "bg-mist" : "hover:bg-linen"}`}
+                        onClick={() => setSelectedSymbol(price.symbol)}
+                      >
+                        <td>
+                          <div className="flex items-center gap-2.5">
+                            <img
+                              src={getCryptoIcon(price.symbol)}
+                              alt={price.symbol}
+                              className="w-6 h-6 object-contain rounded-full"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
                               }}
-                            >
-                              TRADE
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-
-                    {filteredPrices.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="py-8 text-center text-sm text-muted">
-                          No markets match this filter.
+                            />
+                            <div>
+                              <span className="font-medium text-carbon block">{price.symbol}</span>
+                              <span className="text-xs text-ash">SPOT</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="text-right font-medium text-carbon">
+                          {formatCurrency(price.currentPrice)}
+                        </td>
+                        <td className="text-right font-medium">
+                          <span className={isUp ? "delta-positive" : "delta-negative"}>
+                            {isUp ? "+" : ""}{formatPercent(price.percentChange24h)}
+                          </span>
+                        </td>
+                        <td className="text-right text-xs text-ash">
+                          {formatCurrency(price.highPrice || price.currentPrice)} / {formatCurrency(price.lowPrice || price.currentPrice)}
+                        </td>
+                        <td className="text-right text-graphite text-xs">
+                          {formatCompactNumber(price.volume24h)}
+                        </td>
+                        <td className="text-center">
+                          <button
+                            type="button"
+                            className="btn-primary-lavender text-xs px-3 py-1"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/trade/spot?symbol=${price.symbol}`);
+                            }}
+                          >
+                            Trade
+                          </button>
                         </td>
                       </tr>
-                    ) : null}
-                  </tbody>
-                </table>
-                {filteredPrices.length > 5 && (
-                  <div className="border-t border-transparent light:border-transparent bg-background/10 light:bg-background py-3 text-center">
-                    <button
-                      type="button"
-                      onClick={() => setShowAllPrices(!showAllPrices)}
-                      className="text-xs font-bold font-mono text-primary hover:text-foreground light:hover:text-foreground transition-colors"
-                    >
-                      {showAllPrices ? "▲ VIEW LESS" : "▼ VIEW MORE"}
-                    </button>
-                  </div>
-                )}
+                    );
+                  })}
+
+                  {filteredPrices.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-sm text-ash">
+                        No markets match this filter.
+                      </td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </table>
+            )}
+
+            {filteredPrices.length > 5 && (
+              <div className="border-t border-fog bg-linen py-3 text-center">
+                <button
+                  type="button"
+                  onClick={() => setShowAllPrices(!showAllPrices)}
+                  className="text-xs font-medium text-lavender hover:text-carbon transition-colors"
+                >
+                  {showAllPrices ? "▲ Show Less" : "▼ Show All Markets"}
+                </button>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </PageTransition>
   );
