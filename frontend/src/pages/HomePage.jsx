@@ -7,6 +7,7 @@ import { useWebSocket } from "../hooks/useWebSocket";
 import btcIcon from "../assets/Icons/btc.svg";
 import ethIcon from "../assets/Icons/eth.svg";
 import solIcon from "../assets/Icons/sol.svg";
+import heroBg from "../assets/images/hero-bg.png";
 
 const partnerLogos = [
   { name: "Temple", label: "Temple Tech" },
@@ -105,9 +106,9 @@ export default function HomePage({ isLoggedIn }) {
     }).catch(() => {});
   }, []);
 
-  const btcPrice = prices.find((p) => p.symbol === "BTCUSDT")?.currentPrice || "96,482.50";
-  const ethPrice = prices.find((p) => p.symbol === "ETHUSDT")?.currentPrice || "3,584.20";
-  const solPrice = prices.find((p) => p.symbol === "SOLUSDT")?.currentPrice || "184.65";
+  const btcPrice = prices.find((p) => p.symbol === "BTCUSDT")?.currentPrice || "63,803.33";
+  const ethPrice = prices.find((p) => p.symbol === "ETHUSDT")?.currentPrice || "1,866.83";
+  const solPrice = prices.find((p) => p.symbol === "SOLUSDT")?.currentPrice || "73.37";
 
   return (
     <div className="w-full bg-white text-carbon overflow-x-hidden font-openrunde pt-6">
@@ -223,7 +224,10 @@ export default function HomePage({ isLoggedIn }) {
         </div>
 
         {/* Gradient Banner & Dashboard Frame */}
-        <div className="hero-gradient-band rounded-[36px] sm:rounded-[44px] pt-16 sm:pt-20 pb-14 sm:pb-20 px-4 sm:px-10 shadow-xl overflow-hidden">
+        <div 
+          className="rounded-[36px] sm:rounded-[44px] pt-16 sm:pt-20 pb-14 sm:pb-20 px-4 sm:px-10 shadow-2xl overflow-hidden relative bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroBg})` }}
+        >
           <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-white/80 p-6 md:p-8 w-full max-w-[1040px] mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.12)] text-left space-y-6">
             
             {/* Dashboard Header Bar */}
