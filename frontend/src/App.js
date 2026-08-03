@@ -91,7 +91,7 @@ function App() {
 
   return (
     <ToastProvider>
-      <div className="min-h-screen bg-background text-foreground relative overflow-hidden font-body">
+      <div className="min-h-screen bg-background text-foreground relative overflow-x-hidden font-body">
         {/* Accessibility Skip Nav */}
         <SkipNav />
 

@@ -1,71 +1,93 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ChevronDown, Check, Sparkles, TrendingUp, ShieldCheck, Zap } from "lucide-react";
-import Illustration3D from "../components/Illustration3D";
+import { ArrowRight, ChevronDown, ChevronRight, Zap, ShieldCheck, TrendingUp, Layers, Activity, BarChart2 } from "lucide-react";
 import { fetchAllPrices, cachePrices } from "../api";
 import { useWebSocket } from "../hooks/useWebSocket";
 
 import btcIcon from "../assets/Icons/btc.svg";
 import ethIcon from "../assets/Icons/eth.svg";
 import solIcon from "../assets/Icons/sol.svg";
-import linkIcon from "../assets/Icons/link.svg";
-import ltcIcon from "../assets/Icons/ltc.svg";
-import arbIcon from "../assets/Icons/arb.svg";
-import opIcon from "../assets/Icons/op.svg";
-import suiIcon from "../assets/Icons/sui.svg";
+import heroBg from "../assets/images/hero-bg.png";
 
 const partnerLogos = [
-  { name: "Aeonik", label: "Aeonik Type" },
-  { name: "Geist System", label: "Geist UI" },
-  { name: "Linear", label: "Linear Monolith" },
-  { name: "Framer", label: "Framer 3D" },
+  { name: "Temple", label: "Temple Tech" },
+  { name: "inbound", label: "inbound" },
+  { name: "Buildkite", label: "Buildkite" },
   { name: "Vercel", label: "Vercel Edge" },
-  { name: "Pitch", label: "Pitch Deck" },
+  { name: "Linear", label: "Linear" },
+  { name: "Fathom", label: "Fathom" },
 ];
 
-const testimonials = [
+const pricingTiers = [
   {
-    quote: "The daylight studio language completely redefined how we view paper trading. The typography feels engraved and execution is razor sharp.",
-    name: "Elena Rostova",
-    role: "Lead Quantitative Analyst",
-    company: "Aether Capital"
+    name: "Starter",
+    price: "$0",
+    period: "forever",
+    description: "Perfect for exploring paper trading and testing basic spot strategies.",
+    features: [
+      "$100,000 Virtual Capital",
+      "Real-time WebSocket market feeds",
+      "Basic spot & margin orders",
+      "Standard telemetry dashboard",
+    ],
+    cta: "Start Free",
+    popular: false,
   },
   {
-    quote: "Clean 32px card radii, zero visual clutter, and near-black CTA controls anchor the entire experience. It's poetry in motion.",
-    name: "Marcus Vance",
-    role: "Product Architect",
-    company: "Studio 148"
+    name: "Pro Engineer",
+    price: "$29",
+    period: "per month",
+    description: "Designed for active quantitative traders needing futures & leverage analytics.",
+    features: [
+      "Unlimited Virtual Capital resets",
+      "Sub-millisecond execution engine",
+      "125x Perpetual Futures simulation",
+      "Advanced Sharpe & Drawdown metrics",
+      "Trixie AI Market Assistant",
+    ],
+    cta: "Start 14-Day Trial",
+    popular: true,
   },
   {
-    quote: "Aeonik tracking pulled tight to -0.02em makes headlines read with pure confidence. Best UI system we've built on top of.",
-    name: "Sophia Lin",
-    role: "Senior UX Specialist",
-    company: "Daylight Systems"
-  }
+    name: "Institution",
+    price: "$99",
+    period: "per month",
+    description: "Multi-account telemetry, custom API keys, and dedicated strategy isolation.",
+    features: [
+      "Multi-sub-account workspace",
+      "Full REST & WebSocket API access",
+      "Historical tick export (CSV/JSON)",
+      "Priority order book streaming",
+      "24/7 Priority Support",
+    ],
+    cta: "Contact Sales",
+    popular: false,
+  },
 ];
 
 const faqData = [
   {
     q: "What makes NexTradeX unique?",
-    a: "NexTradeX combines sub-millisecond paper trading execution with an ultra-clean, daylight-inspired interface, real-time WebSocket feeds, and advanced portfolio analytics."
+    a: "NexTradeX combines sub-millisecond paper trading execution with an engineered white blueprint interface, real-time WebSocket feeds, and advanced telemetry analytics."
   },
   {
     q: "Is NexTradeX completely free for paper trading?",
     a: "Yes! NexTradeX provides full simulated spot, futures, and options trading environments with real-time websocket pricing and zero financial risk."
   },
   {
-    q: "How does the continuous marquee animation work?",
-    a: "Marquee strips scroll endlessly using a custom organic timing curve. Content flows smoothly across the viewport on pure canvas without heavy borders or containers."
+    q: "How does the pill-shaped interface system work?",
+    a: "Our visual identity enforces 9999px border-radius pill shapes for all action controls, combined with hairline 1px Fog (#e8e8e8) borders and crisp OpenRunde typography."
   },
   {
     q: "Can I integrate custom APIs into NexTradeX?",
-    a: "Absolutely. Our platform exposes clean REST and WebSocket endpoints for strategy automation, market data streaming, and portfolio telemetry."
+    a: "Streamlined REST and WebSocket endpoints allow seamless strategy automation, market data streaming, and portfolio telemetry."
   }
 ];
 
 export default function HomePage({ isLoggedIn }) {
   const [prices, setPrices] = useState([]);
   const [openFaq, setOpenFaq] = useState(0);
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   const handlePriceUpdate = (payload) => {
     if (Array.isArray(payload)) {
@@ -84,358 +106,381 @@ export default function HomePage({ isLoggedIn }) {
     }).catch(() => {});
   }, []);
 
-  const btcPrice = prices.find((p) => p.symbol === "BTCUSDT")?.currentPrice || "96,482.50";
-  const ethPrice = prices.find((p) => p.symbol === "ETHUSDT")?.currentPrice || "3,584.20";
-  const solPrice = prices.find((p) => p.symbol === "SOLUSDT")?.currentPrice || "184.65";
+  const btcPrice = prices.find((p) => p.symbol === "BTCUSDT")?.currentPrice || "63,803.33";
+  const ethPrice = prices.find((p) => p.symbol === "ETHUSDT")?.currentPrice || "1,866.83";
+  const solPrice = prices.find((p) => p.symbol === "SOLUSDT")?.currentPrice || "73.37";
 
   return (
-    <div className="w-full bg-[#ebf5ff] text-[#0a0d12] overflow-x-hidden">
+    <div className="w-full bg-white text-carbon overflow-x-hidden font-openrunde pt-6">
 
-      {/* 1. HERO SECTION — Neumorphic Daylight Concept (Redesigned per reference images) */}
-      <section className="min-h-[90vh] pt-12 pb-24 flex flex-col items-center justify-center text-center px-4 sm:px-6 max-w-[1280px] mx-auto relative overflow-hidden">
+      {/* 1. HERO SECTION — Centered Stack on Paper White Canvas */}
+      <section className="pt-10 pb-16 px-6 max-w-[1200px] mx-auto text-center space-y-8">
         
-        {/* Category Pill Tag */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#cce7ff] text-[#0069e0] font-['Geist'] text-xs font-semibold tracking-tight mb-6 shadow-sm">
-          <Sparkles size={14} /> Next-Gen Derivatives Platform — NexTradeX 1.0
+        {/* NEW Top Pill Badge */}
+        <div className="flex justify-center">
+          <div className="inline-flex items-center gap-2 bg-[#f0edfe] border border-[#dfd7fe] rounded-full px-3.5 py-1 text-xs font-medium text-carbon cursor-pointer hover:border-[#8574ff] transition-colors shadow-xs">
+            <span className="bg-[#8574ff] text-white font-bold px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider">
+              NEW
+            </span>
+            <span>Engineered Analytics v2.0 is live</span>
+            <ChevronRight size={13} className="text-[#8574ff]" />
+          </div>
         </div>
 
         {/* Display Headline */}
-        <h1 className="font-['Inter'] font-bold text-[48px] sm:text-[80px] lg:text-[110px] xl:text-[128px] leading-[1.02] tracking-[-0.03em] text-[#0a0d12] max-w-[1100px] mx-auto select-none">
-          NexTrade<span className="text-[#0069e0]">X</span>
+        <h1 className="font-openrunde text-[48px] sm:text-[60px] font-semibold text-carbon tracking-[-3px] leading-[1.1] max-w-4xl mx-auto">
+          The engineered analytics platform for high-velocity trading.
         </h1>
 
-        <p className="font-['Geist'] text-base sm:text-xl text-[#535862] max-w-2xl mx-auto mt-4 mb-10 leading-relaxed">
-          An ultra-responsive daylight trading platform featuring simulated spot, perpetual futures, options desk, and real-time execution telemetry.
+        {/* Subtitle Body Text */}
+        <p className="font-openrunde text-lg sm:text-xl text-[#666666] max-w-2xl mx-auto tracking-[-0.32px] leading-relaxed">
+          Simulate spot, futures, and options strategies with sub-millisecond telemetry, flat geometric controls, and zero financial exposure.
         </p>
 
-        {/* --- NEUMORPHIC HERO GRAPHIC & FLOATING CARDS CONTAINER --- */}
-        <div className="relative my-6 w-full max-w-[700px] h-[360px] sm:h-[420px] flex items-center justify-center select-none">
-          
-          {/* Background Concentric Neumorphic Rings */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-[300px] sm:w-[540px] h-[300px] sm:h-[540px] rounded-full border border-white/60 shadow-[inset_0_0_40px_rgba(166,180,200,0.18)]" />
-            <div className="absolute w-[220px] sm:w-[400px] h-[220px] sm:h-[400px] rounded-full border border-white/50 shadow-[inset_0_0_30px_rgba(166,180,200,0.15)]" />
-            <div className="absolute w-[140px] sm:w-[260px] h-[140px] sm:h-[260px] rounded-full border border-white/40 shadow-[inset_0_0_20px_rgba(166,180,200,0.12)]" />
-            <div className="absolute w-[80px] sm:w-[130px] h-[80px] sm:h-[130px] rounded-full border border-white/30" />
-          </div>
-
-          {/* Center Floating Bitcoin Neumorphic Target */}
-          <div className="absolute z-10 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#e8f0fe] shadow-neumorphic-btn flex items-center justify-center border border-white/80 animate-pulse">
-            <img src={btcIcon} alt="BTC" className="w-7 h-7 sm:w-9 sm:h-9" />
-          </div>
-
-          {/* Main Hero Pill Artwork Container (Image 2 Concept) */}
-          <div className="relative z-0 w-[280px] sm:w-[480px] h-[150px] sm:h-[210px] rounded-[48px] border-[2.5px] border-[#3b82f6] bg-[#eef6ff]/95 shadow-[0_16px_40px_rgba(59,130,246,0.18)] flex items-center justify-center p-4 backdrop-blur-md">
-            <Illustration3D type="hero-cloud" size={160} />
-          </div>
-
-          {/* Floating Card 1 (Top-Left): Live BTC Price & Sparkline (Image 1 Concept) */}
-          <div className="absolute -top-4 -left-2 sm:top-2 sm:left-2 z-20 bg-[#eaf1fb] p-4 sm:p-5 rounded-[28px] shadow-neumorphic border border-white/70 w-[230px] sm:w-[270px] text-left transition-all duration-300 hover:scale-105">
-            {/* Header: BTC / USDT */}
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-9 h-9 rounded-full bg-[#f7931a] p-1.5 shadow-sm flex items-center justify-center">
-                <img src={btcIcon} alt="BTC" className="w-full h-full" />
-              </div>
-              <div>
-                <div className="font-['Inter'] font-bold text-sm sm:text-base text-[#1e293b] leading-tight">BTC / USDT</div>
-                <div className="text-xs text-[#64748b] font-medium">Bitcoin</div>
-              </div>
-            </div>
-
-            {/* Live Price Inset Well */}
-            <div className="bg-[#deebf8] p-3 rounded-2xl shadow-neumorphic-inset mb-3 flex items-center justify-between">
-              <div>
-                <div className="text-[11px] text-[#64748b] font-medium uppercase tracking-wide">Live Price</div>
-                <div className="font-['Inter'] font-bold text-base sm:text-lg text-[#4f46e5] tracking-tight">
-                  ${typeof btcPrice === 'number' ? btcPrice.toLocaleString() : btcPrice}
-                </div>
-              </div>
-              <span className="bg-[#dcfce7] text-[#15803d] text-xs font-bold px-2 py-0.5 rounded-full shadow-xs">
-                +3.45%
-              </span>
-            </div>
-
-            {/* Purple Sparkline Inset Well */}
-            <div className="bg-[#deebf8] p-2.5 rounded-2xl shadow-neumorphic-inset h-12 flex items-center justify-center overflow-hidden">
-              <svg className="w-full h-full" viewBox="0 0 200 40" fill="none">
-                <path
-                  d="M0 30 Q 30 15, 60 28 T 120 10 T 170 32 T 200 8"
-                  stroke="#6366f1"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-              </svg>
-            </div>
-          </div>
-
-          {/* Floating Card 2 (Bottom-Right): Matching Engine (Image 1 Concept) */}
-          <div className="absolute -bottom-4 -right-2 sm:bottom-2 sm:right-2 z-20 bg-[#eaf1fb] p-4 sm:p-5 rounded-[28px] shadow-neumorphic border border-white/70 w-[230px] sm:w-[270px] text-left transition-all duration-300 hover:scale-105">
-            <div className="text-[11px] font-bold text-[#64748b] tracking-wider uppercase mb-3">
-              MATCHING ENGINE
-            </div>
-
-            {/* BID Row */}
-            <div className="flex items-center justify-between py-1.5 border-b border-black/5 text-xs sm:text-sm">
-              <span className="font-bold text-[#10b981] bg-[#d1fae5] px-2 py-0.5 rounded-md text-[11px]">BID</span>
-              <span className="font-['Inter'] font-bold text-[#1e293b]">96,482.00</span>
-              <span className="text-[#64748b] font-medium text-xs">0.450 BTC</span>
-            </div>
-
-            {/* ASK Row */}
-            <div className="flex items-center justify-between pt-2 text-xs sm:text-sm">
-              <span className="font-bold text-[#ef4444] bg-[#fee2e2] px-2 py-0.5 rounded-md text-[11px]">ASK</span>
-              <span className="font-['Inter'] font-bold text-[#1e293b]">96,483.50</span>
-              <span className="text-[#64748b] font-medium text-xs">1.124 BTC</span>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Primary CTA Buttons (Image 2 Concept) */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center gap-5">
+        {/* Dual Action Pill Buttons */}
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
-            to={isLoggedIn ? "/dashboard" : "/auth"}
-            className="rounded-full bg-[#0f172a] hover:bg-[#020617] text-white px-8 py-3.5 font-medium text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-2"
+            to="/auth"
+            className="bg-[#8574ff] hover:bg-[#7462f5] text-white font-semibold px-7 py-3 rounded-full text-base tracking-[-0.32px] transition-all transform hover:scale-105 shadow-md flex items-center gap-2"
           >
-            {isLoggedIn ? "Open Dashboard" : "Start Paper Trading"} <ArrowRight size={18} />
+            <span>Start 14-Day Free Trial</span>
+            <ArrowRight size={16} />
           </Link>
           <Link
             to="/markets"
-            className="text-[#0f172a] hover:text-[#2563eb] font-semibold text-base px-5 py-3 transition-colors flex items-center gap-1"
+            className="bg-[#f4f4f6] hover:bg-[#e6e6ea] text-carbon font-semibold px-6 py-3 rounded-full text-base tracking-[-0.32px] transition-colors"
           >
-            Explore Markets →
+            See Interactive Demo
           </Link>
         </div>
 
+        {/* Partner Logos Strip */}
+        <div className="pt-8 flex flex-wrap items-center justify-center gap-8 sm:gap-12 opacity-65 hover:opacity-100 transition-opacity">
+          {partnerLogos.map((partner) => (
+            <span key={partner.name} className="font-openrunde font-semibold text-sm tracking-[-0.32px] text-ash">
+              {partner.label}
+            </span>
+          ))}
+        </div>
       </section>
 
-      {/* 2. MARQUEE LOGO STRIP — Continuous horizontal scroll without card wrapper */}
-      <section className="w-full py-12 border-y border-black/5 overflow-hidden bg-[#ebf5ff]">
-        <div className="max-w-[1200px] mx-auto px-6 mb-4 text-center">
-          <span className="font-['Geist'] text-xs uppercase tracking-widest text-[#93979f]">
-            Trusted by modern product teams & traders
-          </span>
-        </div>
-        <div className="relative w-full overflow-hidden flex items-center">
-          <div className="animate-marquee flex items-center gap-16 whitespace-nowrap py-4">
-            {partnerLogos.concat(partnerLogos).map((item, idx) => (
-              <div key={idx} className="flex items-center gap-3 font-['Inter'] font-medium text-xl text-[#535862] opacity-70 hover:opacity-100 transition-opacity">
-                <div className="w-3 h-3 rounded-full bg-[#0069e0]" />
-                <span>{item.name}</span>
-              </div>
-            ))}
+      {/* 2. TELEMETRY DASHBOARD SECTION — Full-Bleed Edge-to-Edge Background */}
+      <section className="w-full relative pb-28">
+        
+        {/* Curved Inset Floating Tab Bar */}
+        <div className="flex justify-center relative z-20 -mb-5 sm:-mb-6 px-4">
+          <div className="bg-white border border-fog/80 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] px-3.5 py-1.5 flex items-center gap-3 sm:gap-5 text-xs sm:text-sm font-medium text-graphite backdrop-blur-xl">
+            <button
+              onClick={() => setActiveTab("dashboard")}
+              className={`px-3.5 sm:px-4.5 py-1.5 rounded-full text-xs sm:text-sm transition-all duration-200 ${
+                activeTab === "dashboard"
+                  ? "bg-[#efeff4] text-carbon font-semibold shadow-xs"
+                  : "text-ash hover:text-carbon"
+              }`}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => setActiveTab("profiles")}
+              className={`px-3.5 sm:px-4.5 py-1.5 rounded-full text-xs sm:text-sm transition-all duration-200 ${
+                activeTab === "profiles"
+                  ? "bg-[#efeff4] text-carbon font-semibold shadow-xs"
+                  : "text-ash hover:text-carbon"
+              }`}
+            >
+              Profiles
+            </button>
+            <button
+              onClick={() => setActiveTab("funnels")}
+              className={`px-3.5 sm:px-4.5 py-1.5 rounded-full text-xs sm:text-sm transition-all duration-200 ${
+                activeTab === "funnels"
+                  ? "bg-[#efeff4] text-carbon font-semibold shadow-xs"
+                  : "text-ash hover:text-carbon"
+              }`}
+            >
+              Funnels
+            </button>
+            <button
+              onClick={() => setActiveTab("performance")}
+              className={`px-3.5 sm:px-4.5 py-1.5 rounded-full text-xs sm:text-sm transition-all duration-200 ${
+                activeTab === "performance"
+                  ? "bg-[#efeff4] text-carbon font-semibold shadow-xs"
+                  : "text-ash hover:text-carbon"
+              }`}
+            >
+              Performance
+            </button>
+            <button
+              onClick={() => setActiveTab("realtime")}
+              className={`px-3.5 sm:px-4.5 py-1.5 rounded-full text-xs sm:text-sm transition-all duration-200 ${
+                activeTab === "realtime"
+                  ? "bg-[#efeff4] text-carbon font-semibold shadow-xs"
+                  : "text-ash hover:text-carbon"
+              }`}
+            >
+              Realtime
+            </button>
           </div>
         </div>
+
+        {/* Full-Bleed Edge-to-Edge Background Banner */}
+        <div 
+          className="w-full pt-20 sm:pt-28 pb-20 sm:pb-32 px-4 sm:px-8 shadow-2xl relative bg-cover bg-center bg-no-repeat min-h-[580px] sm:min-h-[700px] flex items-center justify-center"
+          style={{ backgroundImage: `url(${heroBg})` }}
+        >
+          <div className="bg-white rounded-[24px] sm:rounded-[32px] border border-white/80 p-6 md:p-10 w-full max-w-[1080px] mx-auto shadow-[0_25px_60px_rgba(0,0,0,0.18)] text-left space-y-6 relative z-10">
+            
+            {/* Dashboard Header Bar */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-fog gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#8574ff] text-white flex items-center justify-center font-bold text-xs">
+                  NX
+                </div>
+                <div>
+                  <h3 className="font-openrunde font-semibold text-base text-carbon tracking-[-0.31px]">
+                    Portfolio Telemetry Dashboard
+                  </h3>
+                  <p className="font-openrunde text-xs text-ash tracking-[-0.32px]">
+                    Live Session ID: #8492-NX • Connected via WebSocket
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-mint-wash text-mint text-xs font-medium">
+                  <span className="w-2 h-2 rounded-full bg-mint animate-pulse" />
+                  Live Streaming
+                </span>
+                <span className="px-3 py-1 rounded-full bg-mist text-graphite text-xs font-medium border border-fog">
+                  125x Perp Mode
+                </span>
+              </div>
+            </div>
+
+            {/* 3 Metric Callout Tiles */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="metric-card-visitors">
+                <div className="flex items-center justify-between text-xs text-ash mb-1">
+                  <span>Virtual Equity</span>
+                  <span className="delta-positive">+14.2%</span>
+                </div>
+                <div className="font-openrunde font-semibold text-2xl text-carbon tracking-[-0.61px]">
+                  $114,250.00
+                </div>
+              </div>
+
+              <div className="metric-card-visitors">
+                <div className="flex items-center justify-between text-xs text-ash mb-1">
+                  <span>24h Realized PnL</span>
+                  <span className="delta-positive">+$3,480.00</span>
+                </div>
+                <div className="font-openrunde font-semibold text-2xl text-carbon tracking-[-0.61px]">
+                  +$3,480.00
+                </div>
+              </div>
+
+              <div className="metric-card-visitors">
+                <div className="flex items-center justify-between text-xs text-ash mb-1">
+                  <span>Win Rate</span>
+                  <span className="delta-positive">78.5%</span>
+                </div>
+                <div className="font-openrunde font-semibold text-2xl text-carbon tracking-[-0.61px]">
+                  78.5%
+                </div>
+              </div>
+            </div>
+
+            {/* Live Tickers Mini Grid */}
+            <div className="table-container-visitors overflow-hidden">
+              <table className="table-visitors">
+                <thead>
+                  <tr>
+                    <th>Asset</th>
+                    <th>Price</th>
+                    <th>24h Change</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="flex items-center gap-2">
+                      <img src={btcIcon} alt="BTC" className="w-5 h-5" />
+                      <span className="font-medium text-carbon">BTC / USDT</span>
+                    </td>
+                    <td className="font-semibold text-carbon">${btcPrice}</td>
+                    <td><span className="delta-positive">+3.45%</span></td>
+                    <td className="text-xs text-ash">Active Long</td>
+                  </tr>
+                  <tr>
+                    <td className="flex items-center gap-2">
+                      <img src={ethIcon} alt="ETH" className="w-5 h-5" />
+                      <span className="font-medium text-carbon">ETH / USDT</span>
+                    </td>
+                    <td className="font-semibold text-carbon">${ethPrice}</td>
+                    <td><span className="delta-positive">+1.85%</span></td>
+                    <td className="text-xs text-ash">Monitoring</td>
+                  </tr>
+                  <tr>
+                    <td className="flex items-center gap-2">
+                      <img src={solIcon} alt="SOL" className="w-5 h-5" />
+                      <span className="font-medium text-carbon">SOL / USDT</span>
+                    </td>
+                    <td className="font-semibold text-carbon">${solPrice}</td>
+                    <td><span className="delta-positive">+5.12%</span></td>
+                    <td className="text-xs text-ash">Active Long</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+
       </section>
 
-      {/* 3. PASTEL CATEGORY TILES GRID — Lavender, Mint, Powder Blue, Peach */}
-      <section className="max-w-[1200px] mx-auto px-6 py-20 space-y-12">
-        <div className="text-center space-y-4 max-w-2xl mx-auto">
-          <h2 className="font-['Inter'] text-4xl sm:text-5xl font-medium text-[#0a0d12] tracking-tight">
-            Curated Pastel Washes
+      {/* 2. THREE-COLUMN FEATURE CARDS GRID */}
+      <section className="py-16 px-6 max-w-[1200px] mx-auto space-y-12">
+        <div className="text-center space-y-3 max-w-2xl mx-auto">
+          <h2 className="font-openrunde text-3xl md:text-4xl font-medium text-carbon tracking-[-0.61px]">
+            Engineered Core Features
           </h2>
-          <p className="font-['Geist'] text-base text-[#535862]">
-            Flat pastel tile surfaces provide subtle category demarcation without visual noise.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Lavender Wash Tile */}
-          <div className="tile-pastel bg-[#f1e6ff] flex flex-col justify-between h-[320px] relative overflow-hidden">
-            <div className="space-y-2">
-              <span className="font-['Geist'] text-xs font-semibold text-[#0069e0]">01 / FEATURES</span>
-              <h3 className="font-['Inter'] text-2xl font-medium text-[#0a0d12]">Spot Engine</h3>
-            </div>
-            <Illustration3D type="envelope-star" size={100} className="self-end" />
-            <p className="font-['Geist'] text-sm text-[#535862]">Sub-millisecond simulated execution with zero risk.</p>
-          </div>
-
-          {/* Mint Wash Tile */}
-          <div className="tile-pastel bg-[#d3f6e3] flex flex-col justify-between h-[320px] relative overflow-hidden">
-            <div className="space-y-2">
-              <span className="font-['Geist'] text-xs font-semibold text-[#0069e0]">02 / DERIVATIVES</span>
-              <h3 className="font-['Inter'] text-2xl font-medium text-[#0a0d12]">Perp Futures</h3>
-            </div>
-            <Illustration3D type="flower-smile" size={100} className="self-end" />
-            <p className="font-['Geist'] text-sm text-[#535862]">Up to 125x leverage testing with real market depth.</p>
-          </div>
-
-          {/* Powder Blue Tile */}
-          <div className="tile-pastel bg-[#cce7ff] flex flex-col justify-between h-[320px] relative overflow-hidden">
-            <div className="space-y-2">
-              <span className="font-['Geist'] text-xs font-semibold text-[#0069e0]">03 / TELEMETRY</span>
-              <h3 className="font-['Inter'] text-2xl font-medium text-[#0a0d12]">Live Stream</h3>
-            </div>
-            <Illustration3D type="crayon-smile" size={100} className="self-end" />
-            <p className="font-['Geist'] text-sm text-[#535862]">WebSocket price feeds with instant tick data.</p>
-          </div>
-
-          {/* Peach Wash Tile */}
-          <div className="tile-pastel bg-[#ffd1b8] flex flex-col justify-between h-[320px] relative overflow-hidden">
-            <div className="space-y-2">
-              <span className="font-['Geist'] text-xs font-semibold text-[#0069e0]">04 / ASSISTANT</span>
-              <h3 className="font-['Inter'] text-2xl font-medium text-[#0a0d12]">Trixie AI</h3>
-            </div>
-            <Illustration3D type="hero-cloud" size={100} className="self-end" />
-            <p className="font-['Geist'] text-sm text-[#535862]">Conversational market intelligence at your side.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. REAL-TIME MARKETS OVERVIEW (Paper White & Bone White cards) */}
-      <section className="max-w-[1200px] mx-auto px-6 py-12">
-        <div className="card-genie space-y-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <h2 className="font-['Inter'] text-3xl font-medium text-[#0a0d12]">Live Market Tickers</h2>
-              <p className="font-['Geist'] text-sm text-[#535862] mt-1">Real-time paper trading prices updated continuously.</p>
-            </div>
-            <Link to="/markets" className="btn-secondary-genie">
-              View All Markets
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-[24px] bg-[#ffffff] border border-black/5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img src={btcIcon} alt="BTC" className="w-10 h-10" />
-                <div>
-                  <h4 className="font-['Inter'] text-lg font-medium text-[#0a0d12]">BTC / USDT</h4>
-                  <span className="font-['Geist'] text-xs text-[#93979f]">Bitcoin</span>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-['Inter'] text-lg font-medium text-[#0a0d12]">${btcPrice}</p>
-                <span className="font-['Geist'] text-xs text-[#13a978] font-medium">+3.45%</span>
-              </div>
-            </div>
-
-            <div className="p-6 rounded-[24px] bg-[#ffffff] border border-black/5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img src={ethIcon} alt="ETH" className="w-10 h-10" />
-                <div>
-                  <h4 className="font-['Inter'] text-lg font-medium text-[#0a0d12]">ETH / USDT</h4>
-                  <span className="font-['Geist'] text-xs text-[#93979f]">Ethereum</span>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-['Inter'] text-lg font-medium text-[#0a0d12]">${ethPrice}</p>
-                <span className="font-['Geist'] text-xs text-[#13a978] font-medium">+1.85%</span>
-              </div>
-            </div>
-
-            <div className="p-6 rounded-[24px] bg-[#ffffff] border border-black/5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img src={solIcon} alt="SOL" className="w-10 h-10" />
-                <div>
-                  <h4 className="font-['Inter'] text-lg font-medium text-[#0a0d12]">SOL / USDT</h4>
-                  <span className="font-['Geist'] text-xs text-[#93979f]">Solana</span>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-['Inter'] text-lg font-medium text-[#0a0d12]">${solPrice}</p>
-                <span className="font-['Geist'] text-xs text-[#13a978] font-medium">+5.12%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. FEATURE CARDS GRID (32px radius #fafdff bone white) */}
-      <section className="max-w-[1200px] mx-auto px-6 py-20 space-y-12">
-        <div className="space-y-4 text-center max-w-2xl mx-auto">
-          <h2 className="font-['Inter'] text-4xl md:text-5xl font-medium text-[#0a0d12] tracking-tight">
-            Architectural Restraint
-          </h2>
-          <p className="font-['Geist'] text-base text-[#535862]">
-            Pure card surfaces relying strictly on color shift from canvas (#ebf5ff) to surface (#fafdff).
+          <p className="font-openrunde text-base text-graphite tracking-[-0.32px]">
+            Clean functional features mapped to distinct visual tokens without clutter.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="card-genie space-y-6">
-            <div className="w-12 h-12 rounded-full bg-[#cce7ff] text-[#0069e0] flex items-center justify-center">
-              <Zap size={22} />
+          {/* Feature 1 */}
+          <div className="feature-card-visitors">
+            <div className="icon-circle">
+              <Zap size={20} />
             </div>
-            <h3 className="font-['Inter'] text-3xl font-medium text-[#0a0d12]">Lightning Speed</h3>
-            <p className="font-['Geist'] text-lg text-[#535862] leading-relaxed">
+            <h3 className="font-openrunde font-medium text-xl text-carbon mb-2 tracking-[-0.31px]">
+              Sub-Millisecond Speed
+            </h3>
+            <p className="font-openrunde text-sm text-graphite leading-relaxed tracking-[-0.32px]">
               Order placement executed within 15 milliseconds, backed by reactive websocket data streams.
             </p>
           </div>
 
-          <div className="card-genie space-y-6">
-            <div className="w-12 h-12 rounded-full bg-[#f1e6ff] text-[#0069e0] flex items-center justify-center">
-              <ShieldCheck size={22} />
+          {/* Feature 2 */}
+          <div className="feature-card-visitors">
+            <div className="icon-circle">
+              <ShieldCheck size={20} />
             </div>
-            <h3 className="font-['Inter'] text-3xl font-medium text-[#0a0d12]">Zero Financial Risk</h3>
-            <p className="font-['Geist'] text-lg text-[#535862] leading-relaxed">
+            <h3 className="font-openrunde font-medium text-xl text-carbon mb-2 tracking-[-0.31px]">
+              Zero Financial Risk
+            </h3>
+            <p className="font-openrunde text-sm text-graphite leading-relaxed tracking-[-0.32px]">
               Master trading strategies in a safe paper-money ecosystem with $100,000 initial Virtual Capital.
             </p>
           </div>
 
-          <div className="card-genie space-y-6">
-            <div className="w-12 h-12 rounded-full bg-[#d3f6e3] text-[#0069e0] flex items-center justify-center">
-              <TrendingUp size={22} />
+          {/* Feature 3 */}
+          <div className="feature-card-visitors">
+            <div className="icon-circle">
+              <TrendingUp size={20} />
             </div>
-            <h3 className="font-['Inter'] text-3xl font-medium text-[#0a0d12]">Deep Analytics</h3>
-            <p className="font-['Geist'] text-lg text-[#535862] leading-relaxed">
+            <h3 className="font-openrunde font-medium text-xl text-carbon mb-2 tracking-[-0.31px]">
+              Deep Telemetry Analytics
+            </h3>
+            <p className="font-openrunde text-sm text-graphite leading-relaxed tracking-[-0.32px]">
               Track Sharpe ratio, drawdown, win rates, and profit curves with professional analytics graphs.
             </p>
           </div>
         </div>
       </section>
 
-      {/* 6. TESTIMONIAL CARDS MARQUEE */}
-      <section className="w-full py-20 bg-[#ebf5ff] overflow-hidden">
-        <div className="max-w-[1200px] mx-auto px-6 mb-12 text-center">
-          <h2 className="font-['Inter'] text-4xl font-medium text-[#0a0d12]">What Leaders Say</h2>
+      {/* 3. PRICING TIER CARDS SECTION */}
+      <section className="py-16 px-6 max-w-[1200px] mx-auto space-y-12 bg-linen rounded-[32px] border border-fog my-12">
+        <div className="text-center space-y-3 max-w-2xl mx-auto">
+          <h2 className="font-openrunde text-3xl md:text-4xl font-medium text-carbon tracking-[-0.61px]">
+            Flexible Subscription Tiers
+          </h2>
+          <p className="font-openrunde text-base text-graphite tracking-[-0.32px]">
+            Transparent pricing plans designed for individual paper traders and quantitative funds.
+          </p>
         </div>
-        <div className="relative w-full overflow-hidden">
-          <div className="animate-marquee flex gap-8 whitespace-normal py-4">
-            {testimonials.concat(testimonials).map((item, idx) => (
-              <div key={idx} className="card-genie min-w-[380px] max-w-[420px] space-y-6 flex-shrink-0">
-                <p className="font-['Geist'] text-lg text-[#535862] leading-relaxed">
-                  "{item.quote}"
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {pricingTiers.map((tier) => (
+            <div
+              key={tier.name}
+              className={`pricing-card-visitors flex flex-col justify-between ${tier.popular ? 'border-lavender ring-2 ring-lavender/30 relative' : ''}`}
+            >
+              <div>
+                {tier.popular && (
+                  <span className="inline-block px-3 py-1 rounded-full bg-lavender text-white text-xs font-medium mb-4">
+                    Most Popular
+                  </span>
+                )}
+                <h3 className="font-openrunde font-semibold text-2xl text-carbon mb-2 tracking-[-0.31px]">
+                  {tier.name}
+                </h3>
+                <div className="flex items-baseline gap-1 mb-4">
+                  <span className="font-openrunde font-bold text-4xl text-carbon tracking-[-0.61px]">
+                    {tier.price}
+                  </span>
+                  <span className="text-sm text-ash">{tier.period}</span>
+                </div>
+                <p className="font-openrunde text-sm text-graphite mb-6 leading-relaxed">
+                  {tier.description}
                 </p>
-                <div className="pt-4 border-t border-black/5 flex items-center justify-between">
-                  <div>
-                    <h4 className="font-['Geist'] text-base font-medium text-[#0a0d12]">{item.name}</h4>
-                    <span className="font-['Geist'] text-xs text-[#93979f]">{item.role}</span>
-                  </div>
-                  <span className="font-['Inter'] font-medium text-xs text-[#0069e0]">{item.company}</span>
+
+                <div className="space-y-3 border-t border-fog pt-6 mb-8">
+                  {tier.features.map((feat) => (
+                    <div key={feat} className="flex items-center gap-2.5 text-sm text-graphite">
+                      <div className="w-4 h-4 rounded-full bg-mint-wash text-mint flex items-center justify-center text-xs font-bold">
+                        ✓
+                      </div>
+                      <span>{feat}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
+
+              <Link
+                to="/auth"
+                className={tier.popular ? "btn-primary-lavender w-full text-center" : "btn-ghost border border-fog w-full text-center hover:bg-mist"}
+              >
+                {tier.cta}
+              </Link>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* 7. FAQ ACCORDION SECTION — grid-template-rows 0.65s transition */}
-      <section className="max-w-[1000px] mx-auto px-6 py-20 space-y-8">
-        <div className="text-center space-y-4">
-          <h2 className="font-['Inter'] text-4xl md:text-5xl font-medium text-[#0a0d12]">Frequently Asked</h2>
-          <p className="font-['Geist'] text-base text-[#535862]">Everything you need to know about the NexTradeX platform.</p>
+      {/* 4. FAQ ACCORDION SECTION */}
+      <section className="max-w-[900px] mx-auto px-6 py-16 space-y-8">
+        <div className="text-center space-y-3">
+          <h2 className="font-openrunde text-3xl md:text-4xl font-medium text-carbon tracking-[-0.61px]">
+            Frequently Asked Questions
+          </h2>
+          <p className="font-openrunde text-base text-graphite tracking-[-0.32px]">
+            Everything you need to know about the NexTradeX platform and engine.
+          </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {faqData.map((faq, idx) => {
             const isOpen = openFaq === idx;
             return (
-              <div key={idx} className="faq-accordion-item cursor-pointer" onClick={() => setOpenFaq(isOpen ? -1 : idx)}>
+              <div
+                key={idx}
+                className="bg-white border border-fog rounded-[16px] p-5 cursor-pointer hover:border-ash transition-colors"
+                onClick={() => setOpenFaq(isOpen ? -1 : idx)}
+              >
                 <div className="flex items-center justify-between gap-4">
-                  <h3 className="font-['Geist'] text-lg md:text-xl font-medium text-[#0a0d12]">
+                  <h3 className="font-openrunde text-base font-medium text-carbon tracking-[-0.31px]">
                     {faq.q}
                   </h3>
-                  <ChevronDown size={20} className={`text-[#93979f] transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown size={18} className={`text-ash transition-transform duration-200 ${isOpen ? "rotate-180 text-carbon" : ""}`} />
                 </div>
-                <div className={`faq-content-grid ${isOpen ? "open" : ""}`}>
-                  <div className="faq-content-inner pt-4">
-                    <p className="font-['Geist'] text-base text-[#93979f] leading-relaxed">
-                      {faq.a}
-                    </p>
+                {isOpen && (
+                  <div className="pt-3 mt-3 border-t border-fog text-sm text-graphite leading-relaxed tracking-[-0.32px]">
+                    {faq.a}
                   </div>
-                </div>
+                )}
               </div>
             );
           })}

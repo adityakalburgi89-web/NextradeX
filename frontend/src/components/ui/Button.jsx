@@ -4,38 +4,40 @@ import { cva } from "class-variance-authority"
 import { cn } from "../../lib/utils"
 
 const buttonVariants = cva(
-    "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-2xl font-body text-sm font-bold relative overflow-hidden transition-all duration-300 ease-out disabled:pointer-events-none disabled:opacity-60 focus-ring active:translate-y-0.5",
+    "inline-flex items-center justify-center whitespace-nowrap rounded-full font-body text-sm font-medium relative overflow-hidden transition-all duration-200 ease-out disabled:pointer-events-none disabled:opacity-60 focus:outline-none",
     {
         variants: {
             variant: {
                 default:
-                    "bg-primary text-on-primary px-6 py-3 shadow-neo hover:-translate-y-0.5 hover:bg-primary-active hover:shadow-neo-hover active:shadow-neo-inset-sm",
+                    "bg-lavender text-white rounded-full px-5 py-2.5 shadow-subtle hover:bg-[#837ff2] hover:-translate-y-0.5 active:translate-y-0",
                 primaryPill:
-                    "bg-primary text-on-primary rounded-full px-8 py-3.5 shadow-neo hover:-translate-y-0.5 hover:bg-primary-active hover:shadow-neo-hover active:shadow-neo-inset-sm",
+                    "bg-lavender text-white rounded-full px-6 py-2.5 shadow-subtle hover:bg-[#837ff2] hover:-translate-y-0.5 active:translate-y-0",
+                iris:
+                    "bg-iris text-white rounded-full px-3.5 py-1.5 text-sm font-medium hover:bg-[#856eff] active:translate-y-0",
                 secondaryOnDark:
-                    "bg-background text-foreground px-6 py-3 shadow-neo hover:-translate-y-0.5 hover:shadow-neo-hover active:shadow-neo-inset-sm",
+                    "bg-mist text-carbon rounded-full px-5 py-2.5 hover:bg-fog hover:text-carbon",
                 secondaryOnLight:
-                    "bg-background text-foreground px-6 py-3 shadow-neo hover:-translate-y-0.5 hover:shadow-neo-hover active:shadow-neo-inset-sm",
+                    "bg-mist text-carbon rounded-full px-5 py-2.5 hover:bg-fog hover:text-carbon",
                 tertiaryText:
-                    "bg-transparent text-foreground hover:text-primary font-bold p-0 min-h-0 shadow-none",
+                    "bg-transparent text-carbon hover:underline underline-offset-4 p-0 min-h-0 shadow-none font-medium",
                 outline:
-                    "bg-background text-foreground px-6 py-3 shadow-neo hover:-translate-y-0.5 hover:text-primary hover:shadow-neo-hover active:shadow-neo-inset-sm",
-                ghost: "bg-background text-muted px-6 py-3 shadow-neo-sm hover:text-primary active:shadow-neo-inset-sm",
-                link: "text-primary hover:opacity-90",
+                    "bg-white border border-fog text-carbon rounded-full px-5 py-2.5 hover:bg-mist hover:border-ash",
+                ghost: "bg-transparent text-graphite rounded-full px-5 py-2.5 hover:text-carbon hover:bg-mist",
+                link: "text-carbon hover:underline underline-offset-4 bg-transparent p-0",
                 danger:
-                    "bg-trading-down text-foreground px-6 py-3 shadow-neo hover:-translate-y-0.5 hover:shadow-neo-hover active:shadow-neo-inset-sm",
+                    "bg-ember text-white rounded-full px-5 py-2.5 hover:bg-[#e03700]",
                 tradingUp:
-                    "bg-trading-up text-white font-semibold px-5 py-2 shadow-neo hover:-translate-y-0.5 hover:shadow-neo-hover",
+                    "bg-mint text-white font-medium rounded-full px-5 py-2 hover:bg-[#2db34e]",
                 tradingDown:
-                    "bg-trading-down text-white font-semibold px-5 py-2 shadow-neo hover:-translate-y-0.5 hover:shadow-neo-hover",
+                    "bg-ember text-white font-medium rounded-full px-5 py-2 hover:bg-[#e03700]",
                 subscribe:
-                    "bg-primary text-on-primary text-xs font-bold px-4 py-1.5 h-8 min-h-8 shadow-neo-sm hover:bg-primary-active",
+                    "bg-lavender text-white text-xs font-medium px-4 py-1.5 rounded-full hover:bg-[#837ff2]",
             },
             size: {
-                default: "h-11 px-6 py-3",
-                sm: "h-9 min-h-9 rounded-2xl px-4 text-xs",
-                lg: "h-12 rounded-2xl px-8 text-base",
-                icon: "h-12 w-12 rounded-2xl p-0",
+                default: "h-10 px-5 py-2.5",
+                sm: "h-8 rounded-full px-3.5 text-xs",
+                lg: "h-12 rounded-full px-8 text-base",
+                icon: "h-10 w-10 rounded-full p-0",
             },
         },
         defaultVariants: {
