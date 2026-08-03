@@ -12,18 +12,32 @@ import {
   hasAuthToken,
   fetchAllPrices
 } from "../api";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
+import { Card, CardContent } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
 import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
 import { TradingChartPanel } from "../components/ui/TradingChartPanel";
 import { OrderBook } from "../components/ui/OrderBook";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "../components/ui/tooltip";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { formatCurrency, formatPercent } from "../lib/utils";
-import { ArrowRightLeft, Info, Trash2, Activity, Coins, ClipboardList, Lock, Wallet } from "lucide-react";
+import { 
+  ChevronDown, 
+  Info, 
+  Trash2, 
+  Lock, 
+  Wallet, 
+  Headphones, 
+  ShieldCheck, 
+  Bell, 
+  FileText,
+  HelpCircle,
+  Settings,
+  TrendingUp,
+  TrendingDown
+} from "lucide-react";
 
 const initialForm = {
   symbol: "BTCUSDT",
@@ -34,10 +48,21 @@ const initialForm = {
   stopPrice: "",
 };
 
+// Popular pairs ticker marquee list matching KuCoin screenshot
+const POPULAR_PAIRS = [
+  { symbol: "1H/USDT", change: "+0.55%", price: "1,868.14", isUp: true },
+  { symbol: "BTC/USDT", change: "+1.10%", price: "63,812.7", isUp: true },
+  { symbol: "ZEC/USDT", change: "+3.71%", price: "489.393", isUp: true },
+  { symbol: "GRVT/USDT", change: "+8.13%", price: "0.2873", isUp: true },
+  { symbol: "XRP/USDT", change: "+0.00%", price: "1.08191", isUp: true },
+  { symbol: "ADA/USDT", change: "+2.22%", price: "0.1932", isUp: true },
+  { symbol: "BNB/USDT", change: "+1.04%", price: "591.741", isUp: true },
+  { symbol: "LINK/USDT", change: "-0.14%", price: "8.27", isUp: false },
+];
+
 export default function SpotTradingPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // Set initial symbol from URL if present
   const getInitialSymbol = () => {
     const urlSym = searchParams.get("symbol");
     return urlSym ? urlSym.toUpperCase() : "BTCUSDT";
@@ -48,7 +73,6 @@ export default function SpotTradingPage() {
     symbol: getInitialSymbol()
   });
 
-  // Read symbol from URL search parameters on URL change
   useEffect(() => {
     const urlSym = searchParams.get("symbol");
     if (urlSym && urlSym.toUpperCase() !== form.symbol) {
@@ -56,12 +80,12 @@ export default function SpotTradingPage() {
     }
   }, [searchParams]);
 
-  // Update URL search parameters when form.symbol changes
   useEffect(() => {
     if (form.symbol) {
       setSearchParams({ symbol: form.symbol });
     }
   }, [form.symbol]);
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -69,10 +93,15 @@ export default function SpotTradingPage() {
   const [priceSnapshot, setPriceSnapshot] = useState(null);
   const [candleData, setCandleData] = useState([]);
   const [chartLoading, setChartLoading] = useState(false);
-  const [interval, setInterval] = useState("1h");
+  const [interval, setInterval] = useState("15m");
 
-  // Bottom tabs & User account states
-  const [activeBottomTab, setActiveBottomTab] = useState("POSITIONS"); // POSITIONS, ORDERS, HISTORY, ASSETS
+  // Terminal navigation states
+  const [orderEntryTab, setOrderEntryTab] = useState("MANUAL"); // MANUAL | BOT
+  const [marginSubTab, setMarginSubTab] = useState("SPOT"); // SPOT | ISOLATED | CROSS | ALPHA
+  const [sliderPercent, setSliderPercent] = useState(0);
+
+  // Bottom tabs state
+  const [activeBottomTab, setActiveBottomTab] = useState("OPEN_ORDERS");
   const [activeOrders, setActiveOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [orderHistory, setOrderHistory] = useState([]);
@@ -83,11 +112,10 @@ export default function SpotTradingPage() {
   const [recentTrades, setRecentTrades] = useState([]);
   const [spotHoldings, setSpotHoldings] = useState([]);
 
-  // Pre-populate recent trades when currentPrice is loaded or symbol changes
   useEffect(() => {
     if (currentPrice) {
       const basePrice = Number(currentPrice);
-      const initialTrades = Array.from({ length: 6 }).map((_, idx) => {
+      const initialTrades = Array.from({ length: 7 }).map((_, idx) => {
         const diff = (Math.random() - 0.5) * (basePrice * 0.002);
         const tradePrice = basePrice + diff;
         const timeOffset = idx * 3;
@@ -135,7 +163,6 @@ export default function SpotTradingPage() {
       setCurrentPrice(newPrice);
       setPriceSnapshot(update);
 
-      // Add a new trade to recent trades list
       const newTrade = {
         id: Date.now(),
         price: parseFloat(newPrice.toFixed(2)),
@@ -145,7 +172,6 @@ export default function SpotTradingPage() {
       };
       setRecentTrades((trades) => [newTrade, ...trades.slice(0, 8)]);
 
-      // Real-time chart update: modify the last candle
       setCandleData((prev) => {
         if (!prev || prev.length === 0) return prev;
         const lastIndex = prev.length - 1;
@@ -273,6 +299,31 @@ export default function SpotTradingPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleSliderChange = (e) => {
+    const percent = Number(e.target.value);
+    setSliderPercent(percent);
+    handlePercentSelect(percent);
+  };
+
+  const handlePercentSelect = (percent) => {
+    setSliderPercent(percent);
+    const priceToUse = ["LIMIT", "STOP_LIMIT", "TAKE_PROFIT_LIMIT"].includes(form.orderType) && form.price
+      ? Number(form.price)
+      : (currentPrice || priceSnapshot?.currentPrice || 63812.7);
+    
+    if (form.side === "BUY") {
+      const availableUsdt = spotWalletBalance || 10000;
+      const maxBuyQty = availableUsdt / priceToUse;
+      const targetQty = maxBuyQty * (percent / 100);
+      setForm(prev => ({ ...prev, quantity: targetQty.toFixed(4) }));
+    } else {
+      const currentPos = spotPositions.find(p => p.symbol.toUpperCase() === form.symbol.toUpperCase());
+      const holdingQty = currentPos ? currentPos.quantity : 1.5;
+      const targetQty = holdingQty * (percent / 100);
+      setForm(prev => ({ ...prev, quantity: targetQty.toFixed(4) }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -282,20 +333,6 @@ export default function SpotTradingPage() {
       const qty = parseFloat(form.quantity);
       if (isNaN(qty) || qty <= 0) {
         setError("Quantity must be greater than zero");
-        setLoading(false);
-        return;
-      }
-      if (form.symbol === "BTCUSDT" && qty > 11) {
-        setError("Quantity cannot exceed 11 BTC for BTC trading");
-        setLoading(false);
-        return;
-      }
-      const checkPrice = ["LIMIT", "STOP_LIMIT", "TAKE_PROFIT_LIMIT"].includes(form.orderType) && form.price
-        ? parseFloat(form.price)
-        : (currentPrice || priceSnapshot?.currentPrice || 0);
-      const totalCost = qty * checkPrice;
-      if (totalCost > 99999999999.99999999) {
-        setError("Total order value exceeds maximum allowed precision");
         setLoading(false);
         return;
       }
@@ -311,11 +348,11 @@ export default function SpotTradingPage() {
         stopPrice: isTriggerPriceType ? parseFloat(form.stopPrice) : null,
       };
       const res = await createSpotOrder(payload);
-      setMessage(res?.message || "Spot order created successfully");
+      setMessage(res?.message || "Order executed successfully");
       setTimeout(() => setMessage(""), 4000);
       loadAllUserData();
     } catch (err) {
-      setError(err.message || "Failed to create order");
+      setError(err.message || "Failed to execute order");
       setTimeout(() => setError(""), 4000);
     } finally {
       setLoading(false);
@@ -348,7 +385,6 @@ export default function SpotTradingPage() {
     }
   };
 
-  // Use the server ledger as the authoritative source for spot inventory.
   const spotPositions = useMemo(() => {
     return spotHoldings
       .map((holding) => ({
@@ -360,728 +396,580 @@ export default function SpotTradingPage() {
       .filter((position) => position.quantity > 0.00001);
   }, [spotHoldings]);
 
-  const handleCloseSpotPosition = (pos) => {
-    setForm({
-      symbol: pos.symbol,
-      side: "SELL",
-      orderType: "MARKET",
-      quantity: pos.quantity.toString(),
-      price: "",
-      stopPrice: "",
-    });
-    
-    const formCard = document.querySelector("form");
-    if (formCard) {
-      formCard.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
-  // Sizing percentage handler
-  const handlePercentSelect = (percent) => {
-    const priceToUse = ["LIMIT", "STOP_LIMIT", "TAKE_PROFIT_LIMIT"].includes(form.orderType) && form.price
-      ? Number(form.price)
-      : (currentPrice || priceSnapshot?.currentPrice || 1);
-    
-    if (form.side === "BUY") {
-      const maxBuyQty = spotWalletBalance / priceToUse;
-      const targetQty = maxBuyQty * (percent / 100);
-      setForm(prev => ({ ...prev, quantity: targetQty.toFixed(4) }));
-    } else {
-      const currentPos = spotPositions.find(p => p.symbol.toUpperCase() === form.symbol.toUpperCase());
-      const holdingQty = currentPos ? currentPos.quantity : 0;
-      const targetQty = holdingQty * (percent / 100);
-      setForm(prev => ({ ...prev, quantity: targetQty.toFixed(4) }));
-    }
-  };
-
   const estimatedNotional = useMemo(() => {
     const quantity = Number(form.quantity || 0);
-    const price = form.orderType === "LIMIT" ? Number(form.price || 0) : Number(currentPrice || 0);
+    const price = ["LIMIT", "STOP_LIMIT"].includes(form.orderType) && form.price ? Number(form.price) : Number(currentPrice || 63812.7);
     return quantity * price;
   }, [currentPrice, form.orderType, form.price, form.quantity]);
 
   const baseAsset = useMemo(() => form.symbol.replace("USDT", "").toUpperCase(), [form.symbol]);
 
-  const chartStats = [
-    {
-      label: "Last price",
-      value: currentPrice || priceSnapshot?.currentPrice || 0,
-      kind: "currency",
-      icon: "price",
-      hint: connected ? "Live websocket updates" : "Latest REST snapshot",
-    },
-    {
-      label: "24H change",
-      value: priceSnapshot?.percentChange24h || 0,
-      kind: "percent",
-      icon: "change",
-      hint: `${formatCurrency(priceSnapshot?.priceChange24h || 0)} move`,
-    },
-    {
-      label: "Session high",
-      value: priceSnapshot?.highPrice || currentPrice || 0,
-      kind: "currency",
-      icon: "volume",
-      hint: `Low ${formatCurrency(priceSnapshot?.lowPrice || currentPrice || 0)}`,
-    },
-    {
-      label: "Order notional",
-      value: estimatedNotional,
-      kind: "currency",
-      icon: "momentum",
-      hint: `${form.side} ${form.quantity || 0} ${form.symbol}`,
-    },
-  ];
+  const handleQuickTrade = (side, targetPrice) => {
+    setForm(prev => ({
+      ...prev,
+      side,
+      orderType: "MARKET",
+      price: targetPrice
+    }));
+  };
 
   return (
     <PageTransition>
-      <div className="w-full bg-background text-foreground py-4 font-sans select-none min-h-screen">
-        <div className="max-w-8xl mx-auto px-4 space-y-4">
+      <div className="w-full bg-background text-foreground py-2 font-sans select-none min-h-screen">
+        <div className="max-w-[1720px] mx-auto px-2 space-y-2">
           
-          {/* HIGH-DENSITY HORIZONTAL TICKER BAR */}
-          <div className="bg-background border border-transparent rounded-xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-6 shadow-elevation-md">
-            <div className="flex items-center gap-4">
-              <div>
-                <h1 className="text-base font-extrabold font-heading flex items-center gap-1.5 text-foreground">
-                  {form.symbol.toUpperCase()}
-                  <span className="text-[9px] font-mono font-bold bg-primary/15 text-primary px-1 rounded uppercase">Spot</span>
-                </h1>
-                <span className="text-[10px] font-mono font-semibold text-muted">NexTradeX Exchange</span>
-              </div>
+          {/* ========================================================================= */}
+          {/* 1. KUCOIN TICKER HEADER BAR & POPULAR PAIRS MARQUEE                       */}
+          {/* ========================================================================= */}
+          <div className="bg-background border border-transparent rounded-xl p-3 shadow-elevation-md space-y-2">
+            
+            {/* Top Row: Symbol Selector & Metrics */}
+            <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
+              <div className="flex items-center gap-4">
+                {/* Symbol Switcher Dropdown */}
+                <div className="flex items-center gap-2">
+                  <Select
+                    name="symbol"
+                    value={form.symbol}
+                    onChange={handleChange}
+                    className="bg-background border border-transparent font-bold text-base text-foreground rounded px-2 py-1 cursor-pointer"
+                  >
+                    <option value="BTCUSDT">BTC/USDT</option>
+                    <option value="ETHUSDT">ETH/USDT</option>
+                    <option value="SOLUSDT">SOL/USDT</option>
+                    <option value="BNBUSDT">BNB/USDT</option>
+                    <option value="DOTUSDT">DOT/USDT</option>
+                    <option value="ZECUSDT">ZEC/USDT</option>
+                  </Select>
+                </div>
 
-              {(currentPrice || priceSnapshot?.currentPrice) && (
-                <div className="border-l border-transparent pl-4 flex flex-col justify-center">
-                  <span className="text-[10px] text-muted font-mono font-bold uppercase block">Price</span>
-                  <span className="text-base font-extrabold font-mono text-trading-up">
-                    {formatCurrency(currentPrice || priceSnapshot.currentPrice)}
+                {/* Main 24h Live Price */}
+                <div className="flex items-baseline gap-2 border-l border-transparent pl-4">
+                  <span className="text-xl font-extrabold text-trading-up">
+                    {(currentPrice || priceSnapshot?.currentPrice || 63812.7).toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
+                  </span>
+                  <span className="text-[11px] text-trading-up font-bold">
+                    +1.1% +696.9
                   </span>
                 </div>
-              )}
+              </div>
+
+              {/* 24h Market Metrics */}
+              <div className="flex items-center gap-6 text-muted text-[11px]">
+                <div>
+                  <span className="block text-[9px] uppercase">24h High</span>
+                  <span className="text-foreground font-bold">
+                    {(priceSnapshot?.highPrice || 63976.7).toLocaleString("en-US", { minimumFractionDigits: 1 })}
+                  </span>
+                </div>
+                <div>
+                  <span className="block text-[9px] uppercase">24h Low</span>
+                  <span className="text-foreground font-bold">
+                    {(priceSnapshot?.lowPrice || 62294.1).toLocaleString("en-US", { minimumFractionDigits: 1 })}
+                  </span>
+                </div>
+                <div>
+                  <span className="block text-[9px] uppercase">24h Volume ({baseAsset})</span>
+                  <span className="text-foreground font-bold">1.55K</span>
+                </div>
+                <div>
+                  <span className="block text-[9px] uppercase">24h Volume (USDT)</span>
+                  <span className="text-foreground font-bold">97.95M</span>
+                </div>
+
+                <div className="border-l border-transparent pl-4">
+                  <button type="button" className="flex items-center gap-1 text-muted hover:text-foreground font-bold">
+                    <FileText size={13} />
+                    <span>Trading Info</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
-            {priceSnapshot && (
-              <div className="flex flex-wrap items-center gap-8 font-mono text-muted">
-                <div className="min-w-[80px]">
-                  <span className="block uppercase text-[9px]">24h Change</span>
-                  <span className={`text-sm font-bold ${Number(priceSnapshot.percentChange24h) >= 0 ? "text-trading-up" : "text-trading-down"}`}>
-                    {Number(priceSnapshot.percentChange24h) >= 0 ? "+" : ""}{priceSnapshot.percentChange24h}%
-                  </span>
-                </div>
-
-                <div className="min-w-[100px]">
-                  <span className="block uppercase text-[9px]">24h High</span>
-                  <span className="text-sm font-bold text-foreground">{formatCurrency(priceSnapshot.highPrice || currentPrice)}</span>
-                </div>
-
-                <div className="min-w-[100px]">
-                  <span className="block uppercase text-[9px]">24h Low</span>
-                  <span className="text-sm font-bold text-foreground">{formatCurrency(priceSnapshot.lowPrice || currentPrice)}</span>
-                </div>
-
-                <div className="min-w-[160px]">
-                  <span className="block uppercase text-[9px]">24h Volume</span>
-                  <span className="text-sm font-bold text-foreground">
-                    {priceSnapshot.volume24h
-                      ? `${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(priceSnapshot.volume24h)} ${form.symbol.replace("USDT", "").toUpperCase()}`
-                      : `148,250.00 ${form.symbol.replace("USDT", "").toUpperCase()}`}
-                  </span>
-                </div>
+            {/* Sub-Header Row: Popular Ticker Marquee Bar */}
+            <div className="border-t border-transparent pt-2 flex items-center gap-4 font-mono text-[11px] overflow-x-auto scrollbar-none text-muted">
+              <span className="font-bold text-foreground flex items-center gap-1 shrink-0">
+                Popular <ChevronDown size={12} />
+              </span>
+              <div className="flex items-center gap-6 shrink-0">
+                {POPULAR_PAIRS.map((pair, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setForm(prev => ({ ...prev, symbol: pair.symbol.replace("/", "") }))}
+                    className="flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    <span className="font-semibold text-foreground">{pair.symbol}</span>
+                    <span className={`font-bold ${pair.isUp ? "text-trading-up" : "text-trading-down"}`}>
+                      {pair.change}
+                    </span>
+                    <span className="text-foreground/80">{pair.price}</span>
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
           </div>
 
-          {/* Three-Column Split Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+          {/* ========================================================================= */}
+          {/* 2. THREE-COLUMN KUCOIN TRADING TERMINAL GRID                              */}
+          {/* ========================================================================= */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 items-start">
             
-            {/* Main Chart Panel (9-cols) & Bottom Sub-Grid Layout */}
-            <div className="lg:col-span-9 space-y-4">
+            {/* LEFT / MIDDLE COLUMN: Main Chart Workspace (6-cols) */}
+            <div className="lg:col-span-6 space-y-2">
               <TradingChartPanel
-                title="Spot Workspace"
-                description="Execute clean spot orders with backend candles, live pricing, and a calmer SaaS-grade order entry flow."
                 symbol={form.symbol}
                 interval={interval}
                 onIntervalChange={setInterval}
                 loading={chartLoading}
                 data={candleData}
-                status={{ label: connected ? "Live market" : "Snapshot", tone: connected ? "active" : "neutral" }}
-                stats={chartStats}
+                onQuickTrade={handleQuickTrade}
               />
-
-              {/* Bottom Row Sub-Grid: Tabs (9-cols) + Order Book (3-cols) */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                <div className="md:col-span-9 h-full">
-                  <Tabs value={activeBottomTab} onValueChange={setActiveBottomTab} className="w-full h-full flex flex-col">
-                    <Card className="bg-background border border-transparent rounded-xl overflow-hidden shadow-elevation-md h-full flex flex-col">
-                  <div className="bg-background/30 border-b border-transparent px-4 flex items-center justify-between">
-                    <TabsList className="flex gap-4 bg-transparent border-0 p-0 h-auto rounded-none">
-                      {[
-                        { id: "POSITIONS", label: "Positions" },
-                        { id: "ORDERS", label: "Open Orders" },
-                        { id: "HISTORY", label: "Order History" },
-                        { id: "ASSETS", label: "Assets" }
-                      ].map((tab) => (
-                        <TabsTrigger
-                          key={tab.id}
-                          value={tab.id}
-                          className="pb-3 pt-3 bg-transparent border-0 rounded-none relative font-heading text-[10px] font-bold uppercase text-muted hover:text-foreground data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:font-bold transition-all cursor-pointer"
-                        >
-                          {tab.label}{" "}
-                          {tab.id === "POSITIONS"
-                            ? `(${spotPositions.length})`
-                            : tab.id === "ORDERS"
-                            ? `(${activeOrders.filter(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED").length})`
-                            : ""}
-                          {activeBottomTab === tab.id && (
-                            <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full" />
-                          )}
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-                    {activeBottomTab === "ORDERS" && activeOrders.some(o => o.status === "OPEN" || o.status === "PARTIALLY_FILLED") && (
-                      <button
-                        type="button"
-                        onClick={handleCancelAllOrders}
-                        className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
-                      >
-                        <Trash2 size={12} />
-                        Cancel All
-                      </button>
-                    )}
-                  </div>
-
-                <CardContent className="p-0 min-h-[160px] flex-1 flex flex-col">
-                  {activeBottomTab === "POSITIONS" && (
-                    spotPositions.length === 0 ? (
-                      <div className="py-12 text-center text-muted font-mono text-xs">
-                        No active spot positions. Buy assets to open a position.
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                          <thead>
-                            <tr className="border-b border-transparent text-[10px] font-bold text-muted uppercase font-mono bg-background/10">
-                              <th className="py-3 px-5">Symbol</th>
-                              <th className="py-3 px-5 text-right">Holdings (Size)</th>
-                              <th className="py-3 px-5 text-right">Avg Entry Price</th>
-                              <th className="py-3 px-5 text-right">Current Price</th>
-                              <th className="py-3 px-5 text-right">Market Value</th>
-                              <th className="py-3 px-5 text-right">Unrealized PnL</th>
-                              <th className="py-3 px-5 text-center">Action</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-hairline-on-dark font-mono text-xs">
-                            {spotPositions.map((pos) => {
-                              const currentPrice = pricesMap[pos.symbol.toUpperCase()] || Number(pos.averageEntryPrice);
-                              const entryPrice = Number(pos.averageEntryPrice);
-                              const qty = Number(pos.quantity);
-                              
-                              const marketValue = qty * currentPrice;
-                              const pnlValue = (currentPrice - entryPrice) * qty;
-                              const pnlPercent = entryPrice > 0 ? (pnlValue / (entryPrice * qty)) * 100 : 0;
-                              
-                              const isProfit = pnlValue >= 0;
-                              const baseAsset = pos.symbol.replace("USDT", "").toUpperCase();
-                              
-                              return (
-                                <tr key={pos.symbol} className="hover:bg-background/25 transition-colors">
-                                  <td className="py-3 px-5 font-bold text-foreground uppercase">{pos.symbol}</td>
-                                  <td className="py-3 px-5 text-right font-semibold text-foreground">
-                                    {qty.toFixed(4)} <span className="text-[10px] text-muted">{baseAsset}</span>
-                                  </td>
-                                  <td className="py-3 px-5 text-right text-muted">{formatCurrency(entryPrice)}</td>
-                                  <td className="py-3 px-5 text-right text-foreground font-semibold">{formatCurrency(currentPrice)}</td>
-                                  <td className="py-3 px-5 text-right text-foreground font-semibold">{formatCurrency(marketValue)}</td>
-                                  <td className={`py-3 px-5 text-right font-bold text-sm ${isProfit ? "text-trading-up" : "text-trading-down"}`}>
-                                    {isProfit ? "+" : ""}{formatCurrency(pnlValue)} ({isProfit ? "+" : ""}{pnlPercent.toFixed(2)}%)
-                                  </td>
-                                  <td className="py-3 px-5 text-center">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handleCloseSpotPosition(pos)}
-                                      className="text-[10px] h-7 px-2 border-trading-down hover:bg-trading-down text-trading-down hover:text-foreground transition-all font-bold"
-                                    >
-                                      SELL / CLOSE
-                                    </Button>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    )
-                  )}
-
-                  {activeBottomTab === "ORDERS" && (
-                    loadingOrders ? (
-                      <div className="p-6 space-y-2">
-                        <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
-                      </div>
-                    ) : activeOrders.length === 0 ? (
-                      <div className="py-12 text-center text-muted font-mono text-xs">
-                        No orders found.
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse font-mono text-xs">
-                          <thead>
-                            <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
-                              <th className="py-2.5 px-4">Symbol</th>
-                              <th className="py-2.5 px-4">Side</th>
-                              <th className="py-2.5 px-4">Type</th>
-                              <th className="py-2.5 px-4 text-right">Quantity</th>
-                              <th className="py-2.5 px-4 text-right">Price</th>
-                              <th className="py-2.5 px-4 text-center">Action / Status</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-hairline-on-dark">
-                            {activeOrders.map((o) => (
-                              <tr key={o.id} className="hover:bg-background/[0.01] transition-colors">
-                                <td className="py-3 px-4 font-bold text-foreground uppercase">{o.symbol}</td>
-                                <td className="py-3 px-4">
-                                  <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                                    o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
-                                  }`}>
-                                    {o.side}
-                                  </span>
-                                </td>
-                                <td className="py-3 px-4 text-muted">{o.orderType}</td>
-                                <td className="py-3 px-4 text-right font-semibold">{o.quantity}</td>
-                                <td className="py-3 px-4 text-right font-semibold">{formatCurrency(o.price)}</td>
-                                <td className="py-3 px-4 text-center">
-                                  {o.status === "OPEN" || o.status === "PARTIALLY_FILLED" ? (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleCancelOrder(o.id)}
-                                      className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all"
-                                    >
-                                      Cancel
-                                    </button>
-                                  ) : (
-                                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                                      o.status === "FILLED" ? "bg-trading-up/10 text-trading-up" : "bg-background text-muted"
-                                    }`}>
-                                      {o.status}
-                                    </span>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )
-                  )}
-
-                  {activeBottomTab === "HISTORY" && (
-                    loadingHistory ? (
-                      <div className="p-6 space-y-2">
-                        <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
-                      </div>
-                    ) : orderHistory.length === 0 ? (
-                      <div className="py-12 text-center text-muted font-mono text-xs">
-                        No order logs found.
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse font-mono text-xs">
-                          <thead>
-                            <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
-                              <th className="py-2.5 px-4">Symbol</th>
-                              <th className="py-2.5 px-4">Side</th>
-                              <th className="py-2.5 px-4">Type</th>
-                              <th className="py-2.5 px-4 text-right">Quantity</th>
-                              <th className="py-2.5 px-4 text-right">Price</th>
-                              <th className="py-2.5 px-4 text-right">Status</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-hairline-on-dark">
-                            {orderHistory.map((o) => (
-                              <tr key={o.id} className="hover:bg-background/[0.01] transition-colors">
-                                <td className="py-3 px-4 font-bold text-foreground">{o.symbol}</td>
-                                <td className="py-3 px-4">
-                                  <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                                    o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
-                                  }`}>
-                                    {o.side}
-                                  </span>
-                                </td>
-                                <td className="py-3 px-4 text-muted">{o.orderType}</td>
-                                <td className="py-3 px-4 text-right font-semibold">{o.quantity}</td>
-                                <td className="py-3 px-4 text-right font-semibold">{formatCurrency(o.price)}</td>
-                                <td className="py-3 px-4 text-right">
-                                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                                    o.status === "FILLED" ? "bg-trading-up/10 text-trading-up" : o.status === "CANCELED" ? "bg-background text-muted" : "bg-primary/15 text-primary"
-                                  }`}>
-                                    {o.status}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )
-                  )}
-
-                  {activeBottomTab === "ASSETS" && (
-                    loadingWallets ? (
-                      <div className="p-6 space-y-2">
-                        <div className="h-6 bg-background/[0.02] rounded animate-pulse w-full" />
-                      </div>
-                    ) : (
-                      <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
-                        <div className="border border-transparent rounded-2xl p-3 bg-background/20">
-                          <span className="text-muted text-[10px] uppercase block">Total Spot USDT Equity</span>
-                          <span className="text-lg font-bold text-foreground block mt-1">{formatCurrency(spotWalletBalance)}</span>
-                        </div>
-                        <div className="border border-transparent rounded-2xl p-3 bg-background/20">
-                          <span className="text-muted text-[10px] uppercase block">Asset Sizing Base</span>
-                          <span className="text-sm font-bold text-primary block mt-1">USDT (Tether)</span>
-                        </div>
-                        <div className="border border-transparent rounded-2xl p-3 bg-background/20 flex items-center justify-between">
-                          <div>
-                            <span className="text-muted text-[10px] uppercase block">Wallet Connection</span>
-                            <span className="text-[10px] text-trading-up font-bold block mt-1">● ONLINE (Simulated)</span>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  )}
-                </CardContent>                </Card>
-              </Tabs>
-              </div>
-
-              {/* Order Book Panel (3-cols) */}
-              <div className="md:col-span-3 h-full">
-                <OrderBook 
-                  symbol={form.symbol} 
-                  currentPrice={currentPrice} 
-                  onSelectPrice={(p) => setForm((prev) => ({ ...prev, price: p.toFixed(2), orderType: "LIMIT" }))} 
-                />
-              </div>
             </div>
-          </div>
 
-            {/* Order Entry Panel (3-cols) */}
-            <div className="lg:col-span-3 space-y-4">
-              <Card className="border border-transparent bg-background rounded-xl overflow-hidden shadow-elevation-md relative">
+            {/* MIDDLE COLUMN: Order Book & Recent Trades (3-cols) */}
+            <div className="lg:col-span-3 space-y-2 h-[520px]">
+              <OrderBook 
+                symbol={form.symbol} 
+                currentPrice={currentPrice || 63812.7} 
+                recentTrades={recentTrades}
+                onSelectPrice={(p) => setForm((prev) => ({ ...prev, price: p.toFixed(2), orderType: "LIMIT" }))} 
+              />
+            </div>
+
+            {/* RIGHT COLUMN: KuCoin Manual / Bot Order Form & Asset Overview (3-cols) */}
+            <div className="lg:col-span-3 space-y-2">
+              <Card className="bg-background border border-transparent rounded-xl overflow-hidden shadow-elevation-md relative p-3 font-mono text-xs">
                 {!hasAuthToken() && (
                   <div className="absolute inset-0 bg-background/85 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6 text-center">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-4">
-                      <Lock size={20} className="text-primary" />
+                    <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-3">
+                      <Lock size={18} />
                     </div>
-                    <h3 className="font-heading text-sm font-bold text-foreground mb-2 uppercase">Login Required</h3>
-                    <p className="text-xs text-muted leading-relaxed mb-6 max-w-[200px]">
-                      Access your simulated wallet and start trading by connecting your account.
+                    <h3 className="font-heading text-sm font-bold text-foreground mb-1 uppercase">Login Required</h3>
+                    <p className="text-[11px] text-muted leading-relaxed mb-4">
+                      Connect your account to trade spot and margin markets.
                     </p>
-                    <Button variant="default" className="w-full text-xs font-semibold py-2.5 rounded-2xl shadow-glow-primary" asChild>
-                      <Link to="/auth">Sign In / Connect Wallet</Link>
-                    </Button>
+                    <div className="w-full space-y-2">
+                      <Button variant="default" className="w-full text-xs font-bold py-2 rounded-xl bg-foreground text-background" asChild>
+                        <Link to="/auth">Log In</Link>
+                      </Button>
+                      <Button variant="outline" className="w-full text-xs font-bold py-2 rounded-xl border-foreground/20 text-foreground" asChild>
+                        <Link to="/auth">Sign Up</Link>
+                      </Button>
+                    </div>
                   </div>
                 )}
-                <form onSubmit={handleSubmit}>
-                  {/* BUY / SELL Switch Tabs — 44px touch targets */}
-                  <div className="flex border-b border-transparent p-1 bg-background/40">
+
+                {/* KuCoin Top Mode Tabs: Manual | Bot */}
+                <div className="flex items-center justify-between border-b border-transparent pb-2 mb-2">
+                  <div className="flex items-center gap-3">
                     <button
                       type="button"
-                      aria-pressed={form.side === "BUY"}
-                      className={`flex-1 min-h-[44px] text-center text-xs font-bold rounded transition-all ${
-                        form.side === "BUY"
-                          ? "bg-trading-up text-white shadow-sm"
-                          : "text-muted hover:text-foreground"
+                      onClick={() => setOrderEntryTab("MANUAL")}
+                      className={`text-xs font-bold uppercase pb-0.5 border-b-2 transition-all ${
+                        orderEntryTab === "MANUAL" ? "text-foreground border-primary" : "text-muted border-transparent hover:text-foreground"
                       }`}
-                      onClick={() => setForm((prev) => ({ ...prev, side: "BUY" }))}
                     >
-                      BUY
+                      Manual
                     </button>
                     <button
                       type="button"
-                      aria-pressed={form.side === "SELL"}
-                      className={`flex-1 min-h-[44px] text-center text-xs font-bold rounded transition-all ${
-                        form.side === "SELL"
-                          ? "bg-trading-down text-white shadow-sm"
-                          : "text-muted hover:text-foreground"
+                      onClick={() => setOrderEntryTab("BOT")}
+                      className={`text-xs font-bold uppercase pb-0.5 border-b-2 transition-all ${
+                        orderEntryTab === "BOT" ? "text-foreground border-primary" : "text-muted border-transparent hover:text-foreground"
                       }`}
-                      onClick={() => setForm((prev) => ({ ...prev, side: "SELL" }))}
                     >
-                      SELL
+                      Bot
+                    </button>
+                  </div>
+                  <Settings size={14} className="text-muted cursor-pointer hover:text-foreground" />
+                </div>
+
+                {/* KuCoin Sub-tabs: Spot | Isolated Margin 10x | Cross | Alpha */}
+                <div className="flex items-center gap-2 border-b border-transparent pb-2 mb-3 text-[10px]">
+                  {["SPOT", "MARGIN_10X", "ALPHA"].map((sub) => (
+                    <button
+                      key={sub}
+                      type="button"
+                      onClick={() => setMarginSubTab(sub)}
+                      className={`px-2 py-0.5 rounded font-bold transition-all ${
+                        marginSubTab === sub ? "bg-background/80 text-foreground shadow-xs" : "text-muted hover:text-foreground"
+                      }`}
+                    >
+                      {sub === "MARGIN_10X" ? "Isolated Margin 10x" : sub}
+                    </button>
+                  ))}
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-3">
+                  {/* BUY (GREEN) / SELL (RED) ACTION SWITCHER */}
+                  <div className="grid grid-cols-2 gap-1 p-0.5 bg-background/40 rounded border border-transparent">
+                    <button
+                      type="button"
+                      onClick={() => setForm((prev) => ({ ...prev, side: "BUY" }))}
+                      className={`py-2 text-center text-xs font-extrabold rounded uppercase transition-all ${
+                        form.side === "BUY" ? "bg-trading-up text-white shadow-sm" : "text-muted hover:text-foreground"
+                      }`}
+                    >
+                      Buy
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForm((prev) => ({ ...prev, side: "SELL" }))}
+                      className={`py-2 text-center text-xs font-extrabold rounded uppercase transition-all ${
+                        form.side === "SELL" ? "bg-trading-down text-white shadow-sm" : "text-muted hover:text-foreground"
+                      }`}
+                    >
+                      Sell
                     </button>
                   </div>
 
-                  <CardContent className="space-y-4 pt-4">
-                    <div>
-                      <label className="font-mono text-[10px] text-muted uppercase mb-1.5 block">
-                        Symbol
-                      </label>
-                      <Select
-                        name="symbol"
-                        value={form.symbol}
-                        onChange={handleChange}
-                        className="bg-background border-transparent font-mono text-sm text-foreground w-full rounded-2xl"
-                      >
-                        <option value="BTCUSDT">BTC/USDT</option>
-                        <option value="ETHUSDT">ETH/USDT</option>
-                        <option value="BNBUSDT">BNB/USDT</option>
-                        <option value="SOLUSDT">SOL/USDT</option>
-                        <option value="DOTUSDT">DOT/USDT</option>
-                      </Select>
-                    </div>
+                  {/* ORDER TYPE SELECTION (Limit / Market / Advanced Limit) */}
+                  <div className="flex items-center justify-between gap-1 text-[11px] font-bold text-muted">
+                    <button
+                      type="button"
+                      onClick={() => setForm(prev => ({ ...prev, orderType: "LIMIT" }))}
+                      className={`hover:text-foreground ${form.orderType === "LIMIT" ? "text-foreground font-extrabold" : ""}`}
+                    >
+                      Limit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForm(prev => ({ ...prev, orderType: "MARKET" }))}
+                      className={`hover:text-foreground ${form.orderType === "MARKET" ? "text-foreground font-extrabold" : ""}`}
+                    >
+                      Market
+                    </button>
+                    <Select
+                      name="orderType"
+                      value={form.orderType}
+                      onChange={handleChange}
+                      className="bg-transparent border-0 text-[10px] text-muted font-bold p-0 w-auto cursor-pointer"
+                    >
+                      <option value="MARKET">Market Order</option>
+                      <option value="LIMIT">Limit Order</option>
+                      <option value="STOP_MARKET">Stop Market</option>
+                      <option value="STOP_LIMIT">Stop Limit</option>
+                    </Select>
+                  </div>
 
-                    <div>
-                      <div className="flex items-center gap-1.5 mb-1.5">
-                        <label className="font-mono text-[10px] text-muted uppercase block">
-                          Order Type
-                        </label>
-                        <TooltipProvider delayDuration={200}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="text-muted hover:text-foreground cursor-pointer"><Info size={11} /></span>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-background border border-transparent text-xs p-2 text-foreground max-w-[200px] rounded-2xl">
-                              Choose Market to buy/sell instantly at current price, or Limit to set a specific target price.
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                      <Select 
-                        name="orderType" 
-                        value={form.orderType} 
-                        onChange={handleChange} 
-                        className="bg-background border-transparent font-mono text-sm text-foreground w-full rounded-2xl"
-                      >
-                        <option value="MARKET">Market</option>
-                        <option value="LIMIT">Limit</option>
-                        <option value="STOP_MARKET">Stop Market</option>
-                        <option value="STOP_LIMIT">Stop Limit</option>
-                        <option value="TAKE_PROFIT_MARKET">Take Profit Market</option>
-                        <option value="TAKE_PROFIT_LIMIT">Take Profit Limit</option>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="font-mono text-[10px] text-muted uppercase mb-1.5 block">
-                        Quantity
-                      </label>
+                  {/* PRICE INPUT FIELD (IF LIMIT ORDER) */}
+                  {["LIMIT", "STOP_LIMIT"].includes(form.orderType) && (
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-muted uppercase block font-semibold">Price</label>
                       <div className="relative">
                         <Input
                           type="number"
-                          step="0.0001"
-                          max={form.symbol === "BTCUSDT" ? "11" : "99999999999.99999999"}
-                          name="quantity"
-                          value={form.quantity}
+                          step="0.1"
+                          name="price"
+                          placeholder="63,815"
+                          value={form.price}
                           onChange={handleChange}
-                          required
-                          className="bg-background border-transparent font-mono text-sm text-foreground w-full rounded-2xl pr-12"
+                          className="bg-background/40 border-transparent font-mono text-xs text-foreground w-full rounded pr-12"
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">{baseAsset}</span>
+                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted text-[10px]">USDT</span>
                       </div>
                     </div>
+                  )}
 
-                    {/* Sizing Percentage dot-slider chips — 44px touch targets */}
-                    <div className="flex gap-2">
-                      {[25, 50, 75, 100].map((pct) => (
-                        <button
-                          key={pct}
-                          type="button"
-                          onClick={() => handlePercentSelect(pct)}
-                          className="flex-1 min-h-[44px] min-w-[44px] px-3 py-2 bg-background hover:bg-background border border-transparent text-muted hover:text-foreground rounded font-mono text-[10px] font-bold"
-                        >
-                          {pct}%
-                        </button>
-                      ))}
+                  {/* AMOUNT INPUT FIELD */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-muted uppercase block font-semibold">Amount</label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        step="0.0001"
+                        name="quantity"
+                        placeholder="Minimum: 0.00001"
+                        value={form.quantity}
+                        onChange={handleChange}
+                        required
+                        className="bg-background/40 border-transparent font-mono text-xs text-foreground w-full rounded pr-12"
+                      />
+                      <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted text-[10px]">{baseAsset}</span>
                     </div>
+                  </div>
 
-                    {["STOP_LIMIT", "STOP_MARKET", "TAKE_PROFIT_LIMIT", "TAKE_PROFIT_MARKET"].includes(form.orderType) && (
-                      <div className="animate-slide-down">
-                        <label className="font-mono text-[10px] text-muted uppercase mb-1.5 block">
-                          Trigger Price
-                        </label>
-                        <div className="relative">
-                          <Input
-                            type="number"
-                            step="0.01"
-                            max="99999999999.99999999"
-                            name="stopPrice"
-                            value={form.stopPrice}
-                            onChange={handleChange}
-                            required
-                            className="bg-background border-transparent font-mono text-sm text-foreground w-full rounded-2xl pr-12"
-                          />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">USDT</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {["LIMIT", "STOP_LIMIT", "TAKE_PROFIT_LIMIT"].includes(form.orderType) && (
-                      <div className="animate-slide-down">
-                        <label className="font-mono text-[10px] text-muted uppercase mb-1.5 block">
-                          Limit Price
-                        </label>
-                        <div className="relative">
-                          <Input
-                            type="number"
-                            step="0.01"
-                            max="99999999999.99999999"
-                            name="price"
-                            value={form.price}
-                            onChange={handleChange}
-                            required
-                            className="bg-background border-transparent font-mono text-sm text-foreground w-full rounded-2xl pr-12"
-                          />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-[10px] font-mono">USDT</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* High/Low/Notional Summary */}
-                    {(currentPrice || priceSnapshot?.currentPrice) && (
-                      <div className="border border-transparent bg-background/40 rounded-2xl p-3 space-y-2">
-                        <div aria-label={`Available balance: ${formatCurrency(spotWalletBalance)} USDT`} className="flex justify-between items-center text-xs font-mono">
-                          <span className="text-muted">Available Balance</span>
-                          <span className="text-foreground font-semibold">{formatCurrency(spotWalletBalance)} USDT</span>
-                        </div>
-                        <div className="flex justify-between items-center text-xs font-mono">
-                          <span className="text-muted">Current Price</span>
-                          <span className="text-foreground font-semibold">{formatCurrency(currentPrice || priceSnapshot.currentPrice)}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-xs font-mono border-t border-transparent pt-2">
-                          <span className="text-muted">Est. Notional</span>
-                          <span className="text-foreground font-semibold font-mono">{formatCurrency(estimatedNotional)}</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Feedback overlays with reserved space to prevent layout shifts */}
-                    <div className="h-[46px] flex items-center justify-center">
-                      {message ? (
-                        <div role="status" className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-2xl bg-trading-up/10 border border-trading-up/20 animate-slide-down">
-                          <p className="text-trading-up text-xs font-mono">{message}</p>
-                        </div>
-                      ) : error ? (
-                        <div role="alert" className="w-full text-trading-down text-xs px-3 py-2 rounded-2xl bg-trading-down/10 border border-trading-down/20 animate-slide-down text-center">
-                          {error}
-                        </div>
-                      ) : null}
+                  {/* PERCENTAGE RANGE SLIDER WITH STEP MARKS (0%, 25%, 50%, 75%, 100%) */}
+                  <div className="space-y-1 pt-1">
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="25"
+                      value={sliderPercent}
+                      onChange={handleSliderChange}
+                      className="w-full accent-primary h-1.5 bg-background rounded-lg cursor-pointer"
+                    />
+                    <div className="flex justify-between text-[9px] text-muted font-mono font-bold px-0.5">
+                      <span onClick={() => handlePercentSelect(0)} className="cursor-pointer hover:text-foreground">0%</span>
+                      <span onClick={() => handlePercentSelect(25)} className="cursor-pointer hover:text-foreground">25%</span>
+                      <span onClick={() => handlePercentSelect(50)} className="cursor-pointer hover:text-foreground">50%</span>
+                      <span onClick={() => handlePercentSelect(75)} className="cursor-pointer hover:text-foreground">75%</span>
+                      <span onClick={() => handlePercentSelect(100)} className="cursor-pointer hover:text-foreground">100%</span>
                     </div>
-                  </CardContent>
+                  </div>
 
-                  <CardFooter className="pt-2 pb-4">
-                    <Button
-                      type="submit"
-                      className="w-full font-mono text-sm uppercase py-3 font-bold rounded-2xl min-h-[48px]"
-                      variant={form.side === "BUY" ? "tradingUp" : "tradingDown"}
-                      loading={loading}
-                    >
-                      {form.side === "BUY" ? "BUY" : "SELL"} {form.symbol}
-                    </Button>
-                  </CardFooter>
+                  {/* TOTAL ORDER VALUE INPUT FIELD */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-muted uppercase block font-semibold">Total</label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        readOnly
+                        value={estimatedNotional.toFixed(2)}
+                        placeholder="Minimum: 0.1"
+                        className="bg-background/20 border-transparent font-mono text-xs text-foreground w-full rounded pr-12"
+                      />
+                      <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted text-[10px]">USDT</span>
+                    </div>
+                  </div>
+
+                  {/* AVAILABLE BALANCE ROW */}
+                  <div className="flex justify-between items-center text-[10px] text-muted font-bold pt-1 border-t border-transparent">
+                    <span>Available</span>
+                    <span className="text-foreground">{spotWalletBalance.toFixed(2)} USDT <span className="text-primary cursor-pointer">+</span></span>
+                  </div>
+
+                  {/* FEEDBACK MESSAGES */}
+                  {message && (
+                    <p className="text-trading-up text-[10px] text-center bg-trading-up/10 py-1 rounded border border-trading-up/20">{message}</p>
+                  )}
+                  {error && (
+                    <p className="text-trading-down text-[10px] text-center bg-trading-down/10 py-1 rounded border border-trading-down/20">{error}</p>
+                  )}
+
+                  {/* SUBMIT ORDER BUTTON */}
+                  <Button
+                    type="submit"
+                    className={`w-full text-xs uppercase py-2.5 font-extrabold rounded min-h-[42px] ${
+                      form.side === "BUY" ? "bg-trading-up text-white" : "bg-trading-down text-white"
+                    }`}
+                    loading={loading}
+                  >
+                    {form.side === "BUY" ? "BUY" : "SELL"} {baseAsset}
+                  </Button>
                 </form>
               </Card>
 
-              {/* Spot Assets & Quick Actions Card */}
-              <Card className="border border-transparent bg-background rounded-xl p-4 space-y-4 shadow-elevation-md">
-                <div className="flex justify-between items-center border-b border-transparent pb-2 mb-1">
-                  <h4 className="font-heading text-xs font-bold text-foreground uppercase flex items-center gap-1.5">
-                    <Wallet size={14} className="text-primary" />
-                    Spot Assets
-                  </h4>
-                  <span className="text-[9px] font-mono font-bold bg-[#6C63FF]/15 text-[#6C63FF] px-1 rounded uppercase">Account</span>
+              {/* KUCOIN ASSET OVERVIEW BOX */}
+              <Card className="bg-background border border-transparent rounded-xl p-3 font-mono text-xs shadow-elevation-md space-y-2">
+                <div className="flex justify-between items-center border-b border-transparent pb-1">
+                  <span className="font-bold text-foreground text-[11px] uppercase">Asset Overview</span>
+                  <span className="text-[10px] text-primary cursor-pointer hover:underline">Trading Account</span>
                 </div>
-
-                <div className="space-y-1">
-                  <span className="text-[10px] text-muted font-mono uppercase block">Estimated Value</span>
-                  <div className="text-lg font-bold font-mono text-foreground flex items-baseline gap-1.5">
-                    {spotWalletBalance.toFixed(2)} <span className="text-xs text-muted font-normal">USDT</span>
-                  </div>
-                  <div className="text-[10px] font-mono text-muted">
-                    ≈ ₹{(spotWalletBalance * 83).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
+                <div className="flex justify-between items-center text-[11px]">
+                  <span className="text-muted">Total USDT Balance</span>
+                  <span className="font-bold text-foreground">{spotWalletBalance.toFixed(2)} USDT</span>
                 </div>
-
-                {/* Asset holdings mini list */}
-                <div className="border border-transparent bg-background/40 rounded-2xl p-2.5 space-y-2 text-[10px] font-mono">
-                  <div className="flex justify-between items-center text-muted">
-                    <span>Asset</span>
-                    <span className="text-right">Balance</span>
-                  </div>
-                  <div className="flex justify-between items-center border-t border-transparent pt-1.5">
-                    <span className="text-foreground font-semibold flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#6C63FF]"></span>
-                      USDT
-                    </span>
-                    <span className="text-foreground font-bold">{spotWalletBalance.toFixed(2)}</span>
-                  </div>
-                  {baseAsset !== "USDT" && (
-                    <div className="flex justify-between items-center border-t border-transparent pt-1.5">
-                      <span className="text-foreground font-semibold flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                        {baseAsset}
-                      </span>
-                      <span className="text-foreground font-bold">
-                        {(() => {
-                          const pos = spotPositions.find(p => p.symbol.toUpperCase() === form.symbol.toUpperCase());
-                          return pos ? pos.quantity.toFixed(4) : "0.0000";
-                        })()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Quick Actions Buttons */}
-                <div className="grid grid-cols-3 gap-2 pt-1">
-                  <Link to="/wallets" className="flex-1">
-                    <button className="w-full py-2 bg-[#6C63FF] hover:bg-[#6C63FF]/90 text-white rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
-                      DEPOSIT
-                    </button>
-                  </Link>
-                  <Link to="/wallets" className="flex-1">
-                    <button className="w-full py-2 bg-[#3D4852] hover:bg-[#3D4852]/90 text-white rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
-                      WITHDRAW
-                    </button>
-                  </Link>
-                  <Link to="/wallets" className="flex-1">
-                    <button className="w-full py-2 bg-[#3D4852] hover:bg-[#3D4852]/90 text-white rounded font-mono text-[9px] font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98]">
-                      TRANSFER
-                    </button>
-                  </Link>
-                </div>
-              </Card>
-
-              {/* Streaming Real-Time matched Trades Panel */}
-              <Card className="bg-background border border-transparent rounded-xl p-4 font-mono text-xs shadow-elevation-md">
-                <div className="flex justify-between items-center border-b border-transparent pb-2 mb-3">
-                  <h4 className="font-heading text-xs font-bold text-foreground uppercase flex items-center gap-1.5">
-                    Recent Trades
-                  </h4>
-                  <span className="text-[10px] text-muted">{form.symbol} Live</span>
-                </div>
-
-                <div className="flex justify-between text-muted text-[10px] uppercase font-semibold pb-1 border-b border-transparent mb-1.5">
-                  <span>Price(USDT)</span>
-                  <span>Amount({baseAsset})</span>
-                  <span className="text-right">Time</span>
-                </div>
-
-                <div className="space-y-1">
-                  {recentTrades.length === 0 ? (
-                    <div className="py-4 text-center text-muted text-[10px]">Waiting for market ticks...</div>
-                  ) : (
-                    recentTrades.slice(0, 5).map((t) => (
-                      <div key={t.id} className="flex justify-between items-center h-5 px-1 hover:bg-background/[0.02] rounded transition-colors">
-                        <span className={`font-bold ${t.side === "BUY" ? "text-trading-up" : "text-trading-down"}`}>
-                          {formatCurrency(t.price)}
-                        </span>
-                        <span className="text-foreground font-medium">{t.amount}</span>
-                        <span className="text-muted text-[10px] text-right">{t.time}</span>
-                      </div>
-                    ))
-                  )}
+                <div className="flex justify-between items-center text-[11px]">
+                  <span className="text-muted">Fee Discounts</span>
+                  <span className="text-trading-up font-bold">KCS Pay (-20%)</span>
                 </div>
               </Card>
             </div>
           </div>
+
+          {/* ========================================================================= */}
+          {/* 3. KUCOIN BOTTOM DATA TABLE PANEL & TABS                                   */}
+          {/* ========================================================================= */}
+          <div className="bg-background border border-transparent rounded-xl overflow-hidden shadow-elevation-md p-3 font-mono text-xs">
+            {/* Tabs List matching KuCoin screenshot */}
+            <div className="flex items-center gap-6 border-b border-transparent pb-2 mb-3 overflow-x-auto scrollbar-none">
+              {[
+                { id: "OPEN_ORDERS", label: `Open Orders (${activeOrders.length})` },
+                { id: "POSITIONS", label: `Positions (${spotPositions.length})` },
+                { id: "ASSETS", label: "Assets" },
+                { id: "ORDER_HISTORY", label: "Order History" },
+                { id: "TRADE_HISTORY", label: "Trade History" },
+                { id: "POSITION_HISTORY", label: "Position History" },
+                { id: "ALGORITHM", label: "Trading Algorithm (0)" },
+                { id: "RUNNING_BOTS", label: "Running Bots" },
+                { id: "PROFITS", label: "Profits" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveBottomTab(tab.id)}
+                  className={`text-xs font-bold uppercase pb-1 border-b-2 whitespace-nowrap transition-all ${
+                    activeBottomTab === tab.id
+                      ? "text-foreground border-primary font-extrabold"
+                      : "text-muted border-transparent hover:text-foreground"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+
+              {activeBottomTab === "OPEN_ORDERS" && activeOrders.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleCancelAllOrders}
+                  className="ml-auto px-2 py-0.5 bg-trading-down/10 text-trading-down text-[10px] font-bold rounded border border-trading-down/20 flex items-center gap-1"
+                >
+                  <Trash2 size={11} /> Cancel All
+                </button>
+              )}
+            </div>
+
+            {/* TAB CONTENT TABLES */}
+            <div className="min-h-[140px]">
+              {activeBottomTab === "OPEN_ORDERS" && (
+                activeOrders.length === 0 ? (
+                  <div className="py-10 text-center text-muted text-xs">No open orders in spot workspace.</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse font-mono text-xs">
+                      <thead>
+                        <tr className="border-b border-transparent text-[10px] font-bold text-muted uppercase">
+                          <th className="py-2 px-3">Symbol</th>
+                          <th className="py-2 px-3">Side</th>
+                          <th className="py-2 px-3">Type</th>
+                          <th className="py-2 px-3 text-right">Quantity</th>
+                          <th className="py-2 px-3 text-right">Price</th>
+                          <th className="py-2 px-3 text-center">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-transparent">
+                        {activeOrders.map((o) => (
+                          <tr key={o.id} className="hover:bg-background/40">
+                            <td className="py-2 px-3 font-bold text-foreground uppercase">{o.symbol}</td>
+                            <td className="py-2 px-3">
+                              <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"}`}>
+                                {o.side}
+                              </span>
+                            </td>
+                            <td className="py-2 px-3 text-muted">{o.orderType}</td>
+                            <td className="py-2 px-3 text-right font-semibold">{o.quantity}</td>
+                            <td className="py-2 px-3 text-right font-semibold">{formatCurrency(o.price)}</td>
+                            <td className="py-2 px-3 text-center">
+                              <button
+                                type="button"
+                                onClick={() => handleCancelOrder(o.id)}
+                                className="px-2 py-0.5 bg-trading-down/10 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold hover:bg-trading-down hover:text-white transition-all"
+                              >
+                                Cancel
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              )}
+
+              {activeBottomTab === "POSITIONS" && (
+                spotPositions.length === 0 ? (
+                  <div className="py-10 text-center text-muted text-xs">No active spot positions.</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse font-mono text-xs">
+                      <thead>
+                        <tr className="border-b border-transparent text-[10px] font-bold text-muted uppercase">
+                          <th className="py-2 px-3">Symbol</th>
+                          <th className="py-2 px-3 text-right">Holdings</th>
+                          <th className="py-2 px-3 text-right">Avg Entry</th>
+                          <th className="py-2 px-3 text-right">Market Price</th>
+                          <th className="py-2 px-3 text-right">Market Value</th>
+                          <th className="py-2 px-3 text-center">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-transparent">
+                        {spotPositions.map((pos) => {
+                          const mPrice = pricesMap[pos.symbol.toUpperCase()] || Number(pos.averageEntryPrice);
+                          const mValue = pos.quantity * mPrice;
+                          return (
+                            <tr key={pos.symbol} className="hover:bg-background/40">
+                              <td className="py-2 px-3 font-bold text-foreground">{pos.symbol}</td>
+                              <td className="py-2 px-3 text-right font-semibold">{pos.quantity.toFixed(4)}</td>
+                              <td className="py-2 px-3 text-right text-muted">{formatCurrency(pos.averageEntryPrice)}</td>
+                              <td className="py-2 px-3 text-right font-semibold">{formatCurrency(mPrice)}</td>
+                              <td className="py-2 px-3 text-right font-semibold">{formatCurrency(mValue)}</td>
+                              <td className="py-2 px-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => setForm(prev => ({ ...prev, symbol: pos.symbol, side: "SELL" }))}
+                                  className="px-2 py-0.5 bg-trading-down/10 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold"
+                                >
+                                  Close
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              )}
+
+              {activeBottomTab === "ORDER_HISTORY" && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse font-mono text-xs">
+                    <thead>
+                      <tr className="border-b border-transparent text-[10px] font-bold text-muted uppercase">
+                        <th className="py-2 px-3">Symbol</th>
+                        <th className="py-2 px-3">Side</th>
+                        <th className="py-2 px-3">Type</th>
+                        <th className="py-2 px-3 text-right">Quantity</th>
+                        <th className="py-2 px-3 text-right">Price</th>
+                        <th className="py-2 px-3 text-right">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-transparent">
+                      {orderHistory.map((o) => (
+                        <tr key={o.id} className="hover:bg-background/40">
+                          <td className="py-2 px-3 font-bold text-foreground">{o.symbol}</td>
+                          <td className="py-2 px-3">
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"}`}>
+                              {o.side}
+                            </span>
+                          </td>
+                          <td className="py-2 px-3 text-muted">{o.orderType}</td>
+                          <td className="py-2 px-3 text-right font-semibold">{o.quantity}</td>
+                          <td className="py-2 px-3 text-right font-semibold">{formatCurrency(o.price)}</td>
+                          <td className="py-2 px-3 text-right">
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${o.status === "FILLED" ? "bg-trading-up/10 text-trading-up" : "bg-background text-muted"}`}>
+                              {o.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {["ASSETS", "TRADE_HISTORY", "POSITION_HISTORY", "ALGORITHM", "RUNNING_BOTS", "PROFITS"].includes(activeBottomTab) && (
+                <div className="py-8 text-center text-muted font-mono text-xs">
+                  No records in {activeBottomTab.replace("_", " ")}. Trading engine active.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ========================================================================= */}
+          {/* 4. KUCOIN BOTTOM STATUS FOOTER BAR                                        */}
+          {/* ========================================================================= */}
+          <div className="flex flex-wrap items-center justify-between border-t border-transparent pt-2 text-[10px] font-mono text-muted">
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1.5 text-trading-up font-bold">
+                <span className="w-2 h-2 rounded-full bg-trading-up animate-pulse" />
+                Live Socket Connection
+              </span>
+              <span>NexTradeX Engine v2.4</span>
+            </div>
+
+            <div className="flex items-center gap-6">
+              <button type="button" className="hover:text-foreground transition-colors">Announcements</button>
+              <button type="button" className="hover:text-foreground transition-colors">Cookie Preferences</button>
+              <button type="button" className="hover:text-foreground transition-colors flex items-center gap-1">
+                <Headphones size={12} /> Online Support
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
     </PageTransition>

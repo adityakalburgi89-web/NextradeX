@@ -42,6 +42,11 @@ Thumbs.db
 # Logs
 *.log
 
+# Build outputs & Data
+backend/target/
+data/
+backend/.mvn/
+
 # Sensitive properties
 .foglamp/
 
