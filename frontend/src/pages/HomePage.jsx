@@ -168,11 +168,11 @@ export default function HomePage({ isLoggedIn }) {
       <section className="w-full relative pb-28">
         
         {/* Curved Inset Floating Tab Bar */}
-        <div className="flex justify-center relative z-20 -mb-6 px-4">
-          <div className="bg-white border border-fog/80 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.06)] px-2.5 py-1.5 flex items-center gap-1 text-xs sm:text-sm font-medium text-graphite">
+        <div className="flex justify-center relative z-20 -mb-5 sm:-mb-6 px-4">
+          <div className="bg-white border border-fog/80 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] px-3.5 py-1.5 flex items-center gap-3 sm:gap-5 text-xs sm:text-sm font-medium text-graphite backdrop-blur-xl">
             <button
               onClick={() => setActiveTab("dashboard")}
-              className={`px-4.5 py-1.5 rounded-full transition-all duration-200 ${
+              className={`px-3.5 sm:px-4.5 py-1.5 rounded-full text-xs sm:text-sm transition-all duration-200 ${
                 activeTab === "dashboard"
                   ? "bg-[#efeff4] text-carbon font-semibold shadow-xs"
                   : "text-ash hover:text-carbon"
@@ -182,7 +182,7 @@ export default function HomePage({ isLoggedIn }) {
             </button>
             <button
               onClick={() => setActiveTab("profiles")}
-              className={`px-4.5 py-1.5 rounded-full transition-all duration-200 ${
+              className={`px-3.5 sm:px-4.5 py-1.5 rounded-full text-xs sm:text-sm transition-all duration-200 ${
                 activeTab === "profiles"
                   ? "bg-[#efeff4] text-carbon font-semibold shadow-xs"
                   : "text-ash hover:text-carbon"
@@ -192,7 +192,7 @@ export default function HomePage({ isLoggedIn }) {
             </button>
             <button
               onClick={() => setActiveTab("funnels")}
-              className={`px-4.5 py-1.5 rounded-full transition-all duration-200 ${
+              className={`px-3.5 sm:px-4.5 py-1.5 rounded-full text-xs sm:text-sm transition-all duration-200 ${
                 activeTab === "funnels"
                   ? "bg-[#efeff4] text-carbon font-semibold shadow-xs"
                   : "text-ash hover:text-carbon"
@@ -202,7 +202,7 @@ export default function HomePage({ isLoggedIn }) {
             </button>
             <button
               onClick={() => setActiveTab("performance")}
-              className={`px-4.5 py-1.5 rounded-full transition-all duration-200 ${
+              className={`px-3.5 sm:px-4.5 py-1.5 rounded-full text-xs sm:text-sm transition-all duration-200 ${
                 activeTab === "performance"
                   ? "bg-[#efeff4] text-carbon font-semibold shadow-xs"
                   : "text-ash hover:text-carbon"
@@ -212,7 +212,7 @@ export default function HomePage({ isLoggedIn }) {
             </button>
             <button
               onClick={() => setActiveTab("realtime")}
-              className={`px-4.5 py-1.5 rounded-full transition-all duration-200 ${
+              className={`px-3.5 sm:px-4.5 py-1.5 rounded-full text-xs sm:text-sm transition-all duration-200 ${
                 activeTab === "realtime"
                   ? "bg-[#efeff4] text-carbon font-semibold shadow-xs"
                   : "text-ash hover:text-carbon"
