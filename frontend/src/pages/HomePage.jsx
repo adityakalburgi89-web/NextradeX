@@ -164,15 +164,15 @@ export default function HomePage({ isLoggedIn }) {
         </div>
       </section>
 
-      {/* 2. TELEMETRY DASHBOARD SECTION — Below Hero Section */}
-      <section className="pb-24 px-4 sm:px-6 max-w-[1200px] mx-auto">
+      {/* 2. TELEMETRY DASHBOARD SECTION — Full-Bleed Edge-to-Edge Background */}
+      <section className="w-full relative pb-28">
         
         {/* Curved Inset Floating Tab Bar */}
-        <div className="flex justify-center relative z-20 -mb-6">
-          <div className="bg-white border border-fog/80 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.06)] px-2 py-1.5 flex items-center gap-1 text-xs sm:text-sm font-medium text-graphite">
+        <div className="flex justify-center relative z-20 -mb-6 px-4">
+          <div className="bg-white border border-fog/80 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.06)] px-2.5 py-1.5 flex items-center gap-1 text-xs sm:text-sm font-medium text-graphite">
             <button
               onClick={() => setActiveTab("dashboard")}
-              className={`px-4 py-1.5 rounded-full transition-all duration-200 ${
+              className={`px-4.5 py-1.5 rounded-full transition-all duration-200 ${
                 activeTab === "dashboard"
                   ? "bg-[#efeff4] text-carbon font-semibold shadow-xs"
                   : "text-ash hover:text-carbon"
@@ -182,7 +182,7 @@ export default function HomePage({ isLoggedIn }) {
             </button>
             <button
               onClick={() => setActiveTab("profiles")}
-              className={`px-4 py-1.5 rounded-full transition-all duration-200 ${
+              className={`px-4.5 py-1.5 rounded-full transition-all duration-200 ${
                 activeTab === "profiles"
                   ? "bg-[#efeff4] text-carbon font-semibold shadow-xs"
                   : "text-ash hover:text-carbon"
@@ -192,7 +192,7 @@ export default function HomePage({ isLoggedIn }) {
             </button>
             <button
               onClick={() => setActiveTab("funnels")}
-              className={`px-4 py-1.5 rounded-full transition-all duration-200 ${
+              className={`px-4.5 py-1.5 rounded-full transition-all duration-200 ${
                 activeTab === "funnels"
                   ? "bg-[#efeff4] text-carbon font-semibold shadow-xs"
                   : "text-ash hover:text-carbon"
@@ -202,7 +202,7 @@ export default function HomePage({ isLoggedIn }) {
             </button>
             <button
               onClick={() => setActiveTab("performance")}
-              className={`px-4 py-1.5 rounded-full transition-all duration-200 ${
+              className={`px-4.5 py-1.5 rounded-full transition-all duration-200 ${
                 activeTab === "performance"
                   ? "bg-[#efeff4] text-carbon font-semibold shadow-xs"
                   : "text-ash hover:text-carbon"
@@ -212,7 +212,7 @@ export default function HomePage({ isLoggedIn }) {
             </button>
             <button
               onClick={() => setActiveTab("realtime")}
-              className={`px-4 py-1.5 rounded-full transition-all duration-200 ${
+              className={`px-4.5 py-1.5 rounded-full transition-all duration-200 ${
                 activeTab === "realtime"
                   ? "bg-[#efeff4] text-carbon font-semibold shadow-xs"
                   : "text-ash hover:text-carbon"
@@ -223,12 +223,12 @@ export default function HomePage({ isLoggedIn }) {
           </div>
         </div>
 
-        {/* Gradient Banner & Dashboard Frame */}
+        {/* Full-Bleed Edge-to-Edge Background Banner */}
         <div 
-          className="rounded-[36px] sm:rounded-[44px] pt-16 sm:pt-20 pb-14 sm:pb-20 px-4 sm:px-10 shadow-2xl overflow-hidden relative bg-cover bg-center bg-no-repeat"
+          className="w-full pt-20 sm:pt-28 pb-20 sm:pb-32 px-4 sm:px-8 shadow-2xl relative bg-cover bg-center bg-no-repeat min-h-[580px] sm:min-h-[700px] flex items-center justify-center"
           style={{ backgroundImage: `url(${heroBg})` }}
         >
-          <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-white/80 p-6 md:p-8 w-full max-w-[1040px] mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.12)] text-left space-y-6">
+          <div className="bg-white rounded-[24px] sm:rounded-[32px] border border-white/80 p-6 md:p-10 w-full max-w-[1080px] mx-auto shadow-[0_25px_60px_rgba(0,0,0,0.18)] text-left space-y-6 relative z-10">
             
             {/* Dashboard Header Bar */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-fog gap-4">
