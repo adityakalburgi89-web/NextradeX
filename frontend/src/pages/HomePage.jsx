@@ -8,14 +8,12 @@ import btcIcon from "../assets/Icons/btc.svg";
 import ethIcon from "../assets/Icons/eth.svg";
 import solIcon from "../assets/Icons/sol.svg";
 import heroBg from "../assets/images/hero-bg.png";
+import coinGeckoIcon from "../assets/Icons/coingecko.svg";
+import coinMarketCapIcon from "../assets/Icons/coinmarketcap.svg";
 
 const partnerLogos = [
-  { name: "Temple", label: "Temple Tech" },
-  { name: "inbound", label: "inbound" },
-  { name: "Buildkite", label: "Buildkite" },
-  { name: "Vercel", label: "Vercel Edge" },
-  { name: "Linear", label: "Linear" },
-  { name: "Fathom", label: "Fathom" },
+  { name: "CoinGecko", label: "CoinGecko", icon: coinGeckoIcon, height: "h-7 sm:h-8" },
+  { name: "CoinMarketCap", label: "CoinMarketCap", icon: coinMarketCapIcon, height: "h-6 sm:h-7" },
 ];
 
 const pricingTiers = [
@@ -111,10 +109,10 @@ export default function HomePage({ isLoggedIn }) {
   const solPrice = prices.find((p) => p.symbol === "SOLUSDT")?.currentPrice || "73.37";
 
   return (
-    <div className="w-full bg-white text-carbon overflow-x-hidden font-openrunde pt-6">
+    <div className="w-full bg-white text-carbon overflow-x-hidden font-openrunde pt-32 sm:pt-40 md:pt-44">
 
       {/* 1. HERO SECTION — Centered Stack on Paper White Canvas */}
-      <section className="pt-10 pb-16 px-6 max-w-[1200px] mx-auto text-center space-y-8">
+      <section className="pt-8 sm:pt-12 pb-20 px-6 max-w-[1200px] mx-auto text-center space-y-10 sm:space-y-12">
         
         {/* NEW Top Pill Badge */}
         <div className="flex justify-center">
@@ -128,7 +126,7 @@ export default function HomePage({ isLoggedIn }) {
         </div>
 
         {/* Display Headline */}
-        <h1 className="font-openrunde text-[48px] sm:text-[60px] font-semibold text-carbon tracking-[-3px] leading-[1.1] max-w-4xl mx-auto">
+        <h1 className="font-openrunde text-[48px] sm:text-[60px] font-semibold text-carbon tracking-[-3px] leading-[1.1] max-w-4xl mx-auto pt-4 sm:pt-6">
           The engineered analytics platform for high-velocity trading.
         </h1>
 
@@ -155,11 +153,22 @@ export default function HomePage({ isLoggedIn }) {
         </div>
 
         {/* Partner Logos Strip */}
-        <div className="pt-8 flex flex-wrap items-center justify-center gap-8 sm:gap-12 opacity-65 hover:opacity-100 transition-opacity">
-          {partnerLogos.map((partner) => (
-            <span key={partner.name} className="font-openrunde font-semibold text-sm tracking-[-0.32px] text-ash">
-              {partner.label}
-            </span>
+        <div className="pt-10 flex flex-wrap items-center justify-center gap-10 sm:gap-16 md:gap-24 opacity-85 hover:opacity-100 transition-opacity">
+          {partnerLogos.map((partner, idx) => (
+            <React.Fragment key={partner.name}>
+              {idx > 0 && <div className="hidden sm:block h-5 w-[1px] bg-[#e2e2e8]" />}
+              {partner.icon ? (
+                <img
+                  src={partner.icon}
+                  alt={partner.label}
+                  className={`${partner.height || "h-7"} object-contain opacity-90 hover:opacity-100 transition-all hover:scale-105`}
+                />
+              ) : (
+                <span className="font-openrunde font-semibold text-sm tracking-[-0.32px] text-ash">
+                  {partner.label}
+                </span>
+              )}
+            </React.Fragment>
           ))}
         </div>
       </section>

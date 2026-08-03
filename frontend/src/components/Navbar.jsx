@@ -11,7 +11,7 @@ export default function Navbar({ theme, isLoggedIn, user, setSearchOpen, trigger
   const isActive = (path) => location.pathname === path;
 
   return (
-    <header className="fixed top-4 left-0 right-0 z-[9999] w-full px-4 max-w-[1200px] mx-auto pointer-events-none flex justify-center">
+    <header className="fixed top-10 sm:top-12 left-0 right-0 z-[9999] w-full px-4 max-w-[1200px] mx-auto pointer-events-none flex justify-center">
       <div className="bg-[#141522] border border-white/10 rounded-full px-3.5 py-1.5 shadow-[0_8px_30px_rgba(0,0,0,0.25)] flex items-center justify-between pointer-events-auto backdrop-blur-xl w-full max-w-fit gap-4 sm:gap-6">
         
         {/* Left: NexTradeX Brand Logo */}
