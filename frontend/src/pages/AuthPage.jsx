@@ -8,7 +8,8 @@ import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
 import { loginUser, registerUser, googleLogin, completeProfile, setAuthToken, forgotPassword, resetPassword } from "../api";
 import { useToast } from "../hooks/useToast";
-import authIllustration from "../assets/images/auth-illustration.jpg";
+import heroBg from "../assets/images/hero-bg.png";
+import authBannerGradient from "../assets/images/auth-banner-gradient.jpg";
 import Logo from "../assets/images/Logo.png";
 import gmailIcon from "../assets/Icons/Gmail_icon_svg.webp";
 import githubIcon from "../assets/Icons/github_icon.png";
@@ -394,8 +395,12 @@ export default function AuthPage() {
   if (urlResetToken) {
     return (
       <PageTransition>
-        <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12 bg-[#fafafa]">
-          <Card className="w-full max-w-md overflow-hidden bg-white border border-[#e8e8e8] rounded-[16px] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_8px_16px_rgba(0,0,0,0.06)]">
+        <div
+          className="min-h-[calc(100vh-140px)] sm:min-h-[calc(100vh-160px)] flex items-center justify-center px-4 py-12 bg-cover bg-center bg-no-repeat relative"
+          style={{ backgroundImage: `url(${heroBg})` }}
+        >
+          <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px] pointer-events-none" />
+          <Card className="w-full max-w-md overflow-hidden bg-white/95 backdrop-blur-xl border border-white/80 rounded-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.22)] relative z-10">
             <CardHeader className="pb-4 pt-8 px-8">
               <CardTitle className="text-[24px] font-semibold text-[#181925] tracking-[-0.31px]">Set New Password</CardTitle>
               <CardDescription className="text-[15px] text-[#666666] tracking-[-0.32px] mt-1">Enter a strong new password for your NexTradeX account.</CardDescription>
@@ -457,8 +462,12 @@ export default function AuthPage() {
   if (needsSetup) {
     return (
       <PageTransition>
-        <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12">
-          <Card className="w-full max-w-md overflow-hidden border border-transparent light:border-transparent">
+        <div
+          className="min-h-[calc(100vh-140px)] sm:min-h-[calc(100vh-160px)] flex items-center justify-center px-4 py-12 bg-cover bg-center bg-no-repeat relative"
+          style={{ backgroundImage: `url(${heroBg})` }}
+        >
+          <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px] pointer-events-none" />
+          <Card className="w-full max-w-md overflow-hidden bg-white/95 backdrop-blur-xl border border-white/80 rounded-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.22)] relative z-10">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl">Complete Your Profile</CardTitle>
               <CardDescription className="text-sm mt-1">Choose a username and verify your name to continue.</CardDescription>
@@ -566,14 +575,39 @@ export default function AuthPage() {
   // Main login / register form
   return (
     <PageTransition>
-      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12 bg-[#ebf5ff]">
-        <Card className="w-full max-w-md bg-[#fafdff] rounded-[32px] p-8 border-0 shadow-none">
-          <CardHeader className="pb-4 px-0 pt-0">
-            {/* Login / Register toggle */}
-            <div className="relative mb-6">
-              <div className="flex items-center bg-[#f6f7f8] rounded-full p-1 border border-black/5 relative overflow-hidden">
+      {/* Outer container with hero-bg background */}
+      <div
+        className="min-h-[calc(100vh-140px)] sm:min-h-[calc(100vh-160px)] w-full flex items-center justify-center p-4 sm:p-6 md:p-10 bg-cover bg-center bg-no-repeat relative"
+        style={{ backgroundImage: `url(${heroBg})` }}
+      >
+        {/* Soft overlay */}
+        <div className="absolute inset-0 bg-black/15 backdrop-blur-[3px] pointer-events-none" />
+
+        {/* Floating Split Card Container */}
+        <div className="w-full max-w-5xl bg-white rounded-[32px] sm:rounded-[36px] p-3 sm:p-4 md:p-5 shadow-[0_25px_70px_rgba(0,0,0,0.22)] border border-white/90 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch relative z-10">
+
+          {/* LEFT PANEL: Frosted Gradient Banner */}
+          <div className="lg:col-span-5 rounded-[24px] sm:rounded-[28px] overflow-hidden relative flex items-center justify-center min-h-[350px] lg:min-h-[560px] bg-white">
+            <img
+              src={authBannerGradient}
+              alt="Authentication Banner"
+              className="w-full h-full object-cover rounded-[24px] sm:rounded-[28px]"
+            />
+          </div>
+
+          {/* RIGHT PANEL: Login Form Area */}
+          <div className="lg:col-span-7 flex flex-col justify-center px-3 sm:px-6 py-4 sm:py-6">
+            <div className="w-full max-w-md mx-auto">
+              
+              {/* Logo / Header */}
+              <div className="flex justify-center mb-6">
+                <img src={Logo} alt="NexTradeX" className="h-8 w-auto" />
+              </div>
+
+              {/* Login / Register toggle */}
+              <div className="flex items-center bg-[#f4f4f5] rounded-full p-1 mb-6 relative overflow-hidden">
                 <div
-                  className="absolute top-1 bottom-1 rounded-full bg-[#181d27]"
+                  className="absolute top-1 bottom-1 rounded-full bg-white shadow-sm"
                   style={{
                     ...getToggleStyle(),
                     transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -583,102 +617,58 @@ export default function AuthPage() {
                   type="button"
                   role="tab"
                   aria-selected={mode === "login"}
-                  aria-controls="auth-form-panel"
                   id="auth-tab-login"
                   onClick={() => { setMode("login"); setFieldErrors({}); setTouched({}); }}
-                  className={`flex-1 font-mono text-xs uppercase px-4 py-2.5 rounded-2xl relative z-10 transition-colors duration-300 ${
-                    mode === "login"
-                      ? "text-on-primary font-bold"
-                      : "text-muted hover:text-on-dark light:hover:text-foreground"
+                  className={`flex-1 text-sm font-medium px-4 py-2 rounded-full relative z-10 transition-colors duration-300 ${
+                    mode === "login" ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
                   }`}
                 >
-                  Login
+                  Log in
                 </button>
                 <button
                   type="button"
                   role="tab"
                   aria-selected={mode === "register"}
-                  aria-controls="auth-form-panel"
                   id="auth-tab-register"
                   onClick={() => { setMode("register"); setFieldErrors({}); setTouched({}); }}
-                  className={`flex-1 font-mono text-xs uppercase px-4 py-2.5 rounded-2xl relative z-10 transition-colors duration-300 ${
-                    mode === "register"
-                      ? "text-on-primary font-bold"
-                      : "text-muted hover:text-on-dark light:hover:text-foreground"
+                  className={`flex-1 text-sm font-medium px-4 py-2 rounded-full relative z-10 transition-colors duration-300 ${
+                    mode === "register" ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
                   }`}
                 >
                   Register
                 </button>
               </div>
-            </div>
 
-            {/* Animated title */}
-            <div className="relative overflow-hidden h-8">
-              <div
-                className="transition-all duration-500 ease-out"
-                style={{
-                  transform: mode === 'login' ? 'translateY(0)' : 'translateY(-10px)',
-                  opacity: mode === 'login' ? 1 : 0,
-                }}
-              >
-                <CardTitle className="text-xl">{content.title}</CardTitle>
+              {/* Title + subtitle */}
+              <div className="mb-5">
+                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+                  {mode === "login" ? "Welcome back" : "Create an account"}
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                  {mode === "login"
+                    ? "Sign in to access your paper trading terminal."
+                    : "Register to start paper trading on NexTradeX."}
+                </p>
               </div>
-              <div
-                className="absolute top-0 left-0 right-0 transition-all duration-500 ease-out"
-                style={{
-                  transform: mode === 'register' ? 'translateY(0)' : 'translateY(10px)',
-                  opacity: mode === 'register' ? 1 : 0,
-                }}
-              >
-                <CardTitle className="text-xl">{content.title}</CardTitle>
-              </div>
-            </div>
 
-            {/* Animated description */}
-            <div className="relative overflow-hidden h-6 mt-1.5">
-              <div
-                className="transition-all duration-500 ease-out"
-                style={{
-                  transform: mode === 'login' ? 'translateY(0)' : 'translateY(-10px)',
-                  opacity: mode === 'login' ? 1 : 0,
-                }}
-              >
-                <CardDescription className="text-sm">Sign in to access your NexTradeX trading terminal.</CardDescription>
-              </div>
-              <div
-                className="absolute top-0 left-0 right-0 transition-all duration-500 ease-out"
-                style={{
-                  transform: mode === 'register' ? 'translateY(0)' : 'translateY(10px)',
-                  opacity: mode === 'register' ? 1 : 0,
-                }}
-              >
-                <CardDescription className="text-sm">Register to start paper trading on NexTradeX.</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-
-          <form
-            id="auth-form-panel"
-            role="tabpanel"
-            aria-labelledby={mode === "login" ? "auth-tab-login" : "auth-tab-register"}
-            onSubmit={handleSubmit}
-            noValidate
-          >
-            <CardContent className="space-y-5 pb-5">
-              {/* Top-level form error */}
+              {/* Error banner */}
               {error && (
-                <div role="alert" aria-live="polite" className="flex items-start gap-2 p-3 rounded-2xl bg-trading-down/10 border border-trading-down/20 text-trading-down text-sm">
-                  <AlertCircle size={16} className="mt-0.5 flex-shrink-0" aria-hidden="true" />
+                <div role="alert" className="flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm mb-4">
+                  <AlertCircle size={15} className="mt-0.5 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
 
-              {/* Username — always visible */}
-              <div>
-                <label htmlFor="auth-username" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                  Username <span className="text-trading-down" aria-hidden="true">*</span>
-                </label>
-                <div className="relative min-h-[56px]">
+              <form
+                id="auth-form-panel"
+                role="tabpanel"
+                aria-labelledby={mode === "login" ? "auth-tab-login" : "auth-tab-register"}
+                onSubmit={handleSubmit}
+                noValidate
+                className="space-y-3.5"
+              >
+                {/* Username */}
+                <div>
                   <Input
                     id="auth-username"
                     name="username"
@@ -689,32 +679,23 @@ export default function AuthPage() {
                     required
                     aria-required="true"
                     aria-invalid={!!fieldErrors.username}
-                    aria-describedby={fieldErrors.username ? "auth-username-error" : undefined}
                     placeholder="Username"
-                    className={fieldErrors.username ? "border-trading-down focus-visible:border-trading-down focus-visible:ring-trading-down/20" : ""}
+                    className={`h-11 rounded-xl border-gray-200 bg-gray-50/80 focus:bg-white text-sm ${fieldErrors.username ? "border-red-400" : ""}`}
                   />
+                  <FieldError id="auth-username-error" message={fieldErrors.username} />
                 </div>
-                <FieldError id="auth-username-error" message={fieldErrors.username} />
-              </div>
 
-              {/* Register-only fields: First Name, Last Name, Email */}
-              <div
-                className="transition-all duration-500 ease-out overflow-hidden"
-                style={{
-                  maxHeight: mode === "register" ? '500px' : '0',
-                  opacity: mode === "register" ? 1 : 0,
-                  marginTop: mode === "register" ? '1.25rem' : '0',
-                  marginBottom: mode === "register" ? '1.25rem' : '0',
-                }}
-              >
-                <div className="space-y-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* First Name */}
-                    <div>
-                      <label htmlFor="auth-firstName" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                        First Name <span className="text-trading-down" aria-hidden="true">*</span>
-                      </label>
-                      <div className="relative min-h-[56px]">
+                {/* Register-only: First Name, Last Name, Email */}
+                <div
+                  className="transition-all duration-500 ease-out overflow-hidden"
+                  style={{
+                    maxHeight: mode === "register" ? '400px' : '0',
+                    opacity: mode === "register" ? 1 : 0,
+                  }}
+                >
+                  <div className="space-y-3.5">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
                         <Input
                           id="auth-firstName"
                           name="firstName"
@@ -723,22 +704,12 @@ export default function AuthPage() {
                           onBlur={handleBlur}
                           autoComplete="given-name"
                           required={mode === "register"}
-                          aria-required={mode === "register"}
-                          aria-invalid={!!fieldErrors.firstName}
-                          aria-describedby={fieldErrors.firstName ? "auth-firstName-error" : undefined}
                           placeholder="First name"
-                          className={fieldErrors.firstName ? "border-trading-down focus-visible:border-trading-down focus-visible:ring-trading-down/20" : ""}
+                          className={`h-11 rounded-xl border-gray-200 bg-gray-50/80 focus:bg-white text-sm ${fieldErrors.firstName ? "border-red-400" : ""}`}
                         />
+                        <FieldError id="auth-firstName-error" message={fieldErrors.firstName} />
                       </div>
-                      <FieldError id="auth-firstName-error" message={fieldErrors.firstName} />
-                    </div>
-
-                    {/* Last Name */}
-                    <div>
-                      <label htmlFor="auth-lastName" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                        Last Name <span className="text-trading-down" aria-hidden="true">*</span>
-                      </label>
-                      <div className="relative min-h-[56px]">
+                      <div>
                         <Input
                           id="auth-lastName"
                           name="lastName"
@@ -747,23 +718,13 @@ export default function AuthPage() {
                           onBlur={handleBlur}
                           autoComplete="family-name"
                           required={mode === "register"}
-                          aria-required={mode === "register"}
-                          aria-invalid={!!fieldErrors.lastName}
-                          aria-describedby={fieldErrors.lastName ? "auth-lastName-error" : undefined}
                           placeholder="Last name"
-                          className={fieldErrors.lastName ? "border-trading-down focus-visible:border-trading-down focus-visible:ring-trading-down/20" : ""}
+                          className={`h-11 rounded-xl border-gray-200 bg-gray-50/80 focus:bg-white text-sm ${fieldErrors.lastName ? "border-red-400" : ""}`}
                         />
+                        <FieldError id="auth-lastName-error" message={fieldErrors.lastName} />
                       </div>
-                      <FieldError id="auth-lastName-error" message={fieldErrors.lastName} />
                     </div>
-                  </div>
-
-                  {/* Email */}
-                  <div>
-                    <label htmlFor="auth-email" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                      Email Address <span className="text-trading-down" aria-hidden="true">*</span>
-                    </label>
-                    <div className="relative min-h-[56px]">
+                    <div>
                       <Input
                         id="auth-email"
                         type="email"
@@ -773,24 +734,16 @@ export default function AuthPage() {
                         onBlur={handleBlur}
                         autoComplete="email"
                         required={mode === "register"}
-                        aria-required={mode === "register"}
-                        aria-invalid={!!fieldErrors.email}
-                        aria-describedby={fieldErrors.email ? "auth-email-error" : undefined}
                         placeholder="Email address"
-                        className={fieldErrors.email ? "border-trading-down focus-visible:border-trading-down focus-visible:ring-trading-down/20" : ""}
+                        className={`h-11 rounded-xl border-gray-200 bg-gray-50/80 focus:bg-white text-sm ${fieldErrors.email ? "border-red-400" : ""}`}
                       />
+                      <FieldError id="auth-email-error" message={fieldErrors.email} />
                     </div>
-                    <FieldError id="auth-email-error" message={fieldErrors.email} />
                   </div>
                 </div>
-              </div>
 
-              {/* Password */}
-              <div>
-                <label htmlFor="auth-password" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                  Password <span className="text-trading-down" aria-hidden="true">*</span>
-                </label>
-                <div className="relative min-h-[56px]">
+                {/* Password */}
+                <div>
                   <Input
                     id="auth-password"
                     type={showPassword ? "text" : "password"}
@@ -800,92 +753,103 @@ export default function AuthPage() {
                     onBlur={handleBlur}
                     autoComplete={mode === "register" ? "new-password" : "current-password"}
                     required
-                    aria-required="true"
-                    aria-invalid={!!fieldErrors.password}
-                    aria-describedby={fieldErrors.password ? "auth-password-error" : "auth-password-strength"}
                     placeholder="Password"
                     rightIcon={
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/40 rounded"
+                        className="focus:outline-none text-gray-400 hover:text-gray-600"
                         aria-label={showPassword ? "Hide password" : "Show password"}
                       >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     }
-                    className={fieldErrors.password ? "border-trading-down focus-visible:border-trading-down focus-visible:ring-trading-down/20" : ""}
+                    className={`h-11 rounded-xl border-gray-200 bg-gray-50/80 focus:bg-white text-sm ${fieldErrors.password ? "border-red-400" : ""}`}
                   />
+                  <PasswordStrengthMeter password={form.password} show={mode === "register"} />
+                  <FieldError id="auth-password-error" message={fieldErrors.password} />
+                  {mode === "login" && (
+                    <div className="flex justify-end mt-1.5">
+                      <button
+                        type="button"
+                        onClick={() => { setForgotError(""); setForgotSuccess(""); setShowForgotModal(true); }}
+                        className="text-xs text-indigo-600 hover:text-indigo-800 hover:underline focus:outline-none font-medium"
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+                  )}
                 </div>
-                {/* Password strength meter — only in register mode */}
-                <PasswordStrengthMeter
-                  password={form.password}
-                  show={mode === "register"}
-                />
-                <FieldError id="auth-password-error" message={fieldErrors.password} />
-                {mode === "login" && (
-                  <div className="flex justify-end mt-2">
-                    <button
-                      type="button"
-                      onClick={() => { setForgotError(""); setForgotSuccess(""); setShowForgotModal(true); }}
-                      className="text-xs font-mono text-primary hover:underline focus:outline-none"
-                    >
-                      Forgot Password?
-                    </button>
-                  </div>
-                )}
-              </div>
-            </CardContent>
 
-            <CardFooter className="flex flex-col gap-4 pb-6">
-              <Button
-                type="submit"
-                className="w-full font-mono font-bold"
-                loading={loading}
-                disabled={loading}
-                aria-disabled={loading}
-              >
-                {content.button}
-              </Button>
-              <div className="relative flex items-center w-full my-2">
-                <div className="flex-grow border-t border-fog" />
-                <span className="flex-shrink mx-3 text-ash text-[10px] uppercase font-mono tracking-wider">or continue with</span>
-                <div className="flex-grow border-t border-fog" />
+                {/* Submit button with styled purple/indigo gradient like design */}
+                <Button
+                  type="submit"
+                  className="w-full h-11 rounded-xl font-semibold text-sm bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] hover:from-[#4338ca] hover:to-[#6d28d9] text-white shadow-[0_8px_20px_rgba(99,102,241,0.35)] transition-all"
+                  loading={loading}
+                  disabled={loading}
+                >
+                  {mode === "login" ? "Get Started" : "Create Account"}
+                </Button>
+              </form>
+
+              {/* Divider */}
+              <div className="relative flex items-center my-4">
+                <div className="flex-grow border-t border-gray-200" />
+                <span className="mx-3 text-[11px] text-gray-400 uppercase tracking-wider font-medium">or continue with</span>
+                <div className="flex-grow border-t border-gray-200" />
               </div>
-              
+
+              {/* Social logins */}
               <div className="grid grid-cols-3 gap-3">
                 <button
                   type="button"
                   onClick={googleLogin}
-                  className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-full bg-white border border-fog text-carbon text-xs font-medium hover:bg-mist transition-colors shadow-subtle-2 cursor-pointer"
+                  aria-label="Log in with Google"
+                  className="flex items-center justify-center h-11 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-all cursor-pointer shadow-xs"
                 >
-                  <img src={gmailIcon} alt="Google" className="w-4 h-4 object-contain" />
-                  <span>Google</span>
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  </svg>
                 </button>
-
                 <button
                   type="button"
                   onClick={() => toast.info("GitHub Login integration enabled.")}
-                  className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-full bg-white border border-fog text-carbon text-xs font-medium hover:bg-mist transition-colors shadow-subtle-2 cursor-pointer"
+                  aria-label="Log in with GitHub"
+                  className="flex items-center justify-center h-11 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-all cursor-pointer shadow-xs"
                 >
-                  <img src={githubIcon} alt="GitHub" className="w-4 h-4 object-contain" />
-                  <span>GitHub</span>
+                  <img src={githubIcon} alt="GitHub" className="w-5 h-5 object-contain" />
                 </button>
-
                 <button
                   type="button"
                   onClick={() => toast.info("X / Twitter Login integration enabled.")}
-                  className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-full bg-white border border-fog text-carbon text-xs font-medium hover:bg-mist transition-colors shadow-subtle-2 cursor-pointer"
+                  aria-label="Log in with X"
+                  className="flex items-center justify-center h-11 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-all cursor-pointer shadow-xs"
                 >
-                  <img src={xIcon} alt="X" className="w-4 h-4 object-contain" />
-                  <span>X</span>
+                  <img src={xIcon} alt="X" className="w-5 h-5 object-contain" />
                 </button>
               </div>
-            </CardFooter>
-          </form>
-        </Card>
-      </div>
 
+              {/* Switch mode link */}
+              <p className="text-center text-xs text-gray-500 mt-5">
+                {mode === "login" ? (
+                  <>Don&apos;t have an account?{" "}
+                    <button type="button" onClick={() => { setMode("register"); setFieldErrors({}); setTouched({}); }} className="text-indigo-600 hover:underline font-semibold">Sign up</button>
+                  </>
+                ) : (
+                  <>Already have an account?{" "}
+                    <button type="button" onClick={() => { setMode("login"); setFieldErrors({}); setTouched({}); }} className="text-indigo-600 hover:underline font-semibold">Log in</button>
+                  </>
+                )}
+              </p>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
       {/* Forgot Password Modal */}
       <Dialog open={showForgotModal} onOpenChange={setShowForgotModal}>
         <DialogContent className="max-w-md bg-white border border-[#e8e8e8] rounded-[16px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_8px_16px_rgba(0,0,0,0.06)]">
