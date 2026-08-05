@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "./context/ThemeContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./components/ui/dialog";
 import { LogOut } from "lucide-react";
@@ -48,6 +48,8 @@ import ToastContainer from "./components/Toast/ToastContainer";
 function App() {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isLandingPage = location.pathname === "/";
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -105,7 +107,7 @@ function App() {
         />
 
         <ErrorBoundary>
-          <div id="main-content" className="relative z-10 w-full">
+          <div id="main-content" className={`relative z-10 w-full ${isLandingPage ? "" : "pt-36 sm:pt-44"}`}>
             <Routes>
               <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} />} />
               <Route path="/auth" element={<AuthPage />} />
