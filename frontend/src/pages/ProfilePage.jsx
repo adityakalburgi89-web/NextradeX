@@ -1,28 +1,27 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/Card";
-import { Input } from "../components/ui/Input";
-import { Button } from "../components/ui/Button";
+import React, { useEffect, useState, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { fetchUserProfile, updateUserProfile, fetchWallets, clearAuthToken, logoutUser } from "../api";
 import { PageTransition } from "../components/ui/PageTransition";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../components/ui/dialog";
-import { fetchUserProfile, updateUserProfile, fetchWallets } from "../api";
+import { formatCurrency } from "../lib/utils";
 import {
   User,
   Mail,
   Shield,
-  CheckCircle,
+  CheckCircle2,
   XCircle,
   Key,
   Lock,
   Wallet,
-  Plus,
   ArrowUpRight,
-  Copy,
-  Check,
   Compass,
   Activity,
-  AlertTriangle,
-  FileCode
+  Check,
+  AlertCircle,
+  Edit3,
+  Layers,
+  Sparkles,
+  ArrowRight,
+  LogOut
 } from "lucide-react";
 
 export default function ProfilePage() {
@@ -31,20 +30,20 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [activeTab, setActiveTab] = useState("dashboard"); // "dashboard" or "settings"
+  const [activeTab, setActiveTab] = useState("overview"); // "overview" | "settings"
   const [wallets, setWallets] = useState([]);
 
-
-
   const [profile, setProfile] = useState({
+    id: null,
     username: "",
     email: "",
     firstName: "",
     lastName: "",
-    role: "",
+    role: "USER",
     active: false,
     emailVerified: false,
   });
+
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -68,6 +67,7 @@ export default function ProfilePage() {
             email: profileData.email || "",
           });
         }
+
         if (walletsRes.status === "fulfilled" && walletsRes.value?.data) {
           setWallets(walletsRes.value.data);
         }
@@ -94,337 +94,377 @@ export default function ProfilePage() {
       const res = await updateUserProfile(form);
       if (res?.data) {
         setProfile(res.data);
-        setSuccess("Profile updated successfully");
+        setSuccess("Profile details updated successfully!");
       }
     } catch (err) {
-      setError(err.message || "Failed to update profile");
+      setError(err.message || "Failed to update profile details");
     } finally {
       setSaving(false);
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await logoutUser().catch(() => {});
+    } finally {
+      clearAuthToken();
+      window.location.href = "/auth";
+    }
+  };
 
+  // Calculate real total USD equity across all user wallets
+  const totalUSDEquity = useMemo(() => {
+    return wallets.reduce((sum, w) => sum + Number(w.balance || 0), 0);
+  }, [wallets]);
 
   const getWalletBalance = (type) => {
     const w = wallets.find(item => item.walletType === type);
-    return w ? Number(w.balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00";
+    return w ? Number(w.balance || 0) : 0;
   };
 
   if (loading) {
     return (
       <PageTransition>
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="font-mono text-muted">Loading profile...</div>
+          <div className="text-sm font-medium text-ash flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full border-2 border-carbon border-t-transparent animate-spin" />
+            Loading account details...
+          </div>
         </div>
       </PageTransition>
     );
   }
 
+  const initial = profile.username?.charAt(0)?.toUpperCase() || "U";
+  const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(" ") || profile.username;
+
   return (
     <PageTransition>
-      <div className="mx-auto max-w-6xl px-4 py-8 md:py-12">
-        {/* Header Section */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-on-dark light:text-foreground font-sans">Account Overview</h1>
-            <p className="text-sm text-muted mt-1.5">Manage your personal information, security credentials, and API access.</p>
+      <div className="max-w-[1340px] mx-auto px-4 sm:px-6 py-8 font-openrunde space-y-8">
+        
+        {/* HERO ACCOUNT HEADER BANNER */}
+        <div className="bg-white border border-fog/80 rounded-[24px] p-6 shadow-subtle-2 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-5">
+            <div className="relative">
+              <div className="w-16 h-16 rounded-full bg-ember text-white flex items-center justify-center font-black text-2xl shadow-subtle">
+                {initial}
+              </div>
+              <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white ${profile.active ? "bg-mint" : "bg-amber"}`} />
+            </div>
+
+            <div>
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1 className="text-2xl font-black text-carbon tracking-tight">{fullName}</h1>
+                <span className="text-xs font-bold bg-mist text-carbon border border-fog px-3 py-0.5 rounded-full uppercase">
+                  {profile.role || "USER"}
+                </span>
+                {profile.active && (
+                  <span className="text-xs font-bold bg-mint-wash text-mint px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                    <CheckCircle2 size={12} /> Verified Trader
+                  </span>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-ash mt-1.5 font-medium">
+                <span>UID: <span className="text-carbon font-bold">#{profile.id ? String(profile.id).padStart(5, '0') : "00001"}</span></span>
+                <span>Username: <span className="text-carbon font-bold">@{profile.username}</span></span>
+                <span>Email: <span className="text-carbon font-bold">{profile.email || "—"}</span></span>
+              </div>
+            </div>
           </div>
-          <Link to="/dashboard">
-            <Button variant="outline" size="sm" className="font-mono text-xs hover:bg-background flex items-center gap-1.5">
-              <Compass size={14} /> Global Dashboard
-            </Button>
-          </Link>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <Link
+              to="/dashboard"
+              className="flex items-center gap-2 bg-mist hover:bg-fog text-carbon font-bold text-xs px-4 py-2.5 rounded-full border border-fog transition-all"
+            >
+              <Compass size={14} /> Dashboard
+            </Link>
+            <Link
+              to="/wallets"
+              className="flex items-center gap-2 bg-ember hover:bg-ember/90 text-white font-bold text-xs px-4 py-2.5 rounded-full transition-all shadow-subtle"
+            >
+              <Wallet size={14} /> Manage Capital
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 bg-ember/10 hover:bg-ember/20 text-ember font-bold text-xs px-4 py-2.5 rounded-full border border-ember/30 transition-all cursor-pointer"
+            >
+              <LogOut size={14} /> Log Out
+            </button>
+          </div>
         </div>
 
+        {/* MAIN GRID SECTION */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column - Identity and Security Overview */}
+          
+          {/* LEFT 4 COLUMNS: ACCOUNT SECURITY & KYC VERIFICATION PANEL */}
           <div className="lg:col-span-4 space-y-6">
-            {/* Identity Card */}
-            <div className="p-6 rounded-xl bg-background border border-transparent light:bg-background light:border-transparent flex flex-col items-center text-center">
-              <div className="relative mb-4">
-                <div className="w-20 h-20 rounded-full bg-background light:bg-background flex items-center justify-center border-2 border-primary shadow-sm">
-                  <User size={36} className="text-primary" />
-                </div>
-                <div className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-trading-up border-2 border-surface-card-dark light:border-canvas-light flex items-center justify-center">
-                  <div className="w-2.5 h-2.5 rounded-full bg-background animate-pulse" />
-                </div>
-              </div>
-              <h3 className="text-xl font-bold text-on-dark light:text-foreground font-mono">{profile.username}</h3>
-              <span className="mt-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 uppercase">
-                {profile.role || "Trader"}
-              </span>
-              <p className="text-xs text-muted mt-4">Account ID: <span className="font-mono text-on-dark light:text-foreground">NTX-{(profile.username || "USER").substring(0, 3).toUpperCase()}-9482</span></p>
-            </div>
+            
+            {/* Account Status Card */}
+            <div className="bg-white border border-fog/80 rounded-[20px] p-6 space-y-5 shadow-subtle">
+              <h3 className="text-sm font-bold text-carbon border-b border-fog/50 pb-3">Account Security & Verification</h3>
 
-            {/* Account Security Status */}
-            <div className="p-6 rounded-xl bg-background border border-transparent light:bg-background light:border-transparent space-y-4">
-              <h4 className="text-sm font-semibold text-on-dark light:text-foreground uppercase font-mono">Account Security</h4>
-
-              <div className="space-y-3">
-                {/* Verification Status */}
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-background/50 light:bg-background border border-transparent light:border-transparent">
-                  <div className="flex items-center gap-2.5">
-                    <Shield size={16} className="text-muted" />
-                    <span className="text-sm text-foreground light:text-foreground">KYC Verification</span>
+              <div className="space-y-3.5">
+                
+                {/* Real KYC Status */}
+                <div className="flex items-center justify-between p-3.5 rounded-xl bg-mist/60 border border-fog/60">
+                  <div className="flex items-center gap-3">
+                    <Shield size={18} className="text-carbon" />
+                    <div>
+                      <div className="text-xs font-bold text-carbon">KYC Verification</div>
+                      <div className="text-[10px] text-ash font-medium">Identity verification status</div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5 font-mono">
-                    {profile.active ? (
-                      <span className="px-2.5 py-0.5 rounded text-[11px] font-semibold bg-trading-up/10 text-trading-up border border-trading-up/20 uppercase">
-                        Verified
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-0.5 rounded text-[11px] font-semibold bg-trading-down/10 text-trading-down border border-trading-down/20 uppercase">
-                        Unverified
-                      </span>
-                    )}
-                  </div>
+                  {profile.active ? (
+                    <span className="text-[11px] font-bold text-mint bg-mint-wash px-2.5 py-1 rounded-full flex items-center gap-1">
+                      <Check size={12} /> Verified
+                    </span>
+                  ) : (
+                    <span className="text-[11px] font-bold text-amber bg-amber/10 px-2.5 py-1 rounded-full flex items-center gap-1">
+                      <AlertCircle size={12} /> Pending
+                    </span>
+                  )}
                 </div>
 
-                {/* Email Status */}
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-background/50 light:bg-background border border-transparent light:border-transparent">
-                  <div className="flex items-center gap-2.5">
-                    <Mail size={16} className="text-muted" />
-                    <span className="text-sm text-foreground light:text-foreground">Email Security</span>
+                {/* Real Email Verification Status */}
+                <div className="flex items-center justify-between p-3.5 rounded-xl bg-mist/60 border border-fog/60">
+                  <div className="flex items-center gap-3">
+                    <Mail size={18} className="text-carbon" />
+                    <div>
+                      <div className="text-xs font-bold text-carbon">Email Verification</div>
+                      <div className="text-[10px] text-ash font-medium">Account email status</div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5 font-mono">
-                    {profile.emailVerified ? (
-                      <span className="px-2.5 py-0.5 rounded text-[11px] font-semibold bg-trading-up/10 text-trading-up border border-trading-up/20 uppercase">
-                        Enabled
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-0.5 rounded text-[11px] font-semibold bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 uppercase">
-                        Pending
-                      </span>
-                    )}
-                  </div>
+                  {profile.emailVerified ? (
+                    <span className="text-[11px] font-bold text-mint bg-mint-wash px-2.5 py-1 rounded-full flex items-center gap-1">
+                      <Check size={12} /> Verified
+                    </span>
+                  ) : (
+                    <span className="text-[11px] font-bold text-amber bg-amber/10 px-2.5 py-1 rounded-full flex items-center gap-1">
+                      <AlertCircle size={12} /> Pending
+                    </span>
+                  )}
                 </div>
 
-                {/* 2FA Status (Simulated detail) */}
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-background/50 light:bg-background border border-transparent light:border-transparent">
-                  <div className="flex items-center gap-2.5">
-                    <Lock size={16} className="text-muted" />
-                    <span className="text-sm text-foreground light:text-foreground">Two-Factor (2FA)</span>
-                  </div>
-                  <span className="px-2.5 py-0.5 rounded text-[11px] font-semibold bg-trading-up/10 text-trading-up border border-trading-up/20 uppercase font-mono">
-                    Enabled
-                  </span>
-                </div>
-
-                {/* Security Keys (Simulated detail) */}
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-background/50 light:bg-background border border-transparent light:border-transparent">
-                  <div className="flex items-center gap-2.5">
-                    <Key size={16} className="text-muted" />
-                    <span className="text-sm text-foreground light:text-foreground">Security Keys</span>
-                  </div>
-                  <span className="px-2.5 py-0.5 rounded text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 uppercase font-mono">
-                    2 Active
-                  </span>
-                </div>
               </div>
             </div>
+
+            {/* Total Balance Summary Card */}
+            <div className="bg-white border border-fog/80 rounded-[20px] p-6 space-y-4 shadow-subtle">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-ash uppercase">Total Portfolio Capital</span>
+                <Wallet size={16} className="text-carbon" />
+              </div>
+              <div className="text-3xl font-black text-carbon tracking-tight">
+                {formatCurrency(totalUSDEquity)}
+              </div>
+              <p className="text-xs text-ash">Aggregated live capital balance across Spot, Futures, Margin, & Options wallets.</p>
+            </div>
+
           </div>
 
-          {/* Right Column - Navigation & Layout Selector */}
+          {/* RIGHT 8 COLUMNS: MAIN TAB CONTENT */}
           <div className="lg:col-span-8 space-y-6">
+            
             {/* Custom Tab Selector */}
-            <div className="flex border-b border-transparent light:border-transparent">
+            <div className="flex bg-mist p-1 rounded-2xl border border-fog w-fit">
               <button
-                onClick={() => {
-                  setActiveTab("dashboard");
-                  setError("");
-                  setSuccess("");
-                }}
-                className={`pb-4 px-6 font-sans text-sm font-bold border-b-2 transition-all ${activeTab === "dashboard"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted hover:text-foreground hover:border-transparent/20"
-                  }`}
+                onClick={() => { setActiveTab("overview"); setError(""); setSuccess(""); }}
+                className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  activeTab === "overview"
+                    ? "bg-white text-carbon shadow-subtle"
+                    : "text-ash hover:text-carbon"
+                }`}
               >
-                Profile Dashboard
+                Capital Overview
               </button>
+
               <button
-                onClick={() => {
-                  setActiveTab("settings");
-                  setError("");
-                  setSuccess("");
-                }}
-                className={`pb-4 px-6 font-sans text-sm font-bold border-b-2 transition-all ${activeTab === "settings"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted hover:text-foreground hover:border-transparent/20"
-                  }`}
+                onClick={() => { setActiveTab("settings"); setError(""); setSuccess(""); }}
+                className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  activeTab === "settings"
+                    ? "bg-white text-carbon shadow-subtle"
+                    : "text-ash hover:text-carbon"
+                }`}
               >
-                Personal Details
+                Edit Personal Details
               </button>
             </div>
 
-            {/* Render Dashboard Tab */}
-            {activeTab === "dashboard" && (
+            {/* OVERVIEW TAB */}
+            {activeTab === "overview" && (
               <div className="space-y-6">
-                {/* 1. Wallet Balances Summary Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Spot Card */}
-                  <div className="p-5 rounded-xl border border-transparent bg-background hover:border-primary/30 transition-all flex flex-col justify-between h-[120px] relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
-                      <Wallet size={72} className="text-primary" />
+                {/* Real Wallet Balances Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  
+                  {/* Spot Wallet */}
+                  <div className="bg-white border border-fog/80 rounded-[20px] p-5 flex flex-col justify-between space-y-4 hover:shadow-subtle transition-all">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-ash uppercase">Spot Wallet</span>
+                      <span className="text-[10px] font-bold bg-mint-wash text-mint px-2 py-0.5 rounded-full">Active</span>
                     </div>
                     <div>
-                      <span className="font-mono text-[10px] text-muted uppercase">Spot Wallet Balance</span>
-                      <h4 className="text-xl font-bold font-mono text-foreground mt-1">${getWalletBalance("SPOT")}</h4>
+                      <div className="text-2xl font-black text-carbon tracking-tight">
+                        {formatCurrency(getWalletBalance("SPOT"))}
+                      </div>
+                      <div className="text-xs text-ash mt-1">Available for Spot orders</div>
                     </div>
-                    <div className="flex justify-between items-center text-[10px] font-mono mt-4 pt-2 border-t border-transparent">
-                      <span className="text-primary font-semibold">Asset Tier: Premium</span>
-                      <Link to="/trade/spot" className="text-muted hover:text-foreground flex items-center gap-0.5">
-                        Trade Spot <ArrowUpRight size={10} />
+                    <div className="pt-3 border-t border-fog/50 flex justify-end">
+                      <Link to="/trade/spot" className="text-xs font-bold text-ember hover:underline flex items-center gap-1">
+                        Trade Spot <ArrowRight size={12} />
                       </Link>
                     </div>
                   </div>
 
-                  {/* Futures Card */}
-                  <div className="p-5 rounded-xl border border-transparent bg-background hover:border-[#3861fb]/30 transition-all flex flex-col justify-between h-[120px] relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
-                      <Activity size={72} className="text-[#3861fb]" />
+                  {/* Futures Wallet */}
+                  <div className="bg-white border border-fog/80 rounded-[20px] p-5 flex flex-col justify-between space-y-4 hover:shadow-subtle transition-all">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-ash uppercase">Futures Wallet</span>
+                      <span className="text-[10px] font-bold bg-mint-wash text-mint px-2 py-0.5 rounded-full">125x Cap</span>
                     </div>
                     <div>
-                      <span className="font-mono text-[10px] text-muted uppercase">Futures Wallet Balance</span>
-                      <h4 className="text-xl font-bold font-mono text-foreground mt-1">${getWalletBalance("FUTURES")}</h4>
+                      <div className="text-2xl font-black text-carbon tracking-tight">
+                        {formatCurrency(getWalletBalance("FUTURES"))}
+                      </div>
+                      <div className="text-xs text-ash mt-1">Leverage Trading Collateral</div>
                     </div>
-                    <div className="flex justify-between items-center text-[10px] font-mono mt-4 pt-2 border-t border-transparent">
-                      <span className="text-[#3861fb] font-semibold">Margin Ratio: 0.0%</span>
-                      <Link to="/trade/futures" className="text-muted hover:text-foreground flex items-center gap-0.5">
-                        Trade Futures <ArrowUpRight size={10} />
+                    <div className="pt-3 border-t border-fog/50 flex justify-end">
+                      <Link to="/trade/futures" className="text-xs font-bold text-ember hover:underline flex items-center gap-1">
+                        Trade Futures <ArrowRight size={12} />
                       </Link>
                     </div>
                   </div>
 
-                  {/* Margin Card */}
-                  <div className="p-5 rounded-xl border border-transparent bg-background hover:border-emerald-500/30 transition-all flex flex-col justify-between h-[120px] relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
-                      <Shield size={72} className="text-emerald-500" />
+                  {/* Margin Wallet */}
+                  <div className="bg-white border border-fog/80 rounded-[20px] p-5 flex flex-col justify-between space-y-4 hover:shadow-subtle transition-all">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-ash uppercase">Margin Wallet</span>
+                      <span className="text-[10px] font-bold bg-mint-wash text-mint px-2 py-0.5 rounded-full">Cross / Isolated</span>
                     </div>
                     <div>
-                      <span className="font-mono text-[10px] text-muted uppercase">Margin Wallet Balance</span>
-                      <h4 className="text-xl font-bold font-mono text-foreground mt-1">${getWalletBalance("MARGIN")}</h4>
+                      <div className="text-2xl font-black text-carbon tracking-tight">
+                        {formatCurrency(getWalletBalance("MARGIN"))}
+                      </div>
+                      <div className="text-xs text-ash mt-1">Borrowed Trading Capital</div>
                     </div>
-                    <div className="flex justify-between items-center text-[10px] font-mono mt-4 pt-2 border-t border-transparent">
-                      <span className="text-emerald-500 font-semibold">Collateral Status: Good</span>
-                      <Link to="/trade/margin" className="text-muted hover:text-foreground flex items-center gap-0.5">
-                        Trade Margin <ArrowUpRight size={10} />
+                    <div className="pt-3 border-t border-fog/50 flex justify-end">
+                      <Link to="/trade/margin" className="text-xs font-bold text-ember hover:underline flex items-center gap-1">
+                        Trade Margin <ArrowRight size={12} />
                       </Link>
                     </div>
                   </div>
+
+                  {/* Options Wallet */}
+                  <div className="bg-white border border-fog/80 rounded-[20px] p-5 flex flex-col justify-between space-y-4 hover:shadow-subtle transition-all">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-ash uppercase">Options Wallet</span>
+                      <span className="text-[10px] font-bold bg-mint-wash text-mint px-2 py-0.5 rounded-full">Settlement</span>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-black text-carbon tracking-tight">
+                        {formatCurrency(getWalletBalance("OPTIONS"))}
+                      </div>
+                      <div className="text-xs text-ash mt-1">Options Trading Fund</div>
+                    </div>
+                    <div className="pt-3 border-t border-fog/50 flex justify-end">
+                      <Link to="/wallets" className="text-xs font-bold text-ember hover:underline flex items-center gap-1">
+                        Manage Wallets <ArrowRight size={12} />
+                      </Link>
+                    </div>
+                  </div>
+
                 </div>
-
-                {/* 2. Trading Tier Status */}
-                <div className="p-5 rounded-xl border border-transparent bg-background space-y-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="text-sm font-bold text-foreground font-heading uppercase">Trading Fee Tier</h4>
-                      <p className="text-xs text-muted mt-0.5">Accumulated 30-day simulated trading volume fee rates.</p>
-                    </div>
-                    <span className="px-3 py-1 font-mono text-xs font-bold rounded-2xl bg-primary/10 border border-primary/20 text-primary uppercase">
-                      VIP Level 1
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2 text-center">
-                    <div className="p-3 bg-background/40 rounded-2xl border border-transparent font-mono">
-                      <span className="text-[10px] text-muted block uppercase">Maker Fee</span>
-                      <span className="text-sm font-bold text-foreground mt-1 block">0.012%</span>
-                    </div>
-                    <div className="p-3 bg-background/40 rounded-2xl border border-transparent font-mono">
-                      <span className="text-[10px] text-muted block uppercase">Taker Fee</span>
-                      <span className="text-sm font-bold text-foreground mt-1 block">0.024%</span>
-                    </div>
-                    <div className="p-3 bg-background/40 rounded-2xl border border-transparent font-mono">
-                      <span className="text-[10px] text-muted block uppercase">30d Volume</span>
-                      <span className="text-sm font-bold text-foreground mt-1 block">$142,590.00</span>
-                    </div>
-                    <div className="p-3 bg-background/40 rounded-2xl border border-transparent font-mono">
-                      <span className="text-[10px] text-muted block uppercase">Next Tier At</span>
-                      <span className="text-sm font-bold text-primary mt-1 block">$500,000</span>
-                    </div>
-                  </div>
-                </div>
-
               </div>
             )}
 
-            {/* Render Settings Form Tab */}
+            {/* EDIT SETTINGS TAB */}
             {activeTab === "settings" && (
-              <Card className="h-full">
-                <CardHeader className="border-b border-transparent light:border-transparent pb-5 mb-6">
-                  <CardTitle className="text-lg">Personal Information</CardTitle>
-                  <CardDescription>Update your profile credentials and email preferences.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                          First Name
-                        </label>
-                        <Input
-                          name="firstName"
-                          value={form.firstName}
-                          onChange={handleChange}
-                          placeholder="First name"
-                        />
-                      </div>
-                      <div>
-                        <label className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                          Last Name
-                        </label>
-                        <Input
-                          name="lastName"
-                          value={form.lastName}
-                          onChange={handleChange}
-                          placeholder="Last name"
-                        />
-                      </div>
-                    </div>
+              <div className="bg-white border border-fog/80 rounded-[24px] p-6 space-y-6 shadow-subtle-2">
+                <div>
+                  <h3 className="text-base font-bold text-carbon">Personal Information</h3>
+                  <p className="text-xs text-ash mt-1">Update your profile credentials and account details.</p>
+                </div>
 
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                        Email Address
-                      </label>
-                      <Input
-                        type="email"
-                        name="email"
-                        value={form.email}
+                      <label className="text-xs font-bold text-carbon mb-1.5 block">First Name</label>
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={form.firstName}
                         onChange={handleChange}
-                        placeholder="email@example.com"
+                        placeholder="First name"
+                        className="w-full bg-mist text-carbon text-sm px-4 py-2.5 rounded-xl border border-fog focus:outline-none focus:border-carbon transition-colors"
                       />
                     </div>
 
                     <div>
-                      <label className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                        Username
-                      </label>
-                      <Input value={profile.username} disabled className="opacity-60 bg-background/50 cursor-not-allowed" />
-                      <p className="text-xs text-muted mt-2">Username is used for system identification and cannot be altered.</p>
+                      <label className="text-xs font-bold text-carbon mb-1.5 block">Last Name</label>
+                      <input
+                        type="text"
+                        name="lastName"
+                        value={form.lastName}
+                        onChange={handleChange}
+                        placeholder="Last name"
+                        className="w-full bg-mist text-carbon text-sm px-4 py-2.5 rounded-xl border border-fog focus:outline-none focus:border-carbon transition-colors"
+                      />
                     </div>
+                  </div>
 
-                    {success && (
-                      <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-trading-up/10 border border-trading-up/20 animate-slide-down">
-                        <p className="text-trading-up text-sm font-mono">{success}</p>
-                      </div>
-                    )}
-                    {error && (
-                      <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-trading-down/10 border border-trading-down/20 animate-slide-down">
-                        <p className="text-trading-down text-sm font-mono">{error}</p>
-                      </div>
-                    )}
+                  <div>
+                    <label className="text-xs font-bold text-carbon mb-1.5 block">Email Address</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={form.email}
+                      onChange={handleChange}
+                      placeholder="email@example.com"
+                      className="w-full bg-mist text-carbon text-sm px-4 py-2.5 rounded-xl border border-fog focus:outline-none focus:border-carbon transition-colors"
+                    />
+                  </div>
 
-                    <div className="pt-6 border-t border-transparent light:border-transparent flex justify-end">
-                      <Button type="submit" className="w-full md:w-auto px-8" loading={saving}>
-                        Save Changes
-                      </Button>
+                  <div>
+                    <label className="text-xs font-bold text-carbon mb-1.5 block">Username (System Identifier)</label>
+                    <input
+                      type="text"
+                      value={profile.username}
+                      disabled
+                      className="w-full bg-mist/50 text-ash text-sm px-4 py-2.5 rounded-xl border border-fog cursor-not-allowed font-mono"
+                    />
+                    <p className="text-[11px] text-ash mt-1">Username is fixed for security identification.</p>
+                  </div>
+
+                  {success && (
+                    <div className="p-3.5 rounded-xl bg-mint-wash text-mint text-xs font-bold flex items-center gap-2 border border-mint/20">
+                      <CheckCircle2 size={16} /> {success}
                     </div>
-                  </form>
-                </CardContent>
-              </Card>
+                  )}
+
+                  {error && (
+                    <div className="p-3.5 rounded-xl bg-ember/10 text-ember text-xs font-bold flex items-center gap-2 border border-ember/20">
+                      <AlertCircle size={16} /> {error}
+                    </div>
+                  )}
+
+                  <div className="pt-4 border-t border-fog flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className="bg-ember hover:bg-ember/90 text-white font-bold text-xs px-6 py-3 rounded-full transition-all shadow-subtle disabled:opacity-50"
+                    >
+                      {saving ? "Saving..." : "Save Changes"}
+                    </button>
+                  </div>
+                </form>
+              </div>
             )}
+
           </div>
+
         </div>
+
       </div>
     </PageTransition>
   );

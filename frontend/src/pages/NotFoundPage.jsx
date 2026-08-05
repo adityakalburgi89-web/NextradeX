@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, LayoutGrid, SearchX } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 const FloatingSymbol = ({ icon, top, left, delay }) => (
   <motion.div
