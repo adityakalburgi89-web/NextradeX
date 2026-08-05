@@ -17,4 +17,5 @@ public interface IMarketService {
     CryptoPrice updatePrice(String symbol, BigDecimal currentPrice);
     String fetchCoinMarketCapPrice(String symbol);
     String fetchCoinGeckoPrice(String coinId);
+    java.util.Map<String, Object> getGlobalMarketStats();
 }
