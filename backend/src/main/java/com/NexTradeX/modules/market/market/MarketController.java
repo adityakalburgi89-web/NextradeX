@@ -41,6 +41,19 @@ public class MarketController {
                     .body(new ApiResponse<>(400, e.getMessage(), null));
         }
     }
+
+    @GetMapping("/global-stats")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getGlobalMarketStats() {
+        try {
+            Map<String, Object> stats = marketService.getGlobalMarketStats();
+            return ResponseEntity.ok()
+                    .body(new ApiResponse<>(200, "Global market stats retrieved", stats));
+        } catch (Exception e) {
+            log.error("Error retrieving global market stats: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        }
+    }
     
     @RateLimit(capacity = 5, refillRate = 2.0)
     @GetMapping("/price/{symbol}")
