@@ -6,6 +6,7 @@ import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
 import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
+import footerBg from "../assets/images/footer-bg.png";
 import { TradingChartPanel } from "../components/ui/TradingChartPanel";
 import { OrderBook } from "../components/ui/OrderBook";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
@@ -574,7 +575,10 @@ export default function FuturesTradingPage() {
 
   return (
     <PageTransition>
-      <div className="w-full bg-background text-foreground py-4 font-sans select-none min-h-screen">
+      <div
+        className="w-full text-foreground py-4 font-sans select-none min-h-screen bg-cover bg-center bg-no-repeat relative"
+        style={{ backgroundImage: `url(${footerBg})` }}
+      >
         <div className="max-w-8xl mx-auto px-4 space-y-4">
 
           {/* HIGH-DENSITY TICKER HEADER PANEL */}
