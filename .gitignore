@@ -47,6 +47,10 @@ backend/target/
 data/
 backend/.mvn/
 
-# Sensitive properties
+# Sensitive properties & configs
 .foglamp/
+application.properties
+backend/src/main/resources/application.properties
+!application.properties.example
+!backend/src/main/resources/application.properties.example
 
