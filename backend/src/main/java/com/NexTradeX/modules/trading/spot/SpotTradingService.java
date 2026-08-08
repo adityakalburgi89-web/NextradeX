@@ -30,6 +30,7 @@ public class SpotTradingService {
     private final IWalletService walletService;
     private final IMarketService marketService;
     private final SpotHoldingService spotHoldingService;
+    private final com.NexTradeX.shared.messaging.LavinMQProducer lavinMQProducer;
     
     private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.001"); // 0.1%
     
@@ -84,6 +85,23 @@ public class SpotTradingService {
         
         Order savedOrder = orderRepository.save(order);
         
+        try {
+            com.NexTradeX.shared.messaging.OrderEvent event = com.NexTradeX.shared.messaging.OrderEvent.builder()
+                    .orderId(savedOrder.getId().toString())
+                    .userId(userId.toString())
+                    .symbol(symbol)
+                    .side(side.name())
+                    .orderType(orderType.name())
+                    .status(savedOrder.getStatus().name())
+                    .timestamp(System.currentTimeMillis())
+                    .quantity(quantity)
+                    .price(executionPrice != null ? executionPrice : BigDecimal.ZERO)
+                    .build();
+            lavinMQProducer.sendOrderEvent(event);
+        } catch (Exception e) {
+            log.warn("Failed to publish spot order event to LavinMQ: {}", e.getMessage());
+        }
+
         // For market orders, execute immediately
         if (orderType == OrderType.MARKET) {
             executeSpotOrder(savedOrder.getId(), userId);

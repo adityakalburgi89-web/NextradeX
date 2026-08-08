@@ -34,6 +34,7 @@ public class FuturesTradingService implements IFuturesTradingService {
     private final IWalletService walletService;
     private final IMarketService marketService;
     private final PositionRiskCalculator riskCalculator;
+    private final com.NexTradeX.shared.messaging.LavinMQProducer lavinMQProducer;
 
     public Order openFuturesPosition(Long userId, String symbol, OrderSide side,
             BigDecimal quantity, BigDecimal leverage) {
@@ -102,7 +103,24 @@ public class FuturesTradingService implements IFuturesTradingService {
                 .filledAt(LocalDateTime.now())
                 .build();
 
-        orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+
+        try {
+            com.NexTradeX.shared.messaging.OrderEvent event = com.NexTradeX.shared.messaging.OrderEvent.builder()
+                    .orderId(savedOrder.getId().toString())
+                    .userId(userId.toString())
+                    .symbol(symbol)
+                    .side(side.name())
+                    .orderType("MARKET")
+                    .status(savedOrder.getStatus().name())
+                    .timestamp(System.currentTimeMillis())
+                    .quantity(quantity)
+                    .price(entryPrice != null ? entryPrice : BigDecimal.ZERO)
+                    .build();
+            lavinMQProducer.sendOrderEvent(event);
+        } catch (Exception e) {
+            log.warn("Failed to publish futures order event to LavinMQ: {}", e.getMessage());
+        }
 
         log.info("Futures position opened for user {}: {} {} {} {}", userId, symbol, side, quantity, leverage);
         return order;
