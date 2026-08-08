@@ -151,7 +151,10 @@ export default function Navbar({
                 type="button"
                 className="crypto-user-pill"
                 title={user?.username || "Account"}
-                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setUserDropdownOpen((prev) => !prev);
+                }}
               >
                 <div className="crypto-user-avatar">
                   {user?.username?.charAt(0)?.toUpperCase() || "U"}
@@ -160,10 +163,16 @@ export default function Navbar({
               </button>
 
               {userDropdownOpen && (
-                <div className="crypto-user-dropdown-menu">
-                  <Link to="/dashboard" onClick={handleCloseMenu} className="crypto-megamenu-item">Dashboard</Link>
-                  <Link to="/profile" onClick={handleCloseMenu} className="crypto-megamenu-item">Profile</Link>
-                  <Link to="/wallets" onClick={handleCloseMenu} className="crypto-megamenu-item">Wallets</Link>
+                <div className="crypto-user-dropdown-menu" onClick={(e) => e.stopPropagation()}>
+                  <Link to="/dashboard" onClick={handleCloseMenu} className="crypto-megamenu-item flex items-center gap-2 py-2 px-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                    <span>Dashboard</span>
+                  </Link>
+                  <Link to="/profile" onClick={handleCloseMenu} className="crypto-megamenu-item flex items-center gap-2 py-2 px-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                    <span>Profile</span>
+                  </Link>
+                  <Link to="/wallets" onClick={handleCloseMenu} className="crypto-megamenu-item flex items-center gap-2 py-2 px-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                    <span>Wallets</span>
+                  </Link>
                 </div>
               )}
             </div>

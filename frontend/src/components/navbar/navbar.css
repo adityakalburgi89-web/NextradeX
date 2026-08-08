@@ -78,10 +78,10 @@
   gap: 4px;
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.92);
   font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 13.5px;
+  font-weight: 600;
   padding: 5px 10px;
   border-radius: 9999px;
   cursor: pointer;
@@ -201,8 +201,9 @@
 }
 
 .crypto-megamenu-header-desc {
-  color: #6b7280;
+  color: #4b5563;
   font-size: 12.5px;
+  font-weight: 500;
   margin: 0;
 }
 
@@ -268,14 +269,15 @@
 .crypto-megamenu-item-title {
   color: #111827;
   font-size: 13.5px;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
   line-height: 1.2;
 }
 
 .crypto-megamenu-item-desc {
-  color: #4b5563;
+  color: #374151;
   font-size: 11.5px;
+  font-weight: 500;
   margin: 0;
   line-height: 1.3;
 }
@@ -364,9 +366,9 @@
 .crypto-market-tab-btn {
   background: transparent;
   border: none;
-  color: #6b7280;
+  color: #4b5563;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   padding: 4px 10px;
   border-radius: 6px;
   cursor: pointer;
@@ -381,7 +383,7 @@
 .crypto-market-tab-btn.is-active {
   color: #7c3aed;
   background-color: rgba(124, 58, 237, 0.1);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Market Rows List */
@@ -459,16 +461,16 @@
 .crypto-market-row-symbol {
   color: #111827;
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .crypto-market-row-type {
   font-size: 10px;
-  color: #6b7280;
+  color: #4b5563;
   background-color: #f3f4f6;
   padding: 1px 5px;
   border-radius: 4px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .crypto-market-row-right {
@@ -478,14 +480,14 @@
 }
 
 .crypto-market-row-price {
-  color: #374151;
+  color: #111827;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .crypto-market-row-change {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   min-width: 60px;
   text-align: right;
 }
@@ -557,9 +559,9 @@
 }
 
 .crypto-login-link {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.95);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
   padding: 4px 10px;
   border-radius: 9999px;
@@ -576,7 +578,7 @@
   background: linear-gradient(135deg, #918df6 0%, #7c3aed 100%);
   color: #ffffff;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   padding: 5px 16px;
   border-radius: 9999px;
   text-decoration: none;
@@ -604,7 +606,7 @@
   padding: 3px 8px 3px 3px;
   color: #ffffff;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: background-color 0.18s ease;
 }
@@ -714,7 +716,7 @@
   border: none;
   color: #111827;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   text-align: left;
 }
@@ -731,7 +733,7 @@
   padding: 10px 8px;
   color: #111827;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
   border-bottom: 1px solid #f3f4f6;
 }
