@@ -503,7 +503,9 @@ public class MarketService implements IMarketService {
         if (symbol == null || symbol.isBlank()) {
             throw new IllegalArgumentException("Symbol is required");
         }
-        String clean = symbol.trim().toUpperCase();
+        String clean = symbol.trim().toUpperCase()
+                .replaceAll("USDUSDT$", "USDT")
+                .replaceAll("USDTUSDT$", "USDT");
         if (!clean.endsWith("USDT") && !clean.endsWith("USDC") && !clean.endsWith("BUSD")
                 && clean.matches("[A-Z0-9]{2,12}")) {
             clean = clean + "USDT";
