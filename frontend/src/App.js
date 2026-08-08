@@ -42,8 +42,10 @@ import SearchModal from "./components/SearchModal";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 import SkipNav from "./components/SkipNav";
+import ScrollToTop from "./components/ScrollToTop";
 import { ToastProvider } from "./components/Toast/ToastProvider";
 import ToastContainer from "./components/Toast/ToastContainer";
+import OrderToastContainer from "./components/OrderToastContainer";
 
 function App() {
   const { theme, toggleTheme } = useTheme();
@@ -93,6 +95,7 @@ function App() {
 
   return (
     <ToastProvider>
+      <ScrollToTop />
       <div className="min-h-screen bg-background text-foreground relative overflow-x-hidden font-body">
         {/* Accessibility Skip Nav */}
         <SkipNav />
@@ -187,6 +190,7 @@ function App() {
         <Footer />
       </div>
       <ToastContainer />
+      <OrderToastContainer />
     </ToastProvider>
   );
 }
