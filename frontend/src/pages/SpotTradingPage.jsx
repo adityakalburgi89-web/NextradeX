@@ -25,15 +25,13 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "../com
 import { useWebSocket } from "../hooks/useWebSocket";
 import { formatCurrency, formatPercent } from "../lib/utils";
 import { 
-  ChevronDown, 
   Info, 
   Trash2, 
   Lock, 
   Wallet, 
   Headphones, 
   ShieldCheck, 
-  Bell, 
-  FileText,
+  Bell,
   HelpCircle,
   Settings,
   TrendingUp,
@@ -48,18 +46,6 @@ const initialForm = {
   price: "",
   stopPrice: "",
 };
-
-// Popular pairs ticker marquee list matching KuCoin screenshot
-const POPULAR_PAIRS = [
-  { symbol: "1H/USDT", change: "+0.55%", price: "1,868.14", isUp: true },
-  { symbol: "BTC/USDT", change: "+1.10%", price: "63,812.7", isUp: true },
-  { symbol: "ZEC/USDT", change: "+3.71%", price: "489.393", isUp: true },
-  { symbol: "GRVT/USDT", change: "+8.13%", price: "0.2873", isUp: true },
-  { symbol: "XRP/USDT", change: "+0.00%", price: "1.08191", isUp: true },
-  { symbol: "ADA/USDT", change: "+2.22%", price: "0.1932", isUp: true },
-  { symbol: "BNB/USDT", change: "+1.04%", price: "591.741", isUp: true },
-  { symbol: "LINK/USDT", change: "-0.14%", price: "8.27", isUp: false },
-];
 
 export default function SpotTradingPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -422,97 +408,7 @@ export default function SpotTradingPage() {
       >
         <div className="max-w-[1720px] mx-auto px-2 space-y-2">
           
-          {/* ========================================================================= */}
-          {/* 1. KUCOIN TICKER HEADER BAR & POPULAR PAIRS MARQUEE                       */}
-          {/* ========================================================================= */}
-          <div className="bg-background border border-transparent rounded-xl p-3 shadow-elevation-md space-y-2">
-            
-            {/* Top Row: Symbol Selector & Metrics */}
-            <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
-              <div className="flex items-center gap-4">
-                {/* Symbol Switcher Dropdown */}
-                <div className="flex items-center gap-2">
-                  <Select
-                    name="symbol"
-                    value={form.symbol}
-                    onChange={handleChange}
-                    className="bg-background border border-transparent font-bold text-base text-foreground rounded px-2 py-1 cursor-pointer"
-                  >
-                    <option value="BTCUSDT">BTC/USDT</option>
-                    <option value="ETHUSDT">ETH/USDT</option>
-                    <option value="SOLUSDT">SOL/USDT</option>
-                    <option value="BNBUSDT">BNB/USDT</option>
-                    <option value="DOTUSDT">DOT/USDT</option>
-                    <option value="ZECUSDT">ZEC/USDT</option>
-                  </Select>
-                </div>
 
-                {/* Main 24h Live Price */}
-                <div className="flex items-baseline gap-2 border-l border-transparent pl-4">
-                  <span className="text-xl font-extrabold text-trading-up">
-                    {(currentPrice || priceSnapshot?.currentPrice || 63812.7).toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
-                  </span>
-                  <span className="text-[11px] text-trading-up font-bold">
-                    +1.1% +696.9
-                  </span>
-                </div>
-              </div>
-
-              {/* 24h Market Metrics */}
-              <div className="flex items-center gap-6 text-muted text-[11px]">
-                <div>
-                  <span className="block text-[9px] uppercase">24h High</span>
-                  <span className="text-foreground font-bold">
-                    {(priceSnapshot?.highPrice || 63976.7).toLocaleString("en-US", { minimumFractionDigits: 1 })}
-                  </span>
-                </div>
-                <div>
-                  <span className="block text-[9px] uppercase">24h Low</span>
-                  <span className="text-foreground font-bold">
-                    {(priceSnapshot?.lowPrice || 62294.1).toLocaleString("en-US", { minimumFractionDigits: 1 })}
-                  </span>
-                </div>
-                <div>
-                  <span className="block text-[9px] uppercase">24h Volume ({baseAsset})</span>
-                  <span className="text-foreground font-bold">1.55K</span>
-                </div>
-                <div>
-                  <span className="block text-[9px] uppercase">24h Volume (USDT)</span>
-                  <span className="text-foreground font-bold">97.95M</span>
-                </div>
-
-                <div className="border-l border-transparent pl-4">
-                  <button type="button" className="flex items-center gap-1 text-muted hover:text-foreground font-bold">
-                    <FileText size={13} />
-                    <span>Trading Info</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Sub-Header Row: Popular Ticker Marquee Bar */}
-            <div className="border-t border-transparent pt-2 flex items-center gap-4 font-mono text-[11px] overflow-x-auto scrollbar-none text-muted">
-              <span className="font-bold text-foreground flex items-center gap-1 shrink-0">
-                Popular <ChevronDown size={12} />
-              </span>
-              <div className="flex items-center gap-6 shrink-0">
-                {POPULAR_PAIRS.map((pair, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setForm(prev => ({ ...prev, symbol: pair.symbol.replace("/", "") }))}
-                    className="flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer"
-                  >
-                    <span className="font-semibold text-foreground">{pair.symbol}</span>
-                    <span className={`font-bold ${pair.isUp ? "text-trading-up" : "text-trading-down"}`}>
-                      {pair.change}
-                    </span>
-                    <span className="text-foreground/80">{pair.price}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
 
           {/* ========================================================================= */}
           {/* 2. THREE-COLUMN KUCOIN TRADING TERMINAL GRID                              */}
@@ -523,6 +419,7 @@ export default function SpotTradingPage() {
             <div className="lg:col-span-6 space-y-2">
               <TradingChartPanel
                 symbol={form.symbol}
+                onSymbolChange={(newSym) => setForm(prev => ({ ...prev, symbol: newSym }))}
                 interval={interval}
                 onIntervalChange={setInterval}
                 loading={chartLoading}

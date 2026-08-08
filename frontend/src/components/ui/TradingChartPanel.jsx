@@ -1,13 +1,27 @@
-import React, { useState } from "react";
-import { Activity, BarChart3, CandlestickChart as CandlestickChartIcon, Waves, Sliders, Expand, Eye, Layers } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { Activity, BarChart3, CandlestickChart as CandlestickChartIcon, Waves, Sliders, Expand, Eye, Layers, ArrowLeftRight, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "./Card";
 import CandlestickChart from "./CandlestickChart";
+import UniversalCoinIcon from "../../lib/coinIcons";
 import { cn, formatCompactNumber, formatCurrency, formatPercent } from "../../lib/utils";
 
 export const DEFAULT_INTERVALS = ["15m", "1h", "4h", "1D", "1W"];
 
+const POPULAR_COINS = [
+  { symbol: "BTCUSDT", label: "BTC/USDT", base: "BTC" },
+  { symbol: "ETHUSDT", label: "ETH/USDT", base: "ETH" },
+  { symbol: "SOLUSDT", label: "SOL/USDT", base: "SOL" },
+  { symbol: "BNBUSDT", label: "BNB/USDT", base: "BNB" },
+  { symbol: "XRPUSDT", label: "XRP/USDT", base: "XRP" },
+  { symbol: "ADAUSDT", label: "ADA/USDT", base: "ADA" },
+  { symbol: "DOTUSDT", label: "DOT/USDT", base: "DOT" },
+  { symbol: "ZECUSDT", label: "ZEC/USDT", base: "ZEC" },
+  { symbol: "LINKUSDT", label: "LINK/USDT", base: "LINK" },
+];
+
 export function TradingChartPanel({
   symbol = "BTCUSDT",
+  onSymbolChange,
   interval = "15m",
   onIntervalChange,
   loading,
@@ -17,10 +31,22 @@ export function TradingChartPanel({
 }) {
   const [activeTab, setActiveTab] = useState("CHART"); // CHART | FEED | COIN_INFO
   const [chartViewMode, setChartViewMode] = useState("CANDLE"); // CANDLE | DEPTH
+  const [isCoinSelectorOpen, setIsCoinSelectorOpen] = useState(false);
+  const coinDropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (coinDropdownRef.current && !coinDropdownRef.current.contains(event.target)) {
+        setIsCoinSelectorOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const currentPrice = data.length > 0 ? data[data.length - 1].close : 63812.7;
-  const buyPrice = (currentPrice * 0.9998).toFixed(1);
-  const sellPrice = (currentPrice * 1.0002).toFixed(1);
+  const baseSymbol = symbol.replace("USDT", "").toUpperCase();
+  const formattedSymbol = `${baseSymbol}/USDT`;
 
   return (
     <Card className="bg-background border border-transparent rounded-xl overflow-hidden shadow-elevation-md flex flex-col select-none">
@@ -35,15 +61,6 @@ export function TradingChartPanel({
             }`}
           >
             Chart
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("FEED")}
-            className={`text-xs font-bold font-heading uppercase py-1 border-b-2 transition-all ${
-              activeTab === "FEED" ? "text-foreground border-primary" : "text-muted border-transparent hover:text-foreground"
-            }`}
-          >
-            Feed
           </button>
           <button
             type="button"
@@ -120,30 +137,65 @@ export function TradingChartPanel({
       <CardContent className="p-3 relative">
         {activeTab === "CHART" ? (
           <>
-            {/* Quick Market Order Buttons Overlay (as seen on KuCoin terminal) */}
-            <div className="absolute top-5 left-5 z-20 flex items-center gap-2 font-mono text-xs">
-              <button
-                type="button"
-                onClick={() => onQuickTrade?.("BUY", buyPrice)}
-                className="flex items-center gap-2 bg-trading-up hover:bg-trading-up/90 text-white px-3 py-1.5 rounded shadow-elevation-md transition-all active:scale-95 cursor-pointer"
-              >
-                <span className="text-[10px] font-bold uppercase">Market Buy</span>
-                <span className="font-extrabold">{buyPrice}</span>
-              </button>
+            {/* Coin Switcher Overlay Badge (Replaces Quick Market Buy/Sell overlay) */}
+            <div className="absolute top-5 left-5 z-20" ref={coinDropdownRef}>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsCoinSelectorOpen(!isCoinSelectorOpen)}
+                  className="flex items-center gap-2 bg-background/90 backdrop-blur-md border border-white/10 hover:border-primary/40 px-3 py-1.5 rounded-xl shadow-elevation-md transition-all text-xs font-mono group cursor-pointer"
+                  title="Switch Trading Pair"
+                >
+                  <UniversalCoinIcon symbol={baseSymbol} size="w-5 h-5" />
+                  <span className="font-bold text-foreground">{formattedSymbol}</span>
+                  <span className="text-trading-up font-extrabold text-xs ml-1">
+                    ${currentPrice.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
+                  </span>
+                  <div className="flex items-center gap-1 ml-1 text-muted group-hover:text-primary transition-colors">
+                    <ArrowLeftRight size={13} />
+                    <ChevronDown size={12} />
+                  </div>
+                </button>
 
-              <div className="w-[120px] bg-background/80 backdrop-blur-xs border border-transparent rounded px-2 py-1 flex flex-col justify-center text-center text-[10px] text-muted">
-                <span>Amount({symbol.replace("USDT", "")})</span>
-                <span className="text-foreground font-bold">Enter amount</span>
+                {isCoinSelectorOpen && (
+                  <div className="absolute top-full left-0 mt-1.5 w-60 bg-background/95 backdrop-blur-md border border-white/10 rounded-xl shadow-xl z-50 p-2 font-mono text-xs animate-fade-in-fast">
+                    <div className="text-[10px] font-bold uppercase text-muted px-2 py-1 border-b border-white/10 mb-1 flex items-center justify-between">
+                      <span>Select Coin</span>
+                      <ArrowLeftRight size={12} className="text-primary" />
+                    </div>
+                    <div className="max-h-64 overflow-y-auto space-y-0.5 scrollbar-none">
+                      {POPULAR_COINS.map((c) => {
+                        const isSelected = symbol.toUpperCase() === c.symbol.toUpperCase();
+                        return (
+                          <button
+                            key={c.symbol}
+                            type="button"
+                            onClick={() => {
+                              onSymbolChange?.(c.symbol);
+                              setIsCoinSelectorOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg transition-all cursor-pointer ${
+                              isSelected
+                                ? "bg-primary/20 text-primary font-bold shadow-xs"
+                                : "hover:bg-white/10 text-foreground/80 hover:text-foreground"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <UniversalCoinIcon symbol={c.base} size="w-5 h-5" />
+                              <span className="font-bold">{c.label}</span>
+                            </div>
+                            {isSelected && (
+                              <span className="text-[9px] bg-primary/30 px-1.5 py-0.5 rounded text-primary font-bold uppercase">
+                                Active
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
-
-              <button
-                type="button"
-                onClick={() => onQuickTrade?.("SELL", sellPrice)}
-                className="flex items-center gap-2 bg-trading-down hover:bg-trading-down/90 text-white px-3 py-1.5 rounded shadow-elevation-md transition-all active:scale-95 cursor-pointer"
-              >
-                <span className="text-[10px] font-bold uppercase">Market Sell</span>
-                <span className="font-extrabold">{sellPrice}</span>
-              </button>
             </div>
 
             {loading ? (
@@ -167,20 +219,6 @@ export function TradingChartPanel({
               </div>
             )}
           </>
-        ) : activeTab === "FEED" ? (
-          <div className="h-[440px] p-6 font-mono text-xs space-y-4 overflow-y-auto">
-            <h4 className="font-heading font-bold text-sm text-foreground uppercase">{symbol} Live Feed & News</h4>
-            <div className="p-3 bg-background/40 rounded border border-transparent space-y-1">
-              <span className="text-[10px] text-primary font-bold">ANNOUNCEMENT</span>
-              <p className="text-foreground">KuCoin Spot Liquidity Mining Rewards update for {symbol} trading pairs.</p>
-              <span className="text-[10px] text-muted">10 mins ago</span>
-            </div>
-            <div className="p-3 bg-background/40 rounded border border-transparent space-y-1">
-              <span className="text-[10px] text-trading-up font-bold">MARKET METRICS</span>
-              <p className="text-foreground">24h Net inflow increases by +$14.2M across spot markets.</p>
-              <span className="text-[10px] text-muted">42 mins ago</span>
-            </div>
-          </div>
         ) : (
           <div className="h-[440px] p-6 font-mono text-xs space-y-4 overflow-y-auto">
             <h4 className="font-heading font-bold text-sm text-foreground uppercase">{symbol} Asset Profile</h4>

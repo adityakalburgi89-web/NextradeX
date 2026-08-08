@@ -581,131 +581,7 @@ export default function FuturesTradingPage() {
       >
         <div className="max-w-8xl mx-auto px-4 space-y-4">
 
-          {/* HIGH-DENSITY TICKER HEADER PANEL */}
-          <div className="bg-background border border-transparent rounded-xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-6 shadow-elevation-md">
 
-            {/* Asset Symbol & Base Stats */}
-            <div className="flex items-center gap-4 relative" ref={dropdownRef}>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsDropdownOpen(!isDropdownOpen);
-                  setSymbolSearch("");
-                }}
-                className="text-left group flex items-center gap-3 px-3 py-1.5 rounded-2xl border border-transparent bg-background/40 hover:bg-background/80 hover:border-primary/30 transition-all duration-200"
-              >
-                <div>
-                  <h1 className="text-base font-extrabold font-heading flex items-center gap-1.5 text-foreground">
-                    {symbol.toUpperCase()}
-                    <span className="text-[9px] font-mono font-bold bg-primary/15 text-primary px-1 rounded uppercase">Perp</span>
-                    <ChevronDown size={14} className="text-muted group-hover:text-primary transition-transform duration-200 group-hover:translate-y-0.5" />
-                  </h1>
-                  <span className="text-[10px] font-mono font-semibold text-muted">Binance Futures</span>
-                </div>
-              </button>
-
-              {/* Glassmorphic Dropdown Popover */}
-              {isDropdownOpen && (
-                <div className="absolute left-0 top-[110%] w-72 bg-background backdrop-blur-md border border-transparent rounded-xl shadow-neo-hover overflow-hidden z-50 animate-fade-in-fast font-sans">
-                  {/* Search input header */}
-                  <div className="p-3 border-b border-transparent flex items-center gap-2">
-                    <Search size={14} className="text-muted" />
-                    <input
-                      type="text"
-                      value={symbolSearch}
-                      onChange={(e) => setSymbolSearch(e.target.value)}
-                      placeholder="Search pair..."
-                      className="bg-transparent text-foreground placeholder-muted text-xs outline-none w-full font-mono"
-                      autoFocus
-                    />
-                  </div>
-                  {/* Scrollable list */}
-                  <div className="overflow-y-auto max-h-64 divide-y divide-white/[0.02]">
-                    {filteredSymbols.length === 0 ? (
-                      <div className="p-4 text-center text-xs text-muted">No symbols found</div>
-                    ) : (
-                      filteredSymbols.map((sym) => {
-                        const isSelected = sym.toUpperCase() === symbol.toUpperCase();
-                        return (
-                          <button
-                            key={sym}
-                            type="button"
-                            onClick={() => {
-                              setSymbol(sym.toUpperCase());
-                              setIsDropdownOpen(false);
-                            }}
-                            className={`w-full text-left px-4 py-2.5 text-xs font-mono font-semibold flex items-center justify-between hover:bg-background transition-colors ${isSelected ? "text-primary bg-primary/[0.05]" : "text-foreground"
-                              }`}
-                          >
-                            <span>{sym.toUpperCase()}</span>
-                            {isSelected && <span className="text-[9px] font-bold bg-primary/20 px-1.5 py-0.5 rounded text-primary uppercase">Active</span>}
-                          </button>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {priceSnapshot && (
-                <div className="border-l border-transparent pl-4 flex flex-col justify-center">
-                  <span className="text-[10px] text-muted font-mono font-bold uppercase block">Mark Price</span>
-                  <span className="text-base font-extrabold font-mono text-trading-up">
-                    {formatCurrency(priceSnapshot.currentPrice)}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {priceSnapshot && (
-              <div className="flex flex-wrap items-center gap-8 font-mono text-muted">
-                <div className="min-w-[100px]">
-                  <span className="block uppercase text-[9px]">Index Price</span>
-                  <span className="text-sm font-bold text-foreground">{(Number(priceSnapshot.currentPrice) * 1.0005).toFixed(2)}</span>
-                </div>
-
-                <div className="min-w-[160px]">
-                  <span className="block uppercase text-[9px] text-primary">Funding (8h) / Countdown</span>
-                  <span className="text-sm font-bold text-primary">0.0055% / 07:49:10</span>
-                </div>
-
-                <div className="min-w-[80px]">
-                  <span className="block uppercase text-[9px]">24h Change</span>
-                  <span className={`text-sm font-bold ${Number(priceSnapshot.percentChange24h) >= 0 ? "text-trading-up" : "text-trading-down"}`}>
-                    {Number(priceSnapshot.percentChange24h) >= 0 ? "+" : ""}{priceSnapshot.percentChange24h}%
-                  </span>
-                </div>
-
-                <div className="min-w-[100px]">
-                  <span className="block uppercase text-[9px]">24h High</span>
-                  <span className="text-sm font-bold text-foreground">{(Number(priceSnapshot.currentPrice) * 1.025).toFixed(2)}</span>
-                </div>
-
-                <div className="min-w-[100px]">
-                  <span className="block uppercase text-[9px]">24h Low</span>
-                  <span className="text-sm font-bold text-foreground">{(Number(priceSnapshot.currentPrice) * 0.975).toFixed(2)}</span>
-                </div>
-
-                <div className="min-w-[120px]">
-                  <span className="block uppercase text-[9px]">24h Vol({symbol.replace("USDT", "").toUpperCase()})</span>
-                  <span className="text-sm font-bold text-foreground">
-                    {priceSnapshot.volume24h
-                      ? new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(priceSnapshot.volume24h)
-                      : "246,500.27"}
-                  </span>
-                </div>
-
-                <div className="min-w-[140px]">
-                  <span className="block uppercase text-[9px]">24h Vol(USDT)</span>
-                  <span className="text-sm font-bold text-foreground">
-                    {priceSnapshot.volume24h
-                      ? new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(priceSnapshot.volume24h) * Number(priceSnapshot.currentPrice))
-                      : "15,286,470,643.58"}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
 
           {/* MAIN PRO TRADING WORKSPACE CONTAINER */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -716,6 +592,7 @@ export default function FuturesTradingPage() {
                 title="Futures Real-Time Workspace"
                 description="High-fidelity futures execution engine featuring real-time candle matching and leverage modifiers."
                 symbol={symbol}
+                onSymbolChange={(newSym) => setSymbol(newSym)}
                 interval={chartInterval}
                 onIntervalChange={setChartInterval}
                 loading={chartLoading}

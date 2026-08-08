@@ -18,6 +18,8 @@ import { formatCompactNumber, formatCurrency, formatPercent } from "../lib/utils
 import GlobalMarketHeader from "../components/markets/GlobalMarketHeader";
 import MarketHighlightCard from "../components/markets/MarketHighlightCard";
 import SparklineChart from "../components/markets/SparklineChart";
+import { ALL_COINS } from "../utils/constants";
+import UniversalCoinIcon from "../lib/coinIcons";
 
 import btcIcon from "../assets/Icons/btc.svg";
 import ethIcon from "../assets/Icons/eth.svg";

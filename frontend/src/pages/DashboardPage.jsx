@@ -91,7 +91,7 @@ function PortfolioAreaChart({ timeframe, totalBalance, changePercent }) {
 
   const chartData = useMemo(() => {
     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const base = totalBalance > 0 ? totalBalance : 83727.9;
+    const base = totalBalance;
     const factor = changePercent ? changePercent / 100 : 0.031;
 
     return days.map((day, idx) => {
@@ -285,7 +285,7 @@ export default function DashboardPage() {
   const portfolioChange24h = useMemo(() => {
     if (!prices || prices.length === 0) return 0;
     const btc = prices.find(p => p.symbol === "BTCUSDT");
-    return btc ? Number(btc.percentChange24h || 0) : 1.18;
+    return btc ? Number(btc.percentChange24h || 0) : 0;
   }, [prices]);
 
   // Dynamic Ticker Coins across top
@@ -532,7 +532,7 @@ export default function DashboardPage() {
                 <h3 className="text-sm font-bold text-carbon">Portfolio Value</h3>
                 <div className="flex items-baseline gap-2 mt-1">
                   <span className="text-2xl font-extrabold text-carbon">
-                    {formatCurrency(totalUSDEquity > 0 ? totalUSDEquity : 83727.9)}
+                    {formatCurrency(totalUSDEquity)}
                   </span>
                   <span className={`text-xs font-semibold ${portfolioChange24h >= 0 ? "text-mint" : "text-ember"}`}>
                     {formatPercent(portfolioChange24h)} vs Last 24h
