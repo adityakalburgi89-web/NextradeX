@@ -22,6 +22,6 @@ public interface FuturesPositionRepository extends JpaRepository<FuturesPosition
     List<FuturesPosition> findAllByStatus(PositionStatus status);
 
     @Modifying
-    @Query("UPDATE FuturesPosition p SET p.markPrice = :markPrice, p.unrealizedPnL = :unrealizedPnL, p.marginRatio = :marginRatio, p.version = p.version + 1 WHERE p.id = :id AND p.status = com.nextradex.modules.trading.futures.PositionStatus.OPEN")
+    @Query("UPDATE FuturesPosition p SET p.markPrice = :markPrice, p.unrealizedPnL = :unrealizedPnL, p.marginRatio = :marginRatio, p.version = COALESCE(p.version, 0) + 1 WHERE p.id = :id AND p.status = com.nextradex.modules.trading.futures.PositionStatus.OPEN")
     int updateRiskFields(@Param("id") Long id, @Param("markPrice") BigDecimal markPrice, @Param("unrealizedPnL") BigDecimal unrealizedPnL, @Param("marginRatio") BigDecimal marginRatio);
 }

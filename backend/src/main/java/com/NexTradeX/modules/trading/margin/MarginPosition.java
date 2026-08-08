@@ -76,7 +76,7 @@ public class MarginPosition {
     private BigDecimal realizedPnL = BigDecimal.ZERO;
     
     @Builder.Default
-    @Column(precision = 5, scale = 2)
+    @Column(precision = 19, scale = 4)
     private BigDecimal marginRatio = BigDecimal.ZERO;
     
     @Builder.Default

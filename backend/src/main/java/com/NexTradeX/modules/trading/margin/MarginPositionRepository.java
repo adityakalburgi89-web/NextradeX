@@ -22,6 +22,6 @@ public interface MarginPositionRepository extends JpaRepository<MarginPosition, 
     List<MarginPosition> findAllByStatus(String status);
 
     @Modifying
-    @Query("UPDATE MarginPosition p SET p.unrealizedPnL = :unrealizedPnL, p.marginRatio = :marginRatio, p.version = p.version + 1 WHERE p.id = :id AND p.status = 'OPEN'")
+    @Query("UPDATE MarginPosition p SET p.unrealizedPnL = :unrealizedPnL, p.marginRatio = :marginRatio, p.version = COALESCE(p.version, 0) + 1 WHERE p.id = :id AND p.status = 'OPEN'")
     int updateRiskFields(@Param("id") Long id, @Param("unrealizedPnL") BigDecimal unrealizedPnL, @Param("marginRatio") BigDecimal marginRatio);
 }
