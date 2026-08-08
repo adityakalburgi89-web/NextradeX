@@ -29,6 +29,13 @@
     "styled-components": "^6.4.2",
     "tailwind-merge": "^3.5.0"
   },
+  "overrides": {
+    "nth-check": "^2.1.1",
+    "serialize-javascript": "^6.0.2",
+    "yaml": "^2.4.1",
+    "uuid": "^9.0.1",
+    "underscore": "^1.13.6"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
