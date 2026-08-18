@@ -1,4 +1,4 @@
-package com.NexTradeX;
+package com.nextradex;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
