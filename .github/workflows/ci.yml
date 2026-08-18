@@ -24,7 +24,7 @@ jobs:
         run: |
           cd backend
           chmod +x mvnw
-          ./mvnw clean test-compile
+          ./mvnw clean test
 
   frontend-build:
     name: Frontend Build Check
