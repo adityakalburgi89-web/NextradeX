@@ -230,14 +230,6 @@ public class MarketService implements IMarketService {
 
     @Transactional
     public synchronized void syncMarketPrices() {
-        cryptoPriceRepository.findAll().stream()
-                .filter(price -> !ALLOWED_SYMBOLS.contains(price.getSymbol()))
-                .forEach(price -> {
-                    cryptoPriceRepository.delete(price);
-                    l1Cache.remove(price.getSymbol());
-                    log.info("Deleted unsupported market price entry from database: {}", price.getSymbol());
-                });
-
         List<String> trackedSymbols = ALLOWED_SYMBOLS.stream().sorted().toList();
         log.debug("Syncing live market prices for {} symbols", trackedSymbols.size());
 

@@ -38,7 +38,7 @@ public class MarketController {
         } catch (Exception e) {
             log.error("Error retrieving prices: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 
@@ -51,7 +51,7 @@ public class MarketController {
         } catch (Exception e) {
             log.error("Error retrieving global market stats: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
     
@@ -66,7 +66,7 @@ public class MarketController {
         } catch (Exception e) {
             log.error("Error retrieving live price for {}: {}", symbol, e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 
@@ -82,7 +82,7 @@ public class MarketController {
         } catch (Exception e) {
             log.error("Error retrieving candlestick data for {}: {}", symbol, e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 
@@ -109,7 +109,7 @@ public class MarketController {
         } catch (Exception e) {
             log.error("Error retrieving Binance price for {}: {}", symbol, e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 
@@ -122,7 +122,7 @@ public class MarketController {
         } catch (Exception e) {
             log.error("Error retrieving Binance prices: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 
@@ -135,7 +135,7 @@ public class MarketController {
         } catch (Exception e) {
             log.error("Error retrieving Binance symbols: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 

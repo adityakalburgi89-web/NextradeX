@@ -53,7 +53,13 @@ public class RiskManagementService implements IRiskManagementService {
         for (FuturesPosition position : openPositions) {
             try {
                 entityManager.detach(position);
-                BigDecimal currentPrice = marketService.getPrice(position.getSymbol()).getCurrentPrice();
+                var marketPrice = marketService.getPriceOptional(position.getSymbol());
+                if (marketPrice.isEmpty()) {
+                    log.warn("Skipping futures position {} because no market price is available for {}",
+                            position.getId(), position.getSymbol());
+                    continue;
+                }
+                BigDecimal currentPrice = marketPrice.get().getCurrentPrice();
                 updateFuturesPosition(position, currentPrice);
             } catch (Exception e) {
                 log.error("Error monitoring futures position {}: ", position.getId(), e);
@@ -67,7 +73,13 @@ public class RiskManagementService implements IRiskManagementService {
         for (MarginPosition position : openPositions) {
             try {
                 entityManager.detach(position);
-                BigDecimal currentPrice = marketService.getPrice(position.getSymbol()).getCurrentPrice();
+                var marketPrice = marketService.getPriceOptional(position.getSymbol());
+                if (marketPrice.isEmpty()) {
+                    log.warn("Skipping margin position {} because no market price is available for {}",
+                            position.getId(), position.getSymbol());
+                    continue;
+                }
+                BigDecimal currentPrice = marketPrice.get().getCurrentPrice();
                 updateMarginPosition(position, currentPrice);
             } catch (Exception e) {
                 log.error("Error monitoring margin position {}: ", position.getId(), e);

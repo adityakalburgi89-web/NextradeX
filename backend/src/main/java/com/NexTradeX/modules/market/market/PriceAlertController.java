@@ -4,6 +4,7 @@ import com.nextradex.modules.security.auth.JwtService;
 import com.nextradex.shared.common.ApiResponse;
 import com.nextradex.modules.user.User;
 import com.nextradex.modules.user.UserService;
+import com.nextradex.api.dto.PriceAlertResponse;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class PriceAlertController {
     private final JwtService jwtService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<PriceAlert>> createAlert(
+    public ResponseEntity<ApiResponse<PriceAlertResponse>> createAlert(
             @RequestParam String symbol,
             @RequestParam @DecimalMin(value = "0.00000001", message = "Price must be greater than zero") @DecimalMax(value = "99999999999.99999999", message = "Price exceeds maximum allowed precision") BigDecimal targetPrice,
             @RequestParam String condition,
@@ -47,23 +48,25 @@ public class PriceAlertController {
                     .build();
 
             PriceAlert saved = priceAlertRepository.save(alert);
-            return ResponseEntity.ok(new ApiResponse<>(200, "Price alert created", saved));
+            return ResponseEntity.ok(new ApiResponse<>(200, "Price alert created", toResponse(saved)));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PriceAlert>>> getAlerts(Authentication authentication) {
+    public ResponseEntity<ApiResponse<List<PriceAlertResponse>>> getAlerts(Authentication authentication) {
         try {
             Long userId = jwtService.extractUserIdFromAuthentication(authentication);
             User user = userService.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            List<PriceAlert> alerts = priceAlertRepository.findAllByUser(user);
+            List<PriceAlertResponse> alerts = priceAlertRepository.findAllByUser(user).stream()
+                    .map(this::toResponse)
+                    .toList();
             return ResponseEntity.ok(new ApiResponse<>(200, "Price alerts retrieved", alerts));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 
@@ -72,10 +75,27 @@ public class PriceAlertController {
             @PathVariable Long alertId,
             Authentication authentication) {
         try {
-            priceAlertRepository.deleteById(alertId);
+            Long userId = jwtService.extractUserIdFromAuthentication(authentication);
+            PriceAlert alert = priceAlertRepository.findById(alertId).orElse(null);
+            if (alert == null || !alert.getUser().getId().equals(userId)) {
+                return ResponseEntity.status(404).body(new ApiResponse<>(404, "Price alert not found", null));
+            }
+            priceAlertRepository.delete(alert);
             return ResponseEntity.ok(new ApiResponse<>(200, "Price alert deleted", null));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+            log.error("Error deleting price alert: ", e);
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, "An unexpected error occurred. Please try again later.", null));
         }
+    }
+
+    private PriceAlertResponse toResponse(PriceAlert alert) {
+        return PriceAlertResponse.builder()
+                .id(alert.getId())
+                .symbol(alert.getSymbol())
+                .targetPrice(alert.getTargetPrice())
+                .alertCondition(alert.getAlertCondition())
+                .active(alert.isActive())
+                .createdAt(alert.getCreatedAt())
+                .build();
     }
 }
