@@ -12,6 +12,7 @@ public interface IFuturesTradingService {
     Order openFuturesPosition(Long userId, String symbol, OrderSide side, BigDecimal quantity, BigDecimal leverage);
     void closeFuturesPosition(Long positionId, Long userId);
     void closeFuturesPosition(Long positionId, Long userId, String remarks);
+    int closeAllFuturesPositions(Long userId);
     FuturesPosition updateSlTp(Long positionId, Long userId, BigDecimal stopLoss, BigDecimal takeProfit);
     void liquidatePosition(Long positionId);
     List<FuturesPosition> getUserOpenPositions(Long userId);

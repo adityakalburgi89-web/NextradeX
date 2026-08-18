@@ -34,7 +34,7 @@ public class FuturesTradingService implements IFuturesTradingService {
     private final IWalletService walletService;
     private final IMarketService marketService;
     private final PositionRiskCalculator riskCalculator;
-    private final com.NexTradeX.shared.messaging.LavinMQProducer lavinMQProducer;
+    private final com.nextradex.shared.messaging.LavinMQProducer lavinMQProducer;
 
     public Order openFuturesPosition(Long userId, String symbol, OrderSide side,
             BigDecimal quantity, BigDecimal leverage) {
@@ -106,7 +106,11 @@ public class FuturesTradingService implements IFuturesTradingService {
         Order savedOrder = orderRepository.save(order);
 
         try {
-            com.NexTradeX.shared.messaging.OrderEvent event = com.NexTradeX.shared.messaging.OrderEvent.builder()
+            com.nextradex.shared.messaging.OrderEvent event = com.nextradex.shared.messaging.OrderEvent.builder()
+                    .orderId(savedOrder.getId().toString())
+                    .userId(userId.toString())
+                    .symbol(symbol)
+                    .side(side.name())
                     .orderId(savedOrder.getId().toString())
                     .userId(userId.toString())
                     .symbol(symbol)
@@ -156,10 +160,10 @@ public class FuturesTradingService implements IFuturesTradingService {
 
     public void closeFuturesPosition(Long positionId, Long userId, String remarks) {
         User user = userService.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new InvalidOrderException("User not found"));
 
         FuturesPosition position = futuresPositionRepository.findByIdAndUser(positionId, user)
-                .orElseThrow(() -> new RuntimeException("Position not found"));
+                .orElseThrow(() -> new InvalidOrderException("Position not found"));
 
         if (position.getStatus() != PositionStatus.OPEN) {
             throw new InvalidOrderException("Position is not open");
@@ -183,7 +187,42 @@ public class FuturesTradingService implements IFuturesTradingService {
         walletService.updateBalance(wallet.getId(), realizedPnL);
 
         futuresPositionRepository.save(position);
+        
+        try {
+            com.nextradex.shared.messaging.OrderEvent event = com.nextradex.shared.messaging.OrderEvent.builder()
+                    .orderId(position.getId().toString())
+                    .userId(userId.toString())
+                    .symbol(position.getSymbol())
+                    .side("CLOSE")
+                    .orderType("POSITION CLOSE")
+                    .status("CLOSED")
+                    .timestamp(System.currentTimeMillis())
+                    .quantity(position.getQuantity())
+                    .price(exitPrice != null ? exitPrice : BigDecimal.ZERO)
+                    .build();
+            lavinMQProducer.sendOrderEvent(event);
+        } catch (Exception e) {
+            log.warn("Failed to publish futures close position event to LavinMQ: {}", e.getMessage());
+        }
+
         log.info("Futures position closed ({}): {} PnL: {}", remarks, positionId, realizedPnL);
+    }
+
+    @Transactional
+    public int closeAllFuturesPositions(Long userId) {
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        List<FuturesPosition> openPositions = futuresPositionRepository.findAllByUserAndStatus(user, PositionStatus.OPEN);
+        int count = 0;
+        for (FuturesPosition position : openPositions) {
+            try {
+                closeFuturesPosition(position.getId(), userId, "Batch Close All");
+                count++;
+            } catch (Exception e) {
+                log.error("Error closing futures position {} in batch close-all: {}", position.getId(), e.getMessage());
+            }
+        }
+        return count;
     }
 
     public FuturesPosition updateSlTp(Long positionId, Long userId, BigDecimal stopLoss, BigDecimal takeProfit) {

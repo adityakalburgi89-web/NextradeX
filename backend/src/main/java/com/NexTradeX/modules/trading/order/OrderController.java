@@ -16,16 +16,20 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.nextradex.shared.exception.InsufficientBalanceException;
+import com.nextradex.shared.exception.InvalidOrderException;
+import com.nextradex.shared.exception.OrderNotFoundException;
+
 @Slf4j
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
 public class OrderController {
-    
+
     private final OrderService orderService;
     private final SpotTradingService spotTradingService;
     private final JwtService jwtService;
-    
+
     @PostMapping("/spot")
     public ResponseEntity<ApiResponse<OrderResponse>> createSpotOrder(
             @Valid @RequestBody SpotOrderRequest request,
@@ -34,20 +38,26 @@ public class OrderController {
             Long userId = extractUserIdFromAuth(authentication);
             OrderSide side = OrderSide.valueOf(request.getSide().toUpperCase());
             OrderType orderType = OrderType.valueOf(request.getOrderType().toUpperCase());
-            
+
             Order order = spotTradingService.createSpotOrder(
-                    userId, request.getSymbol(), side, orderType, 
+                    userId, request.getSymbol(), side, orderType,
                     request.getQuantity(), request.getPrice(), request.getStopPrice());
-            
+
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse<>(201, "Order created", toOrderResponse(order)));
         } catch (Exception e) {
-            log.error("Error creating spot order: {}", e.getMessage());
-            return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+            log.error("Error creating spot order : {}", e); // => hell nah just chatpgt copy paste
+
+            boolean isUserFacing = e instanceof IllegalArgumentException
+                    || e instanceof InvalidOrderException
+                    || e instanceof InsufficientBalanceException
+                    || e instanceof OrderNotFoundException;
+
+            String userMessage = isUserFacing ? e.getMessage() : "an useless error occurred Please try later";
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, userMessage, null));
         }
     }
-    
+
     @GetMapping("/active")
     public ResponseEntity<ApiResponse<List<OrderResponse>>> getActiveOrders(
             Authentication authentication) {
@@ -57,7 +67,7 @@ public class OrderController {
             List<OrderResponse> responses = orders.stream()
                     .map(this::toOrderResponse)
                     .collect(Collectors.toList());
-            
+
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Active orders retrieved", responses));
         } catch (Exception e) {
@@ -66,7 +76,7 @@ public class OrderController {
                     .body(new ApiResponse<>(400, e.getMessage(), null));
         }
     }
-    
+
     @GetMapping("/history")
     public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrderHistory(
             Authentication authentication) {
@@ -76,7 +86,7 @@ public class OrderController {
             List<OrderResponse> responses = orders.stream()
                     .map(this::toOrderResponse)
                     .collect(Collectors.toList());
-            
+
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Order history retrieved", responses));
         } catch (Exception e) {
@@ -85,7 +95,7 @@ public class OrderController {
                     .body(new ApiResponse<>(400, e.getMessage(), null));
         }
     }
-    
+
     @DeleteMapping("/{orderId}")
     public ResponseEntity<ApiResponse<OrderResponse>> cancelOrder(
             @PathVariable Long orderId,
@@ -101,7 +111,7 @@ public class OrderController {
                     .body(new ApiResponse<>(400, e.getMessage(), null));
         }
     }
-    
+
     private OrderResponse toOrderResponse(Order order) {
         return OrderResponse.builder()
                 .id(order.getId())
@@ -121,7 +131,7 @@ public class OrderController {
                 .remarks(order.getRemarks())
                 .build();
     }
-    
+
     private Long extractUserIdFromAuth(Authentication authentication) {
         return jwtService.extractUserIdFromAuthentication(authentication);
     }

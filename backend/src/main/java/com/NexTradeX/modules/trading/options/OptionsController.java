@@ -49,7 +49,7 @@ public class OptionsController {
         } catch (Exception e) {
             log.error("Error buying option: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
     
@@ -65,7 +65,7 @@ public class OptionsController {
         } catch (Exception e) {
             log.error("Error settling option: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
     
@@ -84,7 +84,7 @@ public class OptionsController {
         } catch (Exception e) {
             log.error("Error retrieving positions: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
     
@@ -103,7 +103,7 @@ public class OptionsController {
         } catch (Exception e) {
             log.error("Error retrieving position history: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
     

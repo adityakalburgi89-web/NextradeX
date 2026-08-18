@@ -30,7 +30,7 @@ public class SpotTradingService {
     private final IWalletService walletService;
     private final IMarketService marketService;
     private final SpotHoldingService spotHoldingService;
-    private final com.NexTradeX.shared.messaging.LavinMQProducer lavinMQProducer;
+    private final com.nextradex.shared.messaging.LavinMQProducer lavinMQProducer;
     
     private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.001"); // 0.1%
     
@@ -86,7 +86,7 @@ public class SpotTradingService {
         Order savedOrder = orderRepository.save(order);
         
         try {
-            com.NexTradeX.shared.messaging.OrderEvent event = com.NexTradeX.shared.messaging.OrderEvent.builder()
+            com.nextradex.shared.messaging.OrderEvent event = com.nextradex.shared.messaging.OrderEvent.builder()
                     .orderId(savedOrder.getId().toString())
                     .userId(userId.toString())
                     .symbol(symbol)

@@ -49,7 +49,7 @@ public class MarginController {
         } catch (Exception e) {
             log.error("Error opening margin position: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 
@@ -65,7 +65,7 @@ public class MarginController {
         } catch (Exception e) {
             log.error("Error closing margin position: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 
@@ -84,7 +84,7 @@ public class MarginController {
         } catch (Exception e) {
             log.error("Error retrieving open margin positions: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 
@@ -103,7 +103,7 @@ public class MarginController {
         } catch (Exception e) {
             log.error("Error retrieving all margin positions: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 

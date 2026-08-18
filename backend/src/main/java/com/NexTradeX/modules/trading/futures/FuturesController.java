@@ -48,9 +48,9 @@ public class FuturesController {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse<>(201, "Futures position opened", toOrderResponse(order)));
         } catch (Exception e) {
-            log.error("Error opening futures position: {}", e.getMessage());
+            log.error("Error opening futures position: ", e);
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, sanitizeErrorMessage(e), null));
         }
     }
     
@@ -67,9 +67,9 @@ public class FuturesController {
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Open positions retrieved", dtos));
         } catch (Exception e) {
-            log.error("Error retrieving open positions: {}", e.getMessage());
+            log.error("Error retrieving open positions: ", e);
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, sanitizeErrorMessage(e), null));
         }
     }
 
@@ -83,9 +83,23 @@ public class FuturesController {
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Futures position closed successfully", null));
         } catch (Exception e) {
-            log.error("Error closing futures position: {}", e.getMessage());
+            log.error("Error closing futures position: ", e);
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, sanitizeErrorMessage(e), null));
+        }
+    }
+
+    @PostMapping("/close-all")
+    public ResponseEntity<ApiResponse<Integer>> closeAllPositions(Authentication authentication) {
+        try {
+            Long userId = extractUserIdFromAuth(authentication);
+            int count = futuresTradingService.closeAllFuturesPositions(userId);
+            return ResponseEntity.ok()
+                    .body(new ApiResponse<>(200, "Closed " + count + " futures positions successfully", count));
+        } catch (Exception e) {
+            log.error("Error closing all futures positions: ", e);
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, sanitizeErrorMessage(e), null));
         }
     }
 
@@ -101,9 +115,9 @@ public class FuturesController {
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Stop Loss and Take Profit updated", toDTO(updatedPosition)));
         } catch (Exception e) {
-            log.error("Error updating SL/TP for position: {}", e.getMessage());
+            log.error("Error updating SL/TP for position: ", e);
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, sanitizeErrorMessage(e), null));
         }
     }
     
@@ -139,5 +153,9 @@ public class FuturesController {
     
     private Long extractUserIdFromAuth(Authentication authentication) {
         return jwtService.extractUserIdFromAuthentication(authentication);
+    }
+
+    private String sanitizeErrorMessage(Exception e) {
+        return com.nextradex.shared.exception.SafeErrorMessage.forClient(e);
     }
 }

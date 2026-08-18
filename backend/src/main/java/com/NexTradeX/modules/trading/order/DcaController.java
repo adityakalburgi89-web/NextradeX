@@ -4,6 +4,7 @@ import com.nextradex.modules.security.auth.JwtService;
 import com.nextradex.shared.common.ApiResponse;
 import com.nextradex.modules.user.User;
 import com.nextradex.modules.user.UserService;
+import com.nextradex.api.dto.DcaScheduleResponse;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class DcaController {
     private final JwtService jwtService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<DcaSchedule>> createDcaSchedule(
+    public ResponseEntity<ApiResponse<DcaScheduleResponse>> createDcaSchedule(
             @RequestParam String symbol,
             @RequestParam @DecimalMin(value = "0.00000001", message = "Amount must be greater than zero") @DecimalMax(value = "99999999999.99999999", message = "Amount exceeds maximum allowed precision") BigDecimal amountUSDT,
             @RequestParam int frequencySeconds,
@@ -50,28 +51,30 @@ public class DcaController {
                     .build();
 
             DcaSchedule saved = dcaScheduleRepository.save(schedule);
-            return ResponseEntity.ok(new ApiResponse<>(200, "DCA schedule successfully created", saved));
+            return ResponseEntity.ok(new ApiResponse<>(200, "DCA schedule successfully created", toResponse(saved)));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<DcaSchedule>>> getDcaSchedules(Authentication authentication) {
+    public ResponseEntity<ApiResponse<List<DcaScheduleResponse>>> getDcaSchedules(Authentication authentication) {
         try {
             Long userId = jwtService.extractUserIdFromAuthentication(authentication);
             User user = userService.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            List<DcaSchedule> schedules = dcaScheduleRepository.findAllByUser(user);
+            List<DcaScheduleResponse> schedules = dcaScheduleRepository.findAllByUser(user).stream()
+                    .map(this::toResponse)
+                    .toList();
             return ResponseEntity.ok(new ApiResponse<>(200, "DCA schedules retrieved", schedules));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 
     @PostMapping("/{scheduleId}/toggle")
-    public ResponseEntity<ApiResponse<DcaSchedule>> toggleDcaSchedule(
+    public ResponseEntity<ApiResponse<DcaScheduleResponse>> toggleDcaSchedule(
             @PathVariable Long scheduleId,
             Authentication authentication) {
         try {
@@ -86,9 +89,21 @@ public class DcaController {
                 schedule.setNextRunTime(LocalDateTime.now().plusSeconds(schedule.getFrequencySeconds()));
             }
             DcaSchedule saved = dcaScheduleRepository.save(schedule);
-            return ResponseEntity.ok(new ApiResponse<>(200, "DCA schedule status updated", saved));
+            return ResponseEntity.ok(new ApiResponse<>(200, "DCA schedule status updated", toResponse(saved)));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
+    }
+
+    private DcaScheduleResponse toResponse(DcaSchedule schedule) {
+        return DcaScheduleResponse.builder()
+                .id(schedule.getId())
+                .symbol(schedule.getSymbol())
+                .amountUSDT(schedule.getAmountUSDT())
+                .frequencySeconds(schedule.getFrequencySeconds())
+                .active(schedule.isActive())
+                .nextRunTime(schedule.getNextRunTime())
+                .createdAt(schedule.getCreatedAt())
+                .build();
     }
 }
