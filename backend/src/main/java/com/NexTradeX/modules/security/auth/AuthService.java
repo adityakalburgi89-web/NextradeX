@@ -7,8 +7,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.time.Duration;
+import java.util.Base64;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import com.nextradex.shared.common.EmailService;
 import com.nextradex.modules.user.User;
@@ -21,6 +25,10 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class AuthService implements IAuthService {
+
+    private static final String PASSWORD_RESET_PREFIX = "password_reset:";
+    private static final Duration PASSWORD_RESET_TTL = Duration.ofMinutes(15);
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final UserService userService;
     private final JwtService jwtService;
@@ -50,7 +58,7 @@ public class AuthService implements IAuthService {
 
     public String loginUser(String identifier, String password) {
         String cleanIdentifier = identifier != null ? identifier.trim() : "";
-        String cleanPassword = password != null ? password.trim() : "";
+        String cleanPassword = password != null ? password : "";
 
         // 1. Try to match by username case-insensitively first
         Optional<User> userByUsername = userService.findByUsername(cleanIdentifier);
@@ -94,32 +102,18 @@ public class AuthService implements IAuthService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    private final java.util.Map<String, ResetTokenInfo> inMemoryResetTokens = new java.util.concurrent.ConcurrentHashMap<>();
-
-    private record ResetTokenInfo(String email, long expiryTimestamp) {}
-
     public boolean processForgotPassword(String email) {
         try {
             User user = userService.findByEmail(email.trim().toLowerCase())
                     .orElse(null);
 
             if (user == null) {
-                log.warn("Forgot password requested for non-existent email: {}", email);
+                log.info("Forgot password request did not match an account");
                 return true; // Return true to avoid email enumeration security risk
             }
 
-            String token = UUID.randomUUID().toString();
-            String redisKey = "password_reset:" + token;
-            try {
-                if (redisTemplate != null) {
-                    redisTemplate.opsForValue().set(redisKey, user.getEmail(), 15, TimeUnit.MINUTES);
-                }
-            } catch (Exception e) {
-                log.warn("Redis unavailable for password reset storage ({}). Utilizing in-memory fallback.", e.getMessage());
-                inMemoryResetTokens.put(token, new ResetTokenInfo(user.getEmail(), System.currentTimeMillis() + (15 * 60 * 1000)));
-            }
-
-            log.info("Generated password reset token for email: {}", user.getEmail());
+            String token = newResetToken();
+            redisTemplate.opsForValue().set(resetKey(token), user.getEmail(), PASSWORD_RESET_TTL);
             return emailService.sendPasswordResetEmail(user.getEmail(), token);
         } catch (Exception e) {
             log.error("Error processing forgot password request: {}", e.getMessage(), e);
@@ -129,39 +123,43 @@ public class AuthService implements IAuthService {
 
     @Transactional
     public boolean resetPassword(String token, String newPassword) {
-        if (token == null || token.isBlank() || newPassword == null || newPassword.isBlank()) {
+        if (token == null || token.isBlank() || token.length() > 128
+                || newPassword == null || newPassword.isBlank()) {
             throw new IllegalArgumentException("Token and new password are required");
         }
-
-        String redisKey = "password_reset:" + token.trim();
-        String email = null;
-        try {
-            email = redisTemplate.opsForValue().get(redisKey);
-        } catch (Exception e) {
-            log.warn("Redis unavailable during password reset lookup ({}). Checking in-memory fallback.", e.getMessage());
+        int passwordBytes = newPassword.getBytes(StandardCharsets.UTF_8).length;
+        if (passwordBytes < 8 || passwordBytes > 72) {
+            throw new IllegalArgumentException("Password must be between 8 and 72 bytes");
         }
 
-        if (email == null || email.isBlank()) {
-            ResetTokenInfo info = inMemoryResetTokens.get(token.trim());
-            if (info != null && System.currentTimeMillis() <= info.expiryTimestamp()) {
-                email = info.email();
-            }
-        }
+        String email = redisTemplate.opsForValue().getAndDelete(resetKey(token.trim()));
 
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Invalid or expired password reset link. Please request a new one.");
         }
 
-        userService.updatePassword(email, newPassword.trim());
-        try {
-            redisTemplate.delete(redisKey);
-        } catch (Exception e) {
-            // Ignore redis exception if offline
-        }
-        inMemoryResetTokens.remove(token.trim());
+        User updatedUser = userService.updatePassword(email, newPassword);
+        jwtService.invalidateAllTokensForUser(updatedUser.getId());
 
-        log.info("Password reset successfully completed for email: {}", email);
+        log.info("Password reset successfully completed for user ID {}", updatedUser.getId());
         return true;
+    }
+
+    private String newResetToken() {
+        byte[] bytes = new byte[32];
+        SECURE_RANDOM.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    private String resetKey(String token) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                    .digest(token.getBytes(StandardCharsets.UTF_8));
+            return PASSWORD_RESET_PREFIX
+                    + Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException("SHA-256 is unavailable", ex);
+        }
     }
 
     private UserDetails buildUserDetails(User user) {

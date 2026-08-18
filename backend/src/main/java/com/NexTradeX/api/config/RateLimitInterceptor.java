@@ -66,11 +66,8 @@ public class RateLimitInterceptor implements HandlerInterceptor {
             return "user_" + jwtAuth.getUserId();
         }
 
-        // Fallback to IP address
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
-            return "ip_" + xForwardedFor.split(",")[0].trim().replace(":", "_");
-        }
+        // Use the address resolved by the servlet container. Forwarded headers
+        // must only be processed by a trusted reverse proxy/container setup.
         return "ip_" + request.getRemoteAddr().replace(":", "_");
     }
 }

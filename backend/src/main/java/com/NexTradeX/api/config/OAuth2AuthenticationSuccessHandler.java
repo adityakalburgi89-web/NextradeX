@@ -1,9 +1,8 @@
 package com.nextradex.api.config;
 
-import com.nextradex.modules.security.auth.JwtService;
+import com.nextradex.modules.security.oauth.OAuthLoginCodeService;
 import com.nextradex.modules.user.User;
 import com.nextradex.modules.user.UserService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,10 +16,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @Component
@@ -28,8 +23,7 @@ import java.util.Map;
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserService userService;
-    private final JwtService jwtService;
-    private final ObjectMapper objectMapper;
+    private final OAuthLoginCodeService oAuthLoginCodeService;
 
     @Value("${oauth.frontend.callback-url}")
     private String frontendCallbackUrl;
@@ -45,6 +39,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         
         try {
             String email = oauth2User.getAttribute("email");
+            Boolean emailVerified = oauth2User.getAttribute("email_verified");
             String firstName = oauth2User.getAttribute("given_name");
             String lastName = oauth2User.getAttribute("family_name");
             String picture = oauth2User.getAttribute("picture");
@@ -52,6 +47,9 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             User user;
             
             if ("google".equals(provider)) {
+                if (email == null || email.isBlank() || !Boolean.TRUE.equals(emailVerified)) {
+                    throw new IllegalStateException("OAuth provider did not verify the email address");
+                }
                 String googleId = oauth2User.getName();
                 user = userService.linkOrCreateGoogleUser(googleId, email, firstName, lastName, picture);
             } else {
@@ -60,9 +58,12 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             
             userService.updateLastLogin(user.getId());
             
-            String token = jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
-            
-            String redirectUrl = frontendCallbackUrl + "?token=" + token;
+            String code = oAuthLoginCodeService.issueCode(user.getId());
+            if (request.getSession(false) != null) {
+                request.getSession(false).invalidate();
+            }
+
+            String redirectUrl = frontendCallbackUrl + "?code=" + code;
             if (Boolean.TRUE.equals(user.getNeedsProfileSetup())) {
                 redirectUrl += "&setup=true";
             }
@@ -72,15 +73,16 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             response.sendRedirect(redirectUrl);
             
         } catch (Exception e) {
-            log.error("OAuth authentication error: {}", e.getMessage());
+            log.error("OAuth authentication failed", e);
+            if (request.getSession(false) != null) {
+                request.getSession(false).invalidate();
+            }
             
             String redirectUrl;
             if ("EMAIL_EXISTS".equals(e.getMessage())) {
-                redirectUrl = frontendCallbackUrl + "?error=email_exists&message=" + 
-                        URLEncoder.encode("Email already registered, please login normally", StandardCharsets.UTF_8);
+                redirectUrl = frontendCallbackUrl + "?error=email_exists";
             } else {
-                redirectUrl = frontendCallbackUrl + "?error=oauth_failed&message=" + 
-                        URLEncoder.encode("OAuth login failed: " + e.getMessage(), StandardCharsets.UTF_8);
+                redirectUrl = frontendCallbackUrl + "?error=oauth_failed";
             }
             
             response.sendRedirect(redirectUrl);

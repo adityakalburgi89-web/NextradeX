@@ -10,6 +10,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.web.context.NullSecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -48,8 +52,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository() {
-        return new HttpCookieOAuth2AuthorizationRequestRepository();
+    public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
+        return new HttpSessionOAuth2AuthorizationRequestRepository();
     }
     
     @Bean
@@ -58,35 +62,38 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session
-                // IF_REQUIRED: allows Spring Security to create a temporary session
-                // for the OAuth2 state parameter cookie handshake only.
-                // API endpoints remain effectively stateless via JWT.
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+            )
+            .securityContext(context -> context
+                .securityContextRepository(new NullSecurityContextRepository())
             )
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/oauth2/**", "/login/oauth2/code/**").permitAll()
                 .requestMatchers("/health/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/market/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-ui.html").permitAll()
+                .requestMatchers(HttpMethod.GET,
+                    "/market/prices", "/market/global-stats", "/market/price/*",
+                    "/market/candles/*", "/market/binance/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-ui.html").authenticated()
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers("/actuator/**").authenticated()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
                 .authorizationEndpoint(endpoint -> endpoint
-                    .authorizationRequestRepository(cookieAuthorizationRequestRepository())
+                    .authorizationRequestRepository(authorizationRequestRepository())
                 )
                 .redirectionEndpoint(endpoint -> endpoint
                     .baseUri("/login/oauth2/code/*")
                 )
                 .successHandler(oAuth2AuthenticationSuccessHandler)
                 .failureHandler((request, response, exception) -> {
-                    log.error("[OAuth2] Login failed: {}", exception.getMessage());
-                    response.sendRedirect(frontendCallbackUrl + "?error=oauth_failed&message=" +
-                        java.net.URLEncoder.encode("OAuth login failed: " + exception.getMessage(),
-                        java.nio.charset.StandardCharsets.UTF_8));
+                    log.error("[OAuth2] Login failed", exception);
+                    if (request.getSession(false) != null) {
+                        request.getSession(false).invalidate();
+                    }
+                    response.sendRedirect(frontendCallbackUrl + "?error=oauth_failed");
                 })
             )
             .logout(logout -> logout

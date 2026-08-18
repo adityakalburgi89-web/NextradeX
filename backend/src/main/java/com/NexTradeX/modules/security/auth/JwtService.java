@@ -3,6 +3,12 @@ package com.nextradex.modules.security.auth;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
+import java.util.Base64;
+import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
@@ -11,6 +17,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import jakarta.annotation.PostConstruct;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -29,18 +37,68 @@ public class JwtService implements IJwtService {
     
     @Value("${jwt.expiration}")
     private long jwtExpiration;
-    
-    private final java.util.Set<String> blacklistedTokens = java.util.concurrent.ConcurrentHashMap.newKeySet();
-    
-    public void invalidateToken(String token) {
-        if (token != null && !token.isBlank()) {
-            blacklistedTokens.add(token.trim());
-            log.info("JWT Token invalidated/blacklisted successfully.");
+
+    @Value("${jwt.issuer}")
+    private String jwtIssuer;
+
+    @Value("${jwt.audience}")
+    private String jwtAudience;
+
+    private static final String REVOKED_TOKEN_PREFIX = "jwt_revoked:";
+    private static final String USER_REVOKED_AFTER_PREFIX = "jwt_user_revoked_after:";
+
+    private final StringRedisTemplate redisTemplate;
+
+    @PostConstruct
+    void validateConfiguration() {
+        if (jwtSecret == null || jwtSecret.getBytes(StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalStateException("JWT_SECRET must contain at least 32 bytes");
         }
     }
     
+    public void invalidateToken(String token) {
+        if (token != null && !token.isBlank()) {
+            Date expiration = extractExpiration(token);
+            long ttlMillis = expiration == null ? 0 : expiration.getTime() - System.currentTimeMillis();
+            if (ttlMillis > 0) {
+                redisTemplate.opsForValue().set(
+                        REVOKED_TOKEN_PREFIX + tokenDigest(token.trim()),
+                        "1",
+                        Duration.ofMillis(ttlMillis));
+            }
+            log.info("JWT token invalidated successfully");
+        }
+    }
+
+    public void invalidateAllTokensForUser(Long userId) {
+        redisTemplate.opsForValue().set(
+                USER_REVOKED_AFTER_PREFIX + userId,
+                Long.toString(System.currentTimeMillis()),
+                Duration.ofMillis(jwtExpiration));
+    }
+
     public boolean isTokenBlacklisted(String token) {
-        return token != null && blacklistedTokens.contains(token.trim());
+        if (token == null || token.isBlank()) {
+            return false;
+        }
+        try {
+            Boolean revoked = redisTemplate.hasKey(REVOKED_TOKEN_PREFIX + tokenDigest(token.trim()));
+            if (Boolean.TRUE.equals(revoked)) {
+                return true;
+            }
+
+            Long userId = extractUserId(token);
+            Claims claims = extractClaims(token);
+            if (userId == null || claims == null || claims.getIssuedAt() == null) {
+                return true;
+            }
+            String revokedAfter = redisTemplate.opsForValue().get(USER_REVOKED_AFTER_PREFIX + userId);
+            return revokedAfter != null
+                    && claims.getIssuedAt().getTime() <= Long.parseLong(revokedAfter);
+        } catch (RuntimeException ex) {
+            log.error("Unable to verify JWT revocation state; rejecting token", ex);
+            return true;
+        }
     }
     
     public String generateToken(UserDetails userDetails) {
@@ -67,6 +125,9 @@ public class JwtService implements IJwtService {
         return Jwts.builder()
                 .claims(claims)
                 .subject(subject)
+                .issuer(jwtIssuer)
+                .audience().add(jwtAudience).and()
+                .id(UUID.randomUUID().toString())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(getSigningKey())
@@ -148,6 +209,8 @@ public class JwtService implements IJwtService {
         }
         try {
             return Jwts.parser()
+                    .requireIssuer(jwtIssuer)
+                    .requireAudience(jwtAudience)
                     .verifyWith(getSigningKey())
                     .build()
                     .parseSignedClaims(token)
@@ -159,7 +222,17 @@ public class JwtService implements IJwtService {
     }
     
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private String tokenDigest(String token) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                    .digest(token.getBytes(StandardCharsets.UTF_8));
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException("SHA-256 is unavailable", ex);
+        }
     }
     
     public long getJwtExpiration() {

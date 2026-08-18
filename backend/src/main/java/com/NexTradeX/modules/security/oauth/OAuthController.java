@@ -4,8 +4,10 @@ import com.nextradex.modules.security.auth.JwtAuthenticationToken;
 import com.nextradex.modules.security.auth.JwtService;
 import com.nextradex.shared.common.ApiResponse;
 import com.nextradex.api.dto.AuthResponse;
+import com.nextradex.api.dto.OAuthCodeExchangeRequest;
 import com.nextradex.modules.user.User;
 import com.nextradex.modules.user.UserService;
+import com.nextradex.shared.common.RateLimit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import jakarta.validation.Valid;
 
 @Slf4j
 @RestController
@@ -23,6 +26,30 @@ public class OAuthController {
 
     private final UserService userService;
     private final JwtService jwtService;
+    private final OAuthLoginCodeService oAuthLoginCodeService;
+
+    @PostMapping("/exchange")
+    @RateLimit(capacity = 10, refillRate = 0.2)
+    public ResponseEntity<ApiResponse<AuthResponse>> exchangeLoginCode(
+            @Valid @RequestBody OAuthCodeExchangeRequest request) {
+        try {
+            Long userId = oAuthLoginCodeService.consumeCode(request.getCode());
+            User user = userService.findById(userId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid or expired OAuth login code"));
+            String token = jwtService.generateTokenWithUserId(user.getUsername(), user.getId());
+            AuthResponse authResponse = AuthResponse.builder()
+                    .token(token)
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .expiresIn(jwtService.getJwtExpiration())
+                    .needsProfileSetup(Boolean.TRUE.equals(user.getNeedsProfileSetup()))
+                    .build();
+            return ResponseEntity.ok(new ApiResponse<>(200, "OAuth login successful", authResponse));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, "Invalid or expired OAuth login code", null));
+        }
+    }
 
     /**
      * Complete OAuth profile setup after successful Google OAuth login
@@ -116,7 +143,7 @@ public class OAuthController {
         } catch (Exception e) {
             log.error("Profile completion failed: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(400, "Profile setup failed: " + e.getMessage(), null));
+                    .body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 }
