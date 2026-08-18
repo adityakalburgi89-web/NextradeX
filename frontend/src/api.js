@@ -166,6 +166,15 @@ export function googleLogin() {
   window.location.href = `${API_BASE_URL}/oauth2/authorization/google`;
 }
 
+export async function exchangeOAuthCode(code) {
+  const res = await fetch(`${API_BASE_URL}/oauth2/exchange`,
+    createFetchOptions("POST", { code }, { "Content-Type": "application/json" })
+  );
+  const data = await handleResponse(res);
+  if (data?.data?.token) setAuthToken(data.data.token);
+  return data;
+}
+
 export async function completeProfile(payload) {
   console.log("[API] POST /oauth2/complete-profile - Payload:", payload);
   const headers = authHeaders();
@@ -455,6 +464,14 @@ export async function fetchOpenFuturesPositions() {
 export async function closeFuturesPosition(positionId) {
   console.log("[API] POST /futures/close/:id", positionId);
   const res = await fetch(`${API_BASE_URL}/futures/close/${positionId}`,
+    createFetchOptions("POST", null, authHeaders())
+  );
+  return handleResponse(res);
+}
+
+export async function closeAllFuturesPositions() {
+  console.log("[API] POST /futures/close-all");
+  const res = await fetch(`${API_BASE_URL}/futures/close-all`,
     createFetchOptions("POST", null, authHeaders())
   );
   return handleResponse(res);

@@ -14,6 +14,7 @@ import coinGeckoIcon from "../assets/Icons/coingecko.svg";
 import coinMarketCapIcon from "../assets/Icons/coinmarketcap.svg";
 import cryptoWalletImg from "../assets/images/crypto-wallet.png";
 import footerBg from "../assets/images/footer-bg.png";
+import ExploreCryptoSection from "../components/ExploreCryptoSection";
 
 const partnerLogos = [
   { name: "CoinGecko", label: "CoinGecko Data", icon: coinGeckoIcon, height: "h-9 sm:h-11" },
@@ -300,8 +301,11 @@ export default function HomePage({ isLoggedIn }) {
 
       </section>
 
+      {/* EXPLORE CRYPTO SECTION */}
+      <ExploreCryptoSection prices={prices} />
+
       {/* 3. CORE FEATURES GRID */}
-      <section className="py-16 px-6 max-w-[1200px] mx-auto space-y-12">
+      <section className="py-24 sm:py-36 px-6 max-w-[1200px] mx-auto space-y-16 sm:space-y-20 my-6 sm:my-12">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
           <h2 className="font-openrunde text-3xl md:text-4xl font-medium text-carbon tracking-[-0.61px]">
             Key Trading Features
@@ -311,7 +315,7 @@ export default function HomePage({ isLoggedIn }) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
           <div className="feature-card-visitors">
             <div className="icon-circle">
               <HugeiconsIcon icon={FlashIcon} size={20} color="#ffffff" />
@@ -351,33 +355,35 @@ export default function HomePage({ isLoggedIn }) {
       </section>
 
       {/* 4. FAQ ACCORDION SECTION */}
-      <section className="max-w-[900px] mx-auto px-6 py-16 space-y-8">
-        <div className="text-center space-y-3">
-          <h2 className="font-openrunde text-3xl md:text-4xl font-medium text-carbon tracking-[-0.61px]">
+      <section className="max-w-[900px] mx-auto px-6 py-20 sm:py-28 space-y-10 sm:space-y-14 my-4 font-openrunde">
+        <div className="text-center space-y-2">
+          <h2 className="font-openrunde text-3xl sm:text-4xl font-semibold text-[#181925] tracking-[-1px]">
             Frequently Asked Questions
           </h2>
-          <p className="font-openrunde text-base text-graphite tracking-[-0.32px]">
+          <p className="font-openrunde text-base text-[#666666] tracking-[-0.32px]">
             Clear answers about paper trading on NexTradeX.
           </p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-3.5">
           {faqData.map((faq, idx) => {
             const isOpen = openFaq === idx;
             return (
               <div
                 key={idx}
-                className="bg-white border border-fog rounded-[16px] p-5 cursor-pointer hover:border-ash transition-colors"
+                className="bg-white border border-[#e8e8e8] rounded-[24px] p-6 sm:p-7 cursor-pointer hover:border-[#918df6] transition-all duration-200 shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.04)]"
                 onClick={() => setOpenFaq(isOpen ? -1 : idx)}
               >
                 <div className="flex items-center justify-between gap-4">
-                  <h3 className="font-openrunde text-base sm:text-lg font-medium text-carbon tracking-[-0.31px]">
+                  <h3 className="font-openrunde text-base sm:text-lg font-semibold text-[#181925] tracking-[-0.32px]">
                     {faq.q}
                   </h3>
-                  <ChevronDown size={18} className={`text-ash transition-transform duration-200 ${isOpen ? "rotate-180 text-carbon" : ""}`} />
+                  <div className="w-8 h-8 rounded-full bg-[#f5f5f5] flex items-center justify-center flex-shrink-0 text-[#181925]">
+                    <ChevronDown size={16} className={`text-[#666666] transition-transform duration-200 ${isOpen ? "rotate-180 text-[#918df6]" : ""}`} />
+                  </div>
                 </div>
                 {isOpen && (
-                  <div className="pt-3.5 mt-3.5 border-t border-fog text-base text-graphite leading-relaxed tracking-[-0.32px]">
+                  <div className="pt-4 mt-4 border-t border-[#e8e8e8] font-openrunde text-sm sm:text-base text-[#666666] leading-relaxed tracking-[-0.32px]">
                     {faq.a}
                   </div>
                 )}
@@ -388,28 +394,25 @@ export default function HomePage({ isLoggedIn }) {
       </section>
 
       {/* 5. INSTANT VIRTUAL WALLET SHOWCASE */}
-      <section className="py-12 px-6 max-w-[1200px] mx-auto">
-        <div 
-          className="bg-[#fbf9ff] text-carbon rounded-[32px] p-8 sm:p-12 md:p-14 border border-[#e2d8fe] shadow-[0_20px_50px_rgba(133,116,255,0.12)] relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-10 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${footerBg})` }}
-        >
+      <section className="py-16 sm:py-24 px-6 max-w-[1200px] mx-auto mb-16 sm:mb-24 font-openrunde">
+        <div className="bg-white border border-[#e8e8e8] rounded-[28px] sm:rounded-[36px] p-8 sm:p-12 md:p-14 shadow-[0_12px_40px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-10">
           
-          <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#8574ff]/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#918df6]/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#33c758]/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="space-y-6 max-w-xl relative z-10 text-left">
-            <h2 className="font-openrunde text-3xl sm:text-4xl md:text-[42px] font-semibold tracking-[-1px] text-carbon leading-[1.15]">
-              Practice trading with a <span className="text-[#8574ff]">$100,000</span> virtual wallet.
+            <h2 className="font-openrunde text-3xl sm:text-4xl md:text-[42px] font-semibold tracking-[-1px] text-[#181925] leading-[1.15]">
+              Practice trading with a <span className="text-[#918df6]">$100,000</span> virtual wallet.
             </h2>
 
-            <p className="font-openrunde text-base sm:text-lg text-[#555555] leading-relaxed tracking-[-0.32px]">
+            <p className="font-openrunde text-base sm:text-lg text-[#666666] leading-relaxed tracking-[-0.32px]">
               Experience spot and perpetual futures trading with live order books, real-time prices, and 1-click balance refills whenever you want to start fresh.
             </p>
 
             <div className="pt-2">
               <Link
                 to="/auth"
-                className="inline-flex items-center gap-2 bg-[#8574ff] hover:bg-[#7462f5] text-white font-semibold px-7 py-3.5 rounded-full text-base tracking-[-0.32px] transition-all transform hover:scale-105 shadow-lg"
+                className="inline-flex items-center gap-2 bg-[#918df6] hover:bg-[#807be8] text-white font-medium px-7 py-3.5 rounded-full text-base tracking-[-0.32px] transition-all transform hover:scale-[1.03] active:scale-[0.97] shadow-[0_1px_1px_1px_rgba(0,0,0,0.08),0_0_0_0.5px_rgba(0,0,0,0.06)]"
               >
                 <span>Create Free Account</span>
                 <ArrowRight size={16} />
@@ -421,7 +424,7 @@ export default function HomePage({ isLoggedIn }) {
             <img
               src={cryptoWalletImg}
               alt="NexTradeX 3D Crypto Wallet"
-              className="w-full max-w-[320px] sm:max-w-[380px] object-contain transition-transform duration-700 hover:scale-105 animate-float"
+              className="w-full max-w-[320px] sm:max-w-[380px] object-contain transition-transform duration-700 hover:scale-105"
             />
           </div>
 

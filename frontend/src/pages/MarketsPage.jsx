@@ -6,10 +6,10 @@ import {
   ArrowUp01Icon,
   StarIcon,
   FavouriteIcon,
+  Search01Icon,
 } from "@hugeicons/core-free-icons";
 
 import { fetchAllPrices, fetchGlobalMarketStats } from "../api";
-import { Input } from "../components/ui/Input";
 import { PageTransition } from "../components/ui/PageTransition";
 import { Skeleton } from "../components/ui/Skeleton";
 import { useWebSocket } from "../hooks/useWebSocket";
@@ -18,65 +18,7 @@ import { formatCompactNumber, formatCurrency, formatPercent } from "../lib/utils
 import GlobalMarketHeader from "../components/markets/GlobalMarketHeader";
 import MarketHighlightCard from "../components/markets/MarketHighlightCard";
 import SparklineChart from "../components/markets/SparklineChart";
-import { ALL_COINS } from "../utils/constants";
 import UniversalCoinIcon from "../lib/coinIcons";
-
-import btcIcon from "../assets/Icons/btc.svg";
-import ethIcon from "../assets/Icons/eth.svg";
-import solIcon from "../assets/Icons/sol.svg";
-import bnbIcon from "../assets/Icons/bnb.svg";
-import dotIcon from "../assets/Icons/dot.svg";
-import linkIcon from "../assets/Icons/link.svg";
-import ltcIcon from "../assets/Icons/ltc.svg";
-import arbIcon from "../assets/Icons/arb.svg";
-import opIcon from "../assets/Icons/op.svg";
-import suiIcon from "../assets/Icons/sui.svg";
-import tiaIcon from "../assets/Icons/tia.svg";
-import seiIcon from "../assets/Icons/sei.svg";
-
-const localIconMap = {
-  BTC: btcIcon,
-  ETH: ethIcon,
-  SOL: solIcon,
-  BNB: bnbIcon,
-  DOT: dotIcon,
-  LINK: linkIcon,
-  LTC: ltcIcon,
-  ARB: arbIcon,
-  OP: opIcon,
-  SUI: suiIcon,
-  TIA: tiaIcon,
-  SEI: seiIcon,
-};
-
-const cdnIconMap = {
-  BTC: "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/btc.png",
-  ETH: "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/eth.png",
-  SOL: "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/sol.png",
-  BNB: "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/bnb.png",
-  DOT: "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/dot.png",
-  DOGE: "https://s2.coinmarketcap.com/static/img/coins/64x64/74.png",
-  XRP: "https://s2.coinmarketcap.com/static/img/coins/64x64/52.png",
-  ADA: "https://s2.coinmarketcap.com/static/img/coins/64x64/2011.png",
-  AVAX: "https://s2.coinmarketcap.com/static/img/coins/64x64/5805.png",
-  PEPE: "https://s2.coinmarketcap.com/static/img/coins/64x64/24478.png",
-  WIF: "https://s2.coinmarketcap.com/static/img/coins/64x64/28752.png",
-  TON: "https://s2.coinmarketcap.com/static/img/coins/64x64/11419.png",
-  NEAR: "https://s2.coinmarketcap.com/static/img/coins/64x64/6535.png",
-  LINK: "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/link.png",
-  LTC: "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/ltc.png",
-};
-
-const getCryptoIcon = (symbol) => {
-  const base = (symbol?.endsWith("USDT") ? symbol.slice(0, -4) : symbol)?.toUpperCase();
-  if (localIconMap[base]) {
-    return localIconMap[base];
-  }
-  if (cdnIconMap[base]) {
-    return cdnIconMap[base];
-  }
-  return `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/${base?.toLowerCase()}.png`;
-};
 
 const cryptoFullNameMap = {
   BTCUSDT: "Bitcoin",
@@ -231,8 +173,8 @@ export default function MarketsPage() {
 
   return (
     <PageTransition>
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pb-16 space-y-8 font-openrunde">
-        {/* Global Market Telemetry Header fetched from Backend */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-32 sm:pt-36 pb-24 space-y-10 font-openrunde">
+        {/* Global Market Telemetry Header */}
         <GlobalMarketHeader globalStats={globalStats || undefined} />
 
         {/* Top Market Highlights Cards Banner */}
@@ -257,35 +199,42 @@ export default function MarketsPage() {
           />
         </div>
 
-        {/* Market Table Controls & Category Filter Header */}
-        <div className="bg-white border border-fog rounded-2xl p-6 shadow-sm space-y-6">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-fog">
-            <div>
-              <h2 className="text-2xl font-bold text-carbon tracking-tight">Cryptocurrency Prices by Market Cap</h2>
-              <p className="text-xs text-graphite mt-1">
-                Real-time streaming paper market data, 24h metrics, and 7-day sparkline charts.
+        {/* Visitors Engineered White Card Container */}
+        <div className="bg-white border border-[#e8e8e8] rounded-[28px] sm:rounded-[36px] p-6 sm:p-10 shadow-[0_12px_40px_rgba(0,0,0,0.04)] space-y-8">
+          
+          {/* Header Row & Controls */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-[#e8e8e8]">
+            <div className="space-y-1">
+              <h2 className="font-openrunde text-2xl sm:text-3xl font-semibold text-[#181925] tracking-[-1px]">
+                Cryptocurrency Prices by Market Cap
+              </h2>
+              <p className="font-openrunde text-sm text-[#666666] tracking-[-0.32px]">
+                Real-time streaming market data, 24h metrics, and live price trend charts.
               </p>
             </div>
 
             <div className="flex items-center gap-3 w-full lg:w-auto">
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 ${connected ? "bg-mint-wash text-mint" : "bg-mist text-ash"}`}>
-                <span className={`w-2 h-2 rounded-full ${connected ? "bg-mint animate-pulse" : "bg-ash"}`} />
+              <span className={`px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-[-0.32px] flex items-center gap-2 ${connected ? "bg-[#def6e4] text-[#33c758]" : "bg-[#f5f5f5] text-[#999999]"}`}>
+                <span className={`w-2 h-2 rounded-full ${connected ? "bg-[#33c758] animate-pulse" : "bg-[#999999]"}`} />
                 {connected ? "LIVE FEED" : "SNAPSHOT"}
               </span>
 
-              <div className="w-full sm:w-64">
-                <Input
+              {/* Search Pill Input */}
+              <div className="relative w-full sm:w-72">
+                <input
+                  type="text"
                   placeholder="Search coin (e.g. BTC, Solana)..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-full text-xs"
+                  className="w-full bg-[#f5f5f5] focus:bg-white border border-[#e8e8e8] focus:border-[#918df6] rounded-full py-2 px-4 pl-10 text-xs sm:text-sm text-[#181925] placeholder-[#999999] tracking-[-0.32px] outline-none transition-all"
                 />
+                <HugeiconsIcon icon={Search01Icon} size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#999999]" />
               </div>
             </div>
           </div>
 
-          {/* Category Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          {/* Category Navigation Pill Tabs */}
+          <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
             {categories.map((cat) => {
               const isActive = activeCategory === cat;
               return (
@@ -293,53 +242,53 @@ export default function MarketsPage() {
                   key={cat}
                   type="button"
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                  className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 flex items-center gap-2 tracking-[-0.32px] ${
                     isActive
-                      ? "bg-carbon text-white shadow-sm"
-                      : "bg-linen text-graphite hover:bg-mist hover:text-carbon"
+                      ? "bg-[#181925] text-white font-semibold shadow-xs"
+                      : "bg-[#f5f5f5] text-[#666666] hover:bg-[#e8e8e8] hover:text-[#181925]"
                   }`}
                 >
-                  {cat === "Favorites" && <HugeiconsIcon icon={StarIcon} size={13} className={isActive ? "text-amber" : "text-ash"} />}
+                  {cat === "Favorites" && <HugeiconsIcon icon={StarIcon} size={14} className={isActive ? "text-[#ffa600]" : "text-[#999999]"} />}
                   <span>{cat}</span>
                 </button>
               );
             })}
           </div>
 
-          {/* High-density Price Table */}
+          {/* Visitors Engineered Data Table */}
           <div className="overflow-x-auto">
             {loading ? (
               <div className="p-6 space-y-4">
                 {[...Array(6)].map((_, idx) => (
-                  <div key={idx} className="flex justify-between items-center py-3 border-b border-fog">
+                  <div key={idx} className="flex justify-between items-center py-4 border-b border-[#e8e8e8]">
                     <Skeleton className="h-4 w-8 rounded-full" />
                     <Skeleton className="h-4 w-24 rounded-full" />
                     <Skeleton className="h-4 w-20 rounded-full" />
                     <Skeleton className="h-4 w-16 rounded-full" />
                     <Skeleton className="h-4 w-24 rounded-full" />
-                    <Skeleton className="h-8 w-24 rounded-full" />
+                    <Skeleton className="h-9 w-24 rounded-full" />
                   </div>
                 ))}
               </div>
             ) : (
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse font-openrunde">
                 <thead>
-                  <tr className="border-b border-fog text-xs font-semibold text-ash uppercase tracking-wider">
-                    <th className="pb-3 px-2 text-center w-8">
+                  <tr className="border-b border-[#e8e8e8] text-xs font-semibold text-[#999999] uppercase tracking-wider">
+                    <th className="pb-4 px-2 text-center w-8">
                       <HugeiconsIcon icon={StarIcon} size={14} className="inline opacity-60" />
                     </th>
-                    <th className="pb-3 px-3"># Rank</th>
-                    <th className="pb-3 px-4">Name & Symbol</th>
-                    <th className="pb-3 px-4 text-right">Price</th>
-                    <th className="pb-3 px-4 text-right">24h Change</th>
-                    <th className="pb-3 px-4 text-right">24h High / Low</th>
-                    <th className="pb-3 px-4 text-right">Market Cap</th>
-                    <th className="pb-3 px-4 text-right">24h Volume</th>
-                    <th className="pb-3 px-4 text-center">7D Trend</th>
-                    <th className="pb-3 px-4 text-center">Action</th>
+                    <th className="pb-4 px-3"># Rank</th>
+                    <th className="pb-4 px-4">Name & Symbol</th>
+                    <th className="pb-4 px-4 text-right">Price</th>
+                    <th className="pb-4 px-4 text-right">24h Change</th>
+                    <th className="pb-4 px-4 text-right">24h High / Low</th>
+                    <th className="pb-4 px-4 text-right">Market Cap</th>
+                    <th className="pb-4 px-4 text-right">24h Volume</th>
+                    <th className="pb-4 px-4 text-center">7D Trend</th>
+                    <th className="pb-4 px-4 text-center">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-fog text-xs font-medium">
+                <tbody className="divide-y divide-[#e8e8e8] text-sm font-medium">
                   {filteredPrices.map((price, idx) => {
                     const isUp = Number(price.percentChange24h) >= 0;
                     const isFav = favorites.has(price.symbol);
@@ -349,53 +298,46 @@ export default function MarketsPage() {
                     return (
                       <tr
                         key={price.symbol}
-                        className="hover:bg-mist transition-colors cursor-pointer group"
+                        className="hover:bg-[#fafafa] transition-colors duration-150 cursor-pointer group"
                         onClick={() => navigate(`/trade/spot?symbol=${price.symbol}`)}
                       >
                         {/* Star Favorite */}
-                        <td className="py-4 px-2 text-center" onClick={(e) => toggleFavorite(price.symbol, e)}>
+                        <td className="py-4.5 px-2 text-center" onClick={(e) => toggleFavorite(price.symbol, e)}>
                           <div className="flex items-center justify-center cursor-pointer">
                             <HugeiconsIcon
                               icon={FavouriteIcon}
-                              size={15}
-                              className={`transition-colors ${isFav ? "text-amber fill-amber" : "text-ash opacity-40 group-hover:opacity-100"}`}
+                              size={16}
+                              className={`transition-colors ${isFav ? "text-[#ffa600] fill-[#ffa600]" : "text-[#999999] opacity-40 group-hover:opacity-100"}`}
                             />
                           </div>
                         </td>
 
                         {/* Rank */}
-                        <td className="py-4 px-3 text-ash font-medium">{idx + 1}</td>
+                        <td className="py-4.5 px-3 text-[#999999] font-medium text-xs sm:text-sm">{idx + 1}</td>
 
-                        {/* Name & Symbol using Real Colored Crypto Brand SVG Logos */}
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={getCryptoIcon(price.symbol)}
-                              alt={price.symbol}
-                              className="w-7 h-7 object-contain rounded-full bg-white border border-fog p-0.5 shadow-xs"
-                              onError={(e) => {
-                                e.target.src = "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/generic.png";
-                              }}
-                            />
+                        {/* Name & Symbol using UniversalCoinIcon */}
+                        <td className="py-4.5 px-4">
+                          <div className="flex items-center gap-3.5">
+                            <UniversalCoinIcon symbol={price.symbol} size="w-8 h-8" className="drop-shadow-xs" />
                             <div>
-                              <span className="font-bold text-carbon block group-hover:text-lavender transition-colors">
+                              <span className="font-semibold text-[#181925] text-sm sm:text-base block tracking-[-0.32px] group-hover:text-[#918df6] transition-colors">
                                 {fullName}
                               </span>
-                              <span className="text-[11px] text-ash block uppercase tracking-wider">{price.symbol}</span>
+                              <span className="text-xs text-[#999999] block uppercase tracking-wider">{price.symbol}</span>
                             </div>
                           </div>
                         </td>
 
                         {/* Last Price */}
-                        <td className="py-4 px-4 text-right font-bold text-carbon text-sm">
+                        <td className="py-4.5 px-4 text-right font-semibold text-[#181925] text-sm sm:text-base tracking-[-0.32px]">
                           {formatCurrency(price.currentPrice)}
                         </td>
 
                         {/* 24h Change */}
-                        <td className="py-4 px-4 text-right">
+                        <td className="py-4.5 px-4 text-right">
                           <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                              isUp ? "bg-mint-wash text-mint" : "bg-red-50 text-ember"
+                            className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold tracking-tight ${
+                              isUp ? "bg-[#def6e4] text-[#33c758]" : "bg-[#fff0f0] text-[#ff3e00]"
                             }`}
                           >
                             <HugeiconsIcon icon={isUp ? ArrowUp01Icon : ArrowDown01Icon} size={12} />
@@ -404,33 +346,33 @@ export default function MarketsPage() {
                         </td>
 
                         {/* 24h High / Low */}
-                        <td className="py-4 px-4 text-right text-ash text-[11px]">
+                        <td className="py-4.5 px-4 text-right text-xs tracking-[-0.32px]">
                           <div>
-                            <span className="text-carbon font-semibold">{formatCurrency(price.highPrice || price.currentPrice)}</span>
-                            <span className="block text-ash">{formatCurrency(price.lowPrice || price.currentPrice)}</span>
+                            <span className="text-[#181925] font-semibold">{formatCurrency(price.highPrice || price.currentPrice)}</span>
+                            <span className="block text-[#999999]">{formatCurrency(price.lowPrice || price.currentPrice)}</span>
                           </div>
                         </td>
 
                         {/* Market Cap */}
-                        <td className="py-4 px-4 text-right text-carbon font-semibold">
+                        <td className="py-4.5 px-4 text-right text-[#181925] font-semibold text-xs sm:text-sm tracking-[-0.32px]">
                           {formatCurrency(marketCapVal, { notation: "compact" })}
                         </td>
 
                         {/* 24h Volume */}
-                        <td className="py-4 px-4 text-right text-graphite">
+                        <td className="py-4.5 px-4 text-right text-[#666666] text-xs sm:text-sm tracking-[-0.32px]">
                           {formatCompactNumber(price.volume24h)}
                         </td>
 
                         {/* 7D Trend Sparkline */}
-                        <td className="py-4 px-4 text-center">
+                        <td className="py-4.5 px-4 text-center">
                           <SparklineChart isPositive={isUp} width={100} height={32} />
                         </td>
 
-                        {/* Action Trade Button */}
-                        <td className="py-4 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                        {/* Action Trade Button: Lavender Pill Button */}
+                        <td className="py-4.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
                           <button
                             type="button"
-                            className="btn-primary-lavender text-xs px-4 py-1.5 shadow-sm hover:shadow transition-all"
+                            className="bg-[#918df6] hover:bg-[#807be8] text-white font-medium rounded-full px-5 py-2 text-xs sm:text-sm tracking-[-0.32px] transition-all transform hover:scale-[1.03] active:scale-[0.97] shadow-[0_1px_1px_1px_rgba(0,0,0,0.08),0_0_0_0.5px_rgba(0,0,0,0.06)]"
                             onClick={() => navigate(`/trade/spot?symbol=${price.symbol}`)}
                           >
                             Trade
@@ -442,7 +384,7 @@ export default function MarketsPage() {
 
                   {filteredPrices.length === 0 && (
                     <tr>
-                      <td colSpan={10} className="py-12 text-center text-sm text-ash">
+                      <td colSpan={10} className="py-16 text-center text-sm text-[#999999]">
                         No cryptocurrencies match your filter or search query.
                       </td>
                     </tr>

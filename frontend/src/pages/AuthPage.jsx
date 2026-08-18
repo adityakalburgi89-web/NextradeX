@@ -6,11 +6,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
-import { loginUser, registerUser, googleLogin, completeProfile, setAuthToken, forgotPassword, resetPassword } from "../api";
+import { loginUser, registerUser, googleLogin, exchangeOAuthCode, completeProfile, forgotPassword, resetPassword } from "../api";
 import { useToast } from "../hooks/useToast";
 import heroBg from "../assets/images/hero-bg.png";
 import authBannerGradient from "../assets/images/auth-banner-gradient.jpg";
 import Logo from "../assets/images/Logo.png";
+import SquareLoader from "../components/ui/SquareLoader";
 import gmailIcon from "../assets/Icons/Gmail_icon_svg.webp";
 import githubIcon from "../assets/Icons/github_icon.png";
 import xIcon from "../assets/Icons/x.com_icon.png";
@@ -173,27 +174,32 @@ export default function AuthPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
+    const code = params.get("code");
     const setup = params.get("setup");
     const errorParam = params.get("error");
-    const errorMsg = params.get("message");
     const resetTokenParam = params.get("resetToken");
 
     if (resetTokenParam) {
       setUrlResetToken(resetTokenParam);
     }
 
-    if (token) {
-      setAuthToken(token);
-      if (setup === "true") {
-        setNeedsSetup(true);
-      } else {
-        window.location.href = "/";
-      }
+    if (code) {
+      window.history.replaceState({}, document.title, "/auth");
+      exchangeOAuthCode(code)
+        .then((response) => {
+          if (setup === "true" || response?.data?.needsProfileSetup) {
+            setNeedsSetup(true);
+          } else {
+            window.location.href = "/";
+          }
+        })
+        .catch(() => setError("Authentication failed. Please try again."));
     }
 
     if (errorParam) {
-      setError(errorMsg || "Authentication failed");
+      setError(errorParam === "email_exists"
+        ? "This email already has an account. Sign in normally before linking Google."
+        : "Authentication failed. Please try again.");
       window.history.replaceState({}, document.title, "/auth");
     }
   }, []);
@@ -401,7 +407,12 @@ export default function AuthPage() {
         >
           <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px] pointer-events-none" />
           <Card className="w-full max-w-md overflow-hidden bg-white/95 backdrop-blur-xl border border-white/80 rounded-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.22)] relative z-10">
-            <CardHeader className="pb-4 pt-8 px-8">
+            <CardHeader className="pb-4 pt-8 px-8 text-center">
+              <div className="flex justify-center mb-4">
+                <Link to="/" className="inline-block transition-transform hover:scale-105">
+                  <img src={Logo} alt="NexTradeX" className="h-16 w-auto object-contain" />
+                </Link>
+              </div>
               <CardTitle className="text-[24px] font-semibold text-[#181925] tracking-[-0.31px]">Set New Password</CardTitle>
               <CardDescription className="text-[15px] text-[#666666] tracking-[-0.32px] mt-1">Enter a strong new password for your NexTradeX account.</CardDescription>
             </CardHeader>
@@ -468,7 +479,12 @@ export default function AuthPage() {
         >
           <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px] pointer-events-none" />
           <Card className="w-full max-w-md overflow-hidden bg-white/95 backdrop-blur-xl border border-white/80 rounded-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.22)] relative z-10">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-4 text-center">
+              <div className="flex justify-center mb-4">
+                <Link to="/" className="inline-block transition-transform hover:scale-105">
+                  <img src={Logo} alt="NexTradeX" className="h-16 w-auto object-contain" />
+                </Link>
+              </div>
               <CardTitle className="text-xl">Complete Your Profile</CardTitle>
               <CardDescription className="text-sm mt-1">Choose a username and verify your name to continue.</CardDescription>
             </CardHeader>
@@ -587,12 +603,23 @@ export default function AuthPage() {
         <div className="w-full max-w-5xl bg-white rounded-[32px] sm:rounded-[36px] p-3 sm:p-4 md:p-5 shadow-[0_25px_70px_rgba(0,0,0,0.22)] border border-white/90 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch relative z-10">
 
           {/* LEFT PANEL: Frosted Gradient Banner */}
-          <div className="lg:col-span-5 rounded-[24px] sm:rounded-[28px] overflow-hidden relative flex items-center justify-center min-h-[350px] lg:min-h-[560px] bg-white">
+          <div className="lg:col-span-5 rounded-[24px] sm:rounded-[28px] overflow-hidden relative flex items-center justify-center min-h-[350px] lg:min-h-[560px] bg-white group">
             <img
               src={authBannerGradient}
               alt="Authentication Banner"
               className="w-full h-full object-cover rounded-[24px] sm:rounded-[28px]"
             />
+            {/* NexTradeX Logo Badge on Left Banner */}
+            <div className="absolute top-6 left-6 z-10">
+              <Link to="/" className="inline-flex items-center gap-2 bg-white/90 hover:bg-white backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-md transition-all transform hover:scale-105">
+                <img src={Logo} alt="NexTradeX Logo" className="h-6 w-auto object-contain" />
+              </Link>
+            </div>
+
+            {/* Square Loader Animation Centerpiece */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+              <SquareLoader />
+            </div>
           </div>
 
           {/* RIGHT PANEL: Login Form Area */}
@@ -601,7 +628,9 @@ export default function AuthPage() {
               
               {/* Logo / Header */}
               <div className="flex justify-center mb-6">
-                <img src={Logo} alt="NexTradeX" className="h-8 w-auto" />
+                <Link to="/" className="inline-block transition-transform hover:scale-105">
+                  <img src={Logo} alt="NexTradeX" className="h-[72px] sm:h-[80px] w-auto object-contain" />
+                </Link>
               </div>
 
               {/* Login / Register toggle */}

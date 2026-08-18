@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { fetchCandlestickData, fetchOpenFuturesPositions, fetchPrice, openFuturesPosition, fetchWallets, closeFuturesPosition, updateFuturesSlTp, hasAuthToken, fetchBinanceSymbols, fetchActiveOrders, fetchOrderHistory, cancelOrder } from "../api";
+import { fetchCandlestickData, fetchOpenFuturesPositions, fetchPrice, openFuturesPosition, fetchWallets, closeFuturesPosition, closeAllFuturesPositions, updateFuturesSlTp, hasAuthToken, fetchBinanceSymbols, fetchActiveOrders, fetchOrderHistory, cancelOrder } from "../api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
@@ -433,24 +433,44 @@ export default function FuturesTradingPage() {
     setError("");
     setMessage("");
     try {
-      await Promise.all(positions.map((p) => closeFuturesPosition(p.id)));
-      setMessage("All open positions closed successfully");
-      setTimeout(() => setMessage(""), 4000);
-      await loadPositions();
-      await loadOrdersAndHistory();
-
-      // Update balance
-      const walletsRes = await fetchWallets();
-      const usdtWallet = walletsRes?.data?.find(w => w.walletType === "FUTURES");
-      if (usdtWallet) {
-        setUsdtWalletBalance(Number(usdtWallet.balance || 0));
+      try {
+        const res = await closeAllFuturesPositions();
+        setMessage(res?.message || "All open positions closed successfully");
+      } catch (batchErr) {
+        console.warn("[Close All] Batch endpoint failed, falling back to sequential execution:", batchErr);
+        let successCount = 0;
+        let failCount = 0;
+        for (const p of positions) {
+          try {
+            await closeFuturesPosition(p.id);
+            successCount++;
+          } catch (err) {
+            console.error(`Failed to close position ${p.id}:`, err);
+            failCount++;
+          }
+        }
+        if (successCount > 0) {
+          setMessage(`Successfully closed ${successCount} position${successCount > 1 ? "s" : ""}${failCount > 0 ? ` (${failCount} failed)` : ""}`);
+        } else {
+          setError("Failed to close open positions");
+        }
       }
-    } catch (err) {
-      setError(err.message || "Failed to close all positions");
-      setTimeout(() => setError(""), 4000);
+      setTimeout(() => {
+        setMessage("");
+        setError("");
+      }, 4000);
+    } finally {
       await loadPositions();
       await loadOrdersAndHistory();
-    } finally {
+      try {
+        const walletsRes = await fetchWallets();
+        const usdtWallet = walletsRes?.data?.find(w => w.walletType === "FUTURES");
+        if (usdtWallet) {
+          setUsdtWalletBalance(Number(usdtWallet.balance || 0));
+        }
+      } catch (wErr) {
+        console.warn("Failed to refresh wallet balance:", wErr.message);
+      }
       setClosingPositionIds([]);
     }
   };
@@ -607,8 +627,8 @@ export default function FuturesTradingPage() {
                   {/* HIGH-FIDELITY POSITIONS AND BALANCES BOTTOM TAB GRID */}
                   <Tabs value={activeBottomTab} onValueChange={setActiveBottomTab} className="w-full flex-grow flex flex-col">
                     <Card className="bg-background border border-transparent rounded-xl overflow-hidden shadow-elevation-md flex-grow flex flex-col">
-                      <div className="bg-background/30 border-b border-transparent px-4 flex items-center justify-between">
-                        <TabsList className="flex gap-4 bg-transparent border-0 p-0 h-auto rounded-none">
+                      <div className="bg-background/30 border-b border-transparent px-6 sm:px-8 flex items-center justify-between min-h-[44px] gap-4">
+                        <TabsList className="flex gap-4 bg-transparent border-0 p-0 h-auto rounded-none overflow-x-auto scrollbar-none">
                           {[
                             { id: "POSITIONS", label: "Positions" },
                             { id: "OPEN ORDERS", label: "Open Orders" },
@@ -619,7 +639,7 @@ export default function FuturesTradingPage() {
                             <TabsTrigger
                               key={tab.id}
                               value={tab.id}
-                              className="pb-3 pt-3 bg-transparent border-0 rounded-none relative font-heading text-[10px] font-bold uppercase text-muted hover:text-foreground data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:font-bold transition-all cursor-pointer"
+                              className="pb-2 pt-2 bg-transparent border-0 rounded-none relative font-heading text-[10px] sm:text-xs font-bold uppercase text-muted hover:text-foreground data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:font-bold transition-all cursor-pointer whitespace-nowrap"
                             >
                               {tab.label}{" "}
                               {tab.id === "POSITIONS"
@@ -641,20 +661,20 @@ export default function FuturesTradingPage() {
                           <button
                             type="button"
                             onClick={handleCloseAllPositions}
-                            className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                            className="inline-flex items-center justify-center gap-1.5 px-3 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded-full text-xs font-semibold tracking-tight transition-all whitespace-nowrap shrink-0 cursor-pointer shadow-xs my-auto mr-1"
                           >
-                            <Trash2 size={12} />
-                            Close All
+                            <Trash2 size={12} className="shrink-0" />
+                            <span>Close All</span>
                           </button>
                         )}
                         {activeBottomTab === "OPEN ORDERS" && activeOrdersCount > 0 && (
                           <button
                             type="button"
                             onClick={handleCancelAllOrders}
-                            className="px-2.5 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                            className="inline-flex items-center justify-center gap-1.5 px-3 py-1 bg-trading-down/10 hover:bg-trading-down/20 text-trading-down border border-trading-down/20 rounded-full text-xs font-semibold tracking-tight transition-all whitespace-nowrap shrink-0 cursor-pointer shadow-xs my-auto mr-1"
                           >
-                            <Trash2 size={12} />
-                            Cancel All
+                            <Trash2 size={12} className="shrink-0" />
+                            <span>Cancel All</span>
                           </button>
                         )}
                       </div>
@@ -672,17 +692,17 @@ export default function FuturesTradingPage() {
                             </div>
                           ) : (
                             <div className="overflow-x-auto flex-grow flex flex-col justify-between">
-                              <table className="w-full text-left border-collapse font-mono text-xs">
+                               <table className="w-full text-left border-collapse font-mono text-xs">
                                 <thead>
                                   <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
-                                    <th className="py-2.5 px-4">Symbol</th>
+                                    <th className="py-3 pl-8 sm:pl-10 pr-4">Symbol</th>
                                     <th className="py-2.5 px-4">Mode</th>
                                     <th className="py-2.5 px-4 text-right">Size</th>
                                     <th className="py-2.5 px-4 text-right">Entry Price</th>
                                     <th className="py-2.5 px-4 text-right">Leverage</th>
                                     <th className="py-2.5 px-4 text-right">Unrealized PnL</th>
                                     <th className="py-2.5 px-4 text-center">TP / SL</th>
-                                    <th className="py-2.5 px-4 text-center">Actions</th>
+                                    <th className="py-2.5 pl-4 pr-6 sm:pr-8 text-center">Actions</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-hairline-on-dark">
@@ -701,7 +721,7 @@ export default function FuturesTradingPage() {
                                     const isProfit = pnlVal >= 0;
                                     return (
                                       <tr key={p.id} className="hover:bg-background/[0.01] transition-colors">
-                                        <td className="py-3 px-4 font-bold text-foreground">{p.symbol}</td>
+                                        <td className="py-3.5 pl-8 sm:pl-10 pr-4 font-bold text-foreground">{p.symbol}</td>
                                         <td className="py-3 px-4">
                                           <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${p.positionMode === "LONG" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
                                             }`}>
@@ -808,22 +828,21 @@ export default function FuturesTradingPage() {
                               No active open orders records.
                             </div>
                           ) : (
-                            <div className="overflow-x-auto flex-grow flex flex-col justify-between">
-                              <table className="w-full text-left border-collapse font-mono text-xs">
+                            <div className="overflow-x-auto flex-grow flex flex-col justify-between">                               <table className="w-full text-left border-collapse font-mono text-xs">
                                 <thead>
                                   <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
-                                    <th className="py-2.5 px-4">Symbol</th>
+                                    <th className="py-2.5 pl-6 sm:pl-8 pr-4">Symbol</th>
                                     <th className="py-2.5 px-4">Side</th>
                                     <th className="py-2.5 px-4">Type</th>
                                     <th className="py-2.5 px-4 text-right">Quantity</th>
                                     <th className="py-2.5 px-4 text-right">Price</th>
-                                    <th className="py-2.5 px-4 text-center">Action / Status</th>
+                                    <th className="py-2.5 pl-4 pr-6 sm:pr-8 text-center">Action / Status</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-hairline-on-dark">
                                   {paginatedOrders.map((o) => (
                                     <tr key={o.id} className="hover:bg-background/[0.01] transition-colors">
-                                      <td className="py-3 px-4 font-bold text-foreground uppercase">{o.symbol}</td>
+                                      <td className="py-3.5 pl-6 sm:pl-8 pr-4 font-bold text-foreground uppercase">{o.symbol}</td>
                                       <td className="py-3 px-4">
                                         <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
                                           }`}>
@@ -887,23 +906,22 @@ export default function FuturesTradingPage() {
                               No active order history records.
                             </div>
                           ) : (
-                            <div className="overflow-x-auto flex-grow flex flex-col justify-between">
-                              <table className="w-full text-left border-collapse font-mono text-xs">
+                            <div className="overflow-x-auto flex-grow flex flex-col justify-between">                               <table className="w-full text-left border-collapse font-mono text-xs">
                                 <thead>
                                   <tr className="border-b border-transparent text-[9px] font-bold text-muted uppercase bg-background/20 py-2.5">
-                                    <th className="py-2.5 px-4">Symbol</th>
+                                    <th className="py-2.5 pl-6 sm:pl-8 pr-4">Symbol</th>
                                     <th className="py-2.5 px-4">Side</th>
                                     <th className="py-2.5 px-4">Type</th>
                                     <th className="py-2.5 px-4 text-right">Quantity</th>
                                     <th className="py-2.5 px-4 text-right">Price</th>
                                     <th className="py-2.5 px-4 text-right">Status</th>
-                                    <th className="py-2.5 px-4 text-right">Date</th>
+                                    <th className="py-2.5 pl-4 pr-6 sm:pr-8 text-right">Date</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-hairline-on-dark">
                                   {paginatedOrderHist.map((o) => (
                                     <tr key={o.id} className="hover:bg-background/[0.01] transition-colors">
-                                      <td className="py-3 px-4 font-bold text-foreground uppercase">{o.symbol}</td>
+                                      <td className="py-3.5 pl-6 sm:pl-8 pr-4 font-bold text-foreground uppercase">{o.symbol}</td>
                                       <td className="py-3 px-4">
                                         <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${o.side === "BUY" ? "bg-trading-up/10 text-trading-up" : "bg-trading-down/10 text-trading-down"
                                           }`}>

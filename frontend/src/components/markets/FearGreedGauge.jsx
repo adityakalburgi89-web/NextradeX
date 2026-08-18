@@ -1,11 +1,11 @@
 import React from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { SparklesIcon } from "@hugeicons/core-free-icons";
-import { formatCurrency, formatPercent } from "../../lib/utils";
+import { formatCurrency } from "../../lib/utils";
 
 /**
- * Premium Dark Fear & Greed Index Component with Segmented Speedometer Arc,
- * AI Insight Box, and Live Total Market & Volume cards.
+ * Visitors White Engineering Blueprint Fear & Greed Index Component with Segmented Speedometer Arc,
+ * AI Insight Box, and Live Total Market & Volume telemetry cards.
  */
 export function FearGreedGauge({
   score = 74,
@@ -57,42 +57,30 @@ export function FearGreedGauge({
   const btcChangeText = btcChange >= 0 ? `+${btcChange.toFixed(1)}%` : `${btcChange.toFixed(1)}%`;
 
   return (
-    <div className="bg-[#090a0f] text-white border border-[#1e2230] rounded-[28px] p-6 shadow-2xl flex flex-col justify-between font-openrunde min-h-[460px]">
-      {/* 1. Top Section: AI INSIGHT Box */}
-      <div className="bg-[#121520]/80 border border-[#23293e] rounded-2xl p-4 mb-4 backdrop-blur-sm">
-        <div className="flex items-center gap-2 mb-1.5">
-          <HugeiconsIcon icon={SparklesIcon} size={15} className="text-[#34d399]" />
-          <span className="text-[11px] font-bold tracking-widest text-[#34d399] uppercase font-mono">
-            AI INSIGHT
-          </span>
-        </div>
-        <p className="text-xs text-[#94a3b8] leading-relaxed font-normal">
-          Bitcoin's price fluctuated by <span className={btcChange >= 0 ? "text-[#34d399] font-medium" : "text-[#f87171] font-medium"}>{btcChangeText}</span> over the last 24 hours, currently trading around <span className="text-white font-medium">{formatCurrency(btcPrice)}</span>.
-        </p>
-      </div>
+    <div className="bg-white text-[#181925] border border-[#e8e8e8] rounded-[24px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all duration-200 flex flex-col justify-between font-openrunde h-full min-h-[380px]">
 
       {/* 2. Center Section: Segmented Speedometer Arc Gauge */}
-      <div className="relative flex flex-col items-center justify-center my-2">
-        <svg width="280" height="150" viewBox="0 0 280 150" className="overflow-visible">
+      <div className="relative flex flex-col items-center justify-center my-1">
+        <svg width="280" height="145" viewBox="0 0 280 145" className="overflow-visible">
           <defs>
-            {/* Segment 1 Gradient (Red to Orange) */}
+            {/* Segment 1 Gradient (Ember Red to Orange) */}
             <linearGradient id="seg1Grad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#ef4444" />
+              <stop offset="0%" stopColor="#ff3e00" />
               <stop offset="100%" stopColor="#f97316" />
             </linearGradient>
-            {/* Segment 2 Gradient (Orange to Yellow) */}
+            {/* Segment 2 Gradient (Orange to Amber) */}
             <linearGradient id="seg2Grad" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#f97316" />
-              <stop offset="100%" stopColor="#facc15" />
+              <stop offset="100%" stopColor="#ffa600" />
             </linearGradient>
-            {/* Segment 3 Gradient (Yellow to Lime) */}
+            {/* Segment 3 Gradient (Amber to Mint) */}
             <linearGradient id="seg3Grad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#facc15" />
-              <stop offset="100%" stopColor="#a3e635" />
+              <stop offset="0%" stopColor="#ffa600" />
+              <stop offset="100%" stopColor="#33c758" />
             </linearGradient>
-            {/* Segment 4 Gradient (Lime to Mint) */}
+            {/* Segment 4 Gradient (Mint to Bright Mint) */}
             <linearGradient id="seg4Grad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#a3e635" />
+              <stop offset="0%" stopColor="#33c758" />
               <stop offset="100%" stopColor="#10b981" />
             </linearGradient>
           </defs>
@@ -134,19 +122,19 @@ export function FearGreedGauge({
             strokeLinecap="round"
           />
 
-          {/* Active Handle Indicator Node (White Circle with Dark Ring) */}
+          {/* Active Handle Indicator Node (Carbon Outer Circle with White Ring) */}
           <g transform={`translate(${nodeX.toFixed(2)}, ${nodeY.toFixed(2)})`}>
-            <circle cx="0" cy="0" r="11" fill="#090a0f" />
-            <circle cx="0" cy="0" r="8" fill="#ffffff" />
+            <circle cx="0" cy="0" r="11" fill="#181925" />
+            <circle cx="0" cy="0" r="7" fill="#ffffff" />
           </g>
         </svg>
 
         {/* Center Score & Label */}
-        <div className="text-center mt-[-45px] pb-3">
-          <span className="text-5xl font-extralight tracking-tight text-white font-mono block">
+        <div className="text-center mt-[-40px] pb-2">
+          <span className="text-5xl font-semibold tracking-[-2px] text-[#181925] font-openrunde block">
             {clampedScore}
           </span>
-          <span className="text-sm font-mono text-[#cbd5e1] tracking-wider block mt-1">
+          <span className="text-xs font-semibold text-[#666666] tracking-[-0.32px] block mt-1 uppercase">
             {sentimentText}
           </span>
         </div>
@@ -155,15 +143,15 @@ export function FearGreedGauge({
       {/* 3. Bottom Section: Side-by-Side Stats Cards */}
       <div className="grid grid-cols-2 gap-3 mt-2">
         {/* Left Card: Total Market */}
-        <div className="bg-[#121520] border border-[#1e2436] rounded-2xl p-3.5">
-          <span className="text-[11px] font-medium text-[#64748b] block mb-1">Total Market</span>
+        <div className="bg-[#fafafa] border border-[#e8e8e8] rounded-2xl p-3.5">
+          <span className="text-[11px] font-semibold text-[#999999] uppercase tracking-wider block mb-1">Total Market</span>
           <div className="flex items-baseline gap-1.5 flex-wrap">
-            <span className="text-base font-bold text-white tracking-tight">
+            <span className="text-base font-bold text-[#181925] tracking-[-0.32px]">
               {formatCurrency(totalMarketCap, { notation: "compact" })}
             </span>
             <span
-              className={`text-[11px] font-semibold ${
-                marketCapChange >= 0 ? "text-[#34d399]" : "text-[#f87171]"
+              className={`text-xs font-semibold tracking-tight ${
+                marketCapChange >= 0 ? "text-[#33c758]" : "text-[#ff3e00]"
               }`}
             >
               {marketCapChange >= 0 ? "+" : ""}
@@ -173,15 +161,15 @@ export function FearGreedGauge({
         </div>
 
         {/* Right Card: Volume (24h) */}
-        <div className="bg-[#121520] border border-[#1e2436] rounded-2xl p-3.5">
-          <span className="text-[11px] font-medium text-[#64748b] block mb-1">Volume (24h)</span>
+        <div className="bg-[#fafafa] border border-[#e8e8e8] rounded-2xl p-3.5">
+          <span className="text-[11px] font-semibold text-[#999999] uppercase tracking-wider block mb-1">Volume (24h)</span>
           <div className="flex items-baseline gap-1.5 flex-wrap">
-            <span className="text-base font-bold text-white tracking-tight">
+            <span className="text-base font-bold text-[#181925] tracking-[-0.32px]">
               {formatCurrency(volume24h, { notation: "compact" })}
             </span>
             <span
-              className={`text-[11px] font-semibold ${
-                volumeChange >= 0 ? "text-[#34d399]" : "text-[#f87171]"
+              className={`text-xs font-semibold tracking-tight ${
+                volumeChange >= 0 ? "text-[#33c758]" : "text-[#ff3e00]"
               }`}
             >
               {volumeChange >= 0 ? "+" : ""}

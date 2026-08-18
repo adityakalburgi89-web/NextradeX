@@ -1,5 +1,6 @@
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import { getAuthToken } from "../api";
 
 const WS_URL = process.env.REACT_APP_WS_URL || "http://localhost:8080/api/ws";
 
@@ -37,6 +38,15 @@ class WebSocketService {
 
     this.client = new Client({
       webSocketFactory: () => new SockJS(WS_URL),
+      connectHeaders: getAuthToken()
+        ? { Authorization: `Bearer ${getAuthToken()}` }
+        : {},
+      beforeConnect: () => {
+        const token = getAuthToken();
+        this.client.connectHeaders = token
+          ? { Authorization: `Bearer ${token}` }
+          : {};
+      },
       reconnectDelay: this.reconnectDelay,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
