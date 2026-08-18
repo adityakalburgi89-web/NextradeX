@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.nextradex.modules.security.auth.IJwtService;
+import com.nextradex.shared.exception.InsufficientBalanceException;
 
 @Slf4j
 @RestController
@@ -41,9 +42,9 @@ public class WalletController {
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Wallets retrieved", responses));
         } catch (Exception e) {
-            log.error("Error retrieving wallets: {}", e.getMessage());
+            log.error("Error retrieving wallets: ", e);
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, sanitizeErrorMessage(e), null));
         }
     }
     
@@ -60,9 +61,9 @@ public class WalletController {
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Wallet retrieved", toWalletResponse(wallet)));
         } catch (Exception e) {
-            log.error("Error retrieving wallet: {}", e.getMessage());
+            log.error("Error retrieving wallet: ", e);
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, sanitizeErrorMessage(e), null));
         }
     }
     
@@ -77,9 +78,9 @@ public class WalletController {
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Deposit successful", toWalletResponse(wallet)));
         } catch (Exception e) {
-            log.error("Error performing deposit: {}", e.getMessage());
+            log.error("Error performing deposit: ", e);
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, sanitizeErrorMessage(e), null));
         }
     }
 
@@ -95,9 +96,9 @@ public class WalletController {
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Transfer completed successfully", null));
         } catch (Exception e) {
-            log.error("Error performing transfer: {}", e.getMessage());
+            log.error("Error performing transfer: ", e);
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, sanitizeErrorMessage(e), null));
         }
     }
 
@@ -112,9 +113,9 @@ public class WalletController {
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Withdrawal successful", toWalletResponse(wallet)));
         } catch (Exception e) {
-            log.error("Error performing withdrawal: {}", e.getMessage());
+            log.error("Error performing withdrawal: ", e);
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, sanitizeErrorMessage(e), null));
         }
     }
 
@@ -126,9 +127,9 @@ public class WalletController {
             return ResponseEntity.ok()
                     .body(new ApiResponse<>(200, "Wallets successfully reset to default simulated capital", null));
         } catch (Exception e) {
-            log.error("Error resetting wallets: {}", e.getMessage());
+            log.error("Error resetting wallets: ", e);
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse<>(400, e.getMessage(), null));
+                    .body(new ApiResponse<>(400, sanitizeErrorMessage(e), null));
         }
     }
     
@@ -145,5 +146,9 @@ public class WalletController {
     
     private Long extractUserIdFromAuth(Authentication authentication) {
         return jwtService.extractUserIdFromAuthentication(authentication);
+    }
+
+    private String sanitizeErrorMessage(Exception e) {
+        return com.nextradex.shared.exception.SafeErrorMessage.forClient(e);
     }
 }

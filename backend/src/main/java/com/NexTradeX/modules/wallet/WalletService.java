@@ -95,12 +95,14 @@ public class WalletService implements IWalletService {
     public Wallet unlockFunds(Long walletId, BigDecimal amount) {
         requirePositive(amount, "Unlock amount");
         Wallet wallet = getWalletForUpdate(walletId);
-        if (wallet.getLockedFunds().compareTo(amount) < 0) {
-            throw new IllegalArgumentException("Cannot unlock more than the locked amount");
+        BigDecimal actualUnlock = amount.min(wallet.getLockedFunds());
+        if (actualUnlock.compareTo(BigDecimal.ZERO) > 0) {
+            wallet.setLockedFunds(wallet.getLockedFunds().subtract(actualUnlock));
+        } else {
+            wallet.setLockedFunds(BigDecimal.ZERO);
         }
-        wallet.setLockedFunds(wallet.getLockedFunds().subtract(amount));
         Wallet updated = walletRepository.save(wallet);
-        log.info("Unlocked {} from wallet {}", amount, walletId);
+        log.info("Unlocked {} from wallet {}", actualUnlock, walletId);
         return updated;
     }
     
@@ -179,8 +181,12 @@ public class WalletService implements IWalletService {
     }
 
     private Wallet getWalletForUpdate(Long walletId) {
-        return walletRepository.findByIdForUpdate(walletId)
+        Wallet wallet = walletRepository.findByIdForUpdate(walletId)
                 .orElseThrow(() -> new RuntimeException("Wallet not found"));
+        if (wallet.getVersion() == null) {
+            wallet.setVersion(0L);
+        }
+        return wallet;
     }
 
     private void requirePositive(BigDecimal amount, String fieldName) {

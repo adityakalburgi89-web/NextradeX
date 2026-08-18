@@ -97,7 +97,7 @@ public class UserController {
             user = userService.updateUser(userId, request.getFirstName(), request.getLastName(), request.getEmail());
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>(404, e.getMessage(), null));
+                    .body(new ApiResponse<>(404, "User not found", null));
         }
 
         UserProfileResponse profile = UserProfileResponse.builder()

@@ -128,25 +128,21 @@ public class UserService implements IUserService {
             return existingGoogleUser.get();
         }
 
-        Optional<User> existingEmailUser = userRepository.findByEmail(email);
+        String normalizedEmail = email.trim().toLowerCase(java.util.Locale.ROOT);
+        Optional<User> existingEmailUser = userRepository.findByEmailIgnoreCase(normalizedEmail);
         if (existingEmailUser.isPresent()) {
-            User user = existingEmailUser.get();
-            user.setGoogleId(googleId);
-            if (profilePictureUrl != null && !profilePictureUrl.isBlank()) {
-                user.setProfilePictureUrl(profilePictureUrl);
-            }
-            user.setEmailVerified(true);
-            log.info("Linked Google ID {} to existing user email {}", googleId, email);
-            return userRepository.save(user);
+            log.warn("OAuth automatic account linking blocked for an existing email");
+            throw new RuntimeException("EMAIL_EXISTS");
         }
 
-        return createGoogleUser(googleId, email, firstName, lastName, profilePictureUrl);
+        return createGoogleUser(googleId, normalizedEmail, firstName, lastName, profilePictureUrl);
     }
     
     public User createGoogleUser(String googleId, String email, String firstName, String lastName, String profilePictureUrl) {
+        String normalizedEmail = email.trim().toLowerCase(java.util.Locale.ROOT);
         User user = User.builder()
-                .username(generateTempUsername(email))
-                .email(email)
+                .username(generateTempUsername(normalizedEmail))
+                .email(normalizedEmail)
                 .passwordHash(passwordEncoder.encode(java.util.UUID.randomUUID().toString()))
                 .firstName(firstName != null ? firstName : "")
                 .lastName(lastName != null ? lastName : "")
@@ -159,7 +155,7 @@ public class UserService implements IUserService {
                 .build();
         
         User savedUser = userRepository.save(user);
-        log.info("Google user created: {} ({})", email, googleId);
+        log.info("Google user created with ID {}", savedUser.getId());
         return savedUser;
     }
     

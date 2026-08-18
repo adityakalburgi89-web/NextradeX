@@ -49,7 +49,7 @@ public class WatchlistController {
                 return ResponseEntity.ok(new ApiResponse<>(200, "Added to watchlist", true));
             }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 
@@ -67,7 +67,7 @@ public class WatchlistController {
 
             return ResponseEntity.ok(new ApiResponse<>(200, "Watchlist symbols retrieved", symbols));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 }
