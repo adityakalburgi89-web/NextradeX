@@ -172,8 +172,7 @@ export default function Navbar({
             </div>
           ) : (
             <div className="crypto-auth-group">
-              <Link to="/auth?mode=login" className="crypto-login-link" onClick={handleCloseMenu}>Login</Link>
-              <Link to="/auth?mode=register" className="crypto-register-btn" onClick={handleCloseMenu}>Register</Link>
+              <Link to="/auth" className="crypto-register-btn" onClick={handleCloseMenu}>Get Started</Link>
             </div>
           )}
 

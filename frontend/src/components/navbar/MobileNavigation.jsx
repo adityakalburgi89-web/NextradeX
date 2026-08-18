@@ -193,22 +193,14 @@ export default function MobileNavigation({
             </button>
           </div>
         ) : (
-          <div style={{ display: "flex", gap: "12px" }}>
+          <div style={{ display: "flex" }}>
             <Link
-              to="/auth?mode=login"
-              onClick={onClose}
-              className="crypto-login-link"
-              style={{ flex: 1, textAlign: "center", border: "1px solid #e5e7eb", color: "#111827" }}
-            >
-              Login
-            </Link>
-            <Link
-              to="/auth?mode=register"
+              to="/auth"
               onClick={onClose}
               className="crypto-register-btn"
               style={{ flex: 1, textAlign: "center" }}
             >
-              Register
+              Get Started
             </Link>
           </div>
         )}

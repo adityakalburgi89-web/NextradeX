@@ -450,12 +450,9 @@ export default function SpotTradingPage() {
                     <p className="text-[11px] text-muted leading-relaxed mb-4">
                       Connect your account to trade spot and margin markets.
                     </p>
-                    <div className="w-full space-y-2">
+                    <div className="w-full">
                       <Button variant="default" className="w-full text-xs font-bold py-2 rounded-xl bg-foreground text-background" asChild>
-                        <Link to="/auth">Log In</Link>
-                      </Button>
-                      <Button variant="outline" className="w-full text-xs font-bold py-2 rounded-xl border-foreground/20 text-foreground" asChild>
-                        <Link to="/auth">Sign Up</Link>
+                        <Link to="/auth">Get Started</Link>
                       </Button>
                     </div>
                   </div>

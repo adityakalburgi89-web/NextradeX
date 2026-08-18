@@ -1078,7 +1078,7 @@ export default function FuturesTradingPage() {
                       Access your simulated wallet and start trading by connecting your account.
                     </p>
                     <Button variant="default" className="w-full text-xs font-semibold py-2.5 rounded-2xl shadow-glow-primary" asChild>
-                      <Link to="/auth">Sign In / Connect Wallet</Link>
+                      <Link to="/auth">Get Started</Link>
                     </Button>
                   </div>
                 )}
