@@ -33,14 +33,14 @@ export default function Footer() {
               <Link to="/about" className={linkClass}>About</Link>
               <Link to="/careers" className={linkClass}>Careers</Link>
               <Link to="/referral" className={linkClass}>Affiliates</Link>
-              <Link to="/404" className={linkClass}>Blog</Link>
-              <Link to="/404" className={linkClass}>Press</Link>
-              <Link to="/404" className={linkClass}>Security</Link>
-              <Link to="/404" className={linkClass}>Investors</Link>
-              <Link to="/404" className={linkClass}>Vendors</Link>
+              <Link to="/blog" className={linkClass}>Blog</Link>
+              <Link to="/press" className={linkClass}>Press</Link>
+              <Link to="/security" className={linkClass}>Security</Link>
+              <Link to="/investors" className={linkClass}>Investors</Link>
+              <Link to="/about" className={linkClass}>Vendors</Link>
               <Link to="/privacy" className={linkClass}>Legal & privacy</Link>
-              <Link to="/privacy" className={linkClass}>Cookie policy</Link>
-              <Link to="/404" className={linkClass}>Cookie preferences</Link>
+              <Link to="/cookie-policy" className={linkClass}>Cookie policy</Link>
+              <Link to="/cookie-policy" className={linkClass}>Cookie preferences</Link>
               <Link to="/contract-specs" className={linkClass}>Digital Asset Disclosures</Link>
             </nav>
           </div>
@@ -52,17 +52,17 @@ export default function Footer() {
               <Link to="/markets" className={linkClass}>Explore crypto</Link>
               <Link to="/markets" className={linkClass}>Explore stocks</Link>
               <Link to="/analytics" className={linkClass}>Market statistics</Link>
-              <Link to="/404" className={linkClass}>NexTradeX Bytes newsletter</Link>
-              <Link to="/user-guide" className={linkClass}>Crypto basics</Link>
+              <Link to="/blog" className={linkClass}>NexTradeX Bytes newsletter</Link>
+              <Link to="/learn/crypto-basics" className={linkClass}>Crypto basics</Link>
               <Link to="/user-guide" className={linkClass}>Tips & tutorials</Link>
-              <Link to="/trixie-explains" className={linkClass}>Crypto glossary</Link>
+              <Link to="/learn/crypto-basics" className={linkClass}>Crypto glossary</Link>
               <Link to="/markets" className={linkClass}>Market updates</Link>
-              <Link to="/trixie-explains" className={linkClass}>What is Bitcoin?</Link>
-              <Link to="/trixie-explains" className={linkClass}>What is crypto?</Link>
-              <Link to="/trixie-explains" className={linkClass}>What is a blockchain?</Link>
+              <Link to="/learn/bitcoin" className={linkClass}>What is Bitcoin?</Link>
+              <Link to="/learn/crypto-basics" className={linkClass}>What is crypto?</Link>
+              <Link to="/learn/crypto-basics" className={linkClass}>What is a blockchain?</Link>
               <Link to="/wallets" className={linkClass}>How to set up a wallet?</Link>
               <Link to="/wallets" className={linkClass}>How to send crypto?</Link>
-              <Link to="/404" className={linkClass}>Taxes</Link>
+              <Link to="/taxes" className={linkClass}>Taxes</Link>
             </nav>
           </div>
 
@@ -72,18 +72,18 @@ export default function Footer() {
               <h4 className={linkHeaderClass}>Individuals</h4>
               <nav className="space-y-0.5">
                 <Link to="/trade/spot" className={linkClass}>Buy & sell</Link>
-                <Link to="/404" className={linkClass}>Base App</Link>
+                <Link to="/trade/spot" className={linkClass}>Base App</Link>
                 <Link to="/auth" className={linkClass}>NexTradeX One</Link>
-                <Link to="/404" className={linkClass}>Debit Card</Link>
+                <Link to="/funding" className={linkClass}>Debit Card</Link>
               </nav>
             </div>
 
             <div>
               <h4 className={linkHeaderClass}>Businesses</h4>
               <nav className="space-y-0.5">
-                <Link to="/markets" className={linkClass}>Asset Listings</Link>
+                <Link to="/asset-listings" className={linkClass}>Asset Listings</Link>
                 <Link to="/funding" className={linkClass}>Payments</Link>
-                <Link to="/404" className={linkClass}>Token Manager</Link>
+                <Link to="/wallets" className={linkClass}>Token Manager</Link>
               </nav>
             </div>
           </div>
@@ -92,16 +92,16 @@ export default function Footer() {
           <div>
             <h4 className={linkHeaderClass}>Developers</h4>
             <nav className="space-y-0.5">
-              <Link to="/api-docs" className={linkClass}>Developer Platform</Link>
-              <Link to="/404" className={linkClass}>Base</Link>
+              <Link to="/open-source" className={linkClass}>Developer Platform</Link>
+              <a href="https://base.org" target="_blank" rel="noreferrer" className={linkClass}>Base</a>
               <Link to="/wallets" className={linkClass}>Server Wallets</Link>
               <Link to="/wallets" className={linkClass}>Embedded Wallets</Link>
               <Link to="/wallets" className={linkClass}>Smart Wallets</Link>
               <Link to="/funding" className={linkClass}>Onramp & Offramp</Link>
-              <Link to="/404" className={linkClass}>x402</Link>
+              <Link to="/open-source" className={linkClass}>x402</Link>
               <Link to="/api-docs" className={linkClass}>Trade API</Link>
-              <Link to="/404" className={linkClass}>Paymaster</Link>
-              <Link to="/404" className={linkClass}>OnchainKit</Link>
+              <a href="https://base.org" target="_blank" rel="noreferrer" className={linkClass}>Paymaster</a>
+              <a href="https://onchainkit.xyz" target="_blank" rel="noreferrer" className={linkClass}>OnchainKit</a>
             </nav>
           </div>
 
@@ -110,11 +110,11 @@ export default function Footer() {
             <h4 className={linkHeaderClass}>Institutions</h4>
             <nav className="space-y-0.5">
               <Link to="/sub-accounts" className={linkClass}>Prime</Link>
-              <Link to="/earn" className={linkClass}>Staking</Link>
+              <Link to="/staking-info" className={linkClass}>Staking</Link>
               <Link to="/trade/spot" className={linkClass}>Exchange</Link>
               <Link to="/trade/futures" className={linkClass}>International Exchange</Link>
               <Link to="/trade/futures" className={linkClass}>Derivatives Exchange</Link>
-              <Link to="/404" className={linkClass}>Verified Pools</Link>
+              <Link to="/staking-info" className={linkClass}>Verified Pools</Link>
             </nav>
           </div>
 
@@ -130,7 +130,7 @@ export default function Footer() {
               <Link to="/funding" className={linkClass}>Payment methods</Link>
               <Link to="/profile" className={linkClass}>Account access</Link>
               <Link to="/markets" className={linkClass}>Supported crypto</Link>
-              <Link to="/support" className={linkClass}>Status</Link>
+              <Link to="/status" className={linkClass}>Status</Link>
             </nav>
           </div>
 

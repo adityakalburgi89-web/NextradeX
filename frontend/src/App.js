@@ -33,6 +33,20 @@ import ReferralPage from "./pages/resources/ReferralPage";
 import EarnPage from "./pages/EarnPage";
 import FundingPage from "./pages/FundingPage";
 import SubAccountsPage from "./pages/SubAccountsPage";
+import CryptoBasicsPage from "./pages/resources/CryptoBasicsPage";
+import SecurityCenterPage from "./pages/Company/SecurityCenterPage";
+import SystemStatusPage from "./pages/support/SystemStatusPage";
+import OpenSourceDevPage from "./pages/resources/OpenSourceDevPage";
+import BlogNewsPage from "./pages/resources/BlogNewsPage";
+import TaxGuidePage from "./pages/resources/TaxGuidePage";
+import TradingToolsHubPage from "./pages/resources/TradingToolsHubPage";
+import PromotionsHubPage from "./pages/resources/PromotionsHubPage";
+import BitcoinGuidePage from "./pages/resources/BitcoinGuidePage";
+import PressMediaPage from "./pages/Company/PressMediaPage";
+import InvestorsPage from "./pages/Company/InvestorsPage";
+import CookiePolicyPage from "./pages/Company/CookiePolicyPage";
+import AssetListingsPage from "./pages/Company/AssetListingsPage";
+import StakingInfoPage from "./pages/resources/StakingInfoPage";
 import { hasAuthToken, clearAuthToken, fetchUserProfile, logoutUser } from "./api";
 import Chatbot from "./components/Chatbot";
 
@@ -54,6 +68,7 @@ function App() {
   const isLandingPage = location.pathname === "/";
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(hasAuthToken());
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -67,16 +82,21 @@ function App() {
           if (res?.data) {
             setUser(res.data);
             setIsLoggedIn(true);
+          } else {
+            clearAuthToken();
+            setIsLoggedIn(false);
           }
         } catch (err) {
           if (err.status === 401 || err.status === 403) {
             clearAuthToken();
-            setIsLoggedIn(false);
-          } else {
-            console.error("[App] Failed to fetch user profile:", err.message);
           }
+          setIsLoggedIn(false);
+          console.error("[App] Failed to fetch user profile:", err.message);
         }
+      } else {
+        setIsLoggedIn(false);
       }
+      setAuthLoading(false);
     };
     checkAuth();
   }, []);
@@ -114,20 +134,20 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} />} />
               <Route path="/auth" element={<AuthPage />} />
-              <Route path="/dashboard" element={<ProtectedRoute isLoggedIn={isLoggedIn}><DashboardPage /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute isLoggedIn={isLoggedIn} authLoading={authLoading}><DashboardPage /></ProtectedRoute>} />
               <Route path="/markets" element={<MarketsPage />} />
               <Route path="/trade/spot" element={<SpotTradingPage />} />
               <Route path="/trade/futures" element={<FuturesTradingPage />} />
               <Route path="/trade/options" element={<OptionsTradingPage />} />
               <Route path="/trade/margin" element={<MarginTradingPage />} />
-              <Route path="/analytics" element={<ProtectedRoute isLoggedIn={isLoggedIn}><PortfolioAnalyticsPage /></ProtectedRoute>} />
+              <Route path="/analytics" element={<ProtectedRoute isLoggedIn={isLoggedIn} authLoading={authLoading}><PortfolioAnalyticsPage /></ProtectedRoute>} />
 
-              <Route path="/wallets" element={<ProtectedRoute isLoggedIn={isLoggedIn}><WalletsPage /></ProtectedRoute>} />
-              <Route path="/orders" element={<ProtectedRoute isLoggedIn={isLoggedIn}><OrdersPage /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute isLoggedIn={isLoggedIn}><ProfilePage /></ProtectedRoute>} />
-              <Route path="/earn" element={<ProtectedRoute isLoggedIn={isLoggedIn}><EarnPage /></ProtectedRoute>} />
-              <Route path="/funding" element={<ProtectedRoute isLoggedIn={isLoggedIn}><FundingPage /></ProtectedRoute>} />
-              <Route path="/sub-accounts" element={<ProtectedRoute isLoggedIn={isLoggedIn}><SubAccountsPage /></ProtectedRoute>} />
+              <Route path="/wallets" element={<ProtectedRoute isLoggedIn={isLoggedIn} authLoading={authLoading}><WalletsPage /></ProtectedRoute>} />
+              <Route path="/orders" element={<ProtectedRoute isLoggedIn={isLoggedIn} authLoading={authLoading}><OrdersPage /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute isLoggedIn={isLoggedIn} authLoading={authLoading}><ProfilePage /></ProtectedRoute>} />
+              <Route path="/earn" element={<ProtectedRoute isLoggedIn={isLoggedIn} authLoading={authLoading}><EarnPage /></ProtectedRoute>} />
+              <Route path="/funding" element={<ProtectedRoute isLoggedIn={isLoggedIn} authLoading={authLoading}><FundingPage /></ProtectedRoute>} />
+              <Route path="/sub-accounts" element={<ProtectedRoute isLoggedIn={isLoggedIn} authLoading={authLoading}><SubAccountsPage /></ProtectedRoute>} />
               <Route path="/careers" element={<CareersPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/terms" element={<TermsPage />} />
@@ -140,6 +160,38 @@ function App() {
               <Route path="/support" element={<SupportPage />} />
               <Route path="/user-guide" element={<UserGuidePage />} />
               <Route path="/referral" element={<ReferralPage />} />
+              <Route path="/affiliate" element={<ReferralPage />} />
+
+              {/* Educational, Security, Developer, Status & Tools Routes */}
+              <Route path="/learn" element={<CryptoBasicsPage />} />
+              <Route path="/learn/crypto-basics" element={<CryptoBasicsPage />} />
+              <Route path="/security" element={<SecurityCenterPage />} />
+              <Route path="/status" element={<SystemStatusPage />} />
+              <Route path="/open-source" element={<OpenSourceDevPage />} />
+              <Route path="/developer-platform" element={<OpenSourceDevPage />} />
+              <Route path="/blog" element={<BlogNewsPage />} />
+              <Route path="/news" element={<BlogNewsPage />} />
+              <Route path="/announcements" element={<BlogNewsPage />} />
+              <Route path="/square" element={<BlogNewsPage />} />
+              <Route path="/taxes" element={<TaxGuidePage />} />
+              <Route path="/trade/bot" element={<TradingToolsHubPage />} />
+              <Route path="/trade/convert" element={<TradingToolsHubPage />} />
+              <Route path="/trade/copy" element={<TradingToolsHubPage />} />
+              <Route path="/trade/alpha" element={<TradingToolsHubPage />} />
+              <Route path="/events" element={<PromotionsHubPage />} />
+              <Route path="/rewards" element={<PromotionsHubPage />} />
+              <Route path="/anniversary" element={<PromotionsHubPage />} />
+              <Route path="/community" element={<PromotionsHubPage />} />
+              <Route path="/partnerships" element={<PromotionsHubPage />} />
+
+              {/* Dedicated Sub-Pages */}
+              <Route path="/learn/bitcoin" element={<BitcoinGuidePage />} />
+              <Route path="/press" element={<PressMediaPage />} />
+              <Route path="/investors" element={<InvestorsPage />} />
+              <Route path="/cookie-policy" element={<CookiePolicyPage />} />
+              <Route path="/asset-listings" element={<AssetListingsPage />} />
+              <Route path="/staking-info" element={<StakingInfoPage />} />
+
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </div>
