@@ -22,8 +22,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
+        String[] origins = wsAllowedOrigins != null && !wsAllowedOrigins.isBlank() 
+                ? wsAllowedOrigins.split(",") 
+                : new String[]{"http://localhost:3000"};
+        for (int i = 0; i < origins.length; i++) {
+            origins[i] = origins[i].trim();
+            if ("*".equals(origins[i])) {
+                throw new IllegalStateException("Wildcard WebSocket origins are not allowed");
+            }
+        }
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*")
+                .setAllowedOrigins(origins)
                 .withSockJS();
     }
 }

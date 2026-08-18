@@ -15,6 +15,8 @@ import com.nextradex.modules.market.market.CryptoPrice;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.annotation.PreDestroy;
+
 @Service
 @ConditionalOnProperty(prefix = "nextradex.market.websocket", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class BinanceWebSocketService {
@@ -27,6 +29,7 @@ public class BinanceWebSocketService {
     private boolean reconnecting = false;
     private int consecutiveFailureCount = 0;
     private static final int MAX_FAILURE_THRESHOLD = 3;
+    private volatile boolean shuttingDown = false;
 
     public BinanceWebSocketService(
             SimpMessagingTemplate messagingTemplate,
@@ -155,8 +158,19 @@ public class BinanceWebSocketService {
         client.connect();
     }
 
+    @PreDestroy
+    public synchronized void stop() {
+        shuttingDown = true;
+        if (client != null) {
+            try {
+                client.close();
+            } catch (Exception ignored) {}
+        }
+    }
+
     private void broadcastPrice(String symbol, BigDecimal price, BigDecimal high, BigDecimal low, 
                                 BigDecimal open, BigDecimal priceChange, BigDecimal percentChange, BigDecimal volume) {
+        if (shuttingDown) return;
         try {
             CryptoPrice updatedPrice = marketService.updateOrCreatePrice(
                 symbol,
@@ -171,11 +185,14 @@ public class BinanceWebSocketService {
             );
             messagingTemplate.convertAndSend("/topic/prices", updatedPrice);
         } catch (Exception e) {
-            System.err.println("[Market WS] Error updating/broadcasting price: " + e.getMessage());
+            if (!shuttingDown) {
+                System.err.println("[Market WS] Error updating/broadcasting price: " + e.getMessage());
+            }
         }
     }
 
     private synchronized void handleFailure(String provider) {
+        if (shuttingDown) return;
         consecutiveFailureCount++;
         System.out.println("[Market WS] Failure count for " + provider + ": " + consecutiveFailureCount);
         
@@ -197,7 +214,7 @@ public class BinanceWebSocketService {
     }
 
     private synchronized void triggerReconnect() {
-        if (reconnecting) {
+        if (reconnecting || shuttingDown) {
             return;
         }
         reconnecting = true;
@@ -206,7 +223,9 @@ public class BinanceWebSocketService {
             try {
                 System.out.println("[Market WS] Disconnected. Will attempt auto-reconnect in 5 seconds...");
                 Thread.sleep(5000);
-                connect();
+                if (!shuttingDown) {
+                    connect();
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.err.println("[Market WS] Reconnect thread interrupted");
