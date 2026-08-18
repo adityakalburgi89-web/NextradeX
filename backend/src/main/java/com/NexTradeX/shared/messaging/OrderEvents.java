@@ -1,4 +1,4 @@
-package com.NexTradeX.shared.messaging;
+package com.nextradex.shared.messaging;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +19,7 @@ public class OrderEvents {
     private String ordertype; // => MARKET OR LIMIT
     private BigDecimal quantity;
     private String status;
-    private BigDecimal price; // => STATUS FILL CANCEL;
+    private BigDecimal price; // => STATUS FILL CANCEL;2
     private long timestamp;
 
 }

@@ -1,4 +1,4 @@
-package com.NexTradeX.shared.messaging;
+package com.nextradex.shared.messaging;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

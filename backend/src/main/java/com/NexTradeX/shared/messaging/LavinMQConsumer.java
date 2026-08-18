@@ -1,4 +1,4 @@
-package com.NexTradeX.shared.messaging;
+package com.nextradex.shared.messaging;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,10 +25,8 @@ public class LavinMQConsumer {
                 event.getSide());
 
         try {
-            // Push real-time toast event over WebSockets to all clients and user-specific channel
-            messagingTemplate.convertAndSend("/topic/orders", event);
             if (event.getUserId() != null) {
-                messagingTemplate.convertAndSend("/topic/user/" + event.getUserId() + "/orders", event);
+                messagingTemplate.convertAndSendToUser(event.getUserId(), "/queue/orders", event);
             }
         } catch (Exception e) {
             log.error("[LavinMQ Worker] Failed to dispatch WebSocket order notification: {}", e.getMessage());
@@ -36,12 +34,15 @@ public class LavinMQConsumer {
     }
 
     @RabbitListener(queues = LavinMQConfig.QUEUE_NOTIFICATION)
-    public void processNotification(Object notification) {
-        log.info("[LavinMQ Worker] Processing notification background: {}", notification);
+    public void processNotification(NotificationEvent notification) {
+        log.info("[LavinMQ Worker] Processing notification event: ID={}", notification.getId());
         try {
-            messagingTemplate.convertAndSend("/topic/notifications", notification);
+            if (notification.getUserId() != null) {
+                messagingTemplate.convertAndSendToUser(
+                        notification.getUserId(), "/queue/notifications", notification);
+            }
         } catch (Exception e) {
-            log.error("[LavinMQ Worker] Failed to dispatch WebSocket notification: {}", e.getMessage());
+            log.error("[LavinMQ Worker] Failed to dispatch WebSocket notification", e);
         }
     }
 }

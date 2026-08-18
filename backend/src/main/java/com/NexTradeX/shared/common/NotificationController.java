@@ -3,6 +3,7 @@ package com.nextradex.shared.common;
 import com.nextradex.modules.security.auth.JwtService;
 import com.nextradex.modules.user.User;
 import com.nextradex.modules.user.UserService;
+import com.nextradex.api.dto.NotificationResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -25,16 +26,19 @@ public class NotificationController {
     private final JwtService jwtService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Notification>>> getNotifications(Authentication authentication) {
+    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getNotifications(Authentication authentication) {
         try {
             Long userId = jwtService.extractUserIdFromAuthentication(authentication);
             User user = userService.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            List<Notification> list = notificationRepository.findAllByUserOrderByCreatedAtDesc(user);
+            List<NotificationResponse> list = notificationRepository.findAllByUserOrderByCreatedAtDesc(user)
+                    .stream()
+                    .map(this::toResponse)
+                    .toList();
             return ResponseEntity.ok(new ApiResponse<>(200, "Notifications retrieved", list));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
     }
 
@@ -52,7 +56,17 @@ public class NotificationController {
             notificationRepository.saveAll(unread);
             return ResponseEntity.ok(new ApiResponse<>(200, "All marked as read", null));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, com.nextradex.shared.exception.SafeErrorMessage.forClient(e), null));
         }
+    }
+
+    private NotificationResponse toResponse(Notification notification) {
+        return NotificationResponse.builder()
+                .id(notification.getId())
+                .title(notification.getTitle())
+                .message(notification.getMessage())
+                .read(notification.isRead())
+                .createdAt(notification.getCreatedAt())
+                .build();
     }
 }

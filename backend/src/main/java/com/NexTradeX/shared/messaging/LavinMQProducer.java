@@ -1,4 +1,4 @@
-package com.NexTradeX.shared.messaging;
+package com.nextradex.shared.messaging;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ public class LavinMQProducer {
         }
     }
 
-    public void sendNotificationEvent(Object notification) {
+    public void sendNotificationEvent(NotificationEvent notification) {
         try {
             rabbitTemplate.convertAndSend(LavinMQConfig.EXCHANGE_NAME, "notification.alert", notification);
         } catch (Exception e) {
