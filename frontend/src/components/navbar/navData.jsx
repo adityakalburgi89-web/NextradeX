@@ -367,11 +367,9 @@ export const MORE_MENU_DATA = {
 };
 
 export const MAIN_NAV_ITEMS = [
-  { id: "dashboard", label: "Dashboard", type: "link", route: "/dashboard" },
   { id: "markets", label: "Markets", type: "link", route: "/markets" },
   { id: "trade", label: "Trade", type: "megamenu", data: TRADE_MENU_DATA },
   { id: "derivatives", label: "Derivatives", type: "megamenu", data: DERIVATIVES_MENU_DATA },
-  { id: "wallets", label: "Wallets", type: "link", route: "/wallets" },
   { id: "docs", label: "Docs", type: "link", route: "/support" },
   { id: "more", label: "More", type: "megamenu", data: MORE_MENU_DATA },
 ];

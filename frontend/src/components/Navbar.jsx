@@ -142,11 +142,7 @@ export default function Navbar({
           </button>
 
           {isLoggedIn ? (
-            <div
-              className="relative"
-              onMouseEnter={() => setUserDropdownOpen(true)}
-              onMouseLeave={() => setUserDropdownOpen(false)}
-            >
+            <div className="relative">
               <button
                 type="button"
                 className="crypto-user-pill"
@@ -164,14 +160,12 @@ export default function Navbar({
 
               {userDropdownOpen && (
                 <div className="crypto-user-dropdown-menu" onClick={(e) => e.stopPropagation()}>
-                  <Link to="/dashboard" onClick={handleCloseMenu} className="crypto-megamenu-item flex items-center gap-2 py-2 px-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                    <span>Dashboard</span>
-                  </Link>
-                  <Link to="/profile" onClick={handleCloseMenu} className="crypto-megamenu-item flex items-center gap-2 py-2 px-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                  <Link
+                    to="/profile"
+                    onClick={handleCloseMenu}
+                    className="crypto-megamenu-item flex items-center gap-2 py-2 px-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-800 font-semibold"
+                  >
                     <span>Profile</span>
-                  </Link>
-                  <Link to="/wallets" onClick={handleCloseMenu} className="crypto-megamenu-item flex items-center gap-2 py-2 px-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                    <span>Wallets</span>
                   </Link>
                 </div>
               )}

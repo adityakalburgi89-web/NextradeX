@@ -14,6 +14,14 @@
   display: flex;
   justify-content: center;
   pointer-events: none;
+  box-sizing: border-box;
+}
+
+/* Prevent layout shift when scroll is locked by Radix modals / Search modal */
+body[data-scroll-locked] .crypto-header,
+body[style*="overflow: hidden"] .crypto-header,
+html[style*="overflow: hidden"] .crypto-header {
+  padding-right: calc(16px + var(--removed-body-scroll-bar-size, 0px)) !important;
 }
 
 /* Primary Navbar Pill Container (Dark Navy/Black as Original) */

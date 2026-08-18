@@ -1,7 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Globe as GlobeIcon, Shield, Zap, Check } from "lucide-react";
-import logoIcon from "../assets/images/Logo.png";
 import { Globe } from "./ui/globe";
 import gmailIcon from "../assets/Icons/Gmail_icon_svg.webp";
 import xIcon from "../assets/Icons/x.com_icon.png";
@@ -19,8 +17,7 @@ export default function Footer() {
         {/* 2. Top Header Brand Row */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-8 border-b border-[#e8e8e8] gap-4">
           <div className="flex items-center gap-2.5">
-            <img src={logoIcon} alt="NexTradeX Logo" className="h-7 w-auto" />
-            <span className="font-openrunde font-bold text-lg text-carbon tracking-[-0.31px]">
+            <span className="font-openrunde font-bold text-xl text-carbon tracking-[-0.31px]">
               NexTrade<span className="text-[#8574ff]">X</span>
             </span>
           </div>
