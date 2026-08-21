@@ -8,7 +8,7 @@ services:
 
   backend:
     build:
-      context: ../../backend
+      context: ./backend
       dockerfile: Dockerfile
     container_name: nextrade-backend
     ports:
@@ -23,7 +23,7 @@ services:
 
   frontend:
     build:
-      context: ../../frontend
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: nextrade-frontend
     ports:
