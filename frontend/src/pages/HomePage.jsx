@@ -15,13 +15,12 @@ import coinMarketCapIcon from "../assets/Icons/coinmarketcap.svg";
 import cryptoWalletImg from "../assets/images/crypto-wallet.png";
 import footerBg from "../assets/images/footer-bg.png";
 import ExploreCryptoSection from "../components/ExploreCryptoSection";
+import AstroBentoGrid from "../components/AstroBentoGrid";
 
 const partnerLogos = [
   { name: "CoinGecko", label: "CoinGecko Data", icon: coinGeckoIcon, height: "h-9 sm:h-11" },
   { name: "CoinMarketCap", label: "CoinMarketCap Feeds", icon: coinMarketCapIcon, height: "h-5 sm:h-6" },
 ];
-
-
 
 const faqData = [
   {
@@ -303,6 +302,9 @@ export default function HomePage({ isLoggedIn }) {
 
       {/* EXPLORE CRYPTO SECTION */}
       <ExploreCryptoSection prices={prices} />
+
+      {/* ASTRO UI BENTO GRID */}
+      <AstroBentoGrid />
 
       {/* 3. CORE FEATURES GRID */}
       <section className="py-24 sm:py-36 px-6 max-w-[1200px] mx-auto space-y-16 sm:space-y-20 my-6 sm:my-12">
