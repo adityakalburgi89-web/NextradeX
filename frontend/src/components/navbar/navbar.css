@@ -31,12 +31,12 @@ html[style*="overflow: hidden"] .crypto-header {
   width: max-content;
   max-width: calc(100vw - 32px);
   height: 44px;
-  background-color: rgba(20, 21, 34, 0.95);
+  background-color: #000000;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: space-between;
