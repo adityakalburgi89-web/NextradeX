@@ -498,6 +498,9 @@ public class MarketService implements IMarketService {
         String clean = symbol.trim().toUpperCase()
                 .replaceAll("USDUSDT$", "USDT")
                 .replaceAll("USDTUSDT$", "USDT");
+        if (clean.endsWith("USD") && !clean.endsWith("BUSD") && !clean.endsWith("USDT") && !clean.endsWith("USDC")) {
+            clean = clean.substring(0, clean.length() - 3) + "USDT";
+        }
         if (!clean.endsWith("USDT") && !clean.endsWith("USDC") && !clean.endsWith("BUSD")
                 && clean.matches("[A-Z0-9]{2,12}")) {
             clean = clean + "USDT";

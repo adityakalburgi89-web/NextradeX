@@ -81,6 +81,19 @@ public class Wallet {
         return balance.subtract(lockedFunds);
     }
 
+    @jakarta.persistence.PrePersist
+    protected void onCreate() {
+        if (this.version == null) {
+            this.version = 0L;
+        }
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+        if (this.updatedAt == null) {
+            this.updatedAt = LocalDateTime.now();
+        }
+    }
+
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();

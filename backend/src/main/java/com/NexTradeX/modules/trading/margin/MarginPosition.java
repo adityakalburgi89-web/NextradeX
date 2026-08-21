@@ -25,9 +25,10 @@ public class MarginPosition {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Builder.Default
     @Version
-    private Long version;
-    
+    private Long version = 0L;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -91,6 +92,9 @@ public class MarginPosition {
     
     @PrePersist
     protected void onCreate() {
+        if (version == null) {
+            version = 0L;
+        }
         if (openedAt == null) {
             openedAt = LocalDateTime.now();
         }

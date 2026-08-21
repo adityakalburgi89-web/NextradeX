@@ -35,7 +35,7 @@ public class SpotHolding {
     private Long id;
 
     @Version
-    private Long version;
+    private Long version = 0L;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -60,6 +60,7 @@ public class SpotHolding {
         SpotHolding holding = new SpotHolding();
         holding.user = user;
         holding.asset = asset;
+        holding.version = 0L;
         return holding;
     }
 
@@ -81,6 +82,19 @@ public class SpotHolding {
         quantity = quantity.subtract(soldQuantity);
         if (quantity.compareTo(BigDecimal.ZERO) == 0) {
             averageEntryPrice = BigDecimal.ZERO;
+        }
+    }
+
+    @jakarta.persistence.PrePersist
+    void onCreate() {
+        if (version == null) {
+            version = 0L;
+        }
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
         }
     }
 

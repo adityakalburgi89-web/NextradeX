@@ -115,6 +115,19 @@ public class FuturesPosition {
 
     private String remarks;
 
+    @jakarta.persistence.PrePersist
+    protected void onCreate() {
+        if (this.version == null) {
+            this.version = 0L;
+        }
+        if (this.openedAt == null) {
+            this.openedAt = LocalDateTime.now();
+        }
+        if (this.updatedAt == null) {
+            this.updatedAt = LocalDateTime.now();
+        }
+    }
+
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
