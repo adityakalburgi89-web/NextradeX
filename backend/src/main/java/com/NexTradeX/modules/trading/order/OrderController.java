@@ -46,7 +46,7 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse<>(201, "Order created", toOrderResponse(order)));
         } catch (Exception e) {
-            log.error("Error creating spot order : {}", e); // => hell nah just chatpgt copy paste
+            log.error("Error creating spot order : {}", e); // => hell nah VIDYA420 
 
             boolean isUserFacing = e instanceof IllegalArgumentException
                     || e instanceof InvalidOrderException
