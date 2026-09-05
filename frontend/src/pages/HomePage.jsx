@@ -16,6 +16,7 @@ import cryptoWalletImg from "../assets/images/crypto-wallet.png";
 import footerBg from "../assets/images/footer-bg.png";
 import spotVideo from "../assets/videos/SpotVideo/20260905-1309-41.0194245.mp4";
 import futuresVideo from "../assets/videos/FuturesVideo/20260905-1325-32.6729238.mp4";
+import marketsVideo from "../assets/videos/MarketVideo/Screen Recording 2026-09-05 191607.mp4";
 import ExploreCryptoSection from "../components/ExploreCryptoSection";
 import AstroBentoGrid from "../components/AstroBentoGrid";
 
@@ -208,6 +209,17 @@ export default function HomePage({ isLoggedIn }) {
               <div className="w-full aspect-[1902/778] rounded-[16px] sm:rounded-[24px] overflow-hidden bg-black/5 flex items-center justify-center">
                 <video
                   src={futuresVideo}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-contain rounded-[16px] sm:rounded-[24px] pointer-events-none select-none"
+                />
+              </div>
+            ) : activeTab === "markets" ? (
+              <div className="w-full aspect-[1902/778] rounded-[16px] sm:rounded-[24px] overflow-hidden bg-black/5 flex items-center justify-center">
+                <video
+                  src={marketsVideo}
                   autoPlay
                   loop
                   muted
