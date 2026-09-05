@@ -14,6 +14,8 @@ import coinGeckoIcon from "../assets/Icons/coingecko.svg";
 import coinMarketCapIcon from "../assets/Icons/coinmarketcap.svg";
 import cryptoWalletImg from "../assets/images/crypto-wallet.png";
 import footerBg from "../assets/images/footer-bg.png";
+import spotVideo from "../assets/videos/SpotVideo/20260905-1309-41.0194245.mp4";
+import futuresVideo from "../assets/videos/FuturesVideo/20260905-1325-32.6729238.mp4";
 import ExploreCryptoSection from "../components/ExploreCryptoSection";
 import AstroBentoGrid from "../components/AstroBentoGrid";
 
@@ -190,111 +192,135 @@ export default function HomePage({ isLoggedIn }) {
           className="w-full pt-20 sm:pt-28 pb-20 sm:pb-32 px-4 sm:px-8 shadow-2xl relative bg-cover bg-center bg-no-repeat min-h-[560px] flex items-center justify-center"
           style={{ backgroundImage: `url(${heroBg})` }}
         >
-          <div className="bg-white rounded-[24px] sm:rounded-[32px] border border-white/80 p-6 md:p-10 w-full max-w-[1080px] mx-auto shadow-[0_25px_60px_rgba(0,0,0,0.18)] text-left space-y-6 relative z-10">
-            
-            {/* Dashboard Header Bar */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-fog gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#8574ff] text-white flex items-center justify-center font-bold text-xs">
-                  NX
+          <div className="bg-white rounded-[24px] sm:rounded-[32px] border border-white/80 p-4 sm:p-6 md:p-8 w-full max-w-[1080px] mx-auto shadow-[0_25px_60px_rgba(0,0,0,0.18)] text-left relative z-10">
+            {activeTab === "spot" ? (
+              <div className="w-full aspect-[1902/778] rounded-[16px] sm:rounded-[24px] overflow-hidden bg-black/5">
+                <video
+                  src={spotVideo}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover rounded-[16px] sm:rounded-[24px] pointer-events-none select-none"
+                />
+              </div>
+            ) : activeTab === "futures" ? (
+              <div className="w-full aspect-[1902/778] rounded-[16px] sm:rounded-[24px] overflow-hidden bg-black/5 flex items-center justify-center">
+                <video
+                  src={futuresVideo}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-contain rounded-[16px] sm:rounded-[24px] pointer-events-none select-none"
+                />
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Dashboard Header Bar */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-fog gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-[#8574ff] text-white flex items-center justify-center font-bold text-xs">
+                      NX
+                    </div>
+                    <div>
+                      <h3 className="font-openrunde font-semibold text-base text-carbon tracking-[-0.31px]">
+                        Paper Trading Portfolio
+                      </h3>
+                      <p className="font-openrunde text-xs text-ash tracking-[-0.32px]">
+                        Live Real-Time Market Streaming Feed
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-mint-wash text-mint text-xs font-medium">
+                      <span className="w-2 h-2 rounded-full bg-mint animate-pulse" />
+                      Live WebSocket Active
+                    </span>
+                    <span className="px-3 py-1 rounded-full bg-mist text-graphite text-xs font-medium border border-fog">
+                      Demo Mode
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-openrunde font-semibold text-base text-carbon tracking-[-0.31px]">
-                    Paper Trading Portfolio
-                  </h3>
-                  <p className="font-openrunde text-xs text-ash tracking-[-0.32px]">
-                    Live Real-Time Market Streaming Feed
-                  </p>
+
+                {/* Metric Callouts */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="metric-card-visitors">
+                    <div className="flex items-center justify-between text-xs text-ash mb-1">
+                      <span>Virtual Balance</span>
+                      <span className="delta-positive">Ready</span>
+                    </div>
+                    <div className="font-openrunde font-semibold text-2xl text-carbon tracking-[-0.61px]">
+                      $100,000.00
+                    </div>
+                  </div>
+
+                  <div className="metric-card-visitors">
+                    <div className="flex items-center justify-between text-xs text-ash mb-1">
+                      <span>Simulated PnL</span>
+                      <span className="delta-positive">+$2,450.00</span>
+                    </div>
+                    <div className="font-openrunde font-semibold text-2xl text-carbon tracking-[-0.61px]">
+                      +$2,450.00
+                    </div>
+                  </div>
+
+                  <div className="metric-card-visitors">
+                    <div className="flex items-center justify-between text-xs text-ash mb-1">
+                      <span>Paper Win Rate</span>
+                      <span className="delta-positive">76.4%</span>
+                    </div>
+                    <div className="font-openrunde font-semibold text-2xl text-carbon tracking-[-0.61px]">
+                      76.4%
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live Prices Preview */}
+                <div className="table-container-visitors overflow-hidden">
+                  <table className="table-visitors">
+                    <thead>
+                      <tr>
+                        <th>Market Pair</th>
+                        <th>Live Price</th>
+                        <th>24h Change</th>
+                        <th>Mode</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="flex items-center gap-2">
+                          <img src={btcIcon} alt="BTC" className="w-5 h-5" />
+                          <span className="font-medium text-carbon">BTC / USDT</span>
+                        </td>
+                        <td className="font-semibold text-carbon">${btcPrice}</td>
+                        <td><span className="delta-positive">+3.45%</span></td>
+                        <td className="text-xs text-ash">Spot & Futures</td>
+                      </tr>
+                      <tr>
+                        <td className="flex items-center gap-2">
+                          <img src={ethIcon} alt="ETH" className="w-5 h-5" />
+                          <span className="font-medium text-carbon">ETH / USDT</span>
+                        </td>
+                        <td className="font-semibold text-carbon">${ethPrice}</td>
+                        <td><span className="delta-positive">+1.85%</span></td>
+                        <td className="text-xs text-ash">Spot & Futures</td>
+                      </tr>
+                      <tr>
+                        <td className="flex items-center gap-2">
+                          <img src={solIcon} alt="SOL" className="w-5 h-5" />
+                          <span className="font-medium text-carbon">SOL / USDT</span>
+                        </td>
+                        <td className="font-semibold text-carbon">${solPrice}</td>
+                        <td><span className="delta-positive">+5.12%</span></td>
+                        <td className="text-xs text-ash">Spot & Futures</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
-
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-mint-wash text-mint text-xs font-medium">
-                  <span className="w-2 h-2 rounded-full bg-mint animate-pulse" />
-                  Live WebSocket Active
-                </span>
-                <span className="px-3 py-1 rounded-full bg-mist text-graphite text-xs font-medium border border-fog">
-                  Demo Mode
-                </span>
-              </div>
-            </div>
-
-            {/* Metric Callouts */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="metric-card-visitors">
-                <div className="flex items-center justify-between text-xs text-ash mb-1">
-                  <span>Virtual Balance</span>
-                  <span className="delta-positive">Ready</span>
-                </div>
-                <div className="font-openrunde font-semibold text-2xl text-carbon tracking-[-0.61px]">
-                  $100,000.00
-                </div>
-              </div>
-
-              <div className="metric-card-visitors">
-                <div className="flex items-center justify-between text-xs text-ash mb-1">
-                  <span>Simulated PnL</span>
-                  <span className="delta-positive">+$2,450.00</span>
-                </div>
-                <div className="font-openrunde font-semibold text-2xl text-carbon tracking-[-0.61px]">
-                  +$2,450.00
-                </div>
-              </div>
-
-              <div className="metric-card-visitors">
-                <div className="flex items-center justify-between text-xs text-ash mb-1">
-                  <span>Paper Win Rate</span>
-                  <span className="delta-positive">76.4%</span>
-                </div>
-                <div className="font-openrunde font-semibold text-2xl text-carbon tracking-[-0.61px]">
-                  76.4%
-                </div>
-              </div>
-            </div>
-
-            {/* Live Prices Preview */}
-            <div className="table-container-visitors overflow-hidden">
-              <table className="table-visitors">
-                <thead>
-                  <tr>
-                    <th>Market Pair</th>
-                    <th>Live Price</th>
-                    <th>24h Change</th>
-                    <th>Mode</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="flex items-center gap-2">
-                      <img src={btcIcon} alt="BTC" className="w-5 h-5" />
-                      <span className="font-medium text-carbon">BTC / USDT</span>
-                    </td>
-                    <td className="font-semibold text-carbon">${btcPrice}</td>
-                    <td><span className="delta-positive">+3.45%</span></td>
-                    <td className="text-xs text-ash">Spot & Futures</td>
-                  </tr>
-                  <tr>
-                    <td className="flex items-center gap-2">
-                      <img src={ethIcon} alt="ETH" className="w-5 h-5" />
-                      <span className="font-medium text-carbon">ETH / USDT</span>
-                    </td>
-                    <td className="font-semibold text-carbon">${ethPrice}</td>
-                    <td><span className="delta-positive">+1.85%</span></td>
-                    <td className="text-xs text-ash">Spot & Futures</td>
-                  </tr>
-                  <tr>
-                    <td className="flex items-center gap-2">
-                      <img src={solIcon} alt="SOL" className="w-5 h-5" />
-                      <span className="font-medium text-carbon">SOL / USDT</span>
-                    </td>
-                    <td className="font-semibold text-carbon">${solPrice}</td>
-                    <td><span className="delta-positive">+5.12%</span></td>
-                    <td className="text-xs text-ash">Spot & Futures</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
+            )}
           </div>
         </div>
 
