@@ -66,6 +66,7 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const isLandingPage = location.pathname === "/";
+  const isAuthPage = location.pathname === "/auth" || location.pathname === "/login" || location.pathname === "/register";
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(hasAuthToken());
@@ -130,10 +131,12 @@ function App() {
         />
 
         <ErrorBoundary>
-          <div id="main-content" className={`relative z-10 w-full ${isLandingPage ? "" : "pt-36 sm:pt-44"}`}>
+          <div id="main-content" className={`relative z-10 w-full ${isLandingPage || isAuthPage ? "" : "pt-36 sm:pt-44"}`}>
             <Routes>
               <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} />} />
               <Route path="/auth" element={<AuthPage />} />
+              <Route path="/login" element={<AuthPage />} />
+              <Route path="/register" element={<AuthPage />} />
               <Route path="/dashboard" element={<ProtectedRoute isLoggedIn={isLoggedIn} authLoading={authLoading}><DashboardPage /></ProtectedRoute>} />
               <Route path="/markets" element={<MarketsPage />} />
               <Route path="/trade/spot" element={<SpotTradingPage />} />
@@ -235,11 +238,11 @@ function App() {
           </DialogContent>
         </Dialog>
 
-        {/* Floating Chatbot Assistant Trixie */}
-        <Chatbot />
+        {/* Floating Chatbot Assistant Trixie - Hidden on login / auth pages */}
+        {!isAuthPage && <Chatbot />}
 
-        {/* Footer */}
-        <Footer />
+        {/* Footer - Hidden on login / auth pages */}
+        {!isAuthPage && <Footer />}
       </div>
       <ToastContainer />
       <OrderToastContainer />

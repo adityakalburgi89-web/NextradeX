@@ -1,36 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, Link } from "react-router-dom";
-import { Eye, EyeOff, AlertCircle, Mail, Lock, User, X, Sparkles, ArrowRight, Play, Volume2, Disc } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
-import { Input } from "../components/ui/Input";
-import { Button } from "../components/ui/Button";
-import { PageTransition } from "../components/ui/PageTransition";
 import { loginUser, registerUser, googleLogin, exchangeOAuthCode, completeProfile, forgotPassword, resetPassword } from "../api";
 import { useToast } from "../hooks/useToast";
-import heroBg from "../assets/images/hero-bg.png";
-import authBannerGradient from "../assets/images/auth-banner-gradient.jpg";
+import authTrainHills from "../assets/images/auth-train-hills.jpg";
 import Logo from "../assets/images/Logo.png";
-import SquareLoader from "../components/ui/SquareLoader";
-import gmailIcon from "../assets/Icons/Gmail_icon_svg.webp";
-import githubIcon from "../assets/Icons/github_icon.png";
-import xIcon from "../assets/Icons/x.com_icon.png";
 
 const initialForm = { username: "", email: "", password: "", firstName: "", lastName: "" };
 const profileSetupForm = { username: "", firstName: "", lastName: "" };
-
-const AUTH_CONTENT = {
-  login: {
-    title: "Welcome back",
-    description: "Sign in to access your trading terminal.",
-    button: "Log In"
-  },
-  register: {
-    title: "Create your account",
-    description: "Register to start paper trading on NexTradeX.",
-    button: "Register"
-  }
-};
 
 // Validation helpers
 const validateUsername = (v) => {
@@ -68,27 +46,30 @@ const getPasswordStrength = (password) => {
 
 const STRENGTH_METER = {
   weak: {
-    label: "Weak password",
+    label: "Weak",
+    colorText: "text-red-500",
     bars: [
-      { color: "bg-trading-down", active: true },
-      { color: "bg-hairline-on-dark", active: false },
-      { color: "bg-hairline-on-dark", active: false },
+      { color: "bg-red-500", active: true },
+      { color: "bg-slate-200", active: false },
+      { color: "bg-slate-200", active: false },
     ],
   },
   medium: {
-    label: "Medium password",
+    label: "Medium",
+    colorText: "text-amber-500",
     bars: [
-      { color: "bg-trading-warning", active: true },
-      { color: "bg-trading-warning", active: true },
-      { color: "bg-hairline-on-dark", active: false },
+      { color: "bg-amber-500", active: true },
+      { color: "bg-amber-500", active: true },
+      { color: "bg-slate-200", active: false },
     ],
   },
   strong: {
-    label: "Strong password",
+    label: "Strong",
+    colorText: "text-emerald-500",
     bars: [
-      { color: "bg-trading-up", active: true },
-      { color: "bg-trading-up", active: true },
-      { color: "bg-trading-up", active: true },
+      { color: "bg-emerald-500", active: true },
+      { color: "bg-emerald-500", active: true },
+      { color: "bg-emerald-500", active: true },
     ],
   },
 };
@@ -96,48 +77,48 @@ const STRENGTH_METER = {
 function FieldError({ id, message }) {
   if (!message) return null;
   return (
-    <p id={id} role="alert" className="text-trading-down text-xs mt-1.5">
-      {message}
+    <p id={id} role="alert" className="text-red-500 text-xs mt-1.5 flex items-center gap-1 font-medium">
+      <AlertCircle size={12} className="shrink-0" />
+      <span>{message}</span>
     </p>
   );
 }
 
 function PasswordStrengthMeter({ password, show }) {
-  if (!show) return <div className="h-1" aria-hidden="true" />;
+  if (!show || !password) return null;
   const strength = getPasswordStrength(password);
   const meta = STRENGTH_METER[strength];
   return (
-    <div
-      className="flex items-center gap-1 mt-2"
-      aria-label={meta.label}
-      role="meter"
-      aria-valuenow={
-        strength === "weak" ? 1 : strength === "medium" ? 2 : 3
-      }
-      aria-valuemin={0}
-      aria-valuemax={3}
-      aria-valuetext={meta.label}
-    >
-      {meta.bars.map((bar, i) => (
-        <div
-          key={i}
-          className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-            bar.active ? bar.color : "bg-hairline-on-dark"
-          }`}
-        />
-      ))}
+    <div className="mt-2 space-y-1">
+      <div className="flex items-center justify-between text-[11px]">
+        <span className="text-slate-500">Password strength:</span>
+        <span className={`font-medium ${meta.colorText}`}>{meta.label}</span>
+      </div>
+      <div className="flex items-center gap-1.5 h-1">
+        {meta.bars.map((bar, i) => (
+          <div
+            key={i}
+            className={`h-full flex-1 rounded-full transition-colors duration-300 ${
+              bar.active ? bar.color : "bg-slate-200"
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 }
 
 export default function AuthPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const toast = useToast();
 
   const [mode, setMode] = useState(() => {
+    if (location.pathname === "/register") return "register";
     const params = new URLSearchParams(window.location.search);
     return params.get("mode") === "register" ? "register" : "login";
   });
+
   const [form, setForm] = useState(initialForm);
   const [setupForm, setSetupForm] = useState(profileSetupForm);
   const [loading, setLoading] = useState(false);
@@ -145,28 +126,30 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [needsSetup, setNeedsSetup] = useState(false);
 
-  // Field-level errors: { fieldName: "error message" }
   const [fieldErrors, setFieldErrors] = useState({});
-  const [touched, setTouched] = useState({});
-
-  const content = AUTH_CONTENT[mode];
+  const [, setTouched] = useState({});
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const modeParam = params.get("mode");
-    if (modeParam === "register") {
+    if (location.pathname === "/register") {
       setMode("register");
-    } else if (modeParam === "login") {
+    } else if (location.pathname === "/login") {
       setMode("login");
+    } else {
+      const params = new URLSearchParams(location.search);
+      const modeParam = params.get("mode");
+      if (modeParam === "register") setMode("register");
+      if (modeParam === "login") setMode("login");
     }
-  }, [location.search]);
+  }, [location.pathname, location.search]);
 
+  // Forgot Password modal states
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSuccess, setForgotSuccess] = useState("");
   const [forgotError, setForgotError] = useState("");
 
+  // Reset Password states
   const [urlResetToken, setUrlResetToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
@@ -197,9 +180,11 @@ export default function AuthPage() {
     }
 
     if (errorParam) {
-      setError(errorParam === "email_exists"
-        ? "This email already has an account. Sign in normally before linking Google."
-        : "Authentication failed. Please try again.");
+      setError(
+        errorParam === "email_exists"
+          ? "This email already has an account. Sign in normally before linking Google."
+          : "Authentication failed. Please try again."
+      );
       window.history.replaceState({}, document.title, "/auth");
     }
   }, []);
@@ -215,8 +200,8 @@ export default function AuthPage() {
     setForgotLoading(true);
     try {
       await forgotPassword(forgotEmail);
-      setForgotSuccess(`If an account exists for ${forgotEmail}, a password reset link has been sent to your email.`);
-      toast.success("Password reset email sent! Check your inbox.");
+      setForgotSuccess(`If an account exists for ${forgotEmail}, a password reset link has been sent.`);
+      toast?.success("Password reset email sent! Check your inbox.");
     } catch (err) {
       setForgotError(err.message || "Failed to process request.");
     } finally {
@@ -235,7 +220,7 @@ export default function AuthPage() {
     try {
       await resetPassword(urlResetToken, newPassword);
       setResetSuccess(true);
-      toast.success("Password reset successfully! You can now log in.");
+      toast?.success("Password reset successfully! You can now log in.");
     } catch (err) {
       setError(err.message || "Failed to reset password. The link may have expired.");
     } finally {
@@ -243,11 +228,9 @@ export default function AuthPage() {
     }
   };
 
-  // Clear field error when user starts typing
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    // Clear field error on change
     if (fieldErrors[name]) {
       setFieldErrors((prev) => {
         const next = { ...prev };
@@ -262,33 +245,18 @@ export default function AuthPage() {
     setSetupForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSetupBlur = (e) => {
-    const { name, value } = e.target;
-    setTouched((prev) => ({ ...prev, [name]: true }));
-    if (name === "username") {
-      const err = validateUsername(value);
-      setFieldErrors((prev) => ({ ...prev, ...(err ? { [name]: err } : {}) }));
-    }
-    if (name === "firstName" && !setupForm.firstName.trim()) {
-      setFieldErrors((prev) => ({ ...prev, firstName: "First name is required" }));
-    }
-    if (name === "lastName" && !setupForm.lastName.trim()) {
-      setFieldErrors((prev) => ({ ...prev, lastName: "Last name is required" }));
-    }
-  };
-
   const handleBlur = (e) => {
     const { name, value } = e.target;
     setTouched((prev) => ({ ...prev, [name]: true }));
     const fieldValidators = {
       username: (val) => validateUsername(val),
       email: (val) => validateEmail(val),
-      password: (val) => mode === "register" ? validatePasswordRegister(val) : validatePasswordLogin(val),
-      firstName: (val) => (mode === "register" && !val.trim() ? "First name is required" : null),
-      lastName: (val) => (mode === "register" && !val.trim() ? "Last name is required" : null),
+      password: (val) => (mode === "register" ? validatePasswordRegister(val) : validatePasswordLogin(val)),
+      firstName: (val) => (mode === "register" && !val?.trim() ? "First name is required" : null),
+      lastName: (val) => (mode === "register" && !val?.trim() ? "Last name is required" : null),
     };
     const validator = fieldValidators[name];
-    let err = validator ? validator(value) : null;
+    const err = validator ? validator(value) : null;
     setFieldErrors((prev) => ({
       ...prev,
       ...(err ? { [name]: err } : {}),
@@ -297,56 +265,24 @@ export default function AuthPage() {
 
   const validateForm = () => {
     const errors = {};
-    const uErr = validateUsername(form.username);
-    if (uErr) errors.username = uErr;
-    if (mode === "register") {
+    if (mode === "login") {
+      const uVal = form.username?.trim();
+      if (!uVal) {
+        errors.username = "Email or username is required";
+      }
+      const pErr = validatePasswordLogin(form.password);
+      if (pErr) errors.password = pErr;
+    } else {
+      const uErr = validateUsername(form.username);
+      if (uErr) errors.username = uErr;
       const eErr = validateEmail(form.email);
       if (eErr) errors.email = eErr;
       const pErr = validatePasswordRegister(form.password);
       if (pErr) errors.password = pErr;
-      if (!form.firstName.trim()) errors.firstName = "First name is required";
-      if (!form.lastName.trim()) errors.lastName = "Last name is required";
-    } else {
-      const pErr = validatePasswordLogin(form.password);
-      if (pErr) errors.password = pErr;
+      if (!form.firstName?.trim()) errors.firstName = "First name is required";
+      if (!form.lastName?.trim()) errors.lastName = "Last name is required";
     }
     return errors;
-  };
-
-  const handleSetupSubmit = async (e) => {
-    e.preventDefault();
-    if (loading) return;
-    setLoading(true);
-    setError("");
-    setFieldErrors({});
-    setTouched({ username: true, firstName: true, lastName: true });
-
-    // Validate all fields
-    const errors = {};
-    const uErr = validateUsername(setupForm.username);
-    if (uErr) errors.username = uErr;
-    if (!setupForm.firstName.trim()) errors.firstName = "First name is required";
-    if (!setupForm.lastName.trim()) errors.lastName = "Last name is required";
-
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      await completeProfile({
-        username: setupForm.username,
-        firstName: setupForm.firstName,
-        lastName: setupForm.lastName,
-      });
-      toast?.success("Profile setup complete! Welcome to NexTradeX.");
-      window.location.href = "/";
-    } catch (err) {
-      setError(err.message || "Profile setup failed");
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -354,11 +290,6 @@ export default function AuthPage() {
     if (loading) return;
     setLoading(true);
     setError("");
-    // Mark all fields as touched
-    const allFields = ["username", "email", "password", "firstName", "lastName"];
-    const touchedAll = allFields.reduce((acc, f) => ({ ...acc, [f]: true }), {});
-    setTouched(touchedAll);
-    setFieldErrors({});
 
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
@@ -381,546 +312,580 @@ export default function AuthPage() {
         });
         toast?.success("Account created! Welcome to NexTradeX.");
       }
-      // Clear form state
       setForm(initialForm);
       setFieldErrors({});
-      setTouched({});
       window.location.href = "/";
     } catch (err) {
-      setError(err.message || "Authentication failed");
+      setError(err.message || "Authentication failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
   };
 
-  const getToggleStyle = () => ({
-    width: '50%',
-    transform: mode === 'login' ? 'translateX(0%)' : 'translateX(100%)',
-  });
+  const handleSetupSubmit = async (e) => {
+    e.preventDefault();
+    if (loading) return;
+    setLoading(true);
+    setError("");
+    const errors = {};
+    const uErr = validateUsername(setupForm.username);
+    if (uErr) errors.username = uErr;
+    if (!setupForm.firstName?.trim()) errors.firstName = "First name is required";
+    if (!setupForm.lastName?.trim()) errors.lastName = "Last name is required";
 
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await completeProfile({
+        username: setupForm.username,
+        firstName: setupForm.firstName,
+        lastName: setupForm.lastName,
+      });
+      toast?.success("Profile setup complete! Welcome to NexTradeX.");
+      window.location.href = "/";
+    } catch (err) {
+      setError(err.message || "Profile setup failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 1. PASSWORD RESET VIEW
   if (urlResetToken) {
     return (
-      <PageTransition>
-        <div
-          className="min-h-[calc(100vh-140px)] sm:min-h-[calc(100vh-160px)] flex items-center justify-center px-4 py-12 bg-cover bg-center bg-no-repeat relative"
-          style={{ backgroundImage: `url(${heroBg})` }}
-        >
-          <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px] pointer-events-none" />
-          <Card className="w-full max-w-md overflow-hidden bg-white/95 backdrop-blur-xl border border-white/80 rounded-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.22)] relative z-10">
-            <CardHeader className="pb-4 pt-8 px-8 text-center">
-              <div className="flex justify-center mb-4">
-                <Link to="/" className="inline-block transition-transform hover:scale-105">
-                  <img src={Logo} alt="NexTradeX" className="h-16 w-auto object-contain" />
-                </Link>
+      <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900">
+        {/* LEFT PANEL: Train on Hills Image */}
+        <div className="relative w-full lg:w-1/2 h-44 sm:h-56 lg:h-auto lg:min-h-screen overflow-hidden select-none bg-slate-50 flex items-center justify-center">
+          <img
+            src={authTrainHills}
+            alt="Dreamy train on flower hills"
+            className="w-full h-full object-cover object-center"
+          />
+        </div>
+
+        {/* RIGHT PANEL: Reset Password Form */}
+        <div className="w-full lg:w-1/2 flex flex-col justify-between pt-10 sm:pt-14 lg:pt-16 pb-6 sm:pb-8 px-6 sm:px-10 lg:px-12 min-h-[calc(100vh-176px)] lg:min-h-screen overflow-y-auto bg-white">
+          <div className="w-full max-w-md mx-auto mb-6 flex items-center">
+            <Link to="/" className="inline-flex items-center gap-2 group">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 p-1.5 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                <img src={Logo} alt="NexTradeX" className="w-full h-full object-contain" />
               </div>
-              <CardTitle className="text-[24px] font-semibold text-[#181925] tracking-[-0.31px]">Set New Password</CardTitle>
-              <CardDescription className="text-[15px] text-[#666666] tracking-[-0.32px] mt-1">Enter a strong new password for your NexTradeX account.</CardDescription>
-            </CardHeader>
+              <span className="font-heading font-bold text-slate-900 text-base tracking-tight">NexTradeX</span>
+            </Link>
+          </div>
+
+          <div className="max-w-md w-full mx-auto my-auto py-2">
+            <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight mb-1.5">Set New Password</h1>
+            <p className="text-slate-500 text-sm mb-6">Enter a strong new password for your account.</p>
+
             {resetSuccess ? (
-              <CardContent className="space-y-4 text-center py-6 px-8">
-                <div className="p-4 rounded-[12px] bg-[#def6e4] text-[#33c758] font-medium text-[15px] tracking-[-0.32px]">Password Updated Successfully!</div>
-                <p className="text-[14px] text-[#666666] tracking-[-0.32px]">Your password has been reset. You can now log in with your new password.</p>
-                <Button onClick={() => { setUrlResetToken(""); window.location.href = "/auth"; }} className="w-full bg-[#918df6] hover:bg-[#807ce5] text-white rounded-full font-medium text-[15px] tracking-[-0.32px] mt-4 py-3">
-                  Proceed to Login
-                </Button>
-              </CardContent>
+              <div className="space-y-4 text-center py-4">
+                <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-medium text-sm">
+                  Password Updated Successfully!
+                </div>
+                <p className="text-slate-500 text-sm">Your password has been reset. You can now sign in with your new password.</p>
+                <button
+                  type="button"
+                  onClick={() => { setUrlResetToken(""); navigate("/auth"); }}
+                  className="w-full h-11 rounded-xl font-semibold text-sm text-zinc-950 bg-[#f59e0b] hover:bg-[#e69107] transition-all shadow-md mt-2"
+                >
+                  Proceed to Sign In
+                </button>
+              </div>
             ) : (
-              <form onSubmit={handleResetSubmit} noValidate>
-                <CardContent className="space-y-5 px-8">
-                  {error && (
-                    <div role="alert" className="flex items-start gap-2 p-3.5 rounded-[8px] bg-[#fff0ed] border border-[#ff3e00]/20 text-[#ff3e00] text-[13px] tracking-[-0.32px]">
-                      <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
-                      <span>{error}</span>
-                    </div>
-                  )}
-                  <div>
-                    <label className="text-[12px] text-[#181925] tracking-[-0.32px] uppercase mb-2 block font-semibold">New Password</label>
-                    <Input
+              <form onSubmit={handleResetSubmit} className="space-y-4">
+                {error && (
+                  <div role="alert" className="flex items-start gap-2.5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm">
+                    <AlertCircle size={15} className="mt-0.5 shrink-0" />
+                    <span>{error}</span>
+                  </div>
+                )}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">New Password</label>
+                  <div className="relative">
+                    <input
                       type={showPassword ? "text" : "password"}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Enter new password (min 6 chars)"
                       required
-                      className="border-[#e8e8e8] text-[#181925] placeholder:text-[#999999] rounded-[8px] focus:border-[#918df6] focus:ring-[#918df6]/20"
-                      rightIcon={
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="focus:outline-none focus-visible:ring-1 focus-visible:ring-[#918df6]/40 rounded text-[#999999] hover:text-[#181925]"
-                          aria-label={showPassword ? "Hide password" : "Show password"}
-                        >
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      }
+                      className="w-full h-11 bg-slate-50/80 border border-slate-200 rounded-xl px-4 py-2.5 pr-11 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
                     />
-                    <PasswordStrengthMeter password={newPassword} show={true} />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 focus:outline-none"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
                   </div>
-                </CardContent>
-                <CardFooter className="pt-2 pb-8 px-8">
-                  <Button type="submit" className="w-full bg-[#918df6] hover:bg-[#807ce5] text-white rounded-full font-medium text-[15px] tracking-[-0.32px] py-3 shadow-[0_1px_1px_rgba(0,0,0,0.08)]" loading={resetLoading} disabled={resetLoading}>
-                    Update Password
-                  </Button>
-                </CardFooter>
+                  <PasswordStrengthMeter password={newPassword} show={true} />
+                </div>
+                <button
+                  type="submit"
+                  disabled={resetLoading}
+                  style={{ height: "46px", minHeight: "46px" }}
+                  className="w-full h-[46px] min-h-[46px] rounded-xl font-semibold text-sm text-zinc-950 bg-[#f59e0b] hover:bg-[#e69107] transition-all shadow-md shadow-amber-500/10 mt-2 flex items-center justify-center gap-2"
+                >
+                  {resetLoading ? "Updating..." : "Update Password"}
+                </button>
               </form>
             )}
-          </Card>
+          </div>
         </div>
-      </PageTransition>
+      </div>
     );
   }
 
-  // Profile setup form
+  // 2. PROFILE SETUP VIEW
   if (needsSetup) {
     return (
-      <PageTransition>
-        <div
-          className="min-h-[calc(100vh-140px)] sm:min-h-[calc(100vh-160px)] flex items-center justify-center px-4 py-12 bg-cover bg-center bg-no-repeat relative"
-          style={{ backgroundImage: `url(${heroBg})` }}
-        >
-          <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px] pointer-events-none" />
-          <Card className="w-full max-w-md overflow-hidden bg-white/95 backdrop-blur-xl border border-white/80 rounded-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.22)] relative z-10">
-            <CardHeader className="pb-4 text-center">
-              <div className="flex justify-center mb-4">
-                <Link to="/" className="inline-block transition-transform hover:scale-105">
-                  <img src={Logo} alt="NexTradeX" className="h-16 w-auto object-contain" />
-                </Link>
-              </div>
-              <CardTitle className="text-xl">Complete Your Profile</CardTitle>
-              <CardDescription className="text-sm mt-1">Choose a username and verify your name to continue.</CardDescription>
-            </CardHeader>
-            <form onSubmit={handleSetupSubmit} noValidate>
-              <CardContent className="space-y-5">
-                {/* Username */}
-                <div>
-                  <label htmlFor="setup-username" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                    Username <span className="text-trading-down" aria-hidden="true">*</span>
-                  </label>
-                  <div className="relative min-h-[56px]">
-                    <Input
-                      id="setup-username"
-                      name="username"
-                      value={setupForm.username}
-                      onChange={handleSetupChange}
-                      onBlur={handleSetupBlur}
-                      autoComplete="username"
-                      required
-                      aria-required="true"
-                      aria-invalid={!!fieldErrors.username}
-                      aria-describedby={fieldErrors.username ? "setup-username-error" : undefined}
-                      placeholder="Choose a username"
-                      className={fieldErrors.username ? "border-trading-down focus-visible:border-trading-down focus-visible:ring-trading-down/20" : ""}
-                    />
-                  </div>
-                  <FieldError id="setup-username-error" message={fieldErrors.username} />
-                </div>
-
-                {/* First + Last Name */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="setup-firstName" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                      First Name <span className="text-trading-down" aria-hidden="true">*</span>
-                    </label>
-                    <div className="relative min-h-[56px]">
-                      <Input
-                        id="setup-firstName"
-                        name="firstName"
-                        value={setupForm.firstName}
-                        onChange={handleSetupChange}
-                        onBlur={handleSetupBlur}
-                        autoComplete="given-name"
-                        required
-                        aria-required="true"
-                        aria-invalid={!!fieldErrors.firstName}
-                        aria-describedby={fieldErrors.firstName ? "setup-firstName-error" : undefined}
-                        placeholder="First name"
-                        className={fieldErrors.firstName ? "border-trading-down focus-visible:border-trading-down focus-visible:ring-trading-down/20" : ""}
-                      />
-                    </div>
-                    <FieldError id="setup-firstName-error" message={fieldErrors.firstName} />
-                  </div>
-                  <div>
-                    <label htmlFor="setup-lastName" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                      Last Name <span className="text-trading-down" aria-hidden="true">*</span>
-                    </label>
-                    <div className="relative min-h-[56px]">
-                      <Input
-                        id="setup-lastName"
-                        name="lastName"
-                        value={setupForm.lastName}
-                        onChange={handleSetupChange}
-                        onBlur={handleSetupBlur}
-                        autoComplete="family-name"
-                        required
-                        aria-required="true"
-                        aria-invalid={!!fieldErrors.lastName}
-                        aria-describedby={fieldErrors.lastName ? "setup-lastName-error" : undefined}
-                        placeholder="Last name"
-                        className={fieldErrors.lastName ? "border-trading-down focus-visible:border-trading-down focus-visible:ring-trading-down/20" : ""}
-                      />
-                    </div>
-                    <FieldError id="setup-lastName-error" message={fieldErrors.lastName} />
-                  </div>
-                </div>
-
-                {/* Top-level form error */}
-                {error && (
-                  <div role="alert" aria-live="polite" className="flex items-start gap-2 p-3 rounded-2xl bg-trading-down/10 border border-trading-down/20 text-trading-down text-sm">
-                    <AlertCircle size={16} className="mt-0.5 flex-shrink-0" aria-hidden="true" />
-                    <span>{error}</span>
-                  </div>
-                )}
-              </CardContent>
-              <CardFooter className="pt-2">
-                <Button
-                  type="submit"
-                  className="w-full font-mono font-bold"
-                  loading={loading}
-                  disabled={loading}
-                  aria-disabled={loading}
-                >
-                  Complete Setup
-                </Button>
-              </CardFooter>
-            </form>
-          </Card>
+      <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900">
+        <div className="relative w-full lg:w-1/2 h-44 sm:h-56 lg:h-auto lg:min-h-screen overflow-hidden select-none bg-slate-50 flex items-center justify-center">
+          <img
+            src={authTrainHills}
+            alt="Dreamy train on flower hills"
+            className="w-full h-full object-cover object-center"
+          />
         </div>
-      </PageTransition>
-    );
-  }
 
-  // Main login / register form
-  return (
-    <PageTransition>
-      {/* Outer container with hero-bg background */}
-      <div
-        className="min-h-[calc(100vh-140px)] sm:min-h-[calc(100vh-160px)] w-full flex items-center justify-center p-4 sm:p-6 md:p-10 bg-cover bg-center bg-no-repeat relative"
-        style={{ backgroundImage: `url(${heroBg})` }}
-      >
-        {/* Soft overlay */}
-        <div className="absolute inset-0 bg-black/15 backdrop-blur-[3px] pointer-events-none" />
-
-        {/* Floating Split Card Container */}
-        <div className="w-full max-w-5xl bg-white rounded-[32px] sm:rounded-[36px] p-3 sm:p-4 md:p-5 shadow-[0_25px_70px_rgba(0,0,0,0.22)] border border-white/90 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch relative z-10">
-
-          {/* LEFT PANEL: Frosted Gradient Banner */}
-          <div className="lg:col-span-5 rounded-[24px] sm:rounded-[28px] overflow-hidden relative flex items-center justify-center min-h-[350px] lg:min-h-[560px] bg-white group">
-            <img
-              src={authBannerGradient}
-              alt="Authentication Banner"
-              className="w-full h-full object-cover rounded-[24px] sm:rounded-[28px]"
-            />
-            {/* NexTradeX Logo Badge on Left Banner */}
-            <div className="absolute top-6 left-6 z-10">
-              <Link to="/" className="inline-flex items-center gap-2 bg-white/90 hover:bg-white backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-md transition-all transform hover:scale-105">
-                <img src={Logo} alt="NexTradeX Logo" className="h-6 w-auto object-contain" />
-              </Link>
-            </div>
-
-            {/* Square Loader Animation Centerpiece */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-              <SquareLoader />
-            </div>
+        <div className="w-full lg:w-1/2 flex flex-col justify-between pt-10 sm:pt-14 lg:pt-16 pb-6 sm:pb-8 px-6 sm:px-10 lg:px-12 min-h-[calc(100vh-176px)] lg:min-h-screen overflow-y-auto bg-white">
+          <div className="w-full max-w-md mx-auto mb-6 flex items-center">
+            <Link to="/" className="inline-flex items-center gap-2 group">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 p-1.5 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                <img src={Logo} alt="NexTradeX" className="w-full h-full object-contain" />
+              </div>
+              <span className="font-heading font-bold text-slate-900 text-base tracking-tight">NexTradeX</span>
+            </Link>
           </div>
 
-          {/* RIGHT PANEL: Login Form Area */}
-          <div className="lg:col-span-7 flex flex-col justify-center px-3 sm:px-6 py-4 sm:py-6">
-            <div className="w-full max-w-md mx-auto">
-              
-              {/* Logo / Header */}
-              <div className="flex justify-center mb-6">
-                <Link to="/" className="inline-block transition-transform hover:scale-105">
-                  <img src={Logo} alt="NexTradeX" className="h-[72px] sm:h-[80px] w-auto object-contain" />
-                </Link>
-              </div>
+          <div className="max-w-md w-full mx-auto my-auto py-2">
+            <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight mb-1.5">Complete Your Profile</h1>
+            <p className="text-slate-500 text-sm mb-6">Choose a unique username and name to complete registration.</p>
 
-              {/* Login / Register toggle */}
-              <div className="flex items-center bg-[#f4f4f5] rounded-full p-1 mb-6 relative overflow-hidden">
-                <div
-                  className="absolute top-1 bottom-1 rounded-full bg-white shadow-sm"
-                  style={{
-                    ...getToggleStyle(),
-                    transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-                  }}
-                />
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={mode === "login"}
-                  id="auth-tab-login"
-                  onClick={() => { setMode("login"); setFieldErrors({}); setTouched({}); }}
-                  className={`flex-1 text-sm font-medium px-4 py-2 rounded-full relative z-10 transition-colors duration-300 ${
-                    mode === "login" ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
-                  }`}
-                >
-                  Log in
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={mode === "register"}
-                  id="auth-tab-register"
-                  onClick={() => { setMode("register"); setFieldErrors({}); setTouched({}); }}
-                  className={`flex-1 text-sm font-medium px-4 py-2 rounded-full relative z-10 transition-colors duration-300 ${
-                    mode === "register" ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
-                  }`}
-                >
-                  Register
-                </button>
-              </div>
-
-              {/* Title + subtitle */}
-              <div className="mb-5">
-                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-                  {mode === "login" ? "Welcome back" : "Create an account"}
-                </h1>
-                <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                  {mode === "login"
-                    ? "Sign in to access your paper trading terminal."
-                    : "Register to start paper trading on NexTradeX."}
-                </p>
-              </div>
-
-              {/* Error banner */}
+            <form onSubmit={handleSetupSubmit} className="space-y-4">
               {error && (
-                <div role="alert" className="flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm mb-4">
-                  <AlertCircle size={15} className="mt-0.5 flex-shrink-0" />
+                <div role="alert" className="flex items-start gap-2.5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm">
+                  <AlertCircle size={15} className="mt-0.5 shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Username</label>
+                <input
+                  type="text"
+                  name="username"
+                  value={setupForm.username}
+                  onChange={handleSetupChange}
+                  placeholder="Choose a username"
+                  required
+                  className="w-full h-11 bg-slate-50/80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
+                />
+                <FieldError id="setup-username-error" message={fieldErrors.username} />
+              </div>
 
-              <form
-                id="auth-form-panel"
-                role="tabpanel"
-                aria-labelledby={mode === "login" ? "auth-tab-login" : "auth-tab-register"}
-                onSubmit={handleSubmit}
-                noValidate
-                className="space-y-3.5"
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">First Name</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={setupForm.firstName}
+                    onChange={handleSetupChange}
+                    placeholder="First name"
+                    required
+                    className="w-full h-11 bg-slate-50/80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
+                  />
+                  <FieldError id="setup-firstName-error" message={fieldErrors.firstName} />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Last Name</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={setupForm.lastName}
+                    onChange={handleSetupChange}
+                    placeholder="Last name"
+                    required
+                    className="w-full h-11 bg-slate-50/80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
+                  />
+                  <FieldError id="setup-lastName-error" message={fieldErrors.lastName} />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                style={{ height: "46px", minHeight: "46px" }}
+                className="w-full h-[46px] min-h-[46px] rounded-xl font-semibold text-sm text-zinc-950 bg-[#f59e0b] hover:bg-[#e69107] transition-all shadow-md shadow-amber-500/10 mt-2"
               >
-                {/* Username */}
-                <div>
-                  <Input
-                    id="auth-username"
-                    name="username"
-                    value={form.username}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    autoComplete="username"
-                    required
-                    aria-required="true"
-                    aria-invalid={!!fieldErrors.username}
-                    placeholder="Username"
-                    className={`h-11 rounded-xl border-gray-200 bg-gray-50/80 focus:bg-white text-sm ${fieldErrors.username ? "border-red-400" : ""}`}
-                  />
-                  <FieldError id="auth-username-error" message={fieldErrors.username} />
-                </div>
-
-                {/* Register-only: First Name, Last Name, Email */}
-                <div
-                  className="transition-all duration-500 ease-out overflow-hidden"
-                  style={{
-                    maxHeight: mode === "register" ? '400px' : '0',
-                    opacity: mode === "register" ? 1 : 0,
-                  }}
-                >
-                  <div className="space-y-3.5">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Input
-                          id="auth-firstName"
-                          name="firstName"
-                          value={form.firstName}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          autoComplete="given-name"
-                          required={mode === "register"}
-                          placeholder="First name"
-                          className={`h-11 rounded-xl border-gray-200 bg-gray-50/80 focus:bg-white text-sm ${fieldErrors.firstName ? "border-red-400" : ""}`}
-                        />
-                        <FieldError id="auth-firstName-error" message={fieldErrors.firstName} />
-                      </div>
-                      <div>
-                        <Input
-                          id="auth-lastName"
-                          name="lastName"
-                          value={form.lastName}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          autoComplete="family-name"
-                          required={mode === "register"}
-                          placeholder="Last name"
-                          className={`h-11 rounded-xl border-gray-200 bg-gray-50/80 focus:bg-white text-sm ${fieldErrors.lastName ? "border-red-400" : ""}`}
-                        />
-                        <FieldError id="auth-lastName-error" message={fieldErrors.lastName} />
-                      </div>
-                    </div>
-                    <div>
-                      <Input
-                        id="auth-email"
-                        type="email"
-                        name="email"
-                        value={form.email}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        autoComplete="email"
-                        required={mode === "register"}
-                        placeholder="Email address"
-                        className={`h-11 rounded-xl border-gray-200 bg-gray-50/80 focus:bg-white text-sm ${fieldErrors.email ? "border-red-400" : ""}`}
-                      />
-                      <FieldError id="auth-email-error" message={fieldErrors.email} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Password */}
-                <div>
-                  <Input
-                    id="auth-password"
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    value={form.password}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    autoComplete={mode === "register" ? "new-password" : "current-password"}
-                    required
-                    placeholder="Password"
-                    rightIcon={
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="focus:outline-none text-gray-400 hover:text-gray-600"
-                        aria-label={showPassword ? "Hide password" : "Show password"}
-                      >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    }
-                    className={`h-11 rounded-xl border-gray-200 bg-gray-50/80 focus:bg-white text-sm ${fieldErrors.password ? "border-red-400" : ""}`}
-                  />
-                  <PasswordStrengthMeter password={form.password} show={mode === "register"} />
-                  <FieldError id="auth-password-error" message={fieldErrors.password} />
-                  {mode === "login" && (
-                    <div className="flex justify-end mt-1.5">
-                      <button
-                        type="button"
-                        onClick={() => { setForgotError(""); setForgotSuccess(""); setShowForgotModal(true); }}
-                        className="text-xs text-indigo-600 hover:text-indigo-800 hover:underline focus:outline-none font-medium"
-                      >
-                        Forgot Password?
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Submit button with styled purple/indigo gradient like design */}
-                <Button
-                  type="submit"
-                  className="w-full h-11 rounded-xl font-semibold text-sm bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] hover:from-[#4338ca] hover:to-[#6d28d9] text-white shadow-[0_8px_20px_rgba(99,102,241,0.35)] transition-all"
-                  loading={loading}
-                  disabled={loading}
-                >
-                  {mode === "login" ? "Get Started" : "Create Account"}
-                </Button>
-              </form>
-
-              {/* Divider */}
-              <div className="relative flex items-center my-4">
-                <div className="flex-grow border-t border-gray-200" />
-                <span className="mx-3 text-[11px] text-gray-400 uppercase tracking-wider font-medium">or continue with</span>
-                <div className="flex-grow border-t border-gray-200" />
-              </div>
-
-              {/* Social logins */}
-              <div className="grid grid-cols-3 gap-3">
-                <button
-                  type="button"
-                  onClick={googleLogin}
-                  aria-label="Log in with Google"
-                  className="flex items-center justify-center h-11 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-all cursor-pointer shadow-xs"
-                >
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toast.info("GitHub Login integration enabled.")}
-                  aria-label="Log in with GitHub"
-                  className="flex items-center justify-center h-11 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-all cursor-pointer shadow-xs"
-                >
-                  <img src={githubIcon} alt="GitHub" className="w-5 h-5 object-contain" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toast.info("X / Twitter Login integration enabled.")}
-                  aria-label="Log in with X"
-                  className="flex items-center justify-center h-11 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-all cursor-pointer shadow-xs"
-                >
-                  <img src={xIcon} alt="X" className="w-5 h-5 object-contain" />
-                </button>
-              </div>
-
-              {/* Switch mode link */}
-              <p className="text-center text-xs text-gray-500 mt-5">
-                {mode === "login" ? (
-                  <>Don&apos;t have an account?{" "}
-                    <button type="button" onClick={() => { setMode("register"); setFieldErrors({}); setTouched({}); }} className="text-indigo-600 hover:underline font-semibold">Sign up</button>
-                  </>
-                ) : (
-                  <>Already have an account?{" "}
-                    <button type="button" onClick={() => { setMode("login"); setFieldErrors({}); setTouched({}); }} className="text-indigo-600 hover:underline font-semibold">Log in</button>
-                  </>
-                )}
-              </p>
-
-            </div>
+                {loading ? "Saving..." : "Complete Setup"}
+              </button>
+            </form>
           </div>
-
         </div>
       </div>
-      {/* Forgot Password Modal */}
+    );
+  }
+
+  // 3. MAIN SPLIT LOGIN & SIGN UP PAGE
+  return (
+    <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900">
+      
+      {/* LEFT PANEL: Dreamy Train On Flower Hills Artwork */}
+      <div className="relative w-full lg:w-1/2 h-44 sm:h-56 lg:h-auto lg:min-h-screen overflow-hidden select-none bg-slate-50 flex items-center justify-center">
+        <img
+          src={authTrainHills}
+          alt="Train on flower hills"
+          className="w-full h-full object-cover object-center scale-100 transition-transform duration-700 hover:scale-105"
+        />
+        {/* Soft edge blend gradient on right edge on desktop */}
+        <div className="hidden lg:block absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-white to-transparent pointer-events-none" />
+      </div>
+
+      {/* RIGHT PANEL: Crisp White Auth Panel with Balanced Padding & Margins */}
+      <div className="w-full lg:w-1/2 flex flex-col justify-between pt-10 sm:pt-14 lg:pt-16 pb-6 sm:pb-8 px-6 sm:px-10 lg:px-12 min-h-[calc(100vh-176px)] lg:min-h-screen overflow-y-auto bg-white">
+        
+        {/* Top Header Row */}
+        <div className="w-full max-w-md mx-auto mb-6 lg:mb-8">
+          {/* Logo & Brand Name */}
+          <Link to="/" className="inline-flex items-center gap-2 group">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 p-1.5 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+              <img src={Logo} alt="NexTradeX" className="w-full h-full object-contain" />
+            </div>
+            <span className="font-heading font-bold text-slate-900 text-base tracking-tight">NexTradeX</span>
+          </Link>
+        </div>
+
+        {/* Center Container: Main Form Card */}
+        <div className="max-w-md w-full mx-auto my-auto py-1 sm:py-2">
+          
+          {/* Title & Subtitle */}
+          <div className="mb-5 sm:mb-6">
+            <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight mb-1.5">
+              Welcome to NexTradeX
+            </h1>
+            <p className="text-slate-500 text-xs sm:text-sm">
+              Sign in or create an account to continue.
+            </p>
+          </div>
+
+          {/* Segmented Tab Switch [ Sign in | Create account ] */}
+          <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200/80 mb-5">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "login"}
+              onClick={() => {
+                setMode("login");
+                setFieldErrors({});
+                setError("");
+              }}
+              className={`flex-1 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all ${
+                mode === "login"
+                  ? "bg-white text-slate-900 shadow-xs font-semibold"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              Sign in
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "register"}
+              onClick={() => {
+                setMode("register");
+                setFieldErrors({});
+                setError("");
+              }}
+              className={`flex-1 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all ${
+                mode === "register"
+                  ? "bg-white text-slate-900 shadow-xs font-semibold"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              Create account
+            </button>
+          </div>
+
+          {/* Form Error Banner */}
+          {error && (
+            <div role="alert" className="flex items-start gap-2.5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm mb-4">
+              <AlertCircle size={15} className="mt-0.5 shrink-0 text-red-500" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Input Form */}
+          <form onSubmit={handleSubmit} noValidate className="space-y-3.5 sm:space-y-4">
+            
+            {/* Registration-only: First & Last Name */}
+            {mode === "register" && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">First Name</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={form.firstName}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="John"
+                    required
+                    className={`w-full h-11 bg-slate-50/80 border rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all ${
+                      fieldErrors.firstName ? "border-red-400 bg-red-50/30" : "border-slate-200"
+                    }`}
+                  />
+                  <FieldError id="auth-firstName-error" message={fieldErrors.firstName} />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Last Name</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={form.lastName}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="Doe"
+                    required
+                    className={`w-full h-11 bg-slate-50/80 border rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all ${
+                      fieldErrors.lastName ? "border-red-400 bg-red-50/30" : "border-slate-200"
+                    }`}
+                  />
+                  <FieldError id="auth-lastName-error" message={fieldErrors.lastName} />
+                </div>
+              </div>
+            )}
+
+            {/* Registration-only: Username */}
+            {mode === "register" && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Username</label>
+                <input
+                  type="text"
+                  name="username"
+                  value={form.username}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="johndoe"
+                  required
+                  className={`w-full h-11 bg-slate-50/80 border rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all ${
+                    fieldErrors.username ? "border-red-400 bg-red-50/30" : "border-slate-200"
+                  }`}
+                />
+                <FieldError id="auth-reg-username-error" message={fieldErrors.username} />
+              </div>
+            )}
+
+            {/* Email Field */}
+            {mode === "login" ? (
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Email</label>
+                <input
+                  type="text"
+                  name="username"
+                  value={form.username}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="you@company.com"
+                  autoComplete="username"
+                  required
+                  className={`w-full h-11 bg-slate-50/80 border rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all ${
+                    fieldErrors.username ? "border-red-400 bg-red-50/30" : "border-slate-200"
+                  }`}
+                />
+                <FieldError id="auth-login-username-error" message={fieldErrors.username} />
+              </div>
+            ) : (
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="you@company.com"
+                  autoComplete="email"
+                  required
+                  className={`w-full h-11 bg-slate-50/80 border rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all ${
+                    fieldErrors.email ? "border-red-400 bg-red-50/30" : "border-slate-200"
+                  }`}
+                />
+                <FieldError id="auth-reg-email-error" message={fieldErrors.email} />
+              </div>
+            )}
+
+            {/* Password Field */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="••••••••"
+                  autoComplete={mode === "register" ? "new-password" : "current-password"}
+                  required
+                  className={`w-full h-11 bg-slate-50/80 border rounded-xl px-3.5 py-2.5 pr-11 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all ${
+                    fieldErrors.password ? "border-red-400 bg-red-50/30" : "border-slate-200"
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              <PasswordStrengthMeter password={form.password} show={mode === "register"} />
+              <FieldError id="auth-password-error" message={fieldErrors.password} />
+
+              {/* Forgot Password Link in Amber */}
+              {mode === "login" && (
+                <div className="flex justify-end mt-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotError("");
+                      setForgotSuccess("");
+                      setShowForgotModal(true);
+                    }}
+                    className="text-xs font-semibold text-amber-600 hover:text-amber-500 transition-colors focus:outline-none"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Primary Action Button (Warm amber) */}
+            <button
+              type="submit"
+              disabled={loading}
+              style={{ height: "46px", minHeight: "46px" }}
+              className="w-full h-[46px] min-h-[46px] mt-4 rounded-xl font-semibold text-sm sm:text-base text-zinc-950 bg-[#f59e0b] hover:bg-[#e69107] active:scale-[0.99] transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <>
+                  <svg
+                    width="18"
+                    height="18"
+                    style={{ width: "18px", height: "18px" }}
+                    className="animate-spin text-zinc-950"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span>Processing...</span>
+                </>
+              ) : mode === "login" ? (
+                "Sign in"
+              ) : (
+                "Create account"
+              )}
+            </button>
+          </form>
+
+          {/* Divider "or" */}
+          <div className="relative flex items-center my-4 sm:my-5">
+            <div className="flex-grow border-t border-slate-200" />
+            <span className="px-3 text-xs text-slate-400 font-medium">or</span>
+            <div className="flex-grow border-t border-slate-200" />
+          </div>
+
+          {/* Google OAuth Button */}
+          <button
+            type="button"
+            onClick={googleLogin}
+            style={{ height: "46px", minHeight: "46px" }}
+            className="w-full h-[46px] min-h-[46px] rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-medium flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xs active:scale-[0.99]"
+          >
+            <svg
+              width="20"
+              height="20"
+              style={{ width: "20px", height: "20px", minWidth: "20px", minHeight: "20px" }}
+              className="shrink-0"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            <span>Continue with Google</span>
+          </button>
+
+        </div>
+
+      </div>
+
+      {/* Forgot Password Modal Dialog (Clean White Theme) */}
       <Dialog open={showForgotModal} onOpenChange={setShowForgotModal}>
-        <DialogContent className="max-w-md bg-white border border-[#e8e8e8] rounded-[16px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_8px_16px_rgba(0,0,0,0.06)]">
+        <DialogContent className="max-w-md bg-white border border-slate-200 text-slate-900 rounded-2xl p-6 shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-[20px] font-semibold text-[#181925] tracking-[-0.31px]">Forgot Password</DialogTitle>
+            <DialogTitle className="text-lg font-bold text-slate-900 tracking-tight">
+              Forgot Password
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleForgotSubmit} className="space-y-4 pt-2">
-            <p className="text-[14px] text-[#666666] tracking-[-0.32px] leading-relaxed">
-              Enter your registered email address below and we will send you a link to reset your password.
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              Enter your registered email address below and we will send you a secure link to reset your password.
             </p>
+
             {forgotError && (
-              <div role="alert" className="p-3.5 rounded-[8px] bg-[#fff0ed] border border-[#ff3e00]/20 text-[#ff3e00] text-[13px] tracking-[-0.32px]">
+              <div role="alert" className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs">
                 {forgotError}
               </div>
             )}
             {forgotSuccess && (
-              <div role="status" className="p-3.5 rounded-[8px] bg-[#def6e4] border border-[#33c758]/20 text-[#33c758] text-[13px] tracking-[-0.32px]">
+              <div role="status" className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs">
                 {forgotSuccess}
               </div>
             )}
+
             <div>
-              <label className="text-[12px] font-medium text-[#181925] tracking-[-0.32px] uppercase mb-1.5 block">Email Address</label>
-              <Input
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">Email Address</label>
+              <input
                 type="email"
                 value={forgotEmail}
                 onChange={(e) => setForgotEmail(e.target.value)}
-                placeholder="name@example.com"
+                placeholder="you@company.com"
                 required
-                className="border-[#e8e8e8] text-[#181925] placeholder:text-[#999999] rounded-[8px] focus:border-[#918df6] focus:ring-[#918df6]/20"
+                className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
               />
             </div>
-            <div className="flex justify-end gap-3 pt-3">
-              <Button type="button" variant="outline" onClick={() => setShowForgotModal(false)} className="rounded-full border border-[#e8e8e8] text-[#666666] hover:bg-[#fafafa] font-medium text-[14px] px-5">
+
+            <div className="flex justify-end gap-2.5 pt-3">
+              <button
+                type="button"
+                onClick={() => setShowForgotModal(false)}
+                className="px-4 py-2 rounded-xl border border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs sm:text-sm font-medium transition-all"
+              >
                 Cancel
-              </Button>
-              <Button type="submit" loading={forgotLoading} disabled={forgotLoading} className="bg-[#918df6] hover:bg-[#807ce5] text-white rounded-full font-medium text-[14px] tracking-[-0.32px] px-6 shadow-[0_1px_1px_rgba(0,0,0,0.08)]">
-                Send Reset Link
-              </Button>
+              </button>
+              <button
+                type="submit"
+                disabled={forgotLoading}
+                className="px-5 py-2 rounded-xl bg-[#f59e0b] hover:bg-[#e69107] text-zinc-950 text-xs sm:text-sm font-semibold transition-all shadow-md disabled:opacity-60"
+              >
+                {forgotLoading ? "Sending..." : "Send Reset Link"}
+              </button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
-    </PageTransition>
+    </div>
   );
 }
