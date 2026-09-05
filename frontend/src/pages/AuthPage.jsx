@@ -634,7 +634,7 @@ export default function AuthPage() {
                     value={form.firstName}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    placeholder="John"
+                    placeholder="Senku"
                     required
                     className={`w-full h-11 bg-slate-50/80 border rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all ${
                       fieldErrors.firstName ? "border-red-400 bg-red-50/30" : "border-slate-200"
@@ -650,7 +650,7 @@ export default function AuthPage() {
                     value={form.lastName}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    placeholder="Doe"
+                    placeholder="The Code"
                     required
                     className={`w-full h-11 bg-slate-50/80 border rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all ${
                       fieldErrors.lastName ? "border-red-400 bg-red-50/30" : "border-slate-200"
@@ -671,7 +671,7 @@ export default function AuthPage() {
                   value={form.username}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  placeholder="johndoe"
+                  placeholder="senku the legend"
                   required
                   className={`w-full h-11 bg-slate-50/80 border rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all ${
                     fieldErrors.username ? "border-red-400 bg-red-50/30" : "border-slate-200"
