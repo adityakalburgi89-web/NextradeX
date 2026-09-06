@@ -4,7 +4,7 @@ import { ArrowRight, ChevronDown, ChevronRight, Zap, ShieldCheck, TrendingUp, Sp
 import { fetchAllPrices, cachePrices } from "../api";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { FlashIcon, Shield01Icon, AnalyticsUpIcon } from "@hugeicons/core-free-icons";
+import { FlashIcon, TradeUpIcon, AnalyticsUpIcon } from "@hugeicons/core-free-icons";
 
 import btcIcon from "../assets/Icons/btc.svg";
 import ethIcon from "../assets/Icons/eth.svg";
@@ -86,7 +86,7 @@ export default function HomePage({ isLoggedIn }) {
     <div className="w-full bg-white text-carbon overflow-x-hidden font-openrunde pt-32 sm:pt-40 md:pt-44">
 
       {/* 1. HERO SECTION */}
-      <section className="pt-8 sm:pt-12 pb-20 px-6 max-w-[1200px] mx-auto text-center space-y-10 sm:space-y-12">
+      <section className="pt-8 sm:pt-12 pb-8 sm:pb-12 px-6 max-w-[1200px] mx-auto text-center space-y-10 sm:space-y-12">
         
         {/* Top Announcement Pill */}
         <div className="flex justify-center">
@@ -106,7 +106,7 @@ export default function HomePage({ isLoggedIn }) {
 
         {/* Subtitle Body Text */}
         <p className="font-openrunde text-lg sm:text-xl text-[#666666] max-w-2xl mx-auto tracking-[-0.32px] leading-relaxed">
-          Simulate spot, futures, and options strategies using live market data feeds, advanced charting, and $100,000 in virtual funds.
+          Simulate spot, futures, and options strategies using live market data feeds and advanced charting.
         </p>
 
         {/* Dual Action Pill Buttons */}
@@ -127,7 +127,7 @@ export default function HomePage({ isLoggedIn }) {
         </div>
 
         {/* Market Data Partners */}
-        <div className="pt-8 flex flex-wrap items-center justify-center gap-10 sm:gap-16 opacity-85 hover:opacity-100 transition-opacity">
+        <div className="pt-14 sm:pt-20 pb-0 flex flex-wrap items-center justify-center gap-10 sm:gap-16 opacity-85 hover:opacity-100 transition-opacity">
           {partnerLogos.map((partner, idx) => (
             <React.Fragment key={partner.name}>
               {idx > 0 && <div className="hidden sm:block h-5 w-[1px] bg-[#e2e2e8]" />}
@@ -150,12 +150,20 @@ export default function HomePage({ isLoggedIn }) {
       {/* 2. LIVE DASHBOARD PREVIEW SECTION */}
       <section className="w-full relative pb-28">
         
-        {/* Category Navigation Tabs */}
-        <div className="flex justify-center relative z-20 -mb-5 sm:-mb-6 px-4">
-          <div className="bg-white border border-fog/80 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] px-3 py-1.5 flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium text-graphite backdrop-blur-xl">
+        {/* Category Navigation Tabs Cutout Notch */}
+        <div className="w-full relative z-20 flex justify-center items-start pointer-events-none">
+          {/* Left Concave Notch Curve */}
+          <div className="w-5 h-5 sm:w-7 sm:h-7 text-white shrink-0 -mr-[1px] pointer-events-none">
+            <svg viewBox="0 0 24 24" className="w-full h-full fill-current">
+              <path d="M0 0 H24 V24 A24 24 0 0 1 0 0 Z" />
+            </svg>
+          </div>
+
+          {/* Center White Notch Tab Container */}
+          <div className="bg-white px-3 sm:px-5 pb-2.5 sm:pb-3.5 pt-0 rounded-b-2xl sm:rounded-b-3xl flex items-center gap-1.5 sm:gap-3 pointer-events-auto">
             <button
               onClick={() => setActiveTab("spot")}
-              className={`px-4 py-1.5 rounded-full transition-all ${
+              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
                 activeTab === "spot" ? "bg-[#efeff4] text-carbon font-semibold shadow-xs" : "text-ash hover:text-carbon"
               }`}
             >
@@ -163,7 +171,7 @@ export default function HomePage({ isLoggedIn }) {
             </button>
             <button
               onClick={() => setActiveTab("futures")}
-              className={`px-4 py-1.5 rounded-full transition-all ${
+              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
                 activeTab === "futures" ? "bg-[#efeff4] text-carbon font-semibold shadow-xs" : "text-ash hover:text-carbon"
               }`}
             >
@@ -171,7 +179,7 @@ export default function HomePage({ isLoggedIn }) {
             </button>
             <button
               onClick={() => setActiveTab("markets")}
-              className={`px-4 py-1.5 rounded-full transition-all ${
+              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
                 activeTab === "markets" ? "bg-[#efeff4] text-carbon font-semibold shadow-xs" : "text-ash hover:text-carbon"
               }`}
             >
@@ -179,18 +187,25 @@ export default function HomePage({ isLoggedIn }) {
             </button>
             <button
               onClick={() => setActiveTab("analytics")}
-              className={`px-4 py-1.5 rounded-full transition-all ${
+              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
                 activeTab === "analytics" ? "bg-[#efeff4] text-carbon font-semibold shadow-xs" : "text-ash hover:text-carbon"
               }`}
             >
               Analytics
             </button>
           </div>
+
+          {/* Right Concave Notch Curve */}
+          <div className="w-5 h-5 sm:w-7 sm:h-7 text-white shrink-0 -ml-[1px] pointer-events-none">
+            <svg viewBox="0 0 24 24" className="w-full h-full fill-current">
+              <path d="M0 24 V0 H24 A24 24 0 0 1 0 24 Z" />
+            </svg>
+          </div>
         </div>
 
         {/* Dashboard Frame */}
         <div 
-          className="w-full pt-20 sm:pt-28 pb-20 sm:pb-32 px-4 sm:px-8 shadow-2xl relative bg-cover bg-center bg-no-repeat min-h-[560px] flex items-center justify-center"
+          className="w-full -mt-5 sm:-mt-7 pt-16 sm:pt-24 pb-20 sm:pb-32 px-4 sm:px-8 shadow-2xl relative bg-cover bg-center bg-no-repeat min-h-[560px] flex items-center justify-center"
           style={{ backgroundImage: `url(${heroBg})` }}
         >
           <div className="bg-white rounded-[24px] sm:rounded-[32px] border border-white/80 p-4 sm:p-6 md:p-8 w-full max-w-[1080px] mx-auto shadow-[0_25px_60px_rgba(0,0,0,0.18)] text-left relative z-10">
@@ -345,7 +360,7 @@ export default function HomePage({ isLoggedIn }) {
       <AstroBentoGrid />
 
       {/* 3. CORE FEATURES GRID */}
-      <section className="py-24 sm:py-36 px-6 max-w-[1200px] mx-auto space-y-16 sm:space-y-20 my-6 sm:my-12">
+      <section className="py-20 sm:py-28 px-6 max-w-[1200px] mx-auto space-y-16 sm:space-y-20">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
           <h2 className="font-openrunde text-3xl md:text-4xl font-medium text-carbon tracking-[-0.61px]">
             Key Trading Features
@@ -364,19 +379,19 @@ export default function HomePage({ isLoggedIn }) {
               Real-Time Execution
             </h3>
             <p className="font-openrunde text-sm text-graphite leading-relaxed tracking-[-0.32px]">
-              Practice order placement with live streaming price feeds and instant fill simulation.
+              Execute market and limit orders using live tick-by-tick streaming feeds with sub-second fill routing and instant simulation.
             </p>
           </div>
 
           <div className="feature-card-visitors">
             <div className="icon-circle">
-              <HugeiconsIcon icon={Shield01Icon} size={20} color="#ffffff" />
+              <HugeiconsIcon icon={TradeUpIcon} size={20} color="#ffffff" />
             </div>
             <h3 className="font-openrunde font-medium text-xl text-carbon mb-2 tracking-[-0.31px]">
-              Zero Financial Risk
+              Advanced Order Types
             </h3>
             <p className="font-openrunde text-sm text-graphite leading-relaxed tracking-[-0.32px]">
-              Test strategies in a safe environment with $100,000 initial virtual capital and instant resets.
+              Deploy conditional limit, stop-loss, and take-profit triggers with precision margin and multi-tier leverage controls.
             </p>
           </div>
 
@@ -388,42 +403,55 @@ export default function HomePage({ isLoggedIn }) {
               Portfolio Analytics
             </h3>
             <p className="font-openrunde text-sm text-graphite leading-relaxed tracking-[-0.32px]">
-              Track your trade history, win rates, and PnL performance with intuitive visual dashboards.
+              Audit trade execution history, analyze win-rate metrics, and track risk-adjusted PnL performance via dynamic visual telemetry.
             </p>
           </div>
         </div>
       </section>
 
       {/* 4. FAQ ACCORDION SECTION */}
-      <section className="max-w-[900px] mx-auto px-6 py-20 sm:py-28 space-y-10 sm:space-y-14 my-4 font-openrunde">
-        <div className="text-center space-y-2">
-          <h2 className="font-openrunde text-3xl sm:text-4xl font-semibold text-[#181925] tracking-[-1px]">
-            Frequently Asked Questions
+      <section className="max-w-[800px] mx-auto px-6 py-12 sm:py-16 space-y-10 sm:space-y-12 font-openrunde">
+        
+        {/* Header with FAQ Badge Tag */}
+        <div className="text-center space-y-3">
+          <div className="flex justify-center">
+            <span className="bg-[#f0f0f4] text-[#777777] text-xs font-semibold px-3 py-1 rounded-md uppercase tracking-wider">
+              FAQ
+            </span>
+          </div>
+
+          <h2 className="font-openrunde text-4xl sm:text-5xl font-semibold text-[#181925] tracking-[-1.5px] leading-[1.15] max-w-xl mx-auto">
+            Frequently<br />asked questions
           </h2>
-          <p className="font-openrunde text-base text-[#666666] tracking-[-0.32px]">
-            Clear answers about paper trading on NexTradeX.
+
+          <p className="font-openrunde text-base sm:text-lg text-[#666666] tracking-[-0.32px] max-w-md mx-auto leading-relaxed pt-1">
+            Quick answers to common questions about paper trading, virtual funds, features, and setup.
           </p>
         </div>
 
-        <div className="space-y-3.5">
+        {/* Soft Grey Accordion List */}
+        <div className="space-y-2.5">
           {faqData.map((faq, idx) => {
             const isOpen = openFaq === idx;
             return (
               <div
                 key={idx}
-                className="bg-white border border-[#e8e8e8] rounded-[24px] p-6 sm:p-7 cursor-pointer hover:border-[#918df6] transition-all duration-200 shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.04)]"
+                className="bg-[#fafafc] hover:bg-[#f4f4f8] rounded-[18px] px-6 sm:px-7 py-4 sm:py-5 cursor-pointer transition-all duration-200"
                 onClick={() => setOpenFaq(isOpen ? -1 : idx)}
               >
                 <div className="flex items-center justify-between gap-4">
-                  <h3 className="font-openrunde text-base sm:text-lg font-semibold text-[#181925] tracking-[-0.32px]">
+                  <h3 className="font-openrunde text-base sm:text-lg font-medium text-[#181925] tracking-[-0.3px]">
                     {faq.q}
                   </h3>
-                  <div className="w-8 h-8 rounded-full bg-[#f5f5f5] flex items-center justify-center flex-shrink-0 text-[#181925]">
-                    <ChevronDown size={16} className={`text-[#666666] transition-transform duration-200 ${isOpen ? "rotate-180 text-[#918df6]" : ""}`} />
-                  </div>
+                  <ChevronDown
+                    size={18}
+                    className={`text-[#8574ff] transition-transform duration-200 shrink-0 ${
+                      isOpen ? "rotate-180" : ""
+                    }`}
+                  />
                 </div>
                 {isOpen && (
-                  <div className="pt-4 mt-4 border-t border-[#e8e8e8] font-openrunde text-sm sm:text-base text-[#666666] leading-relaxed tracking-[-0.32px]">
+                  <div className="pt-3 mt-2 border-t border-[#e8e8f0] font-openrunde text-sm sm:text-base text-[#666666] leading-relaxed tracking-[-0.3px]">
                     {faq.a}
                   </div>
                 )}
@@ -442,11 +470,11 @@ export default function HomePage({ isLoggedIn }) {
 
           <div className="space-y-6 max-w-xl relative z-10 text-left">
             <h2 className="font-openrunde text-3xl sm:text-4xl md:text-[42px] font-semibold tracking-[-1px] text-[#181925] leading-[1.15]">
-              Practice trading with a <span className="text-[#918df6]">$100,000</span> virtual wallet.
+              Build your edge before entering <span className="text-[#918df6]">live markets</span>.
             </h2>
 
             <p className="font-openrunde text-base sm:text-lg text-[#666666] leading-relaxed tracking-[-0.32px]">
-              Experience spot and perpetual futures trading with live order books, real-time prices, and 1-click balance refills whenever you want to start fresh.
+              Execute spot orders, leverage perpetual contracts up to 125x, and analyze live streaming liquidity on an ultra-responsive paper trading engine.
             </p>
 
             <div className="pt-2">

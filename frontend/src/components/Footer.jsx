@@ -148,7 +148,7 @@ export default function Footer() {
 
             <div className="pt-6">
               <h4 className={linkHeaderClass}>Socials</h4>
-              <div className="flex flex-wrap gap-2.5 pt-1">
+              <div className="grid grid-cols-2 gap-2.5 w-fit pt-1">
                 <a
                   href="mailto:adityakalburgi89@gmail.com"
                   target="_blank"

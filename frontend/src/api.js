@@ -166,6 +166,16 @@ export function googleLogin() {
   window.location.href = `${API_BASE_URL}/oauth2/authorization/google`;
 }
 
+export function githubLogin() {
+  console.log("[API] Redirecting to GitHub OAuth2 login");
+  window.location.href = `${API_BASE_URL}/oauth2/authorization/github`;
+}
+
+export function xLogin() {
+  console.log("[API] Redirecting to X (Twitter) OAuth2 login");
+  window.location.href = `${API_BASE_URL}/oauth2/authorization/twitter`;
+}
+
 export async function exchangeOAuthCode(code) {
   const res = await fetch(`${API_BASE_URL}/oauth2/exchange`,
     createFetchOptions("POST", { code }, { "Content-Type": "application/json" })

@@ -238,8 +238,8 @@ function App() {
           </DialogContent>
         </Dialog>
 
-        {/* Floating Chatbot Assistant Trixie - Hidden on login / auth pages */}
-        {!isAuthPage && <Chatbot />}
+        {/* Floating Chatbot Assistant Trixie - Hidden on login / auth pages and landing page */}
+        {!isAuthPage && !isLandingPage && <Chatbot />}
 
         {/* Footer - Hidden on login / auth pages */}
         {!isAuthPage && <Footer />}
