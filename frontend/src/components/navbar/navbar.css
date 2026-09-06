@@ -30,7 +30,7 @@ html[style*="overflow: hidden"] .crypto-header {
   pointer-events: auto;
   width: max-content;
   max-width: calc(100vw - 32px);
-  height: 44px;
+  height: 56px;
   background-color: #000000;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -40,8 +40,8 @@ html[style*="overflow: hidden"] .crypto-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 10px 4px 14px;
-  gap: 12px;
+  padding: 6px 12px 6px 18px;
+  gap: 14px;
   box-sizing: border-box;
 }
 
@@ -59,7 +59,7 @@ html[style*="overflow: hidden"] .crypto-header {
 }
 
 .crypto-logo-img {
-  height: 28px;
+  height: 34px;
   width: auto;
   object-fit: contain;
 }
@@ -88,9 +88,9 @@ html[style*="overflow: hidden"] .crypto-header {
   border: none;
   color: rgba(255, 255, 255, 0.92);
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
-  padding: 5px 10px;
+  padding: 8px 14px;
   border-radius: 9999px;
   cursor: pointer;
   text-decoration: none;
@@ -583,14 +583,14 @@ html[style*="overflow: hidden"] .crypto-header {
 
 /* Purple Rounded Register Button */
 .crypto-register-btn {
-  background: linear-gradient(135deg, #918df6 0%, #7c3aed 100%);
+  background: #8574ff;
   color: #ffffff;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
-  padding: 5px 16px;
+  padding: 9px 20px;
   border-radius: 9999px;
   text-decoration: none;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 4px 12px rgba(133, 116, 255, 0.35);
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
@@ -598,9 +598,9 @@ html[style*="overflow: hidden"] .crypto-header {
 }
 
 .crypto-register-btn:hover {
-  background: linear-gradient(135deg, #9f9bf8 0%, #8b5cf6 100%);
+  background: #7462f5;
   transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
+  box-shadow: 0 6px 20px rgba(133, 116, 255, 0.5);
 }
 
 /* Logged-in User Pill */

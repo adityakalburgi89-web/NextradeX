@@ -126,10 +126,10 @@ export default function AstroBentoGrid() {
     <section className="pt-32 sm:pt-48 pb-12 sm:pb-16 px-4 sm:px-8 max-w-[1280px] mx-auto font-openrunde">
       <div className="text-center space-y-4 max-w-3xl mx-auto mb-14 sm:mb-20">
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-carbon">
-          Simple, Powerful Crypto Practice.
+          Institutional Market Simulation Engine.
         </h2>
         <p className="text-carbon/75 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-medium">
-          Learn, practice, and test crypto trading with real live prices and zero financial risk.
+          Execute spot orderbooks, simulate derivative positions, and analyze live liquidity flow with zero capital exposure.
         </p>
       </div>
 

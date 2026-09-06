@@ -119,6 +119,8 @@ export default function AuthPage() {
     return params.get("mode") === "register" ? "register" : "login";
   });
 
+  const [step, setStep] = useState(1); // 1 = Email step, 2 = Password & Details step
+  const [emailInput, setEmailInput] = useState("");
   const [form, setForm] = useState(initialForm);
   const [setupForm, setSetupForm] = useState(profileSetupForm);
   const [loading, setLoading] = useState(false);
@@ -189,6 +191,19 @@ export default function AuthPage() {
     }
   }, []);
 
+  const handleEmailContinue = (e) => {
+    e.preventDefault();
+    setError("");
+    const err = validateEmail(emailInput);
+    if (err) {
+      setFieldErrors({ email: err });
+      return;
+    }
+    setFieldErrors({});
+    setForm((prev) => ({ ...prev, email: emailInput, username: emailInput }));
+    setStep(2);
+  };
+
   const handleForgotSubmit = async (e) => {
     e.preventDefault();
     if (!forgotEmail || !/\S+@\S+\.\S+/.test(forgotEmail)) {
@@ -200,7 +215,6 @@ export default function AuthPage() {
     setForgotLoading(true);
     try {
       await forgotPassword(forgotEmail);
-      setForgotSuccess(`If an account exists for ${forgotEmail}, a password reset link has been sent.`);
       toast?.success("Password reset email sent! Check your inbox.");
     } catch (err) {
       setForgotError(err.message || "Failed to process request.");
@@ -357,17 +371,15 @@ export default function AuthPage() {
   // 1. PASSWORD RESET VIEW
   if (urlResetToken) {
     return (
-      <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900">
-        {/* LEFT PANEL: Train on Hills Image */}
+      <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900 font-openrunde">
         <div className="relative w-full lg:w-1/2 h-44 sm:h-56 lg:h-auto lg:min-h-screen overflow-hidden select-none bg-slate-50 flex items-center justify-center">
           <img
             src={authTrainHills}
-            alt="Dreamy train on flower hills"
+            alt="Train on flower hills"
             className="w-full h-full object-cover object-center"
           />
         </div>
 
-        {/* RIGHT PANEL: Reset Password Form */}
         <div className="w-full lg:w-1/2 flex flex-col justify-between pt-10 sm:pt-14 lg:pt-16 pb-6 sm:pb-8 px-6 sm:px-10 lg:px-12 min-h-[calc(100vh-176px)] lg:min-h-screen overflow-y-auto bg-white font-openrunde">
           <div className="w-full max-w-md mx-auto mb-6 flex items-center">
             <Link to="/" className="inline-block group">
@@ -388,7 +400,7 @@ export default function AuthPage() {
                 <button
                   type="button"
                   onClick={() => { setUrlResetToken(""); navigate("/auth"); }}
-                  className="w-full h-11 rounded-xl font-semibold text-sm text-zinc-950 bg-[#f59e0b] hover:bg-[#e69107] transition-all shadow-md mt-2"
+                  className="w-full h-12 rounded-2xl font-semibold text-sm text-white bg-[#8574ff] hover:bg-[#7462f5] transition-all shadow-md mt-2"
                 >
                   Proceed to Sign In
                 </button>
@@ -410,14 +422,14 @@ export default function AuthPage() {
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Enter new password (min 6 chars)"
                       required
-                      className="w-full h-11 bg-slate-50/80 border border-slate-200 rounded-xl px-4 py-2.5 pr-11 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
+                      className="w-full h-12 min-h-[48px] py-3 bg-[#f4f4f7] border border-transparent focus:border-[#8574ff] rounded-2xl px-5 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white transition-all font-openrunde shrink-0"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 focus:outline-none"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 focus:outline-none cursor-pointer"
                     >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                   <PasswordStrengthMeter password={newPassword} show={true} />
@@ -425,10 +437,9 @@ export default function AuthPage() {
                 <button
                   type="submit"
                   disabled={resetLoading}
-                  style={{ height: "46px", minHeight: "46px" }}
-                  className="w-full h-[46px] min-h-[46px] rounded-xl font-semibold text-sm text-zinc-950 bg-[#f59e0b] hover:bg-[#e69107] transition-all shadow-md shadow-amber-500/10 mt-2 flex items-center justify-center gap-2"
+                  className="w-full h-12 min-h-[48px] py-3 rounded-2xl font-semibold text-sm sm:text-base text-white bg-[#8574ff] hover:bg-[#7462f5] active:scale-[0.99] transition-all shadow-md mt-2 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 font-openrunde shrink-0"
                 >
-                  {resetLoading ? "Updating..." : "Update Password"}
+                  {resetLoading ? <span>Updating...</span> : <span>Update Password</span>}
                 </button>
               </form>
             )}
@@ -441,23 +452,23 @@ export default function AuthPage() {
   // 2. PROFILE SETUP VIEW
   if (needsSetup) {
     return (
-      <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900">
+      <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900 font-openrunde">
         <div className="relative w-full lg:w-1/2 h-44 sm:h-56 lg:h-auto lg:min-h-screen overflow-hidden select-none bg-slate-50 flex items-center justify-center">
           <img
             src={authTrainHills}
-            alt="Dreamy train on flower hills"
+            alt="Train on flower hills"
             className="w-full h-full object-cover object-center"
           />
         </div>
 
-        <div className="w-full lg:w-1/2 flex flex-col justify-between pt-10 sm:pt-14 lg:pt-16 pb-6 sm:pb-8 px-6 sm:px-10 lg:px-12 min-h-[calc(100vh-176px)] lg:min-h-screen overflow-y-auto bg-white">
+        <div className="w-full lg:w-1/2 flex flex-col justify-between pt-10 sm:pt-14 lg:pt-16 pb-6 sm:pb-8 px-6 sm:px-10 lg:px-12 min-h-[calc(100vh-176px)] lg:min-h-screen overflow-y-auto bg-white font-openrunde">
           <div className="w-full max-w-md mx-auto mb-6 flex items-center">
             <Link to="/" className="inline-block group">
               <img src={Logo} alt="NexTradeX" className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-105" />
             </Link>
           </div>
 
-          <div className="max-w-md w-full mx-auto my-auto py-2">
+          <div className="max-w-md w-full mx-auto my-auto py-2 font-openrunde">
             <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight mb-1.5">Complete Your Profile</h1>
             <p className="text-slate-500 text-sm mb-6">Choose a unique username and name to complete registration.</p>
 
@@ -477,7 +488,7 @@ export default function AuthPage() {
                   onChange={handleSetupChange}
                   placeholder="Choose a username"
                   required
-                  className="w-full h-11 bg-slate-50/80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
+                  className="w-full h-12 min-h-[48px] py-3 bg-[#f4f4f7] border border-transparent focus:border-[#8574ff] rounded-2xl px-5 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white transition-all font-openrunde shrink-0"
                 />
                 <FieldError id="setup-username-error" message={fieldErrors.username} />
               </div>
@@ -492,7 +503,7 @@ export default function AuthPage() {
                     onChange={handleSetupChange}
                     placeholder="First name"
                     required
-                    className="w-full h-11 bg-slate-50/80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
+                    className="w-full h-12 min-h-[48px] py-3 bg-[#f4f4f7] border border-transparent focus:border-[#8574ff] rounded-2xl px-5 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white transition-all font-openrunde shrink-0"
                   />
                   <FieldError id="setup-firstName-error" message={fieldErrors.firstName} />
                 </div>
@@ -505,7 +516,7 @@ export default function AuthPage() {
                     onChange={handleSetupChange}
                     placeholder="Last name"
                     required
-                    className="w-full h-11 bg-slate-50/80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
+                    className="w-full h-12 min-h-[48px] py-3 bg-[#f4f4f7] border border-transparent focus:border-[#8574ff] rounded-2xl px-5 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white transition-all font-openrunde shrink-0"
                   />
                   <FieldError id="setup-lastName-error" message={fieldErrors.lastName} />
                 </div>
@@ -514,10 +525,9 @@ export default function AuthPage() {
               <button
                 type="submit"
                 disabled={loading}
-                style={{ height: "46px", minHeight: "46px" }}
-                className="w-full h-[46px] min-h-[46px] rounded-xl font-semibold text-sm text-zinc-950 bg-[#f59e0b] hover:bg-[#e69107] transition-all shadow-md shadow-amber-500/10 mt-2"
+                className="w-full h-12 min-h-[48px] py-3 rounded-2xl font-semibold text-sm sm:text-base text-white bg-[#8574ff] hover:bg-[#7462f5] active:scale-[0.99] transition-all shadow-md mt-2 flex items-center justify-center gap-2 cursor-pointer font-openrunde shrink-0"
               >
-                {loading ? "Saving..." : "Complete Setup"}
+                {loading ? <span>Saving...</span> : <span>Complete Setup</span>}
               </button>
             </form>
           </div>
@@ -528,7 +538,7 @@ export default function AuthPage() {
 
   // 3. MAIN SPLIT LOGIN & SIGN UP PAGE
   return (
-    <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900">
+    <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900 font-openrunde">
       
       {/* LEFT PANEL: Dreamy Train On Flower Hills Artwork */}
       <div className="relative w-full lg:w-1/2 h-44 sm:h-56 lg:h-auto lg:min-h-screen overflow-hidden select-none bg-slate-50 flex items-center justify-center">
@@ -537,321 +547,282 @@ export default function AuthPage() {
           alt="Train on flower hills"
           className="w-full h-full object-cover object-center scale-100 transition-transform duration-700 hover:scale-105"
         />
-        {/* Soft edge blend gradient on right edge on desktop */}
         <div className="hidden lg:block absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-white to-transparent pointer-events-none" />
       </div>
 
-      {/* RIGHT PANEL: Crisp White Auth Panel with Balanced Padding & Margins */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-between pt-10 sm:pt-14 lg:pt-16 pb-6 sm:pb-8 px-6 sm:px-10 lg:px-12 min-h-[calc(100vh-176px)] lg:min-h-screen overflow-y-auto bg-white font-openrunde">
+      {/* RIGHT PANEL: Crisp White Auth Panel with Centered Card Layout */}
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center py-12 px-6 sm:px-10 lg:px-16 min-h-[calc(100vh-176px)] lg:min-h-screen overflow-y-auto bg-white font-openrunde">
         
-        {/* Center Container: Main Form Card */}
-        <div className="max-w-md w-full mx-auto my-auto py-2 font-openrunde">
+        <div className="max-w-[420px] w-full mx-auto space-y-6 text-center">
           
-          {/* Logo Header Block */}
-          <div className="mb-6 text-center flex justify-center">
+          {/* Centered Logo with Fixed Explicit Width/Height */}
+          <div className="flex justify-center mb-2">
             <Link to="/" className="inline-block group">
-              <img src={Logo} alt="NexTradeX Logo" className="h-14 sm:h-16 md:h-[68px] w-auto object-contain transition-transform group-hover:scale-105 mx-auto" />
+              <img
+                src={Logo}
+                alt="NexTradeX Logo"
+                className="w-12 h-12 sm:w-14 sm:h-14 object-contain transition-transform group-hover:scale-105 mx-auto"
+              />
             </Link>
           </div>
 
-          {/* Segmented Tab Switch [ Sign in | Create account ] */}
-          <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200/80 mb-5">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === "login"}
-              onClick={() => {
-                setMode("login");
-                setFieldErrors({});
-                setError("");
-              }}
-              className={`flex-1 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all ${
-                mode === "login"
-                  ? "bg-white text-slate-900 shadow-xs font-semibold"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-            >
-              Sign in
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === "register"}
-              onClick={() => {
-                setMode("register");
-                setFieldErrors({});
-                setError("");
-              }}
-              className={`flex-1 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all ${
-                mode === "register"
-                  ? "bg-white text-slate-900 shadow-xs font-semibold"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-            >
-              Create account
-            </button>
+          {/* Title & Subtitle */}
+          <div className="space-y-1.5 mb-6">
+            <h1 className="text-2xl sm:text-[30px] font-extrabold text-[#181925] tracking-tight leading-snug">
+              {mode === "register" ? "Sign up to NexTradeX" : "Log in to NexTradeX"}
+            </h1>
+            <p className="text-sm sm:text-base text-[#666677] font-normal">
+              Just some simple crypto.
+            </p>
           </div>
 
           {/* Form Error Banner */}
           {error && (
-            <div role="alert" className="flex items-start gap-2.5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm mb-4">
-              <AlertCircle size={15} className="mt-0.5 shrink-0 text-red-500" />
+            <div role="alert" className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm text-left mb-4">
+              <AlertCircle size={16} className="mt-0.5 shrink-0 text-red-500" />
               <span>{error}</span>
             </div>
           )}
 
-          {/* Input Form */}
-          <form onSubmit={handleSubmit} noValidate className="space-y-3.5 sm:space-y-4">
-            
-            {/* Registration-only: First & Last Name */}
-            {mode === "register" && (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">First Name</label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    value={form.firstName}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder="Senku"
-                    required
-                    className={`w-full h-11 bg-slate-50/80 border rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all ${
-                      fieldErrors.firstName ? "border-red-400 bg-red-50/30" : "border-slate-200"
-                    }`}
-                  />
-                  <FieldError id="auth-firstName-error" message={fieldErrors.firstName} />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Last Name</label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={form.lastName}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder="The Code"
-                    required
-                    className={`w-full h-11 bg-slate-50/80 border rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all ${
-                      fieldErrors.lastName ? "border-red-400 bg-red-50/30" : "border-slate-200"
-                    }`}
-                  />
-                  <FieldError id="auth-lastName-error" message={fieldErrors.lastName} />
-                </div>
-              </div>
-            )}
-
-            {/* Registration-only: Username */}
-            {mode === "register" && (
+          {/* STEP 1: Email Input */}
+          {step === 1 ? (
+            <form onSubmit={handleEmailContinue} noValidate className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Username</label>
-                <input
-                  type="text"
-                  name="username"
-                  value={form.username}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  placeholder="senku the legend"
-                  required
-                  className={`w-full h-11 bg-slate-50/80 border rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all ${
-                    fieldErrors.username ? "border-red-400 bg-red-50/30" : "border-slate-200"
-                  }`}
-                />
-                <FieldError id="auth-reg-username-error" message={fieldErrors.username} />
-              </div>
-            )}
-
-            {/* Email Field */}
-            {mode === "login" ? (
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Email</label>
-                <input
-                  type="text"
-                  name="username"
-                  value={form.username}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  placeholder="you@company.com"
-                  autoComplete="username"
-                  required
-                  className={`w-full h-11 bg-slate-50/80 border rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all ${
-                    fieldErrors.username ? "border-red-400 bg-red-50/30" : "border-slate-200"
-                  }`}
-                />
-                <FieldError id="auth-login-username-error" message={fieldErrors.username} />
-              </div>
-            ) : (
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Email</label>
                 <input
                   type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  placeholder="you@company.com"
+                  name="emailInput"
+                  value={emailInput}
+                  onChange={(e) => {
+                    setEmailInput(e.target.value);
+                    if (fieldErrors.email) setFieldErrors({});
+                  }}
+                  placeholder="Email address"
                   autoComplete="email"
                   required
-                  className={`w-full h-11 bg-slate-50/80 border rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all ${
-                    fieldErrors.email ? "border-red-400 bg-red-50/30" : "border-slate-200"
+                  className={`w-full h-12 min-h-[48px] bg-[#f4f4f7] border rounded-2xl px-5 text-sm sm:text-base text-[#181925] placeholder:text-[#9999aa] focus:outline-none focus:bg-white focus:border-[#8574ff] focus:ring-2 focus:ring-[#8574ff]/20 transition-all font-openrunde ${
+                    fieldErrors.email ? "border-red-400 bg-red-50/30" : "border-transparent"
                   }`}
                 />
-                <FieldError id="auth-reg-email-error" message={fieldErrors.email} />
+                <FieldError id="auth-email-error" message={fieldErrors.email} />
               </div>
-            )}
 
-            {/* Password Field */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  placeholder="••••••••"
-                  autoComplete={mode === "register" ? "new-password" : "current-password"}
-                  required
-                  className={`w-full h-11 bg-slate-50/80 border rounded-xl px-3.5 py-2.5 pr-11 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all ${
-                    fieldErrors.password ? "border-red-400 bg-red-50/30" : "border-slate-200"
-                  }`}
-                />
+              <button
+                type="submit"
+                className="w-full h-12 min-h-[48px] py-3 shrink-0 rounded-2xl font-semibold text-sm sm:text-base text-white bg-[#8574ff] hover:bg-[#7462f5] active:scale-[0.99] transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer font-openrunde"
+              >
+                <span>Continue with email</span>
+              </button>
+
+              {/* Dual Side-by-Side Soft Pill OAuth Buttons: [ Google ] [ GitHub ] */}
+              <div className="grid grid-cols-2 gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 focus:outline-none"
+                  onClick={googleLogin}
+                  className="h-12 min-h-[48px] rounded-2xl bg-[#f4f4f7] hover:bg-[#eaeaf0] text-[#181925] text-xs sm:text-sm font-semibold flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-xs border border-transparent hover:border-slate-200"
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  <svg width="18" height="18" className="shrink-0" viewBox="0 0 24 24">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  </svg>
+                  <span>Google</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={githubLogin}
+                  className="h-12 min-h-[48px] rounded-2xl bg-[#f4f4f7] hover:bg-[#eaeaf0] text-[#181925] text-xs sm:text-sm font-semibold flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-xs border border-transparent hover:border-slate-200"
+                >
+                  <svg width="18" height="18" className="shrink-0 fill-current text-[#181925]" viewBox="0 0 24 24">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                  </svg>
+                  <span>GitHub</span>
                 </button>
               </div>
-              <PasswordStrengthMeter password={form.password} show={mode === "register"} />
-              <FieldError id="auth-password-error" message={fieldErrors.password} />
 
-              {/* Forgot Password Link in Amber */}
-              {mode === "login" && (
-                <div className="flex justify-end mt-1.5">
+              {/* Bottom Mode Switcher */}
+              <div className="pt-4 text-xs sm:text-sm text-[#666677] font-medium">
+                {mode === "login" ? (
+                  <span>
+                    Don't have an account?{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode("register");
+                        setFieldErrors({});
+                        setError("");
+                      }}
+                      className="text-[#3b82f6] hover:underline font-semibold focus:outline-none"
+                    >
+                      Register
+                    </button>
+                  </span>
+                ) : (
+                  <span>
+                    Already have an account?{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode("login");
+                        setFieldErrors({});
+                        setError("");
+                      }}
+                      className="text-[#3b82f6] hover:underline font-semibold focus:outline-none"
+                    >
+                      Login
+                    </button>
+                  </span>
+                )}
+              </div>
+            </form>
+          ) : (
+            /* STEP 2: Password Entry & Details */
+            <form onSubmit={handleSubmit} noValidate className="space-y-4 text-left">
+              
+              <div className="flex items-center justify-between bg-[#f4f4f7] rounded-2xl px-5 py-3 text-xs sm:text-sm">
+                <span className="font-medium text-[#181925] truncate">{form.email || emailInput}</span>
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="text-xs font-semibold text-[#8574ff] hover:underline shrink-0 ml-2"
+                >
+                  Edit
+                </button>
+              </div>
+
+              {mode === "register" && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">First Name</label>
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={form.firstName}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="First name"
+                        required
+                        className={`w-full h-12 min-h-[48px] bg-[#f4f4f7] border rounded-2xl px-5 text-sm sm:text-base text-[#181925] placeholder:text-[#9999aa] focus:outline-none focus:bg-white focus:border-[#8574ff] transition-all font-openrunde shrink-0 ${
+                          fieldErrors.firstName ? "border-red-400 bg-red-50/30" : "border-transparent"
+                        }`}
+                      />
+                      <FieldError id="auth-firstName-error" message={fieldErrors.firstName} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Last Name</label>
+                      <input
+                        type="text"
+                        name="lastName"
+                        value={form.lastName}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="Last name"
+                        required
+                        className={`w-full h-12 min-h-[48px] bg-[#f4f4f7] border rounded-2xl px-5 text-sm sm:text-base text-[#181925] placeholder:text-[#9999aa] focus:outline-none focus:bg-white focus:border-[#8574ff] transition-all font-openrunde shrink-0 ${
+                          fieldErrors.lastName ? "border-red-400 bg-red-50/30" : "border-transparent"
+                        }`}
+                      />
+                      <FieldError id="auth-lastName-error" message={fieldErrors.lastName} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Username</label>
+                    <input
+                      type="text"
+                      name="username"
+                      value={form.username}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="Choose a username"
+                      required
+                      className={`w-full h-12 min-h-[48px] bg-[#f4f4f7] border rounded-2xl px-5 text-sm sm:text-base text-[#181925] placeholder:text-[#9999aa] focus:outline-none focus:bg-white focus:border-[#8574ff] transition-all font-openrunde shrink-0 ${
+                        fieldErrors.username ? "border-red-400 bg-red-50/30" : "border-transparent"
+                      }`}
+                    />
+                    <FieldError id="auth-reg-username-error" message={fieldErrors.username} />
+                  </div>
+                </>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={form.password}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="••••••••"
+                    autoComplete={mode === "register" ? "new-password" : "current-password"}
+                    required
+                    className={`w-full h-12 min-h-[48px] bg-[#f4f4f7] border rounded-2xl px-5 pr-12 text-sm sm:text-base text-[#181925] placeholder:text-[#9999aa] focus:outline-none focus:bg-white focus:border-[#8574ff] transition-all font-openrunde shrink-0 ${
+                      fieldErrors.password ? "border-red-400 bg-red-50/30" : "border-transparent"
+                    }`}
+                  />
                   <button
                     type="button"
-                    onClick={() => {
-                      setForgotError("");
-                      setForgotSuccess("");
-                      setShowForgotModal(true);
-                    }}
-                    className="text-xs font-semibold text-amber-600 hover:text-amber-500 transition-colors focus:outline-none"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 focus:outline-none cursor-pointer"
                   >
-                    Forgot password?
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-              )}
-            </div>
+                <PasswordStrengthMeter password={form.password} show={mode === "register"} />
+                <FieldError id="auth-password-error" message={fieldErrors.password} />
 
-            {/* Primary Action Button (Warm amber) */}
-            <button
-              type="submit"
-              disabled={loading}
-              style={{ height: "46px", minHeight: "46px" }}
-              className="w-full h-[46px] min-h-[46px] mt-4 rounded-xl font-semibold text-sm sm:text-base text-zinc-950 bg-[#f59e0b] hover:bg-[#e69107] active:scale-[0.99] transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <>
-                  <svg
-                    width="18"
-                    height="18"
-                    style={{ width: "18px", height: "18px" }}
-                    className="animate-spin text-zinc-950"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
+                {mode === "login" && (
+                  <div className="flex justify-end mt-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForgotError("");
+                        setForgotSuccess("");
+                        setShowForgotModal(true);
+                      }}
+                      className="text-xs font-semibold text-[#8574ff] hover:underline focus:outline-none"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 min-h-[48px] py-3 mt-2 shrink-0 rounded-2xl font-semibold text-sm sm:text-base text-white bg-[#8574ff] hover:bg-[#7462f5] active:scale-[0.99] transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 font-openrunde"
+              >
+                {loading ? (
                   <span>Processing...</span>
-                </>
-              ) : mode === "login" ? (
-                "Sign in"
-              ) : (
-                "Create account"
-              )}
-            </button>
-          </form>
+                ) : mode === "login" ? (
+                  <span>Sign in</span>
+                ) : (
+                  <span>Create account</span>
+                )}
+              </button>
 
-          {/* Divider "or" */}
-          <div className="relative flex items-center my-4 sm:my-5">
-            <div className="flex-grow border-t border-slate-200" />
-            <span className="px-3 text-xs text-slate-400 font-medium">or</span>
-            <div className="flex-grow border-t border-slate-200" />
-          </div>
-
-          {/* OAuth Buttons */}
-          <div className="space-y-2.5">
-            {/* Google OAuth Button */}
-            <button
-              type="button"
-              onClick={googleLogin}
-              style={{ height: "44px", minHeight: "44px" }}
-              className="w-full h-[44px] min-h-[44px] rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-medium flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xs active:scale-[0.99]"
-            >
-              <svg
-                width="18"
-                height="18"
-                className="shrink-0"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-              </svg>
-              <span>Continue with Google</span>
-            </button>
-
-            {/* GitHub OAuth Button */}
-            <button
-              type="button"
-              onClick={githubLogin}
-              style={{ height: "44px", minHeight: "44px" }}
-              className="w-full h-[44px] min-h-[44px] rounded-xl border border-slate-200 bg-[#181717] hover:bg-[#2b2a2a] text-white text-sm font-medium flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xs active:scale-[0.99]"
-            >
-              <svg
-                width="18"
-                height="18"
-                className="shrink-0 fill-current text-white"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-              </svg>
-              <span>Continue with GitHub</span>
-            </button>
-
-            {/* X (Twitter) OAuth Button */}
-            <button
-              type="button"
-              onClick={xLogin}
-              style={{ height: "44px", minHeight: "44px" }}
-              className="w-full h-[44px] min-h-[44px] rounded-xl border border-slate-200 bg-black hover:bg-slate-900 text-white text-sm font-medium flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xs active:scale-[0.99]"
-            >
-              <svg
-                width="16"
-                height="16"
-                className="shrink-0 fill-current text-white"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-              </svg>
-              <span>Continue with X</span>
-            </button>
-          </div>
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="text-xs font-medium text-[#777788] hover:text-[#181925] transition-colors"
+                >
+                  ← Back to email
+                </button>
+              </div>
+            </form>
+          )}
 
         </div>
 
       </div>
 
-      {/* Forgot Password Modal Dialog (Clean White Theme) */}
+      {/* Forgot Password Modal */}
       <Dialog open={showForgotModal} onOpenChange={setShowForgotModal}>
         <DialogContent className="max-w-md bg-white border border-slate-200 text-slate-900 rounded-2xl p-6 shadow-2xl">
           <DialogHeader>
@@ -860,20 +831,13 @@ export default function AuthPage() {
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleForgotSubmit} className="space-y-4 pt-2">
-            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Enter your registered email address below and we will send you a secure link to reset your password.
-            </p>
 
             {forgotError && (
               <div role="alert" className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs">
                 {forgotError}
               </div>
             )}
-            {forgotSuccess && (
-              <div role="status" className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs">
-                {forgotSuccess}
-              </div>
-            )}
+
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1.5">Email Address</label>
@@ -883,7 +847,7 @@ export default function AuthPage() {
                 onChange={(e) => setForgotEmail(e.target.value)}
                 placeholder="you@company.com"
                 required
-                className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
+                className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#8574ff] focus:ring-1 focus:ring-[#8574ff] transition-all"
               />
             </div>
 
@@ -898,7 +862,7 @@ export default function AuthPage() {
               <button
                 type="submit"
                 disabled={forgotLoading}
-                className="px-5 py-2 rounded-xl bg-[#f59e0b] hover:bg-[#e69107] text-zinc-950 text-xs sm:text-sm font-semibold transition-all shadow-md disabled:opacity-60"
+                className="px-5 py-2 rounded-xl bg-[#8574ff] hover:bg-[#7462f5] text-white text-xs sm:text-sm font-semibold transition-all shadow-md disabled:opacity-60"
               >
                 {forgotLoading ? "Sending..." : "Send Reset Link"}
               </button>
