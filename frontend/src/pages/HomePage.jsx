@@ -83,7 +83,7 @@ export default function HomePage({ isLoggedIn }) {
   const solPrice = prices.find((p) => p.symbol === "SOLUSDT")?.currentPrice || "73.37";
 
   return (
-    <div className="w-full bg-white text-carbon overflow-x-hidden font-openrunde pt-32 sm:pt-40 md:pt-44">
+    <div className="w-full bg-[hsl(0,0%,98%)] text-carbon overflow-x-hidden font-openrunde pt-32 sm:pt-40 md:pt-44">
 
       {/* 1. HERO SECTION */}
       <section className="pt-8 sm:pt-12 pb-8 sm:pb-12 px-6 max-w-[1200px] mx-auto text-center space-y-10 sm:space-y-12">
@@ -153,14 +153,14 @@ export default function HomePage({ isLoggedIn }) {
         {/* Category Navigation Tabs Cutout Notch */}
         <div className="w-full relative z-20 flex justify-center items-start pointer-events-none">
           {/* Left Concave Notch Curve */}
-          <div className="w-5 h-5 sm:w-7 sm:h-7 text-white shrink-0 -mr-[1px] pointer-events-none">
+          <div className="w-5 h-5 sm:w-7 sm:h-7 text-[hsl(0,0%,98%)] shrink-0 -mr-[1px] pointer-events-none">
             <svg viewBox="0 0 24 24" className="w-full h-full fill-current">
               <path d="M0 0 H24 V24 A24 24 0 0 1 0 0 Z" />
             </svg>
           </div>
 
-          {/* Center White Notch Tab Container */}
-          <div className="bg-white px-3 sm:px-5 pb-2.5 sm:pb-3.5 pt-0 rounded-b-2xl sm:rounded-b-3xl flex items-center gap-1.5 sm:gap-3 pointer-events-auto">
+          {/* Center Notch Tab Container */}
+          <div className="bg-[hsl(0,0%,98%)] px-3 sm:px-5 pb-2.5 sm:pb-3.5 pt-0 rounded-b-2xl sm:rounded-b-3xl flex items-center gap-1.5 sm:gap-3 pointer-events-auto">
             <button
               onClick={() => setActiveTab("spot")}
               className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
@@ -196,7 +196,7 @@ export default function HomePage({ isLoggedIn }) {
           </div>
 
           {/* Right Concave Notch Curve */}
-          <div className="w-5 h-5 sm:w-7 sm:h-7 text-white shrink-0 -ml-[1px] pointer-events-none">
+          <div className="w-5 h-5 sm:w-7 sm:h-7 text-[hsl(0,0%,98%)] shrink-0 -ml-[1px] pointer-events-none">
             <svg viewBox="0 0 24 24" className="w-full h-full fill-current">
               <path d="M0 24 V0 H24 A24 24 0 0 1 0 24 Z" />
             </svg>
@@ -208,7 +208,7 @@ export default function HomePage({ isLoggedIn }) {
           className="w-full -mt-5 sm:-mt-7 pt-16 sm:pt-24 pb-20 sm:pb-32 px-4 sm:px-8 shadow-2xl relative bg-cover bg-center bg-no-repeat min-h-[560px] flex items-center justify-center"
           style={{ backgroundImage: `url(${heroBg})` }}
         >
-          <div className="bg-white rounded-[24px] sm:rounded-[32px] border border-white/80 p-4 sm:p-6 md:p-8 w-full max-w-[1080px] mx-auto shadow-[0_25px_60px_rgba(0,0,0,0.18)] text-left relative z-10">
+          <div className="bg-[hsl(0,0%,98%)] rounded-[24px] sm:rounded-[32px] border border-white/80 p-4 sm:p-6 md:p-8 w-full max-w-[1080px] mx-auto shadow-[0_25px_60px_rgba(0,0,0,0.18)] text-left relative z-10">
             {activeTab === "spot" ? (
               <div className="w-full aspect-[1902/778] rounded-[16px] sm:rounded-[24px] overflow-hidden bg-black/5">
                 <video
@@ -436,7 +436,7 @@ export default function HomePage({ isLoggedIn }) {
             return (
               <div
                 key={idx}
-                className="bg-[#fafafc] hover:bg-[#f4f4f8] rounded-[18px] px-6 sm:px-7 py-4 sm:py-5 cursor-pointer transition-all duration-200"
+                className="bg-[hsl(0,0%,98%)] hover:bg-[#f4f4f8] rounded-[18px] px-6 sm:px-7 py-4 sm:py-5 cursor-pointer transition-all duration-200"
                 onClick={() => setOpenFaq(isOpen ? -1 : idx)}
               >
                 <div className="flex items-center justify-between gap-4">
@@ -463,7 +463,7 @@ export default function HomePage({ isLoggedIn }) {
 
       {/* 5. INSTANT VIRTUAL WALLET SHOWCASE */}
       <section className="py-16 sm:py-24 px-6 max-w-[1200px] mx-auto mb-16 sm:mb-24 font-openrunde">
-        <div className="bg-white border border-[#e8e8e8] rounded-[28px] sm:rounded-[36px] p-8 sm:p-12 md:p-14 shadow-[0_12px_40px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-10">
+        <div className="bg-[hsl(0,0%,98%)] border border-[#e8e8e8] rounded-[28px] sm:rounded-[36px] p-8 sm:p-12 md:p-14 shadow-[0_12px_40px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-10">
           
           <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#918df6]/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#33c758]/10 rounded-full blur-3xl pointer-events-none" />

@@ -11,7 +11,7 @@ export default function Footer() {
   const linkClass = "block text-[13px] font-openrunde text-[#555555] hover:text-carbon transition-colors py-1 tracking-[-0.2px]";
 
   return (
-    <footer className="w-full bg-white text-carbon font-openrunde border-t border-[#e8e8e8] pt-14 pb-0 overflow-hidden relative">
+    <footer className="w-full bg-[hsl(0,0%,98%)] text-carbon font-openrunde border-t border-[#e8e8e8] pt-14 pb-0 overflow-hidden relative">
       <div className="max-w-[1240px] mx-auto px-6 space-y-12 relative z-10">
 
         {/* 2. Top Header Brand Row */}

@@ -9,35 +9,31 @@ import {
   withdrawFromWallet
 } from "../api";
 import { PageTransition } from "../components/ui/PageTransition";
-import { formatCurrency, formatPercent } from "../lib/utils";
+import { formatCurrency } from "../lib/utils";
 import { 
   Wallet as WalletIcon, 
   ArrowUpRight, 
   ArrowDownLeft, 
   RefreshCw, 
   Search, 
-  Copy, 
   Check, 
-  PieChart, 
   TrendingUp, 
-  ShieldCheck,
-  PlusCircle,
-  FileText,
+  Plus,
   X,
   Coins,
   Activity,
-  Info,
   Layers,
-  Sparkles,
-  Download,
-  Upload,
   Repeat,
-  Send,
-  ArrowRight,
   ChevronDown,
-  Clock,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  Home,
+  Calendar,
+  BarChart3,
+  Settings,
+  Bell,
+  LogOut,
+  ArrowRight
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -51,12 +47,10 @@ export default function WalletsPage() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Navigation tab
-  const [activeTab, setActiveTab] = useState("OVERVIEW"); // OVERVIEW | SPOT | FUTURES | MARGIN
-
-  // Search/Filters
-  const [spotSearch, setSpotSearch] = useState("");
-  const [hoveredSegment, setHoveredSegment] = useState(null);
+  // Tabs: OVERVIEW | TRANSACTIONS
+  const [activeTab, setActiveTab] = useState("OVERVIEW"); 
+  const [txFilter, setTxFilter] = useState("ALL"); // ALL | BUY | SELL
+  const [searchQuery, setSearchQuery] = useState("");
   const [lastRefreshed, setLastRefreshed] = useState(new Date().toLocaleTimeString());
 
   // Action Modals State
@@ -105,7 +99,7 @@ export default function WalletsPage() {
     }
   };
 
-  const executeModalDeposit = async (e) => {
+  const executeDepositModal = async (e) => {
     e.preventDefault();
     const amt = parseFloat(depositModal.amount);
     if (isNaN(amt) || amt <= 0) {
@@ -153,7 +147,7 @@ export default function WalletsPage() {
       setError("");
       setSuccessMessage(`Processing withdrawal of ${formatCurrency(amt)} from ${withdrawModal.walletType}...`);
       setWithdrawModal({ ...withdrawModal, open: false, amount: "", address: "" });
-      await withdrawFromWallet(withdrawModal.walletType, amt, withdrawModal.address || "0xSimulatedUserAddress", "BEP20");
+      await withdrawFromWallet(withdrawModal.walletType, amt, withdrawModal.address || "0xUserAddress", "BEP20");
       setSuccessMessage(`Successfully processed withdrawal of ${formatCurrency(amt)}!`);
       await loadData();
       setTimeout(() => setSuccessMessage(""), 4000);
@@ -179,45 +173,35 @@ export default function WalletsPage() {
     return wallets.reduce((acc, w) => acc + (Number(w.balance) || 0), 0);
   }, [wallets]);
 
-  const allocationSegments = useMemo(() => {
-    const total = totalPortfolioValue || 1;
-    let cumulativePercent = 0;
-    
-    const orderedTypes = ["SPOT", "FUTURES", "MARGIN", "OPTIONS"];
-    const colors = {
-      SPOT: "#ff5722",
-      FUTURES: "#918df6",
-      MARGIN: "#33c758",
-      OPTIONS: "#ffa600"
-    };
+  // Real backend order transactions mapping
+  const realTransactions = useMemo(() => {
+    return orderHistory.map((ord, idx) => ({
+      id: ord.id ? `ORD-${ord.id}` : `ORD-${idx + 100}`,
+      symbol: ord.symbol || "BTCUSDT",
+      side: ord.side || "BUY",
+      type: ord.type || "LIMIT",
+      amount: ord.price ? `$${Number(ord.price).toLocaleString()}` : "$0.00",
+      quantity: ord.quantity || ord.amount || "1.0",
+      status: ord.status || "FILLED",
+      date: ord.createdAt ? new Date(ord.createdAt).toLocaleDateString() : "Recent"
+    }));
+  }, [orderHistory]);
 
-    return orderedTypes.map((type) => {
-      const w = walletMap[type];
-      const val = w ? Number(w.balance || 0) : 0;
-      const pct = totalPortfolioValue > 0 ? (val / total) * 100 : 25;
-      
-      const strokeDasharray = `${pct} ${100 - pct}`;
-      const strokeDashoffset = 100 - cumulativePercent + 25; 
-      cumulativePercent += pct;
-
-      return {
-        walletType: type,
-        pct,
-        color: colors[type] || "#181925",
-        strokeDasharray,
-        strokeDashoffset,
-        balance: val
-      };
+  const filteredTransactions = useMemo(() => {
+    return realTransactions.filter((tx) => {
+      const matchesSearch = tx.symbol.toLowerCase().includes(searchQuery.toLowerCase()) || tx.side.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesFilter = txFilter === "ALL" || tx.side === txFilter;
+      return matchesSearch && matchesFilter;
     });
-  }, [wallets, totalPortfolioValue, walletMap]);
+  }, [realTransactions, searchQuery, txFilter]);
 
   if (loading && wallets.length === 0) {
     return (
       <PageTransition>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-sm font-medium text-ash flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full border-2 border-carbon border-t-transparent animate-spin" />
-            Loading Wallet Center...
+        <div className="flex items-center justify-center min-h-[500px] bg-[#121316] text-white font-openrunde">
+          <div className="text-sm font-medium text-slate-400 flex items-center gap-2">
+            <div className="w-5 h-5 rounded-full border-2 border-[#c4f000] border-t-transparent animate-spin" />
+            Synchronizing Wallet Balances...
           </div>
         </div>
       </PageTransition>
@@ -226,430 +210,475 @@ export default function WalletsPage() {
 
   return (
     <PageTransition>
-      <div className="max-w-[1340px] mx-auto px-4 sm:px-6 py-8 font-openrunde space-y-6">
+      <div className="min-h-screen bg-[#121316] text-white font-openrunde p-3 sm:p-6 lg:p-8 flex justify-center">
         
-        {/* HERO HEADER & QUICK ACTIONS */}
-        <div className="bg-white border border-fog/80 rounded-[24px] p-6 shadow-subtle-2 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-full bg-ember/10 text-ember flex items-center justify-center">
-                <WalletIcon size={20} />
-              </div>
-              <div>
-                <h1 className="text-2xl font-black text-carbon tracking-tight">Wallet Center</h1>
-                <p className="text-xs text-ash font-medium">Manage your multi-wallet capital, instant deposits, transfers, and order history.</p>
+        {/* MAIN DASHBOARD CONTAINER */}
+        <div className="w-full max-w-[1380px] bg-[#1a1b20] border border-white/5 rounded-[32px] sm:rounded-[36px] p-4 sm:p-6 lg:p-7 flex flex-col md:flex-row gap-6 shadow-2xl overflow-hidden">
+          
+          {/* FLOATING LEFT PILL NAVBAR */}
+          <aside className="bg-[#24252c] border border-white/5 rounded-[26px] sm:rounded-[30px] p-3 py-5 sm:py-6 flex md:flex-col items-center justify-between shrink-0 w-full md:w-20 shadow-lg self-stretch">
+            
+            {/* Top Brand & Nav Icons */}
+            <div className="flex md:flex-col items-center gap-6 w-full">
+              <Link to="/" className="w-11 h-11 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black text-xl text-white transition-transform hover:scale-105">
+                H
+              </Link>
+
+              {/* Icon Menu Stack */}
+              <nav className="flex md:flex-col items-center gap-3.5 w-full">
+                <button
+                  onClick={() => navigate("/profile")}
+                  title="Profile Overview"
+                  className="w-11 h-11 sm:w-12 sm:h-12 rounded-full text-slate-400 hover:text-white hover:bg-white/5 flex items-center justify-center transition-all"
+                >
+                  <Home size={19} />
+                </button>
+
+                <button
+                  onClick={() => navigate("/profile")}
+                  title="Security & Verification"
+                  className="w-11 h-11 sm:w-12 sm:h-12 rounded-full text-slate-400 hover:text-white hover:bg-white/5 flex items-center justify-center transition-all"
+                >
+                  <Calendar size={19} />
+                </button>
+
+                {/* Active Wallet Icon */}
+                <button
+                  title="Wallets & Assets"
+                  className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#c4f000] text-black shadow-lg shadow-[#c4f000]/25 flex items-center justify-center transition-all"
+                >
+                  <BarChart3 size={19} />
+                </button>
+
+                <button
+                  onClick={() => navigate("/profile")}
+                  title="Settings"
+                  className="w-11 h-11 sm:w-12 sm:h-12 rounded-full text-slate-400 hover:text-white hover:bg-white/5 flex items-center justify-center transition-all"
+                >
+                  <Settings size={19} />
+                </button>
+
+                <button
+                  title="Notifications"
+                  className="w-11 h-11 sm:w-12 sm:h-12 rounded-full text-slate-400 hover:text-white hover:bg-white/5 flex items-center justify-center transition-all relative"
+                >
+                  <Bell size={19} />
+                  <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-[#c4f000] rounded-full" />
+                </button>
+              </nav>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="flex md:flex-col items-center gap-3">
+              <button
+                onClick={() => navigate("/auth")}
+                title="Log Out"
+                className="w-11 h-11 sm:w-12 sm:h-12 rounded-full text-slate-400 hover:text-red-400 hover:bg-red-500/10 flex items-center justify-center transition-all cursor-pointer"
+              >
+                <LogOut size={19} />
+              </button>
+
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-tr from-[#375bf5] to-[#c4f000] p-0.5 shadow-md">
+                <div className="w-full h-full rounded-full bg-[#1a1b20] flex items-center justify-center font-bold text-xs sm:text-sm text-white">
+                  W
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 text-xs text-ash mt-3 font-medium">
-              <span>Refreshed: <span className="text-carbon font-bold">{lastRefreshed}</span></span>
+          </aside>
+
+          {/* MAIN DASHBOARD CONTENT AREA */}
+          <main className="flex-1 space-y-6 overflow-hidden">
+            
+            {/* TOP HEADER: Title + Action Buttons */}
+            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                  Wallet & Capital Overview
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-400 font-normal mt-0.5">
+                  Manage multi-wallet balances, instant deposits, and internal transfers.
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <button
+                  onClick={() => setDepositModal({ open: true, walletType: "SPOT", amount: "5000" })}
+                  className="bg-[#c4f000] hover:bg-[#b5dc00] text-black font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-full transition-all shadow-md shadow-[#c4f000]/20 shrink-0 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus size={16} />
+                  <span>+ $5,000 Deposit</span>
+                </button>
+
+                <button
+                  onClick={() => setTransferModal({ open: true, from: "SPOT", to: "FUTURES", amount: "" })}
+                  className="bg-[#375bf5] hover:bg-[#2c4ee0] text-white font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-full transition-all shadow-md shadow-[#375bf5]/25 shrink-0 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Repeat size={15} />
+                  <span>Transfer</span>
+                </button>
+
+                <button
+                  onClick={() => setWithdrawModal({ open: true, walletType: "SPOT", amount: "", address: "" })}
+                  className="bg-white/10 hover:bg-white/20 text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-full transition-all shrink-0 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <ArrowUpRight size={15} />
+                  <span>Withdraw</span>
+                </button>
+              </div>
+            </header>
+
+            {/* ERROR / SUCCESS ALERTS */}
+            {error && (
+              <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold flex items-center justify-between">
+                <span>{error}</span>
+                <button onClick={() => setError("")} className="hover:text-white">✕</button>
+              </div>
+            )}
+            {successMessage && (
+              <div className="p-3.5 rounded-2xl bg-[#c4f000]/10 border border-[#c4f000]/20 text-[#c4f000] text-xs font-semibold flex items-center justify-between">
+                <span>{successMessage}</span>
+                <button onClick={() => setSuccessMessage("")} className="hover:text-white">✕</button>
+              </div>
+            )}
+
+            {/* SUB-NAV TABS FOR WALLET DASHBOARD */}
+            <div className="flex items-center gap-2 border-b border-white/5 pb-3">
               <button
-                onClick={loadData}
-                className="flex items-center gap-1 text-carbon font-bold hover:underline"
+                onClick={() => setActiveTab("OVERVIEW")}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === "OVERVIEW"
+                    ? "bg-[#c4f000] text-black font-extrabold shadow-md shadow-[#c4f000]/20"
+                    : "text-slate-400 hover:text-white bg-white/5"
+                }`}
               >
-                <RefreshCw size={12} /> Sync Balances
+                Capital Overview
+              </button>
+
+              <button
+                onClick={() => setActiveTab("TRANSACTIONS")}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === "TRANSACTIONS"
+                    ? "bg-[#c4f000] text-black font-extrabold shadow-md shadow-[#c4f000]/20"
+                    : "text-slate-400 hover:text-white bg-white/5"
+                }`}
+              >
+                Order & Trade History
               </button>
             </div>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <button
-              onClick={() => setDepositModal({ open: true, walletType: "SPOT", amount: "" })}
-              className="flex items-center justify-center gap-2 bg-ember hover:bg-ember/90 text-white font-bold text-xs px-5 py-2.5 rounded-full transition-all shadow-subtle"
-            >
-              <Download size={14} /> Deposit Funds
-            </button>
-
-            <button
-              onClick={() => setTransferModal({ open: true, from: "SPOT", to: "FUTURES", amount: "" })}
-              className="flex items-center justify-center gap-2 bg-mist hover:bg-fog text-carbon font-bold text-xs px-5 py-2.5 rounded-full border border-fog transition-all"
-            >
-              <Repeat size={14} /> Transfer Capital
-            </button>
-
-            <button
-              onClick={() => setWithdrawModal({ open: true, walletType: "SPOT", amount: "", address: "" })}
-              className="flex items-center justify-center gap-2 bg-mist hover:bg-fog text-carbon font-bold text-xs px-5 py-2.5 rounded-full border border-fog transition-all"
-            >
-              <Upload size={14} /> Withdraw
-            </button>
-          </div>
-        </div>
-
-        {/* FEEDBACK NOTIFICATIONS */}
-        {error && (
-          <div className="p-4 rounded-2xl bg-ember/10 text-ember text-xs font-bold flex items-center gap-2 border border-ember/20">
-            <AlertCircle size={16} /> {error}
-          </div>
-        )}
-        {successMessage && (
-          <div className="p-4 rounded-2xl bg-mint-wash text-mint text-xs font-bold flex items-center gap-2 border border-mint/20">
-            <CheckCircle2 size={16} /> {successMessage}
-          </div>
-        )}
-
-        {/* NAVIGATION TABS */}
-        <div className="flex bg-mist p-1 rounded-2xl border border-fog w-fit">
-          {["OVERVIEW", "SPOT", "FUTURES", "MARGIN"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => { setError(""); setActiveTab(tab); }}
-              className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
-                activeTab === tab
-                  ? "bg-white text-carbon shadow-subtle"
-                  : "text-ash hover:text-carbon"
-              }`}
-            >
-              {tab === "OVERVIEW" ? "Overview" : tab === "SPOT" ? "Spot Wallet" : tab === "FUTURES" ? "Futures Wallet" : "Margin Wallet"}
-            </button>
-          ))}
-        </div>
-
-        {/* OVERVIEW TAB CONTENT */}
-        {activeTab === "OVERVIEW" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            
-            {/* LEFT 8 COLUMNS: CAPITAL OVERVIEW & ALLOCATION */}
-            <div className="lg:col-span-8 space-y-6">
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* VIEW TAB 1: OVERVIEW */}
+            {activeTab === "OVERVIEW" && (
+              <div className="space-y-6">
                 
-                {/* Total Net Worth Card */}
-                <div className="bg-white border border-fog/80 rounded-[20px] p-6 space-y-4 shadow-subtle flex flex-col justify-between h-[200px]">
-                  <div>
-                    <span className="text-xs font-bold text-ash uppercase">Total Portfolio Capital</span>
-                    <div className="text-3xl font-black text-carbon tracking-tight mt-2">
-                      {formatCurrency(totalPortfolioValue)}
+                {/* TOP GRID: MAIN CHART CARD + ROYAL BLUE SUMMARY CARD */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                  
+                  {/* MAIN ANALYTICS CHART CARD (7 Cols) */}
+                  <div className="lg:col-span-7 bg-[#24252c] border border-white/5 rounded-[28px] p-6 space-y-6 flex flex-col justify-between">
+                    
+                    {/* Header Title & Dropdown */}
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-base font-bold text-white tracking-tight">Net Equity Curve</h2>
+                      <button onClick={loadData} className="flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-white bg-white/5 px-3 py-1.5 rounded-full transition-colors cursor-pointer">
+                        <RefreshCw size={12} /> Sync
+                      </button>
                     </div>
-                    <span className="text-xs text-ash font-medium block mt-1">
-                      ≈ BTC {(totalPortfolioValue / 68420).toFixed(5)}
-                    </span>
+
+                    {/* Glowing Multi-Node SVG Line Chart */}
+                    <div className="relative w-full h-44 py-2">
+                      <svg className="w-full h-full overflow-visible" viewBox="0 0 500 120" preserveAspectRatio="none">
+                        <defs>
+                          <linearGradient id="walletChartGradient1" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#c4f000" stopOpacity="0.35" />
+                            <stop offset="100%" stopColor="#c4f000" stopOpacity="0.0" />
+                          </linearGradient>
+                        </defs>
+                        
+                        {/* Green Line */}
+                        <path
+                          d="M0,85 Q70,90 140,50 T260,70 T380,35 T500,55"
+                          fill="none"
+                          stroke="#c4f000"
+                          strokeWidth="3.5"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M0,85 Q70,90 140,50 T260,70 T380,35 T500,55 L500,120 L0,120 Z"
+                          fill="url(#walletChartGradient1)"
+                        />
+
+                        {/* Blue Line */}
+                        <path
+                          d="M0,60 Q90,30 200,70 T340,30 T500,45"
+                          fill="none"
+                          stroke="#375bf5"
+                          strokeWidth="2.5"
+                          strokeDasharray="4 4"
+                        />
+
+                        {/* Highlight Nodes */}
+                        <circle cx="140" cy="50" r="5" fill="#c4f000" />
+                        <circle cx="340" cy="30" r="5" fill="#375bf5" />
+                      </svg>
+                    </div>
+
+                    {/* 3 Bottom Metric Stat Columns */}
+                    <div className="grid grid-cols-3 gap-3 pt-4 border-t border-white/5 text-left">
+                      <div>
+                        <div className="text-xs text-slate-400 font-medium">Total Balance</div>
+                        <div className="text-xl sm:text-2xl font-extrabold text-white tracking-tight mt-0.5">
+                          {formatCurrency(totalPortfolioValue)}
+                        </div>
+                        <div className="text-[11px] text-[#c4f000] mt-1">Live Net Equity</div>
+                      </div>
+
+                      <div>
+                        <div className="text-xs text-slate-400 font-medium">Spot Balance</div>
+                        <div className="text-xl sm:text-2xl font-extrabold text-[#c4f000] tracking-tight mt-0.5">
+                          {formatCurrency(spotWallet ? Number(spotWallet.balance || 0) : 0)}
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-1">Available for Orders</div>
+                      </div>
+
+                      <div>
+                        <div className="text-xs text-slate-400 font-medium">Futures Collateral</div>
+                        <div className="text-xl sm:text-2xl font-extrabold text-white tracking-tight mt-0.5">
+                          {formatCurrency(futuresWallet ? Number(futuresWallet.balance || 0) : 0)}
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-1">125x Leverage Cap</div>
+                      </div>
+                    </div>
+
                   </div>
 
-                  <div className="pt-3 border-t border-fog/50 flex items-center justify-between text-xs">
-                    <span className="text-ash font-medium">Multi-Wallet Status</span>
-                    <span className="text-mint font-bold flex items-center gap-1 bg-mint-wash px-2.5 py-0.5 rounded-full text-[11px]">
-                      <ShieldCheck size={12} /> Active
-                    </span>
+                  {/* ROYAL BLUE SUB-ACCOUNT BREAKDOWN CARD (5 Cols) */}
+                  <div className="lg:col-span-5 bg-[#375bf5] rounded-[28px] p-6 text-white flex flex-col justify-between shadow-xl shadow-[#375bf5]/20">
+                    
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-base font-bold tracking-tight">Sub-Account Balances</h2>
+                      <span className="text-xs text-white/80 font-medium">Refreshed {lastRefreshed}</span>
+                    </div>
+
+                    {/* Sub-Accounts List */}
+                    <div className="space-y-3.5 my-4">
+                      
+                      {/* Spot Wallet */}
+                      <div className="bg-black/20 rounded-2xl p-4 flex items-center justify-between hover:bg-black/30 transition-colors">
+                        <div>
+                          <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                            <Coins size={14} className="text-[#c4f000]" /> Spot Wallet
+                          </div>
+                          <div className="text-[10px] text-white/70 mt-0.5">Available for Spot orders</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-extrabold text-[#c4f000]">
+                            {formatCurrency(spotWallet ? Number(spotWallet.balance || 0) : 0)}
+                          </div>
+                          <div className="text-[10px] text-white/60 font-medium">Active</div>
+                        </div>
+                      </div>
+
+                      {/* Futures Wallet */}
+                      <div className="bg-black/20 rounded-2xl p-4 flex items-center justify-between hover:bg-black/30 transition-colors">
+                        <div>
+                          <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                            <TrendingUp size={14} className="text-white" /> Futures Wallet
+                          </div>
+                          <div className="text-[10px] text-white/70 mt-0.5">Leverage Trading Collateral</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-extrabold text-white">
+                            {formatCurrency(futuresWallet ? Number(futuresWallet.balance || 0) : 0)}
+                          </div>
+                          <div className="text-[10px] text-white/60 font-medium">125x Max</div>
+                        </div>
+                      </div>
+
+                      {/* Margin Wallet */}
+                      <div className="bg-black/20 rounded-2xl p-4 flex items-center justify-between hover:bg-black/30 transition-colors">
+                        <div>
+                          <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                            <Layers size={14} className="text-white/80" /> Margin Wallet
+                          </div>
+                          <div className="text-[10px] text-white/70 mt-0.5">Borrowed Trading Capital</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-extrabold text-white">
+                            {formatCurrency(marginWallet ? Number(marginWallet.balance || 0) : 0)}
+                          </div>
+                          <div className="text-[10px] text-white/60 font-medium">Cross 3x</div>
+                        </div>
+                      </div>
+
+                    </div>
+
                   </div>
+
                 </div>
 
-                {/* Interactive Allocation Donut Chart */}
-                <div className="bg-white border border-fog/80 rounded-[20px] p-6 shadow-subtle h-[200px] flex items-center justify-between gap-4">
+                {/* BOTTOM GRID CARDS */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                   
-                  {/* SVG Donut Ring */}
-                  <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
-                    <svg width="100%" height="100%" viewBox="0 0 42 42" className="-rotate-90">
-                      <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#f5f5f5" strokeWidth="3.5" />
-                      {allocationSegments.map((seg) => (
-                        <circle
-                          key={seg.walletType}
-                          cx="21"
-                          cy="21"
-                          r="15.915"
-                          fill="transparent"
-                          stroke={seg.color}
-                          strokeWidth={hoveredSegment === seg.walletType ? "4.5" : "3.5"}
-                          strokeDasharray={seg.strokeDasharray}
-                          strokeDashoffset={seg.strokeDashoffset}
-                          onMouseEnter={() => setHoveredSegment(seg.walletType)}
-                          onMouseLeave={() => setHoveredSegment(null)}
-                          className="transition-all duration-300 cursor-pointer"
+                  {/* CARD 1: DONUT HEALTH RING (6 Cols) */}
+                  <div className="md:col-span-6 bg-[#24252c] border border-white/5 rounded-[28px] p-6 flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-slate-400">Account Safety</div>
+                      <div className="text-sm font-semibold text-white mt-1">Optimal Execution Mode</div>
+                      <div className="text-[11px] text-slate-500 mt-2">Zero Liquidation Warnings</div>
+                    </div>
+
+                    {/* Circular Progress Ring */}
+                    <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
+                      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                        <path
+                          className="text-white/10"
+                          strokeWidth="3.5"
+                          stroke="currentColor"
+                          fill="none"
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                         />
-                      ))}
-                    </svg>
-                    <div className="absolute text-center pointer-events-none">
-                      <span className="text-[9px] font-bold text-ash uppercase block">Allocation</span>
-                      <span className="text-xs font-black text-carbon">100%</span>
+                        <path
+                          className="text-[#c4f000]"
+                          strokeDasharray="100, 100"
+                          strokeWidth="3.5"
+                          strokeLinecap="round"
+                          stroke="currentColor"
+                          fill="none"
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        />
+                      </svg>
+                      <span className="absolute text-xs font-extrabold text-white">100%</span>
                     </div>
                   </div>
 
-                  {/* Donut Legend */}
-                  <div className="space-y-2 flex-1 text-xs font-medium">
-                    {allocationSegments.map((seg) => (
-                      <div
-                        key={seg.walletType}
-                        onMouseEnter={() => setHoveredSegment(seg.walletType)}
-                        onMouseLeave={() => setHoveredSegment(null)}
-                        className={`flex justify-between items-center p-1.5 rounded-lg transition-colors cursor-pointer ${
-                          hoveredSegment === seg.walletType ? "bg-mist font-bold" : ""
+                  {/* CARD 2: QUICK TRADE LINK (6 Cols) */}
+                  <div className="md:col-span-6 bg-[#24252c] border border-white/5 rounded-[28px] p-6 flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-slate-400">Trade Spot Market</div>
+                      <div className="text-sm font-semibold text-white mt-1">Execute Instant Orders</div>
+                      <div className="text-[11px] text-slate-500 mt-2">Zero Commission Fee Tier</div>
+                    </div>
+
+                    <Link
+                      to="/trade/spot"
+                      className="bg-[#c4f000] hover:bg-[#b5dc00] text-black font-extrabold text-xs px-5 py-2.5 rounded-full transition-all shadow-md flex items-center gap-1.5"
+                    >
+                      <span>Trade Spot</span>
+                      <ArrowRight size={14} />
+                    </Link>
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
+            {/* VIEW TAB 2: TRANSACTIONS & HISTORY FEED */}
+            {activeTab === "TRANSACTIONS" && (
+              <div className="bg-[#24252c] border border-white/5 rounded-[28px] p-6 space-y-6 shadow-xl">
+                
+                {/* Header Filter Bar */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
+                  <div className="flex items-center gap-2 overflow-x-auto">
+                    {["ALL", "BUY", "SELL"].map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setTxFilter(tab)}
+                        className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                          txFilter === tab
+                            ? "bg-[#c4f000] text-black font-extrabold"
+                            : "bg-white/5 text-slate-400 hover:text-white"
                         }`}
                       >
-                        <div className="flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: seg.color }} />
-                          <span className="text-carbon font-semibold text-[11px]">{seg.walletType}</span>
-                        </div>
-                        <span className="text-carbon font-bold text-[11px]">{seg.pct.toFixed(1)}%</span>
-                      </div>
+                        {tab}
+                      </button>
                     ))}
                   </div>
 
-                </div>
-
-              </div>
-
-              {/* REAL TRANSACTION & ORDER HISTORY LOG */}
-              <div className="bg-white border border-fog/80 rounded-[20px] p-6 space-y-4 shadow-subtle">
-                <div className="flex items-center justify-between border-b border-fog/50 pb-3">
-                  <div>
-                    <h3 className="text-sm font-bold text-carbon">Order & Transaction History</h3>
-                    <p className="text-xs text-ash mt-0.5">Real-time trade executions and system balance operations</p>
+                  {/* Search input */}
+                  <div className="relative w-full sm:w-64">
+                    <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      placeholder="Search symbol or side..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-[#1a1b20] border border-white/10 rounded-full pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#c4f000]"
+                    />
                   </div>
-                  <Link to="/orders" className="text-xs font-bold text-ember hover:underline">
-                    View All Orders →
-                  </Link>
                 </div>
 
-                {orderHistory.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs border-collapse">
-                      <thead>
-                        <tr className="border-b border-fog text-ash font-medium text-[11px]">
-                          <th className="pb-2.5">Date</th>
-                          <th className="pb-2.5">Type</th>
-                          <th className="pb-2.5">Symbol</th>
-                          <th className="pb-2.5 text-right">Price</th>
-                          <th className="pb-2.5 text-right">Quantity</th>
-                          <th className="pb-2.5 text-center">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-fog/40">
-                        {orderHistory.slice(0, 6).map((order, idx) => (
-                          <tr key={order.id || idx} className="hover:bg-mist/50 transition-colors">
-                            <td className="py-3 text-ash font-mono text-[11px]">
-                              {order.createdAt ? new Date(order.createdAt).toLocaleString() : "—"}
-                            </td>
-                            <td className="py-3">
-                              <span className={`font-bold px-2 py-0.5 rounded text-[10px] uppercase ${
-                                order.side === "BUY" ? "bg-mint-wash text-mint" : "bg-ember/10 text-ember"
-                              }`}>
-                                {order.side || "TRADE"}
-                              </span>
-                            </td>
-                            <td className="py-3 font-bold text-carbon">{order.symbol}</td>
-                            <td className="py-3 text-right font-bold text-carbon">
-                              {order.price ? formatCurrency(order.price) : "MARKET"}
-                            </td>
-                            <td className="py-3 text-right font-medium text-graphite">
-                              {Number(order.quantity || 0).toFixed(4)}
-                            </td>
-                            <td className="py-3 text-center">
-                              <span className="bg-mist text-carbon font-semibold text-[10px] px-2 py-0.5 rounded-full border border-fog uppercase">
-                                {order.status || "COMPLETED"}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                {/* Transactions Table Feed */}
+                {filteredTransactions.length > 0 ? (
+                  <div className="space-y-3">
+                    {filteredTransactions.map((tx) => (
+                      <div
+                        key={tx.id}
+                        className="p-4 rounded-2xl bg-[#1a1b20] border border-white/5 flex items-center justify-between hover:bg-white/[0.03] transition-colors"
+                      >
+                        <div className="flex items-center gap-3.5">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                            tx.side === "BUY" ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
+                          }`}>
+                            <Coins size={18} />
+                          </div>
+
+                          <div>
+                            <div className="text-sm font-bold text-white">{tx.symbol} • {tx.side}</div>
+                            <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+                              <span>Qty: {tx.quantity}</span>
+                              <span>•</span>
+                              <span>{tx.date}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <div className={`text-sm font-extrabold ${tx.side === "BUY" ? "text-emerald-400" : "text-white"}`}>
+                            {tx.amount}
+                          </div>
+                          <span className="inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 mt-1">
+                            {tx.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : (
-                  <div className="py-8 text-center text-ash text-xs">
-                    No order history recorded yet. Make your first trade or deposit funds to get started!
+                  <div className="p-8 text-center text-slate-400 text-xs font-medium space-y-2">
+                    <Activity size={24} className="mx-auto text-slate-500" />
+                    <div>No order history found for your account.</div>
                   </div>
                 )}
+
               </div>
+            )}
 
-            </div>
+          </main>
 
-            {/* RIGHT 4 COLUMNS: INDIVIDUAL WALLET SUMMARY CARDS */}
-            <div className="lg:col-span-4 space-y-4">
-              <h3 className="text-sm font-bold text-carbon">Wallet Breakdown</h3>
-
-              {/* Spot Wallet Summary */}
-              <div className="bg-white border border-fog/80 rounded-[20px] p-5 space-y-3 shadow-subtle hover:shadow-md transition-all">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-ember/10 text-ember flex items-center justify-center shrink-0">
-                      <Coins size={13} />
-                    </div>
-                    <span className="text-xs font-bold text-carbon">Spot Wallet</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-mint bg-mint-wash px-2 py-0.5 rounded-full">Available</span>
-                </div>
-
-                <div>
-                  <div className="text-2xl font-black text-carbon tracking-tight">
-                    {formatCurrency(spotWallet ? Number(spotWallet.balance || 0) : 0)}
-                  </div>
-                  <div className="text-[11px] text-ash mt-0.5">
-                    Locked Funds: {formatCurrency(spotWallet ? Number(spotWallet.lockedFunds || 0) : 0)}
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-fog/50 flex items-center justify-between">
-                  <button
-                    onClick={() => setTransferModal({ open: true, from: "SPOT", to: "FUTURES", amount: "" })}
-                    className="text-xs font-bold text-carbon hover:underline"
-                  >
-                    Transfer Funds
-                  </button>
-                  <Link to="/trade/spot" className="text-xs font-bold text-ember hover:underline flex items-center gap-0.5">
-                    Trade Spot <ArrowRight size={12} />
-                  </Link>
-                </div>
-              </div>
-
-              {/* Futures Wallet Summary */}
-              <div className="bg-white border border-fog/80 rounded-[20px] p-5 space-y-3 shadow-subtle hover:shadow-md transition-all">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-lavender/15 text-lavender flex items-center justify-center shrink-0">
-                      <TrendingUp size={13} />
-                    </div>
-                    <span className="text-xs font-bold text-carbon">Futures Wallet</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-lavender bg-lavender/10 px-2 py-0.5 rounded-full">125x Cap</span>
-                </div>
-
-                <div>
-                  <div className="text-2xl font-black text-carbon tracking-tight">
-                    {formatCurrency(futuresWallet ? Number(futuresWallet.balance || 0) : 0)}
-                  </div>
-                  <div className="text-[11px] text-ash mt-0.5">
-                    Unrealized PnL: {formatCurrency(futuresWallet ? Number(futuresWallet.unrealizedPnL || 0) : 0)}
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-fog/50 flex items-center justify-between">
-                  <button
-                    onClick={() => setTransferModal({ open: true, from: "FUTURES", to: "SPOT", amount: "" })}
-                    className="text-xs font-bold text-carbon hover:underline"
-                  >
-                    Transfer Funds
-                  </button>
-                  <Link to="/trade/futures" className="text-xs font-bold text-ember hover:underline flex items-center gap-0.5">
-                    Trade Futures <ArrowRight size={12} />
-                  </Link>
-                </div>
-              </div>
-
-              {/* Margin Wallet Summary */}
-              <div className="bg-white border border-fog/80 rounded-[20px] p-5 space-y-3 shadow-subtle hover:shadow-md transition-all">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-mint/15 text-mint flex items-center justify-center shrink-0">
-                      <Layers size={13} />
-                    </div>
-                    <span className="text-xs font-bold text-carbon">Margin Wallet</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-mint bg-mint-wash px-2 py-0.5 rounded-full">Cross / Isolated</span>
-                </div>
-
-                <div>
-                  <div className="text-2xl font-black text-carbon tracking-tight">
-                    {formatCurrency(marginWallet ? Number(marginWallet.balance || 0) : 0)}
-                  </div>
-                  <div className="text-[11px] text-ash mt-0.5">
-                    Available: {formatCurrency(marginWallet ? Number(marginWallet.availableBalance || 0) : 0)}
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-fog/50 flex items-center justify-between">
-                  <button
-                    onClick={() => setTransferModal({ open: true, from: "MARGIN", to: "SPOT", amount: "" })}
-                    className="text-xs font-bold text-carbon hover:underline"
-                  >
-                    Transfer Funds
-                  </button>
-                  <Link to="/trade/margin" className="text-xs font-bold text-ember hover:underline flex items-center gap-0.5">
-                    Trade Margin <ArrowRight size={12} />
-                  </Link>
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-        )}
-
-        {/* SPOT WALLET TAB */}
-        {activeTab === "SPOT" && (
-          <div className="bg-white border border-fog/80 rounded-[24px] p-6 space-y-6 shadow-subtle-2">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-fog/50 pb-4">
-              <div>
-                <h3 className="text-base font-bold text-carbon">Spot Holdings & USDT Balance</h3>
-                <p className="text-xs text-ash mt-0.5">Manage your liquid assets available for spot trading</p>
-              </div>
-
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ash" />
-                <input
-                  type="text"
-                  placeholder="Filter assets..."
-                  value={spotSearch}
-                  onChange={(e) => setSpotSearch(e.target.value)}
-                  className="bg-mist text-carbon text-xs pl-8 pr-4 py-2 rounded-xl border border-fog focus:outline-none focus:border-carbon w-48 transition-colors"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              <div className="p-5 rounded-[20px] bg-mist/50 border border-fog/80 space-y-2">
-                <div className="text-xs font-bold text-ash uppercase">USDT Spot Balance</div>
-                <div className="text-2xl font-black text-carbon">
-                  {formatCurrency(spotWallet ? Number(spotWallet.balance || 0) : 0)}
-                </div>
-                <div className="text-xs text-ash">
-                  Available: {formatCurrency(spotWallet ? Number(spotWallet.availableBalance || 0) : 0)}
-                </div>
-              </div>
-
-              <div className="p-5 rounded-[20px] bg-mist/50 border border-fog/80 space-y-2">
-                <div className="text-xs font-bold text-ash uppercase">Locked in Orders</div>
-                <div className="text-2xl font-black text-carbon">
-                  {formatCurrency(spotWallet ? Number(spotWallet.lockedFunds || 0) : 0)}
-                </div>
-                <div className="text-xs text-ash">Active limit orders collateral</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* FUTURES WALLET TAB */}
-        {activeTab === "FUTURES" && (
-          <div className="bg-white border border-fog/80 rounded-[24px] p-6 space-y-6 shadow-subtle-2">
-            <div className="border-b border-fog/50 pb-4">
-              <h3 className="text-base font-bold text-carbon">Futures Wallet & Open Positions</h3>
-              <p className="text-xs text-ash mt-0.5">Leverage collateral and live derivative positions</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-              <div className="p-5 rounded-[20px] bg-mist/50 border border-fog/80 space-y-2">
-                <div className="text-xs font-bold text-ash uppercase">Futures Margin Balance</div>
-                <div className="text-2xl font-black text-carbon">
-                  {formatCurrency(futuresWallet ? Number(futuresWallet.balance || 0) : 0)}
-                </div>
-              </div>
-
-              <div className="p-5 rounded-[20px] bg-mist/50 border border-fog/80 space-y-2">
-                <div className="text-xs font-bold text-ash uppercase">Unrealized PnL</div>
-                <div className="text-2xl font-black text-mint">
-                  {formatCurrency(futuresWallet ? Number(futuresWallet.unrealizedPnL || 0) : 0)}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
 
         {/* DEPOSIT MODAL */}
         {depositModal.open && (
-          <div className="fixed inset-0 bg-carbon/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white border border-fog/80 rounded-[24px] p-6 max-w-md w-full shadow-2xl space-y-5">
-              <div className="flex items-center justify-between border-b border-fog/50 pb-3">
-                <h3 className="text-base font-bold text-carbon">Deposit Capital</h3>
-                <button onClick={() => setDepositModal({ ...depositModal, open: false })} className="text-ash hover:text-carbon">
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-[#24252c] border border-white/10 rounded-[28px] p-6 max-w-md w-full text-white space-y-4 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                <h3 className="text-base font-bold">Deposit Capital</h3>
+                <button onClick={() => setDepositModal({ ...depositModal, open: false })} className="text-slate-400 hover:text-white cursor-pointer">
                   <X size={18} />
                 </button>
               </div>
 
-              <form onSubmit={executeModalDeposit} className="space-y-4">
+              <form onSubmit={executeDepositModal} className="space-y-4">
                 <div>
-                  <label className="text-xs font-bold text-carbon mb-1.5 block">Target Wallet</label>
+                  <label className="text-xs font-bold text-slate-400 mb-1.5 block">Target Wallet</label>
                   <select
                     value={depositModal.walletType}
                     onChange={(e) => setDepositModal({ ...depositModal, walletType: e.target.value })}
-                    className="w-full bg-mist text-carbon text-sm px-4 py-2.5 rounded-xl border border-fog focus:outline-none"
+                    className="w-full bg-[#1a1b20] border border-white/10 text-white text-sm px-4 py-2.5 rounded-2xl focus:outline-none"
                   >
                     <option value="SPOT">Spot Wallet</option>
                     <option value="FUTURES">Futures Wallet</option>
@@ -659,14 +688,14 @@ export default function WalletsPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-carbon mb-1.5 block">Deposit Amount ($)</label>
+                  <label className="text-xs font-bold text-slate-400 mb-1.5 block">Deposit Amount ($)</label>
                   <input
                     type="number"
                     step="any"
-                    placeholder="e.g. 1000"
+                    placeholder="e.g. 5000"
                     value={depositModal.amount}
                     onChange={(e) => setDepositModal({ ...depositModal, amount: e.target.value })}
-                    className="w-full bg-mist text-carbon text-sm px-4 py-2.5 rounded-xl border border-fog focus:outline-none"
+                    className="w-full bg-[#1a1b20] border border-white/10 text-white text-sm px-4 py-2.5 rounded-2xl focus:outline-none"
                   />
                 </div>
 
@@ -674,13 +703,13 @@ export default function WalletsPage() {
                   <button
                     type="button"
                     onClick={() => setDepositModal({ ...depositModal, open: false })}
-                    className="bg-mist text-carbon font-bold text-xs px-4 py-2.5 rounded-full border border-fog"
+                    className="bg-white/10 text-white font-bold text-xs px-4 py-2.5 rounded-full cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="bg-ember hover:bg-ember/90 text-white font-bold text-xs px-6 py-2.5 rounded-full shadow-subtle"
+                    className="bg-[#c4f000] text-black font-extrabold text-xs px-6 py-2.5 rounded-full shadow-md cursor-pointer"
                   >
                     Confirm Deposit
                   </button>
@@ -692,53 +721,53 @@ export default function WalletsPage() {
 
         {/* TRANSFER MODAL */}
         {transferModal.open && (
-          <div className="fixed inset-0 bg-carbon/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white border border-fog/80 rounded-[24px] p-6 max-w-md w-full shadow-2xl space-y-5">
-              <div className="flex items-center justify-between border-b border-fog/50 pb-3">
-                <h3 className="text-base font-bold text-carbon">Transfer Funds</h3>
-                <button onClick={() => setTransferModal({ ...transferModal, open: false })} className="text-ash hover:text-carbon">
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-[#24252c] border border-white/10 rounded-[28px] p-6 max-w-md w-full text-white space-y-4 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                <h3 className="text-base font-bold">Transfer Between Wallets</h3>
+                <button onClick={() => setTransferModal({ ...transferModal, open: false })} className="text-slate-400 hover:text-white cursor-pointer">
                   <X size={18} />
                 </button>
               </div>
 
               <form onSubmit={executeTransfer} className="space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-carbon mb-1.5 block">From Wallet</label>
-                  <select
-                    value={transferModal.from}
-                    onChange={(e) => setTransferModal({ ...transferModal, from: e.target.value })}
-                    className="w-full bg-mist text-carbon text-sm px-4 py-2.5 rounded-xl border border-fog focus:outline-none"
-                  >
-                    <option value="SPOT">Spot Wallet</option>
-                    <option value="FUTURES">Futures Wallet</option>
-                    <option value="MARGIN">Margin Wallet</option>
-                    <option value="OPTIONS">Options Wallet</option>
-                  </select>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-slate-400 mb-1.5 block">From</label>
+                    <select
+                      value={transferModal.from}
+                      onChange={(e) => setTransferModal({ ...transferModal, from: e.target.value })}
+                      className="w-full bg-[#1a1b20] border border-white/10 text-white text-xs px-3 py-2.5 rounded-2xl focus:outline-none"
+                    >
+                      <option value="SPOT">Spot Wallet</option>
+                      <option value="FUTURES">Futures Wallet</option>
+                      <option value="MARGIN">Margin Wallet</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-400 mb-1.5 block">To</label>
+                    <select
+                      value={transferModal.to}
+                      onChange={(e) => setTransferModal({ ...transferModal, to: e.target.value })}
+                      className="w-full bg-[#1a1b20] border border-white/10 text-white text-xs px-3 py-2.5 rounded-2xl focus:outline-none"
+                    >
+                      <option value="FUTURES">Futures Wallet</option>
+                      <option value="SPOT">Spot Wallet</option>
+                      <option value="MARGIN">Margin Wallet</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-carbon mb-1.5 block">To Wallet</label>
-                  <select
-                    value={transferModal.to}
-                    onChange={(e) => setTransferModal({ ...transferModal, to: e.target.value })}
-                    className="w-full bg-mist text-carbon text-sm px-4 py-2.5 rounded-xl border border-fog focus:outline-none"
-                  >
-                    <option value="FUTURES">Futures Wallet</option>
-                    <option value="SPOT">Spot Wallet</option>
-                    <option value="MARGIN">Margin Wallet</option>
-                    <option value="OPTIONS">Options Wallet</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-carbon mb-1.5 block">Transfer Amount ($)</label>
+                  <label className="text-xs font-bold text-slate-400 mb-1.5 block">Amount ($)</label>
                   <input
                     type="number"
                     step="any"
-                    placeholder="e.g. 500"
+                    placeholder="e.g. 1000"
                     value={transferModal.amount}
                     onChange={(e) => setTransferModal({ ...transferModal, amount: e.target.value })}
-                    className="w-full bg-mist text-carbon text-sm px-4 py-2.5 rounded-xl border border-fog focus:outline-none"
+                    className="w-full bg-[#1a1b20] border border-white/10 text-white text-sm px-4 py-2.5 rounded-2xl focus:outline-none"
                   />
                 </div>
 
@@ -746,15 +775,82 @@ export default function WalletsPage() {
                   <button
                     type="button"
                     onClick={() => setTransferModal({ ...transferModal, open: false })}
-                    className="bg-mist text-carbon font-bold text-xs px-4 py-2.5 rounded-full border border-fog"
+                    className="bg-white/10 text-white font-bold text-xs px-4 py-2.5 rounded-full cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="bg-ember hover:bg-ember/90 text-white font-bold text-xs px-6 py-2.5 rounded-full shadow-subtle"
+                    className="bg-[#375bf5] text-white font-extrabold text-xs px-6 py-2.5 rounded-full shadow-md cursor-pointer"
                   >
                     Execute Transfer
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* WITHDRAWAL MODAL */}
+        {withdrawModal.open && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-[#24252c] border border-white/10 rounded-[28px] p-6 max-w-md w-full text-white space-y-4 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                <h3 className="text-base font-bold">Withdraw Capital</h3>
+                <button onClick={() => setWithdrawModal({ ...withdrawModal, open: false })} className="text-slate-400 hover:text-white cursor-pointer">
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={executeWithdrawal} className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-400 mb-1.5 block">Source Wallet</label>
+                  <select
+                    value={withdrawModal.walletType}
+                    onChange={(e) => setWithdrawModal({ ...withdrawModal, walletType: e.target.value })}
+                    className="w-full bg-[#1a1b20] border border-white/10 text-white text-sm px-4 py-2.5 rounded-2xl focus:outline-none"
+                  >
+                    <option value="SPOT">Spot Wallet</option>
+                    <option value="FUTURES">Futures Wallet</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-400 mb-1.5 block">Withdrawal Address (BEP20 / TRC20)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 0x71C...89A"
+                    value={withdrawModal.address}
+                    onChange={(e) => setWithdrawModal({ ...withdrawModal, address: e.target.value })}
+                    className="w-full bg-[#1a1b20] border border-white/10 text-white text-sm px-4 py-2.5 rounded-2xl focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-400 mb-1.5 block">Amount ($)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder="e.g. 1000"
+                    value={withdrawModal.amount}
+                    onChange={(e) => setWithdrawModal({ ...withdrawModal, amount: e.target.value })}
+                    className="w-full bg-[#1a1b20] border border-white/10 text-white text-sm px-4 py-2.5 rounded-2xl focus:outline-none"
+                  />
+                </div>
+
+                <div className="pt-2 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setWithdrawModal({ ...withdrawModal, open: false })}
+                    className="bg-white/10 text-white font-bold text-xs px-4 py-2.5 rounded-full cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-red-500 text-white font-extrabold text-xs px-6 py-2.5 rounded-full shadow-md cursor-pointer"
+                  >
+                    Confirm Withdrawal
                   </button>
                 </div>
               </form>

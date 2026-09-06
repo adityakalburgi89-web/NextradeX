@@ -371,8 +371,8 @@ export default function AuthPage() {
   // 1. PASSWORD RESET VIEW
   if (urlResetToken) {
     return (
-      <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900 font-openrunde">
-        <div className="relative w-full lg:w-1/2 h-44 sm:h-56 lg:h-auto lg:min-h-screen overflow-hidden select-none bg-slate-50 flex items-center justify-center">
+      <div className="h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900 font-openrunde overflow-hidden">
+        <div className="relative w-full lg:w-1/2 h-44 sm:h-56 lg:h-full overflow-hidden select-none bg-slate-50 flex items-center justify-center">
           <img
             src={authTrainHills}
             alt="Train on flower hills"
@@ -380,10 +380,10 @@ export default function AuthPage() {
           />
         </div>
 
-        <div className="w-full lg:w-1/2 flex flex-col justify-between pt-10 sm:pt-14 lg:pt-16 pb-6 sm:pb-8 px-6 sm:px-10 lg:px-12 min-h-[calc(100vh-176px)] lg:min-h-screen overflow-y-auto bg-white font-openrunde">
+        <div className="w-full lg:w-1/2 flex flex-col justify-between pt-8 sm:pt-10 lg:pt-12 pb-6 px-6 sm:px-10 lg:px-12 h-full overflow-y-auto bg-white font-openrunde">
           <div className="w-full max-w-md mx-auto mb-6 flex items-center">
-            <Link to="/" className="inline-block group">
-              <img src={Logo} alt="NexTradeX" className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-105" />
+            <Link to="/" className="inline-block">
+              <img src={Logo} alt="NexTradeX" className="h-9 sm:h-10 w-auto object-contain" />
             </Link>
           </div>
 
@@ -452,8 +452,8 @@ export default function AuthPage() {
   // 2. PROFILE SETUP VIEW
   if (needsSetup) {
     return (
-      <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900 font-openrunde">
-        <div className="relative w-full lg:w-1/2 h-44 sm:h-56 lg:h-auto lg:min-h-screen overflow-hidden select-none bg-slate-50 flex items-center justify-center">
+      <div className="h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900 font-openrunde overflow-hidden">
+        <div className="relative w-full lg:w-1/2 h-44 sm:h-56 lg:h-full overflow-hidden select-none bg-slate-50 flex items-center justify-center">
           <img
             src={authTrainHills}
             alt="Train on flower hills"
@@ -461,10 +461,10 @@ export default function AuthPage() {
           />
         </div>
 
-        <div className="w-full lg:w-1/2 flex flex-col justify-between pt-10 sm:pt-14 lg:pt-16 pb-6 sm:pb-8 px-6 sm:px-10 lg:px-12 min-h-[calc(100vh-176px)] lg:min-h-screen overflow-y-auto bg-white font-openrunde">
+        <div className="w-full lg:w-1/2 flex flex-col justify-between pt-8 sm:pt-10 lg:pt-12 pb-6 px-6 sm:px-10 lg:px-12 h-full overflow-y-auto bg-white font-openrunde">
           <div className="w-full max-w-md mx-auto mb-6 flex items-center">
-            <Link to="/" className="inline-block group">
-              <img src={Logo} alt="NexTradeX" className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-105" />
+            <Link to="/" className="inline-block">
+              <img src={Logo} alt="NexTradeX" className="h-9 sm:h-10 w-auto object-contain" />
             </Link>
           </div>
 
@@ -538,30 +538,30 @@ export default function AuthPage() {
 
   // 3. MAIN SPLIT LOGIN & SIGN UP PAGE
   return (
-    <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900 font-openrunde">
+    <div className="h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900 font-openrunde overflow-hidden">
       
       {/* LEFT PANEL: Dreamy Train On Flower Hills Artwork */}
-      <div className="relative w-full lg:w-1/2 h-44 sm:h-56 lg:h-auto lg:min-h-screen overflow-hidden select-none bg-slate-50 flex items-center justify-center">
+      <div className="relative w-full lg:w-1/2 h-44 sm:h-56 lg:h-full overflow-hidden select-none bg-slate-50 flex items-center justify-center">
         <img
           src={authTrainHills}
           alt="Train on flower hills"
-          className="w-full h-full object-cover object-center scale-100 transition-transform duration-700 hover:scale-105"
+          className="w-full h-full object-cover object-center"
         />
         <div className="hidden lg:block absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-white to-transparent pointer-events-none" />
       </div>
 
       {/* RIGHT PANEL: Crisp White Auth Panel with Centered Card Layout */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center py-12 px-6 sm:px-10 lg:px-16 min-h-[calc(100vh-176px)] lg:min-h-screen overflow-y-auto bg-white font-openrunde">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center py-6 sm:py-8 lg:py-10 px-6 sm:px-10 lg:px-16 h-full overflow-y-auto bg-white font-openrunde">
         
         <div className="max-w-[420px] w-full mx-auto space-y-6 text-center">
           
           {/* Centered Logo with Fixed Explicit Width/Height */}
           <div className="flex justify-center mb-2">
-            <Link to="/" className="inline-block group">
+            <Link to="/" className="inline-block">
               <img
                 src={Logo}
                 alt="NexTradeX Logo"
-                className="w-12 h-12 sm:w-14 sm:h-14 object-contain transition-transform group-hover:scale-105 mx-auto"
+                className="w-12 h-12 sm:w-14 sm:h-14 object-contain mx-auto"
               />
             </Link>
           </div>

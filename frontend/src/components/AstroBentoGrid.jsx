@@ -18,7 +18,7 @@ export default function AstroBentoGrid() {
       title: "Practice spot trading.",
       description:
         "Execute spot orders across leading crypto assets with live streaming prices and zero financial exposure.",
-      bgClass: "bg-[#F7F7F7] text-[#181925]",
+      bgClass: "bg-[hsl(0,0%,98%)] text-[#181925]",
       badgeClass: "text-[#8574ff] font-bold",
       tagColor: "text-[#888888]",
       textColor: "text-[#181925]",

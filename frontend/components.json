@@ -18,6 +18,12 @@
     "hooks": "@/hooks"
   },
   "registries": {
-    "@magicui": "https://magicui.design/r/{name}"
+    "@magicui": "https://magicui.design/r/{name}",
+    "@shadcnblocks": {
+      "url": "https://www.shadcnblocks.com/r/{name}",
+      "headers": {
+        "Authorization": "Bearer sklive-Hq8uz23I7To6uNlZj3zY-OM280uU0kl"
+      }
+    }
   }
 }

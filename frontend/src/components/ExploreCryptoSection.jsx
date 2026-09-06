@@ -190,7 +190,7 @@ export default function ExploreCryptoSection({ prices: initialPrices }) {
   const assets = getActiveAssets();
 
   return (
-    <section className="w-full bg-[#fafafa] py-20 sm:py-28 px-6 border-y border-[#e8e8e8] overflow-hidden font-openrunde">
+    <section className="w-full bg-[hsl(0,0%,98%)] py-20 sm:py-28 px-6 overflow-hidden font-openrunde">
       <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
         
         {/* Left Column: Visitors Style Engineered Typography */}
@@ -216,9 +216,9 @@ export default function ExploreCryptoSection({ prices: initialPrices }) {
           </div>
         </div>
 
-        {/* Right Column: Clean White Paper Blueprint Card Showcase */}
+        {/* Right Column: Clean Blueprint Card Showcase */}
         <div className="lg:col-span-7 w-full flex justify-center lg:justify-end">
-          <div className="w-full max-w-[580px] lg:max-w-none bg-white border border-[#e8e8e8] rounded-[28px] sm:rounded-[36px] p-8 sm:p-12 lg:p-14 shadow-[0_12px_40px_rgba(0,0,0,0.06)] text-[#181925]">
+          <div className="w-full max-w-[580px] lg:max-w-none bg-[hsl(0,0%,98%)] border border-[#e8e8e8] rounded-[28px] sm:rounded-[36px] p-8 sm:p-12 lg:p-14 shadow-[0_12px_40px_rgba(0,0,0,0.06)] text-[#181925]">
             
             {/* Header Navigation Tabs: Visitors Pill Tab Row */}
             <div className="flex items-center gap-2 sm:gap-3 pb-6 sm:pb-8 pt-1 px-1 sm:px-2 text-xs sm:text-sm font-medium border-b border-[#e8e8e8]">
