@@ -1,8 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { ArrowLeft, Clock3, LayoutGrid, Wrench } from "lucide-react";
 import { PageTransition } from "../components/ui/PageTransition";
+import footerBg from "../assets/images/footer-bg.png";
 
 const metrics = [
   ["Status", "Maintenance"],
@@ -13,7 +14,10 @@ const metrics = [
 export default function OptionsTradingPage() {
   return (
     <PageTransition>
-      <main className="relative min-h-[85vh] overflow-hidden bg-background px-6 py-20 text-foreground">
+      <main
+        className="relative min-h-[85vh] overflow-hidden px-6 py-20 text-foreground bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${footerBg})` }}
+      >
         <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
           <motion.section
             initial={{ opacity: 0, y: 18 }}

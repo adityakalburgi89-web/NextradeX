@@ -4,17 +4,19 @@ import { cva } from "class-variance-authority";
 import { cn } from "../../lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full px-3 py-1 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background shadow-neo-inset-sm",
+  "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-all focus:outline-none tracking-[-0.32px]",
   {
     variants: {
       variant: {
         default:
-          "bg-background text-primary",
+          "bg-white text-carbon border border-fog",
         secondary:
-          "bg-background text-accent-turquoise",
+          "bg-mint-wash text-mint font-medium",
         destructive:
-          "bg-background text-trading-down",
-        outline: "text-foreground",
+          "bg-[#ffebe5] text-ember font-medium",
+        sky:
+          "bg-white text-sky border border-fog font-medium",
+        outline: "bg-transparent text-graphite border border-fog",
       },
     },
     defaultVariants: {

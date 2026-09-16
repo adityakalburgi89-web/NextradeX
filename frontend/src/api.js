@@ -166,6 +166,25 @@ export function googleLogin() {
   window.location.href = `${API_BASE_URL}/oauth2/authorization/google`;
 }
 
+export function githubLogin() {
+  console.log("[API] Redirecting to GitHub OAuth2 login");
+  window.location.href = `${API_BASE_URL}/oauth2/authorization/github`;
+}
+
+export function xLogin() {
+  console.log("[API] Redirecting to X (Twitter) OAuth2 login");
+  window.location.href = `${API_BASE_URL}/oauth2/authorization/twitter`;
+}
+
+export async function exchangeOAuthCode(code) {
+  const res = await fetch(`${API_BASE_URL}/oauth2/exchange`,
+    createFetchOptions("POST", { code }, { "Content-Type": "application/json" })
+  );
+  const data = await handleResponse(res);
+  if (data?.data?.token) setAuthToken(data.data.token);
+  return data;
+}
+
 export async function completeProfile(payload) {
   console.log("[API] POST /oauth2/complete-profile - Payload:", payload);
   const headers = authHeaders();
@@ -210,6 +229,93 @@ export function getCachedPrices() {
   } catch (e) {
     return null;
   }
+}
+
+export async function fetchLiveGlobalMetrics() {
+  try {
+    const res = await fetch("https://api.coingecko.com/api/v3/global");
+    if (res.ok) {
+      const json = await res.json();
+      const g = json?.data;
+      if (g && g.total_market_cap?.usd) {
+        return {
+          totalMarketCap: Number(g.total_market_cap.usd),
+          volume24h: Number(g.total_volume?.usd || 89600000000),
+          btcDominance: Number((g.market_cap_percentage?.btc || 56.2).toFixed(2)),
+          ethDominance: Number((g.market_cap_percentage?.eth || 15.4).toFixed(2)),
+          marketCapChange24h: Number((g.market_cap_change_percentage_24h_usd || 1.05).toFixed(2))
+        };
+      }
+    }
+  } catch (err) {
+    console.warn("[API] Live CoinGecko global metrics fetch failed:", err.message);
+  }
+  return null;
+}
+
+export async function fetchFearAndGreedIndex() {
+  console.log("[API] GET CMC Fear and Greed Index");
+  try {
+    const res = await fetch("https://pro-api.coinmarketcap.com/public-api/v3/fear-and-greed/historical");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (json?.data && json.data.length > 0) {
+      const latest = json.data[0];
+      return {
+        score: Number(latest.value),
+        label: latest.value_classification || "Neutral",
+        historical: json.data.slice(0, 7)
+      };
+    }
+  } catch (err) {
+    console.warn("[API] fetchFearAndGreedIndex from CMC failed:", err.message);
+  }
+  return { score: 37, label: "Fear", historical: [] };
+}
+
+export async function fetchGlobalMarketStats() {
+  console.log("[API] GET /market/global-stats");
+  const [fearGreed, liveGlobal] = await Promise.all([
+    fetchFearAndGreedIndex(),
+    fetchLiveGlobalMetrics()
+  ]);
+
+  let resultData = {
+    totalMarketCap: liveGlobal?.totalMarketCap || 2480000000000,
+    marketCapChange24h: liveGlobal?.marketCapChange24h || 2.41,
+    volume24h: liveGlobal?.volume24h || 89600000000,
+    btcDominance: liveGlobal?.btcDominance || 56.2,
+    ethDominance: liveGlobal?.ethDominance || 15.4,
+    ethGasGwei: 18,
+    fearGreedScore: fearGreed.score,
+    fearGreedLabel: fearGreed.label,
+    fearGreedHistorical: fearGreed.historical,
+  };
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/market/global-stats`, createFetchOptions("GET"));
+    const data = await handleResponse(res);
+    if (data?.data) {
+      const serverCap = Number(data.data.totalMarketCap || 0);
+      if (serverCap > 2000000000000) {
+        resultData = { ...resultData, ...data.data };
+      }
+      resultData.fearGreedScore = fearGreed.score;
+      resultData.fearGreedLabel = fearGreed.label;
+      resultData.fearGreedHistorical = fearGreed.historical;
+      if (liveGlobal) {
+        resultData.totalMarketCap = liveGlobal.totalMarketCap;
+        resultData.volume24h = liveGlobal.volume24h;
+        resultData.btcDominance = liveGlobal.btcDominance;
+        resultData.ethDominance = liveGlobal.ethDominance;
+        resultData.marketCapChange24h = liveGlobal.marketCapChange24h;
+      }
+    }
+  } catch (err) {
+    console.warn("[API] fetchGlobalMarketStats backend fetch failed, using live global fallback:", err.message);
+  }
+
+  return { data: resultData };
 }
 
 // MARKET
@@ -373,6 +479,14 @@ export async function closeFuturesPosition(positionId) {
   return handleResponse(res);
 }
 
+export async function closeAllFuturesPositions() {
+  console.log("[API] POST /futures/close-all");
+  const res = await fetch(`${API_BASE_URL}/futures/close-all`,
+    createFetchOptions("POST", null, authHeaders())
+  );
+  return handleResponse(res);
+}
+
 export async function updateFuturesSlTp(positionId, payload) {
   console.log("[API] POST /futures/update-sl-tp/:id", positionId, payload);
   const res = await fetch(`${API_BASE_URL}/futures/update-sl-tp/${positionId}`,
@@ -463,3 +577,21 @@ export async function fetchCandlestickData(symbol, interval = "1h", limit = 100)
     volume: Number(candle.volume),
   }));
 }
+
+// WATCHLIST
+export async function fetchWatchlist() {
+  console.log("[API] GET /watchlist");
+  const res = await fetch(`${API_BASE_URL}/watchlist`,
+    createFetchOptions("GET", null, authHeaders())
+  );
+  return handleResponse(res);
+}
+
+export async function toggleWatchlist(symbol) {
+  console.log("[API] POST /watchlist/toggle", symbol);
+  const res = await fetch(`${API_BASE_URL}/watchlist/toggle?symbol=${encodeURIComponent(symbol)}`,
+    createFetchOptions("POST", null, authHeaders())
+  );
+  return handleResponse(res);
+}
+

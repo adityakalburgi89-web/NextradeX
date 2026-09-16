@@ -298,16 +298,13 @@ export default function Chatbot() {
 
   return (
     <>
-      {/* Floating Chat Trigger Bubble */}
-      <div className="fixed bottom-6 right-6 z-50">
-        
-        {/* Glow backdrop ring (Antigravity vibe) */}
-        {!isOpen && (
+      {/* Floating Chat Trigger Bubble (Visible only when chat is closed) */}
+      {!isOpen && (
+        <div className="fixed bottom-6 right-6 z-50 shrink-0">
+          {/* Glow backdrop ring (Antigravity vibe) */}
           <div className={`absolute inset-[-4px] rounded-full bg-[#6C63FF]/10 blur-[8px] ${prefersReducedMotion ? '' : 'animate-pulse'} pointer-events-none`} aria-hidden="true" />
-        )}
 
-        {/* Tooltip speech bubble */}
-        {!isOpen && (
+          {/* Tooltip speech bubble */}
           <div
             className={`absolute bottom-24 right-2 bg-[#E0E5EC] text-[#3D4852] px-3.5 py-2 rounded-xl text-xs font-semibold shadow-[5px_5px_10px_rgb(163,177,198,0.6),-5px_-5px_10px_rgba(255,255,255,0.5)] transition-all duration-300 pointer-events-none whitespace-nowrap flex items-center gap-1.5 ${
               isHovered
@@ -319,39 +316,35 @@ export default function Chatbot() {
             <span>Chat with Trixie!</span>
             <div className="absolute bottom-[-5px] right-8 w-2.5 h-2.5 bg-[#E0E5EC] border-r border-b border-transparent transform rotate-45"></div>
           </div>
-        )}
 
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          onMouseEnter={() => {
-            setIsHovered(true);
-            if (videoRef.current) {
-              videoRef.current.play().catch((err) => {
-                console.warn("Video play failed on hover:", err);
-              });
-            }
-          }}
-          onMouseLeave={() => {
-            setIsHovered(false);
-          }}
-          className="size-20 rounded-full flex items-center justify-center bg-[#E0E5EC] text-[#3D4852] transition-all duration-300 shadow-[9px_9px_16px_rgb(163,177,198,0.6),-9px_-9px_16px_rgba(255,255,255,0.5)] hover:shadow-[12px_12px_20px_rgb(163,177,198,0.7),-12px_-12px_20px_rgba(255,255,255,0.6)] hover:scale-105 active:shadow-[inset_6px_6px_10px_rgb(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.5)] active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E0E5EC] relative"
-        >
-          {isOpen ? (
-            <X size={32} className={prefersReducedMotion ? 'text-[#3D4852]' : 'animate-scale-in text-[#3D4852]'} aria-hidden="true" />
-          ) : (
-            <div className="relative w-[70px] h-[70px] rounded-full overflow-hidden flex items-center justify-center p-1 bg-[#E0E5EC] shadow-[inset_6px_6px_10px_rgb(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.5)]">
+          <button
+            onClick={() => setIsOpen(true)}
+            onMouseEnter={() => {
+              setIsHovered(true);
+              if (videoRef.current) {
+                videoRef.current.play().catch((err) => {
+                  console.warn("Video play failed on hover:", err);
+                });
+              }
+            }}
+            onMouseLeave={() => {
+              setIsHovered(false);
+            }}
+            className="w-20 h-20 min-w-[80px] min-h-[80px] shrink-0 rounded-full flex items-center justify-center bg-[#E0E5EC] text-[#3D4852] transition-all duration-300 shadow-[9px_9px_16px_rgb(163,177,198,0.6),-9px_-9px_16px_rgba(255,255,255,0.5)] hover:shadow-[12px_12px_20px_rgb(163,177,198,0.7),-12px_-12px_20px_rgba(255,255,255,0.6)] hover:scale-105 active:shadow-[inset_6px_6px_10px_rgb(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.5)] active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E0E5EC] relative"
+          >
+            <div className="relative w-[70px] h-[70px] shrink-0 rounded-full overflow-hidden flex items-center justify-center p-1 bg-[#E0E5EC] shadow-[inset_6px_6px_10px_rgb(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.5)]">
               <video
                 ref={videoRef}
                 src={trixieVideo}
                 muted
                 playsInline
                 onEnded={handleVideoEnded}
-                className="size-full object-cover rounded-full"
+                className="w-full h-full object-cover rounded-full"
               />
             </div>
-          )}
-        </button>
-      </div>
+          </button>
+        </div>
+      )}
 
       {/* Sleek Glassmorphic Chat Panel Card */}
       {isOpen && (
@@ -501,3 +494,4 @@ export default function Chatbot() {
     </>
   );
 }
+

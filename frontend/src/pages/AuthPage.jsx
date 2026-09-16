@@ -1,29 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
-import { Input } from "../components/ui/Input";
-import { Button } from "../components/ui/Button";
-import { PageTransition } from "../components/ui/PageTransition";
-import { loginUser, registerUser, googleLogin, completeProfile, setAuthToken, forgotPassword, resetPassword } from "../api";
+import { loginUser, registerUser, googleLogin, githubLogin, xLogin, exchangeOAuthCode, completeProfile, forgotPassword, resetPassword } from "../api";
 import { useToast } from "../hooks/useToast";
+import authTrainHills from "../assets/images/auth-train-hills.jpg";
+import Logo from "../assets/images/Logo.png";
 
 const initialForm = { username: "", email: "", password: "", firstName: "", lastName: "" };
 const profileSetupForm = { username: "", firstName: "", lastName: "" };
-
-const AUTH_CONTENT = {
-  login: {
-    title: "Welcome back",
-    description: "Sign in to access your trading terminal.",
-    button: "Log In"
-  },
-  register: {
-    title: "Create your account",
-    description: "Register to start paper trading on NexTradeX.",
-    button: "Register"
-  }
-};
 
 // Validation helpers
 const validateUsername = (v) => {
@@ -61,27 +46,30 @@ const getPasswordStrength = (password) => {
 
 const STRENGTH_METER = {
   weak: {
-    label: "Weak password",
+    label: "Weak",
+    colorText: "text-red-500",
     bars: [
-      { color: "bg-trading-down", active: true },
-      { color: "bg-hairline-on-dark", active: false },
-      { color: "bg-hairline-on-dark", active: false },
+      { color: "bg-red-500", active: true },
+      { color: "bg-slate-200", active: false },
+      { color: "bg-slate-200", active: false },
     ],
   },
   medium: {
-    label: "Medium password",
+    label: "Medium",
+    colorText: "text-amber-500",
     bars: [
-      { color: "bg-trading-warning", active: true },
-      { color: "bg-trading-warning", active: true },
-      { color: "bg-hairline-on-dark", active: false },
+      { color: "bg-amber-500", active: true },
+      { color: "bg-amber-500", active: true },
+      { color: "bg-slate-200", active: false },
     ],
   },
   strong: {
-    label: "Strong password",
+    label: "Strong",
+    colorText: "text-emerald-500",
     bars: [
-      { color: "bg-trading-up", active: true },
-      { color: "bg-trading-up", active: true },
-      { color: "bg-trading-up", active: true },
+      { color: "bg-emerald-500", active: true },
+      { color: "bg-emerald-500", active: true },
+      { color: "bg-emerald-500", active: true },
     ],
   },
 };
@@ -89,48 +77,50 @@ const STRENGTH_METER = {
 function FieldError({ id, message }) {
   if (!message) return null;
   return (
-    <p id={id} role="alert" className="text-trading-down text-xs mt-1.5">
-      {message}
+    <p id={id} role="alert" className="text-red-500 text-xs mt-1.5 flex items-center gap-1 font-medium">
+      <AlertCircle size={12} className="shrink-0" />
+      <span>{message}</span>
     </p>
   );
 }
 
 function PasswordStrengthMeter({ password, show }) {
-  if (!show) return <div className="h-1" aria-hidden="true" />;
+  if (!show || !password) return null;
   const strength = getPasswordStrength(password);
   const meta = STRENGTH_METER[strength];
   return (
-    <div
-      className="flex items-center gap-1 mt-2"
-      aria-label={meta.label}
-      role="meter"
-      aria-valuenow={
-        strength === "weak" ? 1 : strength === "medium" ? 2 : 3
-      }
-      aria-valuemin={0}
-      aria-valuemax={3}
-      aria-valuetext={meta.label}
-    >
-      {meta.bars.map((bar, i) => (
-        <div
-          key={i}
-          className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-            bar.active ? bar.color : "bg-hairline-on-dark"
-          }`}
-        />
-      ))}
+    <div className="mt-2 space-y-1">
+      <div className="flex items-center justify-between text-[11px]">
+        <span className="text-slate-500">Password strength:</span>
+        <span className={`font-medium ${meta.colorText}`}>{meta.label}</span>
+      </div>
+      <div className="flex items-center gap-1.5 h-1">
+        {meta.bars.map((bar, i) => (
+          <div
+            key={i}
+            className={`h-full flex-1 rounded-full transition-colors duration-300 ${
+              bar.active ? bar.color : "bg-slate-200"
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 }
 
 export default function AuthPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const toast = useToast();
 
   const [mode, setMode] = useState(() => {
+    if (location.pathname === "/register") return "register";
     const params = new URLSearchParams(window.location.search);
     return params.get("mode") === "register" ? "register" : "login";
   });
+
+  const [step, setStep] = useState(1); // 1 = Email step, 2 = Password & Details step
+  const [emailInput, setEmailInput] = useState("");
   const [form, setForm] = useState(initialForm);
   const [setupForm, setSetupForm] = useState(profileSetupForm);
   const [loading, setLoading] = useState(false);
@@ -138,28 +128,30 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [needsSetup, setNeedsSetup] = useState(false);
 
-  // Field-level errors: { fieldName: "error message" }
   const [fieldErrors, setFieldErrors] = useState({});
-  const [touched, setTouched] = useState({});
-
-  const content = AUTH_CONTENT[mode];
+  const [, setTouched] = useState({});
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const modeParam = params.get("mode");
-    if (modeParam === "register") {
+    if (location.pathname === "/register") {
       setMode("register");
-    } else if (modeParam === "login") {
+    } else if (location.pathname === "/login") {
       setMode("login");
+    } else {
+      const params = new URLSearchParams(location.search);
+      const modeParam = params.get("mode");
+      if (modeParam === "register") setMode("register");
+      if (modeParam === "login") setMode("login");
     }
-  }, [location.search]);
+  }, [location.pathname, location.search]);
 
+  // Forgot Password modal states
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSuccess, setForgotSuccess] = useState("");
   const [forgotError, setForgotError] = useState("");
 
+  // Reset Password states
   const [urlResetToken, setUrlResetToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
@@ -167,30 +159,50 @@ export default function AuthPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
+    const code = params.get("code");
     const setup = params.get("setup");
     const errorParam = params.get("error");
-    const errorMsg = params.get("message");
     const resetTokenParam = params.get("resetToken");
 
     if (resetTokenParam) {
       setUrlResetToken(resetTokenParam);
     }
 
-    if (token) {
-      setAuthToken(token);
-      if (setup === "true") {
-        setNeedsSetup(true);
-      } else {
-        window.location.href = "/";
-      }
+    if (code) {
+      window.history.replaceState({}, document.title, "/auth");
+      exchangeOAuthCode(code)
+        .then((response) => {
+          if (setup === "true" || response?.data?.needsProfileSetup) {
+            setNeedsSetup(true);
+          } else {
+            window.location.href = "/";
+          }
+        })
+        .catch(() => setError("Authentication failed. Please try again."));
     }
 
     if (errorParam) {
-      setError(errorMsg || "Authentication failed");
+      setError(
+        errorParam === "email_exists"
+          ? "This email already has an account. Sign in normally before linking Google."
+          : "Authentication failed. Please try again."
+      );
       window.history.replaceState({}, document.title, "/auth");
     }
   }, []);
+
+  const handleEmailContinue = (e) => {
+    e.preventDefault();
+    setError("");
+    const err = validateEmail(emailInput);
+    if (err) {
+      setFieldErrors({ email: err });
+      return;
+    }
+    setFieldErrors({});
+    setForm((prev) => ({ ...prev, email: emailInput, username: emailInput }));
+    setStep(2);
+  };
 
   const handleForgotSubmit = async (e) => {
     e.preventDefault();
@@ -203,8 +215,7 @@ export default function AuthPage() {
     setForgotLoading(true);
     try {
       await forgotPassword(forgotEmail);
-      setForgotSuccess(`If an account exists for ${forgotEmail}, a password reset link has been sent to your email.`);
-      toast.success("Password reset email sent! Check your inbox.");
+      toast?.success("Password reset email sent! Check your inbox.");
     } catch (err) {
       setForgotError(err.message || "Failed to process request.");
     } finally {
@@ -223,7 +234,7 @@ export default function AuthPage() {
     try {
       await resetPassword(urlResetToken, newPassword);
       setResetSuccess(true);
-      toast.success("Password reset successfully! You can now log in.");
+      toast?.success("Password reset successfully! You can now log in.");
     } catch (err) {
       setError(err.message || "Failed to reset password. The link may have expired.");
     } finally {
@@ -231,11 +242,9 @@ export default function AuthPage() {
     }
   };
 
-  // Clear field error when user starts typing
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    // Clear field error on change
     if (fieldErrors[name]) {
       setFieldErrors((prev) => {
         const next = { ...prev };
@@ -250,33 +259,18 @@ export default function AuthPage() {
     setSetupForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSetupBlur = (e) => {
-    const { name, value } = e.target;
-    setTouched((prev) => ({ ...prev, [name]: true }));
-    if (name === "username") {
-      const err = validateUsername(value);
-      setFieldErrors((prev) => ({ ...prev, ...(err ? { [name]: err } : {}) }));
-    }
-    if (name === "firstName" && !setupForm.firstName.trim()) {
-      setFieldErrors((prev) => ({ ...prev, firstName: "First name is required" }));
-    }
-    if (name === "lastName" && !setupForm.lastName.trim()) {
-      setFieldErrors((prev) => ({ ...prev, lastName: "Last name is required" }));
-    }
-  };
-
   const handleBlur = (e) => {
     const { name, value } = e.target;
     setTouched((prev) => ({ ...prev, [name]: true }));
     const fieldValidators = {
       username: (val) => validateUsername(val),
       email: (val) => validateEmail(val),
-      password: (val) => mode === "register" ? validatePasswordRegister(val) : validatePasswordLogin(val),
-      firstName: (val) => (mode === "register" && !val.trim() ? "First name is required" : null),
-      lastName: (val) => (mode === "register" && !val.trim() ? "Last name is required" : null),
+      password: (val) => (mode === "register" ? validatePasswordRegister(val) : validatePasswordLogin(val)),
+      firstName: (val) => (mode === "register" && !val?.trim() ? "First name is required" : null),
+      lastName: (val) => (mode === "register" && !val?.trim() ? "Last name is required" : null),
     };
     const validator = fieldValidators[name];
-    let err = validator ? validator(value) : null;
+    const err = validator ? validator(value) : null;
     setFieldErrors((prev) => ({
       ...prev,
       ...(err ? { [name]: err } : {}),
@@ -285,56 +279,24 @@ export default function AuthPage() {
 
   const validateForm = () => {
     const errors = {};
-    const uErr = validateUsername(form.username);
-    if (uErr) errors.username = uErr;
-    if (mode === "register") {
+    if (mode === "login") {
+      const uVal = form.username?.trim();
+      if (!uVal) {
+        errors.username = "Email or username is required";
+      }
+      const pErr = validatePasswordLogin(form.password);
+      if (pErr) errors.password = pErr;
+    } else {
+      const uErr = validateUsername(form.username);
+      if (uErr) errors.username = uErr;
       const eErr = validateEmail(form.email);
       if (eErr) errors.email = eErr;
       const pErr = validatePasswordRegister(form.password);
       if (pErr) errors.password = pErr;
-      if (!form.firstName.trim()) errors.firstName = "First name is required";
-      if (!form.lastName.trim()) errors.lastName = "Last name is required";
-    } else {
-      const pErr = validatePasswordLogin(form.password);
-      if (pErr) errors.password = pErr;
+      if (!form.firstName?.trim()) errors.firstName = "First name is required";
+      if (!form.lastName?.trim()) errors.lastName = "Last name is required";
     }
     return errors;
-  };
-
-  const handleSetupSubmit = async (e) => {
-    e.preventDefault();
-    if (loading) return;
-    setLoading(true);
-    setError("");
-    setFieldErrors({});
-    setTouched({ username: true, firstName: true, lastName: true });
-
-    // Validate all fields
-    const errors = {};
-    const uErr = validateUsername(setupForm.username);
-    if (uErr) errors.username = uErr;
-    if (!setupForm.firstName.trim()) errors.firstName = "First name is required";
-    if (!setupForm.lastName.trim()) errors.lastName = "Last name is required";
-
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      await completeProfile({
-        username: setupForm.username,
-        firstName: setupForm.firstName,
-        lastName: setupForm.lastName,
-      });
-      toast?.success("Profile setup complete! Welcome to NexTradeX.");
-      window.location.href = "/";
-    } catch (err) {
-      setError(err.message || "Profile setup failed");
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -342,11 +304,6 @@ export default function AuthPage() {
     if (loading) return;
     setLoading(true);
     setError("");
-    // Mark all fields as touched
-    const allFields = ["username", "email", "password", "firstName", "lastName"];
-    const touchedAll = allFields.reduce((acc, f) => ({ ...acc, [f]: true }), {});
-    setTouched(touchedAll);
-    setFieldErrors({});
 
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
@@ -369,545 +326,550 @@ export default function AuthPage() {
         });
         toast?.success("Account created! Welcome to NexTradeX.");
       }
-      // Clear form state
       setForm(initialForm);
       setFieldErrors({});
-      setTouched({});
       window.location.href = "/";
     } catch (err) {
-      setError(err.message || "Authentication failed");
+      setError(err.message || "Authentication failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
   };
 
-  const getToggleStyle = () => ({
-    width: '50%',
-    transform: mode === 'login' ? 'translateX(0%)' : 'translateX(100%)',
-  });
+  const handleSetupSubmit = async (e) => {
+    e.preventDefault();
+    if (loading) return;
+    setLoading(true);
+    setError("");
+    const errors = {};
+    const uErr = validateUsername(setupForm.username);
+    if (uErr) errors.username = uErr;
+    if (!setupForm.firstName?.trim()) errors.firstName = "First name is required";
+    if (!setupForm.lastName?.trim()) errors.lastName = "Last name is required";
 
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await completeProfile({
+        username: setupForm.username,
+        firstName: setupForm.firstName,
+        lastName: setupForm.lastName,
+      });
+      toast?.success("Profile setup complete! Welcome to NexTradeX.");
+      window.location.href = "/";
+    } catch (err) {
+      setError(err.message || "Profile setup failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 1. PASSWORD RESET VIEW
   if (urlResetToken) {
     return (
-      <PageTransition>
-        <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12 bg-[#fafafa]">
-          <Card className="w-full max-w-md overflow-hidden bg-white border border-[#e8e8e8] rounded-[16px] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_8px_16px_rgba(0,0,0,0.06)]">
-            <CardHeader className="pb-4 pt-8 px-8">
-              <CardTitle className="text-[24px] font-semibold text-[#181925] tracking-[-0.31px]">Set New Password</CardTitle>
-              <CardDescription className="text-[15px] text-[#666666] tracking-[-0.32px] mt-1">Enter a strong new password for your NexTradeX account.</CardDescription>
-            </CardHeader>
+      <div className="h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900 font-openrunde overflow-hidden">
+        <div className="relative w-full lg:w-1/2 h-44 sm:h-56 lg:h-full overflow-hidden select-none bg-slate-50 flex items-center justify-center">
+          <img
+            src={authTrainHills}
+            alt="Train on flower hills"
+            className="w-full h-full object-cover object-center"
+          />
+        </div>
+
+        <div className="w-full lg:w-1/2 flex flex-col justify-between pt-8 sm:pt-10 lg:pt-12 pb-6 px-6 sm:px-10 lg:px-12 h-full overflow-y-auto bg-white font-openrunde">
+          <div className="w-full max-w-md mx-auto mb-6 flex items-center">
+            <Link to="/" className="inline-block">
+              <img src={Logo} alt="NexTradeX" className="h-9 sm:h-10 w-auto object-contain" />
+            </Link>
+          </div>
+
+          <div className="max-w-md w-full mx-auto my-auto py-2 font-openrunde">
+            <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight mb-1.5">Set New Password</h1>
+            <p className="text-slate-500 text-sm mb-6">Enter a strong new password for your account.</p>
+
             {resetSuccess ? (
-              <CardContent className="space-y-4 text-center py-6 px-8">
-                <div className="p-4 rounded-[12px] bg-[#def6e4] text-[#33c758] font-medium text-[15px] tracking-[-0.32px]">Password Updated Successfully!</div>
-                <p className="text-[14px] text-[#666666] tracking-[-0.32px]">Your password has been reset. You can now log in with your new password.</p>
-                <Button onClick={() => { setUrlResetToken(""); window.location.href = "/auth"; }} className="w-full bg-[#918df6] hover:bg-[#807ce5] text-white rounded-full font-medium text-[15px] tracking-[-0.32px] mt-4 py-3">
-                  Proceed to Login
-                </Button>
-              </CardContent>
+              <div className="space-y-4 text-center py-4">
+                <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-medium text-sm">
+                  Password Updated Successfully!
+                </div>
+                <p className="text-slate-500 text-sm">Your password has been reset. You can now sign in with your new password.</p>
+                <button
+                  type="button"
+                  onClick={() => { setUrlResetToken(""); navigate("/auth"); }}
+                  className="w-full h-12 rounded-2xl font-semibold text-sm text-white bg-[#8574ff] hover:bg-[#7462f5] transition-all shadow-md mt-2"
+                >
+                  Proceed to Sign In
+                </button>
+              </div>
             ) : (
-              <form onSubmit={handleResetSubmit} noValidate>
-                <CardContent className="space-y-5 px-8">
-                  {error && (
-                    <div role="alert" className="flex items-start gap-2 p-3.5 rounded-[8px] bg-[#fff0ed] border border-[#ff3e00]/20 text-[#ff3e00] text-[13px] tracking-[-0.32px]">
-                      <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
-                      <span>{error}</span>
-                    </div>
-                  )}
-                  <div>
-                    <label className="text-[12px] text-[#181925] tracking-[-0.32px] uppercase mb-2 block font-semibold">New Password</label>
-                    <Input
+              <form onSubmit={handleResetSubmit} className="space-y-4">
+                {error && (
+                  <div role="alert" className="flex items-start gap-2.5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm">
+                    <AlertCircle size={15} className="mt-0.5 shrink-0" />
+                    <span>{error}</span>
+                  </div>
+                )}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">New Password</label>
+                  <div className="relative">
+                    <input
                       type={showPassword ? "text" : "password"}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Enter new password (min 6 chars)"
                       required
-                      className="border-[#e8e8e8] text-[#181925] placeholder:text-[#999999] rounded-[8px] focus:border-[#918df6] focus:ring-[#918df6]/20"
-                      rightIcon={
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="focus:outline-none focus-visible:ring-1 focus-visible:ring-[#918df6]/40 rounded text-[#999999] hover:text-[#181925]"
-                          aria-label={showPassword ? "Hide password" : "Show password"}
-                        >
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      }
+                      className="w-full h-12 min-h-[48px] py-3 bg-[#f4f4f7] border border-transparent focus:border-[#8574ff] rounded-2xl px-5 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white transition-all font-openrunde shrink-0"
                     />
-                    <PasswordStrengthMeter password={newPassword} show={true} />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 focus:outline-none cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                   </div>
-                </CardContent>
-                <CardFooter className="pt-2 pb-8 px-8">
-                  <Button type="submit" className="w-full bg-[#918df6] hover:bg-[#807ce5] text-white rounded-full font-medium text-[15px] tracking-[-0.32px] py-3 shadow-[0_1px_1px_rgba(0,0,0,0.08)]" loading={resetLoading} disabled={resetLoading}>
-                    Update Password
-                  </Button>
-                </CardFooter>
+                  <PasswordStrengthMeter password={newPassword} show={true} />
+                </div>
+                <button
+                  type="submit"
+                  disabled={resetLoading}
+                  className="w-full h-12 min-h-[48px] py-3 rounded-2xl font-semibold text-sm sm:text-base text-white bg-[#8574ff] hover:bg-[#7462f5] active:scale-[0.99] transition-all shadow-md mt-2 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 font-openrunde shrink-0"
+                >
+                  {resetLoading ? <span>Updating...</span> : <span>Update Password</span>}
+                </button>
               </form>
             )}
-          </Card>
+          </div>
         </div>
-      </PageTransition>
+      </div>
     );
   }
 
-  // Profile setup form
+  // 2. PROFILE SETUP VIEW
   if (needsSetup) {
     return (
-      <PageTransition>
-        <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12">
-          <Card className="w-full max-w-md overflow-hidden border border-transparent light:border-transparent">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl">Complete Your Profile</CardTitle>
-              <CardDescription className="text-sm mt-1">Choose a username and verify your name to continue.</CardDescription>
-            </CardHeader>
-            <form onSubmit={handleSetupSubmit} noValidate>
-              <CardContent className="space-y-5">
-                {/* Username */}
-                <div>
-                  <label htmlFor="setup-username" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                    Username <span className="text-trading-down" aria-hidden="true">*</span>
-                  </label>
-                  <div className="relative min-h-[56px]">
-                    <Input
-                      id="setup-username"
-                      name="username"
-                      value={setupForm.username}
-                      onChange={handleSetupChange}
-                      onBlur={handleSetupBlur}
-                      autoComplete="username"
-                      required
-                      aria-required="true"
-                      aria-invalid={!!fieldErrors.username}
-                      aria-describedby={fieldErrors.username ? "setup-username-error" : undefined}
-                      placeholder="Choose a username"
-                      className={fieldErrors.username ? "border-trading-down focus-visible:border-trading-down focus-visible:ring-trading-down/20" : ""}
-                    />
-                  </div>
-                  <FieldError id="setup-username-error" message={fieldErrors.username} />
-                </div>
-
-                {/* First + Last Name */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="setup-firstName" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                      First Name <span className="text-trading-down" aria-hidden="true">*</span>
-                    </label>
-                    <div className="relative min-h-[56px]">
-                      <Input
-                        id="setup-firstName"
-                        name="firstName"
-                        value={setupForm.firstName}
-                        onChange={handleSetupChange}
-                        onBlur={handleSetupBlur}
-                        autoComplete="given-name"
-                        required
-                        aria-required="true"
-                        aria-invalid={!!fieldErrors.firstName}
-                        aria-describedby={fieldErrors.firstName ? "setup-firstName-error" : undefined}
-                        placeholder="First name"
-                        className={fieldErrors.firstName ? "border-trading-down focus-visible:border-trading-down focus-visible:ring-trading-down/20" : ""}
-                      />
-                    </div>
-                    <FieldError id="setup-firstName-error" message={fieldErrors.firstName} />
-                  </div>
-                  <div>
-                    <label htmlFor="setup-lastName" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                      Last Name <span className="text-trading-down" aria-hidden="true">*</span>
-                    </label>
-                    <div className="relative min-h-[56px]">
-                      <Input
-                        id="setup-lastName"
-                        name="lastName"
-                        value={setupForm.lastName}
-                        onChange={handleSetupChange}
-                        onBlur={handleSetupBlur}
-                        autoComplete="family-name"
-                        required
-                        aria-required="true"
-                        aria-invalid={!!fieldErrors.lastName}
-                        aria-describedby={fieldErrors.lastName ? "setup-lastName-error" : undefined}
-                        placeholder="Last name"
-                        className={fieldErrors.lastName ? "border-trading-down focus-visible:border-trading-down focus-visible:ring-trading-down/20" : ""}
-                      />
-                    </div>
-                    <FieldError id="setup-lastName-error" message={fieldErrors.lastName} />
-                  </div>
-                </div>
-
-                {/* Top-level form error */}
-                {error && (
-                  <div role="alert" aria-live="polite" className="flex items-start gap-2 p-3 rounded-2xl bg-trading-down/10 border border-trading-down/20 text-trading-down text-sm">
-                    <AlertCircle size={16} className="mt-0.5 flex-shrink-0" aria-hidden="true" />
-                    <span>{error}</span>
-                  </div>
-                )}
-              </CardContent>
-              <CardFooter className="pt-2">
-                <Button
-                  type="submit"
-                  className="w-full font-mono font-bold"
-                  loading={loading}
-                  disabled={loading}
-                  aria-disabled={loading}
-                >
-                  Complete Setup
-                </Button>
-              </CardFooter>
-            </form>
-          </Card>
+      <div className="h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900 font-openrunde overflow-hidden">
+        <div className="relative w-full lg:w-1/2 h-44 sm:h-56 lg:h-full overflow-hidden select-none bg-slate-50 flex items-center justify-center">
+          <img
+            src={authTrainHills}
+            alt="Train on flower hills"
+            className="w-full h-full object-cover object-center"
+          />
         </div>
-      </PageTransition>
-    );
-  }
 
-  // Main login / register form
-  return (
-    <PageTransition>
-      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12 bg-[#ebf5ff]">
-        <Card className="w-full max-w-md bg-[#fafdff] rounded-[32px] p-8 border-0 shadow-none">
-          <CardHeader className="pb-4 px-0 pt-0">
-            {/* Login / Register toggle */}
-            <div className="relative mb-6">
-              <div className="flex items-center bg-[#f6f7f8] rounded-full p-1 border border-black/5 relative overflow-hidden">
-                <div
-                  className="absolute top-1 bottom-1 rounded-full bg-[#181d27]"
-                  style={{
-                    ...getToggleStyle(),
-                    transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-                  }}
-                />
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={mode === "login"}
-                  aria-controls="auth-form-panel"
-                  id="auth-tab-login"
-                  onClick={() => { setMode("login"); setFieldErrors({}); setTouched({}); }}
-                  className={`flex-1 font-mono text-xs uppercase px-4 py-2.5 rounded-2xl relative z-10 transition-colors duration-300 ${
-                    mode === "login"
-                      ? "text-on-primary font-bold"
-                      : "text-muted hover:text-on-dark light:hover:text-foreground"
-                  }`}
-                >
-                  Login
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={mode === "register"}
-                  aria-controls="auth-form-panel"
-                  id="auth-tab-register"
-                  onClick={() => { setMode("register"); setFieldErrors({}); setTouched({}); }}
-                  className={`flex-1 font-mono text-xs uppercase px-4 py-2.5 rounded-2xl relative z-10 transition-colors duration-300 ${
-                    mode === "register"
-                      ? "text-on-primary font-bold"
-                      : "text-muted hover:text-on-dark light:hover:text-foreground"
-                  }`}
-                >
-                  Register
-                </button>
-              </div>
-            </div>
+        <div className="w-full lg:w-1/2 flex flex-col justify-between pt-8 sm:pt-10 lg:pt-12 pb-6 px-6 sm:px-10 lg:px-12 h-full overflow-y-auto bg-white font-openrunde">
+          <div className="w-full max-w-md mx-auto mb-6 flex items-center">
+            <Link to="/" className="inline-block">
+              <img src={Logo} alt="NexTradeX" className="h-9 sm:h-10 w-auto object-contain" />
+            </Link>
+          </div>
 
-            {/* Animated title */}
-            <div className="relative overflow-hidden h-8">
-              <div
-                className="transition-all duration-500 ease-out"
-                style={{
-                  transform: mode === 'login' ? 'translateY(0)' : 'translateY(-10px)',
-                  opacity: mode === 'login' ? 1 : 0,
-                }}
-              >
-                <CardTitle className="text-xl">{content.title}</CardTitle>
-              </div>
-              <div
-                className="absolute top-0 left-0 right-0 transition-all duration-500 ease-out"
-                style={{
-                  transform: mode === 'register' ? 'translateY(0)' : 'translateY(10px)',
-                  opacity: mode === 'register' ? 1 : 0,
-                }}
-              >
-                <CardTitle className="text-xl">{content.title}</CardTitle>
-              </div>
-            </div>
+          <div className="max-w-md w-full mx-auto my-auto py-2 font-openrunde">
+            <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight mb-1.5">Complete Your Profile</h1>
+            <p className="text-slate-500 text-sm mb-6">Choose a unique username and name to complete registration.</p>
 
-            {/* Animated description */}
-            <div className="relative overflow-hidden h-6 mt-1.5">
-              <div
-                className="transition-all duration-500 ease-out"
-                style={{
-                  transform: mode === 'login' ? 'translateY(0)' : 'translateY(-10px)',
-                  opacity: mode === 'login' ? 1 : 0,
-                }}
-              >
-                <CardDescription className="text-sm">Sign in to access your NexTradeX trading terminal.</CardDescription>
-              </div>
-              <div
-                className="absolute top-0 left-0 right-0 transition-all duration-500 ease-out"
-                style={{
-                  transform: mode === 'register' ? 'translateY(0)' : 'translateY(10px)',
-                  opacity: mode === 'register' ? 1 : 0,
-                }}
-              >
-                <CardDescription className="text-sm">Register to start paper trading on NexTradeX.</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-
-          <form
-            id="auth-form-panel"
-            role="tabpanel"
-            aria-labelledby={mode === "login" ? "auth-tab-login" : "auth-tab-register"}
-            onSubmit={handleSubmit}
-            noValidate
-          >
-            <CardContent className="space-y-5 pb-5">
-              {/* Top-level form error */}
+            <form onSubmit={handleSetupSubmit} className="space-y-4">
               {error && (
-                <div role="alert" aria-live="polite" className="flex items-start gap-2 p-3 rounded-2xl bg-trading-down/10 border border-trading-down/20 text-trading-down text-sm">
-                  <AlertCircle size={16} className="mt-0.5 flex-shrink-0" aria-hidden="true" />
+                <div role="alert" className="flex items-start gap-2.5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm">
+                  <AlertCircle size={15} className="mt-0.5 shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
-
-              {/* Username — always visible */}
               <div>
-                <label htmlFor="auth-username" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                  Username <span className="text-trading-down" aria-hidden="true">*</span>
-                </label>
-                <div className="relative min-h-[56px]">
-                  <Input
-                    id="auth-username"
-                    name="username"
-                    value={form.username}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    autoComplete="username"
-                    required
-                    aria-required="true"
-                    aria-invalid={!!fieldErrors.username}
-                    aria-describedby={fieldErrors.username ? "auth-username-error" : undefined}
-                    placeholder="Username"
-                    className={fieldErrors.username ? "border-trading-down focus-visible:border-trading-down focus-visible:ring-trading-down/20" : ""}
-                  />
-                </div>
-                <FieldError id="auth-username-error" message={fieldErrors.username} />
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Username</label>
+                <input
+                  type="text"
+                  name="username"
+                  value={setupForm.username}
+                  onChange={handleSetupChange}
+                  placeholder="Choose a username"
+                  required
+                  className="w-full h-12 min-h-[48px] py-3 bg-[#f4f4f7] border border-transparent focus:border-[#8574ff] rounded-2xl px-5 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white transition-all font-openrunde shrink-0"
+                />
+                <FieldError id="setup-username-error" message={fieldErrors.username} />
               </div>
 
-              {/* Register-only fields: First Name, Last Name, Email */}
-              <div
-                className="transition-all duration-500 ease-out overflow-hidden"
-                style={{
-                  maxHeight: mode === "register" ? '500px' : '0',
-                  opacity: mode === "register" ? 1 : 0,
-                  marginTop: mode === "register" ? '1.25rem' : '0',
-                  marginBottom: mode === "register" ? '1.25rem' : '0',
-                }}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">First Name</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={setupForm.firstName}
+                    onChange={handleSetupChange}
+                    placeholder="First name"
+                    required
+                    className="w-full h-12 min-h-[48px] py-3 bg-[#f4f4f7] border border-transparent focus:border-[#8574ff] rounded-2xl px-5 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white transition-all font-openrunde shrink-0"
+                  />
+                  <FieldError id="setup-firstName-error" message={fieldErrors.firstName} />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Last Name</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={setupForm.lastName}
+                    onChange={handleSetupChange}
+                    placeholder="Last name"
+                    required
+                    className="w-full h-12 min-h-[48px] py-3 bg-[#f4f4f7] border border-transparent focus:border-[#8574ff] rounded-2xl px-5 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white transition-all font-openrunde shrink-0"
+                  />
+                  <FieldError id="setup-lastName-error" message={fieldErrors.lastName} />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 min-h-[48px] py-3 rounded-2xl font-semibold text-sm sm:text-base text-white bg-[#8574ff] hover:bg-[#7462f5] active:scale-[0.99] transition-all shadow-md mt-2 flex items-center justify-center gap-2 cursor-pointer font-openrunde shrink-0"
               >
-                <div className="space-y-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* First Name */}
+                {loading ? <span>Saving...</span> : <span>Complete Setup</span>}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. MAIN SPLIT LOGIN & SIGN UP PAGE
+  return (
+    <div className="h-screen w-full bg-white flex flex-col lg:flex-row text-slate-900 font-openrunde overflow-hidden">
+      
+      {/* LEFT PANEL: Dreamy Train On Flower Hills Artwork */}
+      <div className="relative w-full lg:w-1/2 h-44 sm:h-56 lg:h-full overflow-hidden select-none bg-slate-50 flex items-center justify-center">
+        <img
+          src={authTrainHills}
+          alt="Train on flower hills"
+          className="w-full h-full object-cover object-center"
+        />
+        <div className="hidden lg:block absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-white to-transparent pointer-events-none" />
+      </div>
+
+      {/* RIGHT PANEL: Crisp White Auth Panel with Centered Card Layout */}
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center py-6 sm:py-8 lg:py-10 px-6 sm:px-10 lg:px-16 h-full overflow-y-auto bg-white font-openrunde">
+        
+        <div className="max-w-[420px] w-full mx-auto space-y-6 text-center">
+          
+          {/* Centered Logo with Fixed Explicit Width/Height */}
+          <div className="flex justify-center mb-2">
+            <Link to="/" className="inline-block">
+              <img
+                src={Logo}
+                alt="NexTradeX Logo"
+                className="w-12 h-12 sm:w-14 sm:h-14 object-contain mx-auto"
+              />
+            </Link>
+          </div>
+
+          {/* Title & Subtitle */}
+          <div className="space-y-1.5 mb-6">
+            <h1 className="text-2xl sm:text-[30px] font-extrabold text-[#181925] tracking-tight leading-snug">
+              {mode === "register" ? "Sign up to NexTradeX" : "Log in to NexTradeX"}
+            </h1>
+            <p className="text-sm sm:text-base text-[#666677] font-normal">
+              Just some simple crypto.
+            </p>
+          </div>
+
+          {/* Form Error Banner */}
+          {error && (
+            <div role="alert" className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm text-left mb-4">
+              <AlertCircle size={16} className="mt-0.5 shrink-0 text-red-500" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* STEP 1: Email Input */}
+          {step === 1 ? (
+            <form onSubmit={handleEmailContinue} noValidate className="space-y-4">
+              <div>
+                <input
+                  type="email"
+                  name="emailInput"
+                  value={emailInput}
+                  onChange={(e) => {
+                    setEmailInput(e.target.value);
+                    if (fieldErrors.email) setFieldErrors({});
+                  }}
+                  placeholder="Email address"
+                  autoComplete="email"
+                  required
+                  className={`w-full h-12 min-h-[48px] bg-[#f4f4f7] border rounded-2xl px-5 text-sm sm:text-base text-[#181925] placeholder:text-[#9999aa] focus:outline-none focus:bg-white focus:border-[#8574ff] focus:ring-2 focus:ring-[#8574ff]/20 transition-all font-openrunde ${
+                    fieldErrors.email ? "border-red-400 bg-red-50/30" : "border-transparent"
+                  }`}
+                />
+                <FieldError id="auth-email-error" message={fieldErrors.email} />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full h-12 min-h-[48px] py-3 shrink-0 rounded-2xl font-semibold text-sm sm:text-base text-white bg-[#8574ff] hover:bg-[#7462f5] active:scale-[0.99] transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer font-openrunde"
+              >
+                <span>Continue with email</span>
+              </button>
+
+              {/* Dual Side-by-Side Soft Pill OAuth Buttons: [ Google ] [ GitHub ] */}
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={googleLogin}
+                  className="h-12 min-h-[48px] rounded-2xl bg-[#f4f4f7] hover:bg-[#eaeaf0] text-[#181925] text-xs sm:text-sm font-semibold flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-xs border border-transparent hover:border-slate-200"
+                >
+                  <svg width="18" height="18" className="shrink-0" viewBox="0 0 24 24">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  </svg>
+                  <span>Google</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={githubLogin}
+                  className="h-12 min-h-[48px] rounded-2xl bg-[#f4f4f7] hover:bg-[#eaeaf0] text-[#181925] text-xs sm:text-sm font-semibold flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-xs border border-transparent hover:border-slate-200"
+                >
+                  <svg width="18" height="18" className="shrink-0 fill-current text-[#181925]" viewBox="0 0 24 24">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                  </svg>
+                  <span>GitHub</span>
+                </button>
+              </div>
+
+              {/* Bottom Mode Switcher */}
+              <div className="pt-4 text-xs sm:text-sm text-[#666677] font-medium">
+                {mode === "login" ? (
+                  <span>
+                    Don't have an account?{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode("register");
+                        setFieldErrors({});
+                        setError("");
+                      }}
+                      className="text-[#3b82f6] hover:underline font-semibold focus:outline-none"
+                    >
+                      Register
+                    </button>
+                  </span>
+                ) : (
+                  <span>
+                    Already have an account?{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode("login");
+                        setFieldErrors({});
+                        setError("");
+                      }}
+                      className="text-[#3b82f6] hover:underline font-semibold focus:outline-none"
+                    >
+                      Login
+                    </button>
+                  </span>
+                )}
+              </div>
+            </form>
+          ) : (
+            /* STEP 2: Password Entry & Details */
+            <form onSubmit={handleSubmit} noValidate className="space-y-4 text-left">
+              
+              <div className="flex items-center justify-between bg-[#f4f4f7] rounded-2xl px-5 py-3 text-xs sm:text-sm">
+                <span className="font-medium text-[#181925] truncate">{form.email || emailInput}</span>
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="text-xs font-semibold text-[#8574ff] hover:underline shrink-0 ml-2"
+                >
+                  Edit
+                </button>
+              </div>
+
+              {mode === "register" && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label htmlFor="auth-firstName" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                        First Name <span className="text-trading-down" aria-hidden="true">*</span>
-                      </label>
-                      <div className="relative min-h-[56px]">
-                        <Input
-                          id="auth-firstName"
-                          name="firstName"
-                          value={form.firstName}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          autoComplete="given-name"
-                          required={mode === "register"}
-                          aria-required={mode === "register"}
-                          aria-invalid={!!fieldErrors.firstName}
-                          aria-describedby={fieldErrors.firstName ? "auth-firstName-error" : undefined}
-                          placeholder="First name"
-                          className={fieldErrors.firstName ? "border-trading-down focus-visible:border-trading-down focus-visible:ring-trading-down/20" : ""}
-                        />
-                      </div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">First Name</label>
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={form.firstName}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="First name"
+                        required
+                        className={`w-full h-12 min-h-[48px] bg-[#f4f4f7] border rounded-2xl px-5 text-sm sm:text-base text-[#181925] placeholder:text-[#9999aa] focus:outline-none focus:bg-white focus:border-[#8574ff] transition-all font-openrunde shrink-0 ${
+                          fieldErrors.firstName ? "border-red-400 bg-red-50/30" : "border-transparent"
+                        }`}
+                      />
                       <FieldError id="auth-firstName-error" message={fieldErrors.firstName} />
                     </div>
-
-                    {/* Last Name */}
                     <div>
-                      <label htmlFor="auth-lastName" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                        Last Name <span className="text-trading-down" aria-hidden="true">*</span>
-                      </label>
-                      <div className="relative min-h-[56px]">
-                        <Input
-                          id="auth-lastName"
-                          name="lastName"
-                          value={form.lastName}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          autoComplete="family-name"
-                          required={mode === "register"}
-                          aria-required={mode === "register"}
-                          aria-invalid={!!fieldErrors.lastName}
-                          aria-describedby={fieldErrors.lastName ? "auth-lastName-error" : undefined}
-                          placeholder="Last name"
-                          className={fieldErrors.lastName ? "border-trading-down focus-visible:border-trading-down focus-visible:ring-trading-down/20" : ""}
-                        />
-                      </div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Last Name</label>
+                      <input
+                        type="text"
+                        name="lastName"
+                        value={form.lastName}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="Last name"
+                        required
+                        className={`w-full h-12 min-h-[48px] bg-[#f4f4f7] border rounded-2xl px-5 text-sm sm:text-base text-[#181925] placeholder:text-[#9999aa] focus:outline-none focus:bg-white focus:border-[#8574ff] transition-all font-openrunde shrink-0 ${
+                          fieldErrors.lastName ? "border-red-400 bg-red-50/30" : "border-transparent"
+                        }`}
+                      />
                       <FieldError id="auth-lastName-error" message={fieldErrors.lastName} />
                     </div>
                   </div>
 
-                  {/* Email */}
                   <div>
-                    <label htmlFor="auth-email" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                      Email Address <span className="text-trading-down" aria-hidden="true">*</span>
-                    </label>
-                    <div className="relative min-h-[56px]">
-                      <Input
-                        id="auth-email"
-                        type="email"
-                        name="email"
-                        value={form.email}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        autoComplete="email"
-                        required={mode === "register"}
-                        aria-required={mode === "register"}
-                        aria-invalid={!!fieldErrors.email}
-                        aria-describedby={fieldErrors.email ? "auth-email-error" : undefined}
-                        placeholder="Email address"
-                        className={fieldErrors.email ? "border-trading-down focus-visible:border-trading-down focus-visible:ring-trading-down/20" : ""}
-                      />
-                    </div>
-                    <FieldError id="auth-email-error" message={fieldErrors.email} />
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Username</label>
+                    <input
+                      type="text"
+                      name="username"
+                      value={form.username}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="Choose a username"
+                      required
+                      className={`w-full h-12 min-h-[48px] bg-[#f4f4f7] border rounded-2xl px-5 text-sm sm:text-base text-[#181925] placeholder:text-[#9999aa] focus:outline-none focus:bg-white focus:border-[#8574ff] transition-all font-openrunde shrink-0 ${
+                        fieldErrors.username ? "border-red-400 bg-red-50/30" : "border-transparent"
+                      }`}
+                    />
+                    <FieldError id="auth-reg-username-error" message={fieldErrors.username} />
                   </div>
-                </div>
-              </div>
+                </>
+              )}
 
-              {/* Password */}
               <div>
-                <label htmlFor="auth-password" className="font-mono text-[10px] text-muted uppercase mb-2 block font-semibold">
-                  Password <span className="text-trading-down" aria-hidden="true">*</span>
-                </label>
-                <div className="relative min-h-[56px]">
-                  <Input
-                    id="auth-password"
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+                <div className="relative">
+                  <input
                     type={showPassword ? "text" : "password"}
                     name="password"
                     value={form.password}
                     onChange={handleChange}
                     onBlur={handleBlur}
+                    placeholder="••••••••"
                     autoComplete={mode === "register" ? "new-password" : "current-password"}
                     required
-                    aria-required="true"
-                    aria-invalid={!!fieldErrors.password}
-                    aria-describedby={fieldErrors.password ? "auth-password-error" : "auth-password-strength"}
-                    placeholder="Password"
-                    rightIcon={
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/40 rounded"
-                        aria-label={showPassword ? "Hide password" : "Show password"}
-                      >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    }
-                    className={fieldErrors.password ? "border-trading-down focus-visible:border-trading-down focus-visible:ring-trading-down/20" : ""}
+                    className={`w-full h-12 min-h-[48px] bg-[#f4f4f7] border rounded-2xl px-5 pr-12 text-sm sm:text-base text-[#181925] placeholder:text-[#9999aa] focus:outline-none focus:bg-white focus:border-[#8574ff] transition-all font-openrunde shrink-0 ${
+                      fieldErrors.password ? "border-red-400 bg-red-50/30" : "border-transparent"
+                    }`}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 focus:outline-none cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
-                {/* Password strength meter — only in register mode */}
-                <PasswordStrengthMeter
-                  password={form.password}
-                  show={mode === "register"}
-                />
+                <PasswordStrengthMeter password={form.password} show={mode === "register"} />
                 <FieldError id="auth-password-error" message={fieldErrors.password} />
+
                 {mode === "login" && (
-                  <div className="flex justify-end mt-2">
+                  <div className="flex justify-end mt-1.5">
                     <button
                       type="button"
-                      onClick={() => { setForgotError(""); setForgotSuccess(""); setShowForgotModal(true); }}
-                      className="text-xs font-mono text-primary hover:underline focus:outline-none"
+                      onClick={() => {
+                        setForgotError("");
+                        setForgotSuccess("");
+                        setShowForgotModal(true);
+                      }}
+                      className="text-xs font-semibold text-[#8574ff] hover:underline focus:outline-none"
                     >
-                      Forgot Password?
+                      Forgot password?
                     </button>
                   </div>
                 )}
               </div>
-            </CardContent>
 
-            <CardFooter className="flex flex-col gap-4 pb-6">
-              <Button
+              <button
                 type="submit"
-                className="w-full font-mono font-bold"
-                loading={loading}
                 disabled={loading}
-                aria-disabled={loading}
+                className="w-full h-12 min-h-[48px] py-3 mt-2 shrink-0 rounded-2xl font-semibold text-sm sm:text-base text-white bg-[#8574ff] hover:bg-[#7462f5] active:scale-[0.99] transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 font-openrunde"
               >
-                {content.button}
-              </Button>
-              <div className="relative flex items-center w-full my-1">
-                <div className="flex-grow border-t border-transparent light:border-transparent" />
-                <span className="flex-shrink mx-4 text-muted text-xs font-mono uppercase">or</span>
-                <div className="flex-grow border-t border-transparent light:border-transparent" />
+                {loading ? (
+                  <span>Processing...</span>
+                ) : mode === "login" ? (
+                  <span>Sign in</span>
+                ) : (
+                  <span>Create account</span>
+                )}
+              </button>
+
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="text-xs font-medium text-[#777788] hover:text-[#181925] transition-colors"
+                >
+                  ← Back to email
+                </button>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full font-mono flex items-center justify-center gap-2 hover:bg-background light:hover:bg-background"
-                onClick={googleLogin}
-              >
-                <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                </svg>
-                Continue with Google
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
+            </form>
+          )}
+
+        </div>
+
       </div>
 
       {/* Forgot Password Modal */}
       <Dialog open={showForgotModal} onOpenChange={setShowForgotModal}>
-        <DialogContent className="max-w-md bg-white border border-[#e8e8e8] rounded-[16px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_8px_16px_rgba(0,0,0,0.06)]">
+        <DialogContent className="max-w-md bg-white border border-slate-200 text-slate-900 rounded-2xl p-6 shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-[20px] font-semibold text-[#181925] tracking-[-0.31px]">Forgot Password</DialogTitle>
+            <DialogTitle className="text-lg font-bold text-slate-900 tracking-tight">
+              Forgot Password
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleForgotSubmit} className="space-y-4 pt-2">
-            <p className="text-[14px] text-[#666666] tracking-[-0.32px] leading-relaxed">
-              Enter your registered email address below and we will send you a link to reset your password.
-            </p>
+
             {forgotError && (
-              <div role="alert" className="p-3.5 rounded-[8px] bg-[#fff0ed] border border-[#ff3e00]/20 text-[#ff3e00] text-[13px] tracking-[-0.32px]">
+              <div role="alert" className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs">
                 {forgotError}
               </div>
             )}
-            {forgotSuccess && (
-              <div role="status" className="p-3.5 rounded-[8px] bg-[#def6e4] border border-[#33c758]/20 text-[#33c758] text-[13px] tracking-[-0.32px]">
-                {forgotSuccess}
-              </div>
-            )}
+
+
             <div>
-              <label className="text-[12px] font-medium text-[#181925] tracking-[-0.32px] uppercase mb-1.5 block">Email Address</label>
-              <Input
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">Email Address</label>
+              <input
                 type="email"
                 value={forgotEmail}
                 onChange={(e) => setForgotEmail(e.target.value)}
-                placeholder="name@example.com"
+                placeholder="you@company.com"
                 required
-                className="border-[#e8e8e8] text-[#181925] placeholder:text-[#999999] rounded-[8px] focus:border-[#918df6] focus:ring-[#918df6]/20"
+                className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#8574ff] focus:ring-1 focus:ring-[#8574ff] transition-all"
               />
             </div>
-            <div className="flex justify-end gap-3 pt-3">
-              <Button type="button" variant="outline" onClick={() => setShowForgotModal(false)} className="rounded-full border border-[#e8e8e8] text-[#666666] hover:bg-[#fafafa] font-medium text-[14px] px-5">
+
+            <div className="flex justify-end gap-2.5 pt-3">
+              <button
+                type="button"
+                onClick={() => setShowForgotModal(false)}
+                className="px-4 py-2 rounded-xl border border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs sm:text-sm font-medium transition-all"
+              >
                 Cancel
-              </Button>
-              <Button type="submit" loading={forgotLoading} disabled={forgotLoading} className="bg-[#918df6] hover:bg-[#807ce5] text-white rounded-full font-medium text-[14px] tracking-[-0.32px] px-6 shadow-[0_1px_1px_rgba(0,0,0,0.08)]">
-                Send Reset Link
-              </Button>
+              </button>
+              <button
+                type="submit"
+                disabled={forgotLoading}
+                className="px-5 py-2 rounded-xl bg-[#8574ff] hover:bg-[#7462f5] text-white text-xs sm:text-sm font-semibold transition-all shadow-md disabled:opacity-60"
+              >
+                {forgotLoading ? "Sending..." : "Send Reset Link"}
+              </button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
-    </PageTransition>
+    </div>
   );
 }

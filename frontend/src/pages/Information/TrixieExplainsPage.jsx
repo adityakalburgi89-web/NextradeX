@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { PageTransition } from "../../components/ui/PageTransition";
 import { Play } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 // Platform Videos
 import vidAboutCrypto from "../../assets/videos/Platfrom Video/AboutCrypto.mp4";

@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { ArrowLeft } from 'lucide-react';
 import { PageTransition } from '../components/ui/PageTransition';
 

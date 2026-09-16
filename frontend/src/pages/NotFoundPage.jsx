@@ -1,62 +1,48 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, LayoutGrid, SearchX } from "lucide-react";
-import { motion } from "framer-motion";
-
-const FloatingSymbol = ({ icon, top, left, delay }) => (
-  <motion.div
-    animate={{ y: [0, -10, 0], opacity: [0.25, 0.6, 0.25] }}
-    transition={{ duration: 3, delay, repeat: Infinity }}
-    className="absolute rounded-full bg-background px-4 py-2 font-mono text-sm font-bold text-muted shadow-neo-sm"
-    style={{ top, left }}
-  >
-    {icon}
-  </motion.div>
-);
+import { ArrowLeft, LayoutGrid } from "lucide-react";
+import { motion } from "motion/react";
+import { PageTransition } from "../components/ui/PageTransition";
 
 export default function NotFoundPage() {
   return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-background px-6 py-24 text-foreground">
-      <FloatingSymbol icon="BTC" top="18%" left="10%" delay={0} />
-      <FloatingSymbol icon="ETH" top="68%" left="78%" delay={0.7} />
-      <FloatingSymbol icon="SOL" top="12%" left="72%" delay={1.2} />
-
-      <div className="mx-auto flex min-h-[70vh] max-w-4xl flex-col items-center justify-center text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
+    <PageTransition>
+      <div className="min-h-[calc(100vh-80px)] flex flex-col items-center justify-center px-4 py-16 bg-background text-foreground">
+        <motion.div 
+          className="relative z-10 flex flex-col items-center text-center max-w-lg mx-auto"
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-[32px] bg-background p-8 shadow-neo"
         >
-          <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-background text-primary shadow-neo-inset-deep">
-            <SearchX size={42} strokeWidth={1.75} />
+          <h1 className="relative text-[8rem] md:text-[12rem] font-black leading-none text-foreground select-none">
+            <span className="animate-pulse opacity-10 absolute -inset-1 blur-lg text-primary">404</span>
+            <span style={{ textShadow: '2px 0 red, -2px 0 blue' }}>404</span>
+          </h1>
+
+          <div className="space-y-4 max-w-md pt-4">
+            <h2 className="text-2xl md:text-3xl font-semibold text-foreground">
+              Page Not Found
+            </h2>
+            <p className="text-foreground/75 text-base sm:text-lg leading-relaxed">
+              The page or route you requested could not be found or requires login.
+            </p>
           </div>
 
-          <p className="mb-3 font-mono text-xs font-bold uppercase text-primary">Error 404</p>
-          <h1 className="font-display text-6xl font-extrabold leading-none text-foreground sm:text-7xl">
-            Page Not Found
-          </h1>
-          <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-muted">
-            The route you requested is not available in the NexTradeX simulation workspace.
-          </p>
-
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              to="/dashboard"
-              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-white shadow-neo transition-all hover:-translate-y-0.5 hover:bg-primary-active hover:shadow-neo-hover active:translate-y-0.5"
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
+            <Link 
+              to="/dashboard" 
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-primary text-white text-xs sm:text-sm font-bold hover:opacity-90 transition-opacity inline-flex items-center justify-center gap-2 shadow-xs"
             >
-              <LayoutGrid size={18} />
-              Return to Dashboard
+              <LayoutGrid size={16} className="text-white" /> Return to Dashboard
             </Link>
-            <Link
-              to="/"
-              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-background px-6 py-3 text-sm font-bold text-muted shadow-neo-sm transition-all hover:text-primary hover:shadow-neo"
+            <Link 
+              to="/" 
+              className="w-full sm:w-auto group flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl border border-border text-foreground hover:border-primary/50 hover:text-primary transition-colors text-xs sm:text-sm font-bold"
             >
-              <ArrowLeft size={16} />
-              Go Home
+              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Go Home
             </Link>
           </div>
         </motion.div>
       </div>
-    </main>
+    </PageTransition>
   );
 }

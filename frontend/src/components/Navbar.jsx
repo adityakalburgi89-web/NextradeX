@@ -1,98 +1,200 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Logo from "../assets/images/Logo.png";
-import { Search, User, ChevronDown, LogOut, Menu, X } from "lucide-react";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "./ui/dropdown-menu";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Search01Icon,
+  Menu01Icon,
+  Cancel01Icon,
+  ArrowDown01Icon,
+  Logout01Icon,
+} from "@hugeicons/core-free-icons";
+import { MAIN_NAV_ITEMS } from "./navbar/navData";
+import NavItem from "./navbar/NavItem";
+import MegaMenu from "./navbar/MegaMenu";
+import MobileNavigation from "./navbar/MobileNavigation";
+import "./navbar/navbar.css";
 
-export default function Navbar({ theme, isLoggedIn, user, setSearchOpen, triggerLogoutConfirm }) {
+/**
+ * Senior React Cryptocurrency Exchange Mega-Menu Navbar
+ * Using official Stroke-Rounded Hugeicons (@hugeicons/react and @hugeicons/core-free-icons).
+ */
+export default function Navbar({
+  theme,
+  isLoggedIn,
+  user,
+  setSearchOpen,
+  triggerLogoutConfirm,
+}) {
+  const [activeMenu, setActiveMenu] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+
+  const navRef = useRef(null);
+  const hoverTimeoutRef = useRef(null);
+
+  const clearHoverTimeout = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+  };
+
+  const handleMouseEnterItem = (menuId) => {
+    clearHoverTimeout();
+    setActiveMenu(menuId);
+  };
+
+  const handleMouseLeaveItem = () => {
+    clearHoverTimeout();
+    hoverTimeoutRef.current = setTimeout(() => {
+      setActiveMenu(null);
+    }, 200);
+  };
+
+  const handleItemClick = (item) => {
+    if (item.type === "megamenu") {
+      setActiveMenu((prev) => (prev === item.id ? null : item.id));
+    } else {
+      setActiveMenu(null);
+    }
+  };
+
+  const handleCloseMenu = () => {
+    setActiveMenu(null);
+    setMobileMenuOpen(false);
+    setUserDropdownOpen(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (navRef.current && !navRef.current.contains(event.target)) {
+        setActiveMenu(null);
+        setUserDropdownOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setActiveMenu(null);
+        setMobileMenuOpen(false);
+        setUserDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+      clearHoverTimeout();
+    };
+  }, []);
+
+  const currentActiveData = MAIN_NAV_ITEMS.find((item) => item.id === activeMenu)?.data;
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#ebf5ff]/90 backdrop-blur-md transition-all">
-      <div className="max-w-[1200px] mx-auto px-6 h-20 flex items-center justify-between">
-        
-        {/* Left: Brand Logo */}
-        <Link to="/" className="flex items-center gap-3 text-[#0a0d12] no-underline">
-          <img src={Logo} alt="NexTradeX Logo" className="h-10 w-auto object-contain" />
-          <span className="font-['Inter'] font-bold text-xl tracking-tight text-[#0a0d12]">
-            NexTrade<span className="text-[#0069e0]">X</span>
-          </span>
+    <header className="crypto-header">
+      <div className="crypto-navbar" ref={navRef}>
+        <Link to="/" className="crypto-nav-logo" onClick={handleCloseMenu}>
+          <img src={Logo} alt="NexTradeX Logo" className="crypto-logo-img" />
         </Link>
 
-        {/* Center: Ghost Nav Links (Plain typography on canvas) */}
-        <nav className="hidden md:flex items-center gap-8 font-['Geist'] font-medium text-base text-[#0a0d12]">
-          <Link to="/markets" className="ghost-nav-link">Markets</Link>
-          <Link to="/trade/spot" className="ghost-nav-link">Spot Trade</Link>
-          <Link to="/trade/futures" className="ghost-nav-link">Futures</Link>
-          <Link to="/trixie-explains" className="ghost-nav-link">Features</Link>
-          <Link to="/support" className="ghost-nav-link">Support</Link>
+        <nav aria-label="Main Navigation">
+          <ul className="crypto-nav-menu" role="menubar">
+            {MAIN_NAV_ITEMS.map((item) => (
+              <NavItem
+                key={item.id}
+                item={item}
+                isOpen={activeMenu === item.id}
+                onMouseEnter={() =>
+                  item.type === "megamenu" && handleMouseEnterItem(item.id)
+                }
+                onMouseLeave={handleMouseLeaveItem}
+                onClick={() => handleItemClick(item)}
+              />
+            ))}
+          </ul>
         </nav>
 
-        {/* Right Actions: Search + Dark CTA Pill */}
-        <div className="flex items-center gap-4">
+        {activeMenu && currentActiveData && (
+          <MegaMenu
+            menuId={activeMenu}
+            data={currentActiveData}
+            onMouseEnter={clearHoverTimeout}
+            onMouseLeave={handleMouseLeaveItem}
+            onItemClick={handleCloseMenu}
+          />
+        )}
+
+        <div className="crypto-nav-actions">
           <button
-            onClick={() => setSearchOpen(true)}
-            className="p-2.5 rounded-full text-[#535862] hover:text-[#0a0d12] transition-colors"
+            type="button"
+            className="crypto-search-btn"
+            onClick={() => {
+              setActiveMenu(null);
+              setSearchOpen(true);
+            }}
             title="Search"
           >
-            <Search size={20} />
+            <HugeiconsIcon icon={Search01Icon} size={16} />
           </button>
 
           {isLoggedIn ? (
-            <DropdownMenu onOpenChange={setDropdownOpen}>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 rounded-full bg-[#fafdff] px-4 py-2 text-[#0a0d12] font-['Geist'] text-sm font-medium border border-black/5 hover:border-black/10">
-                  <div className="w-6 h-6 rounded-full bg-[#0069e0] text-white flex items-center justify-center font-bold text-xs">
-                    {user?.username?.charAt(0)?.toUpperCase() || "U"}
-                  </div>
-                  <span>{user?.username}</span>
-                  <ChevronDown size={14} className="text-[#93979f]" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="z-50 min-w-[200px] rounded-[24px] bg-[#fafdff] p-3 shadow-lg border border-black/5">
-                <DropdownMenuItem asChild>
-                  <Link to="/dashboard" className="block px-4 py-2 text-sm text-[#0a0d12] hover:bg-[#f6f7f8] rounded-xl font-medium">Dashboard</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/profile" className="block px-4 py-2 text-sm text-[#0a0d12] hover:bg-[#f6f7f8] rounded-xl font-medium">Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/wallets" className="block px-4 py-2 text-sm text-[#0a0d12] hover:bg-[#f6f7f8] rounded-xl font-medium">Wallets</Link>
-                </DropdownMenuItem>
-                <button
-                  onClick={triggerLogoutConfirm}
-                  className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-[#e05263] hover:bg-[#f6f7f8] rounded-xl font-medium mt-1"
-                >
-                  <LogOut size={14} /> Log out
-                </button>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="relative">
+              <button
+                type="button"
+                className="crypto-user-pill"
+                title={user?.username || "Account"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setUserDropdownOpen((prev) => !prev);
+                }}
+              >
+                <div className="crypto-user-avatar">
+                  {user?.username?.charAt(0)?.toUpperCase() || "U"}
+                </div>
+                <HugeiconsIcon icon={ArrowDown01Icon} size={12} />
+              </button>
+
+              {userDropdownOpen && (
+                <div className="crypto-user-dropdown-menu" onClick={(e) => e.stopPropagation()}>
+                  <Link
+                    to="/profile"
+                    onClick={handleCloseMenu}
+                    className="crypto-megamenu-item flex items-center gap-2 py-2 px-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-800 font-semibold"
+                  >
+                    <span>Profile</span>
+                  </Link>
+                </div>
+              )}
+            </div>
           ) : (
-            <Link to="/auth" className="btn-primary-genie">
-              Sign up
-            </Link>
+            <div className="crypto-auth-group">
+              <Link to="/auth" className="crypto-register-btn" onClick={handleCloseMenu}>Get Started</Link>
+            </div>
           )}
 
-          {/* Mobile menu trigger */}
           <button
+            type="button"
+            className="crypto-mobile-toggle"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-[#0a0d12]"
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            <HugeiconsIcon icon={mobileMenuOpen ? Cancel01Icon : Menu01Icon} size={18} />
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-[#fafdff] border-t border-black/5 px-6 py-6 space-y-4">
-          <Link to="/markets" onClick={() => setMobileMenuOpen(false)} className="block text-lg font-medium text-[#0a0d12]">Markets</Link>
-          <Link to="/trade/spot" onClick={() => setMobileMenuOpen(false)} className="block text-lg font-medium text-[#0a0d12]">Spot Trade</Link>
-          <Link to="/trade/futures" onClick={() => setMobileMenuOpen(false)} className="block text-lg font-medium text-[#0a0d12]">Futures</Link>
-          <Link to="/support" onClick={() => setMobileMenuOpen(false)} className="block text-lg font-medium text-[#0a0d12]">Support</Link>
-        </div>
-      )}
+      <MobileNavigation
+        open={mobileMenuOpen}
+        navItems={MAIN_NAV_ITEMS}
+        onClose={handleCloseMenu}
+        setSearchOpen={setSearchOpen}
+        isLoggedIn={isLoggedIn}
+        user={user}
+        triggerLogoutConfirm={triggerLogoutConfirm}
+      />
     </header>
   );
 }

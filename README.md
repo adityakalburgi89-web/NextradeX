@@ -35,7 +35,7 @@ The following diagram illustrates the high-level architecture and request-flow r
 
 ![System Architecture](docs/assets/system_architecture.png)
 
-A detailed description of the components shown in this diagram can be found in the [System Architecture Guide](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/docs/ARCHITECTURE.md).
+A detailed description of the components shown in this diagram can be found in the [System Architecture Guide](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/docs/architecture/ARCHITECTURE.md).
 
 ---
 
@@ -76,13 +76,14 @@ If you have Docker running, launch Redis and the Prometheus/Grafana stack:
 docker run -d --name nextrade-redis -p 6379:6379 redis:alpine
 
 # Start Prometheus and Grafana
-docker compose -f docker-compose-monitoring.yml up -d
+docker compose -f deploy/docker-compose-monitoring.yml up -d
 ```
 
 #### 3. Start Backend
-Run the Spring Boot application using Maven:
+Navigate to the backend folder and run the Spring Boot application using Maven:
 ```bash
-mvn spring-boot:run
+cd backend
+./mvnw spring-boot:run
 ```
 The backend server runs on `http://localhost:8080/api` (Swagger UI is available at `http://localhost:8080/api/swagger-ui.html`).
 
@@ -111,13 +112,13 @@ FRONTEND_CALLBACK_URL=http://localhost:3000/auth
 ```
 
 > [!NOTE]
-> For detailed instructions on OAuth2 configuration, CORS, and credential settings, refer to the [OAuth2 Fix Quick Start](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/docs/README_OAUTH_FIX.md) and the [OAuth Fix Index Guide](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/docs/OAUTH_FIX_INDEX.md).
+> For detailed instructions on OAuth2 configuration, CORS, and credential settings, refer to the [OAuth2 Fix Quick Start](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/docs/fixes/README_OAUTH_FIX.md) and the [OAuth Fix Index Guide](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/docs/fixes/OAUTH_FIX_INDEX.md).
 
 ---
 
 ## Architecture & Key Services
 
-For an in-depth breakdown of the main platform subsystems, including implementation specifics, configurations, and failover workflows, refer to the [System Architecture Guide](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/docs/ARCHITECTURE.md).
+For an in-depth breakdown of the main platform subsystems, including implementation specifics, configurations, and failover workflows, refer to the [System Architecture Guide](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/docs/architecture/ARCHITECTURE.md).
 
 *   **Redis-Backed Token Bucket Rate Limiter**: Atomic token refilling using Redis Lua scripts with graceful fail-safe capabilities.
 *   **Multi-Exchange Failover Service**: High-availability external price feeds routing across Binance, Bybit, and MEXC API endpoints.
@@ -129,35 +130,47 @@ For an in-depth breakdown of the main platform subsystems, including implementat
 
 ```
 NexTradeX/
-├── src/main/java/com/NexTradeX/
-│   ├── auth/           # Native JWT auth and controller
-│   ├── binance/        # Binance service, websocket, and multi-exchange failover
-│   ├── common/         # Common DTOs, API responses, health, notifications, and annotation interfaces
-│   ├── config/         # Spring configs (CORS, JWT, Redis, Interceptors, WebSockets, OpenAPI)
-│   ├── dto/            # Data transfer objects (Orders, DCA, Wallets, etc.)
-│   ├── exception/      # Global exception handling
-│   ├── futures/        # Futures trading and position controllers
-│   ├── margin/         # Margin trading, leverage controls, and positions
-│   ├── market/         # Live prices, candlestick charts, price alert controllers
-│   ├── oauth/          # Google OAuth2 callbacks and profile completion
-│   ├── options/        # Options contract purchases and settlement
-│   ├── order/          # Spot order books, fill engines, and DCA schedules
-│   ├── risk/           # Risk controls and leverage calculation engines
-│   ├── user/           # User profile and watchlist controllers
-│   └── wallet/         # Multi-wallet ledger service (Spot, Margin, Futures)
-│
-├── docs/               # Technical manuals, API references, architecture guides
-│
-├── frontend/           # React application built with Vite and Tailwind
+├── backend/                   # Enterprise Hexagonal / DDD Java Backend Service
 │   ├── src/
-│   │   ├── pages/      # Page components (Dashboard, Spot, Margin, Futures, OAuth Auth)
-│   │   ├── components/ # Reusable UI components
-│   │   ├── api.js      # CORS credentials & API fetch wrapper
-│   │   └── App.js      # React application router
+│   │   ├── main/java/com/nextradex/
+│   │   │   ├── NexTradeXApplication.java
+│   │   │   ├── shared/                 # Cross-cutting core (common, exception, utils)
+│   │   │   ├── api/                    # Primary adapters (REST controllers, config, DTOs)
+│   │   │   └── modules/                # Domain Bounded Contexts (DDD Modules)
+│   │   │       ├── trading/            # Spot, Margin, Futures, Options, Order Book
+│   │   │       ├── risk/               # Risk engine & margin checks
+│   │   │       ├── market/             # Market data & Binance/Bybit integrations
+│   │   │       ├── wallet/             # Multi-wallet balance ledger
+│   │   │       ├── user/               # User profiles & settings
+│   │   │       └── security/           # JWT & OAuth2 Security
+│   │   └── test/java/com/nextradex/
+│   ├── Dockerfile
+│   ├── mvnw / mvnw.cmd
+│   └── pom.xml
+│
+├── frontend/                  # React Frontend Application
+│   ├── public/
+│   ├── src/
+│   │   ├── pages/             # Page views (Dashboard, Spot, Margin, Futures, Wallets)
+│   │   ├── components/        # Reusable UI components & Design System
+│   │   ├── hooks/             # Custom React hooks
+│   │   ├── services/ & api.js # HTTP & WebSocket services
+│   │   └── App.jsx
 │   └── package.json
 │
-├── docker-compose-monitoring.yml # Monitoring container definitions (Grafana, Prometheus)
-├── prometheus.yml                # Prometheus scraping configurations
+├── deploy/                    # DevOps, Infrastructure & Monitoring
+│   ├── docker-compose-monitoring.yml
+│   └── prometheus.yml
+│
+├── docs/                      # Centralized Project Documentation
+│   ├── api/                   # OpenAPI / Swagger specs & endpoint docs
+│   ├── architecture/          # System design & architecture guides
+│   ├── fixes/                 # Fix summaries & debugging logs
+│   ├── reports/               # Audit & code analysis reports
+│   └── templates/             # Email & UI templates
+│
+├── .env.example
+├── .gitignore
 └── README.md
 ```
 
@@ -165,7 +178,7 @@ NexTradeX/
 
 ## API Endpoints
 
-A complete mapping of all REST endpoints exposed by the backend services is detailed in the [API Endpoints Reference Guide](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/docs/API_ENDPOINTS.md).
+A complete mapping of all REST endpoints exposed by the backend services is detailed in the [API Endpoints Reference Guide](file:///c:/Users/adity/OneDrive/Desktop/NexTradeX/docs/api/API_ENDPOINTS.md).
 
 ---
 

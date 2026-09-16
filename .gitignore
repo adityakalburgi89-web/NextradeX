@@ -42,6 +42,15 @@ Thumbs.db
 # Logs
 *.log
 
-# Sensitive properties
+# Build outputs & Data
+backend/target/
+data/
+backend/.mvn/
+
+# Sensitive properties & configs
 .foglamp/
+application.properties
+backend/src/main/resources/application.properties
+!application.properties.example
+!backend/src/main/resources/application.properties.example
 

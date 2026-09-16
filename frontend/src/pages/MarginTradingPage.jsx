@@ -17,6 +17,7 @@ import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
 import { Button } from "../components/ui/Button";
 import { PageTransition } from "../components/ui/PageTransition";
+import footerBg from "../assets/images/footer-bg.png";
 import { TradingChartPanel } from "../components/ui/TradingChartPanel";
 import { OrderBook } from "../components/ui/OrderBook";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
@@ -405,61 +406,13 @@ export default function MarginTradingPage() {
 
   return (
     <PageTransition>
-      <div className="w-full bg-background text-foreground py-4 font-sans select-none min-h-screen">
+      <div
+        className="w-full text-foreground py-4 font-sans select-none min-h-screen bg-cover bg-center bg-no-repeat relative"
+        style={{ backgroundImage: `url(${footerBg})` }}
+      >
         <div className="max-w-8xl mx-auto px-4 space-y-4">
           
-          {/* HIGH-DENSITY HORIZONTAL TICKER BAR */}
-          <div className="bg-background border border-transparent rounded-xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-6 shadow-elevation-md">
-            <div className="flex items-center gap-4">
-              <div>
-                <h1 className="text-base font-extrabold font-heading flex items-center gap-1.5 text-foreground">
-                  {form.symbol.toUpperCase()}
-                  <span className="text-[9px] font-mono font-bold bg-primary/15 text-primary px-1 rounded uppercase">Margin {form.leverage}x</span>
-                </h1>
-                <span className="text-[10px] font-mono font-semibold text-muted">NexTradeX Margin</span>
-              </div>
 
-              {priceSnapshot && (
-                <div className="border-l border-transparent pl-4 flex flex-col justify-center">
-                  <span className="text-[10px] text-muted font-mono font-bold uppercase block">Index Price</span>
-                  <span className="text-base font-extrabold font-mono text-trading-up">
-                    {formatCurrency(priceSnapshot.currentPrice)}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {priceSnapshot && (
-              <div className="flex flex-wrap items-center gap-8 font-mono text-muted">
-                <div className="min-w-[80px]">
-                  <span className="block uppercase text-[9px]">24h Change</span>
-                  <span className={`text-sm font-bold ${Number(priceSnapshot.percentChange24h) >= 0 ? "text-trading-up" : "text-trading-down"}`}>
-                    {Number(priceSnapshot.percentChange24h) >= 0 ? "+" : ""}{priceSnapshot.percentChange24h}%
-                  </span>
-                </div>
-
-                <div className="min-w-[100px]">
-                  <span className="block uppercase text-[9px]">24H High</span>
-                  <span className="text-sm font-bold text-foreground">{formatCurrency(priceSnapshot.highPrice || priceSnapshot.currentPrice)}</span>
-                </div>
-
-                <div className="min-w-[100px]">
-                  <span className="block uppercase text-[9px]">24H Low</span>
-                  <span className="text-sm font-bold text-foreground">{formatCurrency(priceSnapshot.lowPrice || priceSnapshot.currentPrice)}</span>
-                </div>
-
-                <div className="min-w-[110px]">
-                  <span className="block uppercase text-[9px]">Collateral Ratio</span>
-                  <span className="text-sm font-bold text-primary">{(marginDetails.collateral / (marginDetails.totalCost || 1) * 100).toFixed(1)}%</span>
-                </div>
-
-                <div className="min-w-[130px]">
-                  <span className="block uppercase text-[9px]">Daily Borrow Interest</span>
-                  <span className="text-sm font-bold text-foreground">0.05%</span>
-                </div>
-              </div>
-            )}
-          </div>
 
           {/* Three-Column Split Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
@@ -470,6 +423,7 @@ export default function MarginTradingPage() {
                 title="Margin Workspace"
                 description="A leveraged Spot-Margin simulator that borrows capital from the pool to amplify trading outcomes."
                 symbol={form.symbol}
+                onSymbolChange={(newSym) => setForm(prev => ({ ...prev, symbol: newSym }))}
                 interval={interval}
                 onIntervalChange={setInterval}
                 loading={chartLoading}
@@ -766,7 +720,7 @@ export default function MarginTradingPage() {
                       Access your simulated wallet and start trading by connecting your account.
                     </p>
                     <Button variant="default" className="w-full text-xs font-semibold py-2.5 rounded-2xl shadow-glow-primary" asChild>
-                      <Link to="/auth">Sign In / Connect Wallet</Link>
+                      <Link to="/auth">Get Started</Link>
                     </Button>
                   </div>
                 )}
